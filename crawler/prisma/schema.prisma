@@ -1,0 +1,30 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Bill {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  type          String // Type enum managed in code
+  number        Int // Number of the bill
+  congress      Int // Congress number
+  originChamber String // Chamber enum managed in code
+  title         String // Title of the bill
+  url            String // URL of the bill
+
+  // URLs for different versions of the bill
+  htmlVersionUrl String
+  pdfVersionUrl  String
+  xmlVersionUrl  String
+
+  // Parsed HTML content
+  content Bytes?
+}
