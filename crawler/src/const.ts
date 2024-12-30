@@ -1,4 +1,4 @@
-const VERSION = '0.0.1';
+import { version } from '../package.json';
 export const API_BASE_URL = 'https://api.congress.gov';
 export const API_VERSION = 'v3';
 export const API_KEY = (() => {
@@ -10,7 +10,7 @@ export const API_KEY = (() => {
 export const BILL_CONGRESS = '118';
 export const HEADERS = {
   'Content-Type': 'application/json',
-  'User-Agent': `@dogexbt/crawler@${VERSION}`,
+  'User-Agent': `@dogexbt/crawler@${version}`,
 };
 export const TURSO_AUTH_TOKEN = (() => {
   if (!process.env.TURSO_AUTH_TOKEN) {

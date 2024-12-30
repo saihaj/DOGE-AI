@@ -1,9 +1,9 @@
-import { API_KEY, HEADERS } from '../const.js';
-import { inngest } from './client.js';
+import { API_KEY, HEADERS } from '../const';
+import { inngest } from './client';
 import { z } from 'zod';
 import { generateObject } from 'ai';
 import { google } from '@ai-sdk/google';
-import { prisma } from '../prisma.js';
+import { prisma } from '../prisma';
 
 const billInfoResponse = z.object({
   request: z.object({
@@ -91,23 +91,23 @@ export const processBill = inngest.createFunction(
           {
             role: 'system',
             content: `
-1. Read and comprehend the provided bill text thoroughly.
-2. Summarize the Bill's Purpose:
-   - Briefly describe the main goal or objective of the bill in simple, everyday language.
-   - Avoid legal jargon.
-3. Analyze Impacts on Citizens:
-   - Explain how the bill's provisions will likely affect the daily lives of citizens.
-   - Consider both potential benefits and drawbacks.
-   - Provide concrete examples to illustrate the significance of these impacts (e.g., "This bill could increase healthcare costs for families by [amount]," or "This bill may improve access to affordable housing for low-income residents").
-4. Assess Funding:
-  - Determine if the bill includes any provisions for funding.
-  - If no funding is allocated, state "NO_FUNDING_ALLOCATED."
-5. Analyze Spending:
-  - Identify the specific amounts allocated (e.g., dollar amounts, percentages).
-  - Briefly analyze the proposed spending plan.
-  - Explain the potential implications and usage of the allocated funds.
-  - If the bill does not specify funding amounts or allocations, state "NOT_SPECIFIED."
-`,
+    1. Read and comprehend the provided bill text thoroughly.
+    2. Summarize the Bill's Purpose:
+       - Briefly describe the main goal or objective of the bill in simple, everyday language.
+       - Avoid legal jargon.
+    3. Analyze Impacts on Citizens:
+       - Explain how the bill's provisions will likely affect the daily lives of citizens.
+       - Consider both potential benefits and drawbacks.
+       - Provide concrete examples to illustrate the significance of these impacts (e.g., "This bill could increase healthcare costs for families by [amount]," or "This bill may improve access to affordable housing for low-income residents").
+    4. Assess Funding:
+      - Determine if the bill includes any provisions for funding.
+      - If no funding is allocated, state "NO_FUNDING_ALLOCATED."
+    5. Analyze Spending:
+      - Identify the specific amounts allocated (e.g., dollar amounts, percentages).
+      - Briefly analyze the proposed spending plan.
+      - Explain the potential implications and usage of the allocated funds.
+      - If the bill does not specify funding amounts or allocations, state "NOT_SPECIFIED."
+    `,
           },
           {
             role: 'user',
@@ -146,6 +146,6 @@ export const processBill = inngest.createFunction(
       });
     });
 
-    return { billInfo: info, summary: summarizeBill, dbId: storeInDb.id };
+    return { billInfo: info };
   },
 );

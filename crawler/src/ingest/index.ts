@@ -1,6 +1,5 @@
-import { processBill } from './process-bill.js';
+import { processBill } from './process-bill';
 
-// Create an empty array where we'll export future Inngest functions
 export const functions = [processBill];
 
-export { inngest } from './client.js';
+export { inngest } from './client';
