@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
-  url      = env("DATABASE_URL")
+  url      = "file:./dev.db"
 }
 
 model Bill {
@@ -22,9 +22,14 @@ model Bill {
 
   // URLs for different versions of the bill
   htmlVersionUrl String
-  pdfVersionUrl  String
-  xmlVersionUrl  String
+  pdfVersionUrl  String?
+  xmlVersionUrl  String?
 
   // Parsed HTML content
-  content Bytes?
+  content Bytes
+
+  summary String // Summary of the bill
+  impact String // Impact of the bill
+  funding String // Funding of the bill
+  spending String // Spending of the bill
 }

@@ -1,15 +1,16 @@
-import { API_KEY, HEADERS } from '../const';
-import { inngest } from './client';
+import { API_KEY, HEADERS } from '../const.js';
+import { inngest } from './client.js';
 import { z } from 'zod';
-import { generateObject, generateText } from 'ai';
+import { generateObject } from 'ai';
 import { google } from '@ai-sdk/google';
+import { prisma } from '../prisma.js';
 
 const billInfoResponse = z.object({
   request: z.object({
-    billNumber: z.string(),
+    billNumber: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
     billType: z.string(),
     billUrl: z.string(),
-    congress: z.string(),
+    congress: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
     contentType: z.string(),
     format: z.string(),
   }),
@@ -44,15 +45,30 @@ export const processBill = inngest.createFunction(
           cause: result.error,
         });
       }
+      const info = result.data;
 
-      return result.data;
+      const htmlVersionUrl = info.textVersions?.[0].formats.filter(
+        f => f.type === 'Formatted Text',
+      )?.[0].url;
+
+      const pdfVersionUrl = info.textVersions?.[0].formats.filter(
+        f => f.type === 'PDF',
+      )?.[0].url;
+
+      const xmlVersionUrl = info.textVersions?.[0].formats.filter(
+        f => f.type === 'Formatted XML',
+      )?.[0].url;
+
+      return {
+        htmlVersionUrl,
+        pdfVersionUrl,
+        xmlVersionUrl,
+        billNumber: info.request.billNumber,
+      };
     });
 
     const fetchBillText = await step.run('fetch-bill-text', async () => {
-      const textUrl = info.textVersions?.[0].formats.filter(
-        f => f.type === 'Formatted Text',
-      )?.[0].url;
-      const url = new URL(textUrl);
+      const url = new URL(info.htmlVersionUrl);
 
       // Get the bill text from the API
       const response = await fetch(url.toString(), {
@@ -69,7 +85,7 @@ export const processBill = inngest.createFunction(
           summary: z.string(),
           impact: z.string(),
           fundingAnalysis: z.string(),
-          spending: z.string(),
+          spendingAnalysis: z.string(),
         }),
         messages: [
           {
@@ -103,6 +119,33 @@ export const processBill = inngest.createFunction(
       return result.object;
     });
 
-    return { billInfo: info, summary: summarizeBill };
+    const storeInDb = await step.run('store-in-db', async () => {
+      return prisma.bill.create({
+        data: {
+          type: bill.type,
+          number: info.billNumber,
+          congress: bill.congress,
+          originChamber: bill.originChamberCode,
+          title: bill.title,
+          url: bill.url,
+
+          htmlVersionUrl: info.htmlVersionUrl,
+          pdfVersionUrl: info.pdfVersionUrl,
+          xmlVersionUrl: info.xmlVersionUrl,
+
+          content: Buffer.from(fetchBillText),
+
+          summary: summarizeBill.summary,
+          impact: summarizeBill.impact,
+          funding: summarizeBill.fundingAnalysis,
+          spending: summarizeBill.spendingAnalysis,
+        },
+        select: {
+          id: true,
+        },
+      });
+    });
+
+    return { billInfo: info, summary: summarizeBill, dbId: storeInDb.id };
   },
 );
