@@ -3,14 +3,17 @@
   "version": "0.0.1",
   "scripts": {
     "postinstall": "pnpm dlx prisma generate",
-    "dev": "tsx --env-file=.env ./src/index.ts"
+    "dev": "tsx --env-file=.env --watch ./src/index.ts"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "wrangler": "^3.99.0"
   },
   "dependencies": {
     "@prisma/adapter-d1": "^6.1.0",
     "@prisma/client": "^6.1.0",
+    "express": "^4.21.2",
+    "inngest": "^3.28.0",
     "prisma": "^6.1.0"
   }
 }
