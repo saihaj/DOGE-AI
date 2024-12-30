@@ -8,7 +8,9 @@
 		"esModuleInterop": true,
 		"skipLibCheck": true,
 		"moduleResolution": "node16",
-		"skipDefaultLibCheck": true
+		"skipDefaultLibCheck": true,
+		"rootDir": ".",
+		"outDir": "./build"
 	},
 	"include": ["src", "api"],
 	"exclude": [

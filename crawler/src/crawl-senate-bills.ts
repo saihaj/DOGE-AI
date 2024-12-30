@@ -5,7 +5,7 @@ import {
   API_VERSION,
   BILL_CONGRESS,
   HEADERS,
-} from './const';
+} from './const.js';
 
 const BILL_ENDPOINT = `${API_BASE_URL}/${API_VERSION}/bill`;
 const BILL_TYPE = 's';
@@ -37,9 +37,7 @@ async function main() {
   try {
     await fs.mkdir(DATA_DIR);
   } catch (error) {
-    if (error.code !== 'EEXIST') {
-      throw error;
-    }
+    throw new Error(`Failed to create data directory`);
   }
 
   let offset = 0;
@@ -57,11 +55,13 @@ async function main() {
     await fs.writeFile(FILE, JSON.stringify(json, null, 2));
     console.log(`Saved to ${FILE}`);
 
+    // @ts-expect-error
     if (json.bills.length === 0) {
       console.log('No more bills to fetch');
       process.exit(0);
     }
 
+    // @ts-expect-error
     offset += json.bills.length;
   }
 }

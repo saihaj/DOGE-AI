@@ -4,6 +4,7 @@
   "type": "module",
   "scripts": {
     "postinstall": "prisma generate",
+    "build": "tsc",
     "dev:server": "vercel dev",
     "dev:inngest": "inngest dev -u http://localhost:3000/api/inngest",
     "dev": "pnpm run dev:server & pnpm run dev:inngest"

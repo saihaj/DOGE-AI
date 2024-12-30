@@ -1,2 +1,4 @@
 data
 .vercel
+build
+.DS_Store
