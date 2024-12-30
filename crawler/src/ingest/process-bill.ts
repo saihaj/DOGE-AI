@@ -24,7 +24,14 @@ const billInfoResponse = z.object({
 });
 
 export const processBill = inngest.createFunction(
-  { id: 'process-bill' },
+  {
+    id: 'process-bill',
+    // this will ensure our processing rate is 1000/hour
+    throttle: {
+      limit: 1000,
+      period: '1h',
+    },
+  },
   { event: 'bill.imported' },
   async ({ event, step }) => {
     const bill = event.data;
@@ -146,6 +153,6 @@ export const processBill = inngest.createFunction(
       });
     });
 
-    return { billInfo: info };
+    return { billInfo: info, db: storeInDb.id, summary: summarizeBill };
   },
 );
