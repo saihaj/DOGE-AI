@@ -22,7 +22,9 @@ export const processBill = inngest.createFunction(
     });
 
     const fetchBillText = await step.run('fetch-bill-text', async () => {
+      // @ts-expect-error
       const textUrl = info.textVersions?.[0].formats.filter(
+        // @ts-expect-error
         f => f.type === 'Formatted Text',
       )?.[0].url;
       const url = new URL(textUrl);
@@ -35,6 +37,7 @@ export const processBill = inngest.createFunction(
       return data;
     });
 
+    // @ts-expect-error
     return { billInfo: info.bill };
   },
 );
