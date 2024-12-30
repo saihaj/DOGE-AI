@@ -5,9 +5,7 @@
     "check:format": "prettier --check ."
   },
   "devDependencies": {
-    "prettier": "^3.4.2",
-    "tsx": "^4.19.2",
-    "typescript": "^5.6.3"
+    "prettier": "^3.4.2"
   },
   "engines": {
     "node": ">=22",
