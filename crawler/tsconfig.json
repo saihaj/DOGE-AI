@@ -7,7 +7,11 @@
 		"resolveJsonModule": true,
 		"esModuleInterop": true,
 		"skipLibCheck": true,
-		"moduleResolution": "node16"
+		"moduleResolution": "node16",
+		"skipDefaultLibCheck": true
 	},
-	"include": ["src", "api"]
+	"include": ["src", "api"],
+	"exclude": [
+		"node_modules"
+	]
 }
