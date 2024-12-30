@@ -55,13 +55,11 @@ async function main() {
     await fs.writeFile(FILE, JSON.stringify(json, null, 2));
     console.log(`Saved to ${FILE}`);
 
-    // @ts-expect-error
     if (json.bills.length === 0) {
       console.log('No more bills to fetch');
       process.exit(0);
     }
 
-    // @ts-expect-error
     offset += json.bills.length;
   }
 }
