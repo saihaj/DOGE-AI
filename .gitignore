@@ -4,3 +4,5 @@ node_modules
 db.sqlite
 
 .DS_Store
+dump.sql
+local.db
