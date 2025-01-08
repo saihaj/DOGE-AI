@@ -15,12 +15,68 @@ remain unaware of key legislation that impacts their lives.
 
 ## Vision
 
-We aim to demystify U.S. Congressional bills by presenting them in a clear,
-accessible format that anyone can understand. By leveraging X (formerly
-Twitter), we will share concise summaries and key details of each bill, breaking
-down their implications in simple terms. Our goal is to empower the public to
-engage with the legislative process, stay informed about the bills that matter
-most, and make their voices heard in the democratic process.
+While the immediate focus is on making it easier for the public to understand
+these bills, we are also tackling a bigger challenge: the complexity and
+inaccessibility of existing government systems. The infrastructure we've
+developed to scrape and present this data is complex, and we believe in the
+power of open-source solutions. By creating efficient, user-friendly tooling to
+extract and enrich government data, we aim to empower others to build even more
+public goods, creating a vibrant ecosystem of accessible, transparent government
+data that anyone can contribute to.
+
+This repository serves as the data layer and framework for working with
+government data. It contains the tooling that powers our agent, and is designed
+to be flexible, allowing for the creation of various other agents that can build
+on top of this foundation. We hope this framework becomes the foundation for new
+ways to interact with and leverage government data, enabling innovative
+solutions and greater public engagement.
+
+## Key Objectives
+
+In order to achieve the vision following are actionable objectives:
+
+1. Transform DogeXBT into a highly effective agent that consistently delivers
+   quality content.
+2. Enable the deployment of agents for specific government departments (e.g.,
+   DOJ, FDA), creating a swarm of specialized DogeXBT agents.
+3. Develop open-source infrastructure to support the operation of individual
+   agents and entire swarms, making it accessible and scalable for broader use.
+
+## Roadmap
+
+The project will be developed in distinct phases (or sprints), each building on
+the previous to establish a robust and scalable system. The focus is on creating
+a strong foundation while iterating based on feedback and evolving requirements.
+
+### Phase 1:
+
+- Set up infrastructure to process government bills.
+- Scrape all Senate bills and analyze them to identify those that may be
+  wasteful of government funds.
+- Launch a website and social media presence on X (formerly Twitter) to share
+  these bills.
+- Launch a token.
+
+### Phase 2:
+
+- Configure agent to tweet 2-3 bills daily.
+- Enhance the website to serve as a hub for exploring all scraped bills and
+  provide a way for users to share them on X.
+- Ingest all House of Representatives (HR) bills.
+- Formalize framework components to enable real-time bill extraction.
+
+### Future:
+
+> [!NOTE]
+>
+> Things evolve quickly. We want to keep the roadmap flexible and community
+> driven. These are just ideas for now.
+
+- Provide the dataset for others to use for research or building purposes.
+- Enable interaction with the agent on X.
+- Highlight wasteful funding we have captured on the website.
+- Integrate the website with X so users can chat with the agent and share
+  directly to X.
 
 ## Contributing
 
@@ -42,6 +98,12 @@ build DogeXBT.
 
 1. Clone the repository.
 2. Run `pnpm install` to install the project dependencies.
+
+### How can I help?
+
+There are lot of things to build and improve in this project. You can look at
+the issues and see if there is anything you can help with or reach out on
+[X](https://x.com/singh_saihaj) and we can discuss how you can help.
 
 ### Architecture
 
@@ -88,12 +150,6 @@ bills we want to understand then it generates the content.
 #### `website`
 
 Home for `dogexbt.ai`. A Next.js application.
-
-### How can I help?
-
-There are lot of things to build and improve in this project. You can look at
-the issues and see if there is anything you can help with or reach out on
-[X](https://x.com/singh_saihaj) and we can discuss how you can help.
 
 ## License
 
