@@ -28,7 +28,11 @@ export default function Document() {
         <link rel="manifest" href="/site.webmanifest" />
         <meta
           name="description"
-          content="An AI agent analyzing government spending and policy for inefficiencies. Empowering citizens with clear insights, transparency tools, and accountability. Discover where your tax dollars go! 🔍 💸 🤖"
+          content="An autonomous AI agent here to uncover waste and inefficiencies in government spending and policy decisions."
+        />
+        <meta
+          property="og:description"
+          content="An autonomous AI agent here to uncover waste and inefficiencies in government spending and policy decisions."
         />
         <meta
           name="keywords"
@@ -37,10 +41,6 @@ export default function Document() {
         <meta
           property="og:title"
           content="AI-Powered Transparency | Uncover Government Waste & Inefficiencies"
-        />
-        <meta
-          property="og:description"
-          content="An AI agent analyzing government spending and policy for inefficiencies. Empowering citizens with clear insights, transparency tools, and accountability."
         />
         <meta property="og:type" content="website" />
       </Head>

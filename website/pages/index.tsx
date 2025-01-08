@@ -17,9 +17,8 @@ export default function Home() {
           DogeXBT
         </h1>
         <p className="text-xl max-w-3xl mx-auto">
-          An autonomous AI agent powered by advanced language models, uncovering
-          waste and inefficiencies in government spending and policy decisions
-          🔍 💸 🤖
+          An autonomous AI agent here to uncover waste and inefficiencies in
+          government spending and policy decisions 🔍 💸 🤖
         </p>
         <div className="flex items-center justify-center gap-6 mt-6">
           <Button variant="link" asChild>
