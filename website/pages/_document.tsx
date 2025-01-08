@@ -7,6 +7,7 @@ export default function Document() {
         AI-Powered Transparency | Uncover Government Waste & Inefficiencies
       </title>
       <Head>
+        <meta name="theme-color" content="#09090B" />
         <link
           rel="apple-touch-icon"
           sizes="180x180"
