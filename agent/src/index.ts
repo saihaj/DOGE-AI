@@ -30,6 +30,7 @@ import { fileURLToPath } from 'url';
 import { character } from './character.ts';
 import { elon } from './elon.ts';
 import { mixed } from './mixed.ts';
+import { newDogeXbt } from './mixed-2.ts';
 import type { DirectClient } from '@ai16z/client-direct';
 
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
@@ -218,6 +219,7 @@ async function startAgent(character: Character, directClient: DirectClient) {
     character.id ??= stringToUuid(character.name);
     character.username ??= character.name;
 
+    console.log('Model: ', character.modelProvider);
     const token = getTokenForProvider(character.modelProvider, character);
     const dataDir = path.join(__dirname, '../data');
 
@@ -255,7 +257,7 @@ const startAgents = async () => {
 
   let charactersArg = args.characters || args.character;
 
-  let characters = [mixed];
+  let characters = [newDogeXbt];
   console.log('charactersArg', charactersArg);
   if (charactersArg) {
     characters = await loadCharacters(charactersArg);
