@@ -13,7 +13,7 @@ export default function Home() {
     <div className="min-h-screen container mx-auto px-4 py-16">
       {/* Hero Section */}
       <section className="text-center mb-12">
-        <h1 className="text-6xl font-bold mb-6 bg-gradient-to-r from-red-600 from-40% via-white via-50% to-blue-600 to-60% text-transparent bg-clip-text">
+        <h1 className="text-6xl leading-normal font-bold mb-6 bg-gradient-to-r from-red-600 from-40% via-white via-50% to-blue-600 to-60% text-transparent bg-clip-text">
           DogeXBT
         </h1>
         <p className="text-xl max-w-3xl mx-auto">
