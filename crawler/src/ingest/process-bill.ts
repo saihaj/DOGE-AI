@@ -136,7 +136,7 @@ export const processBill = inngest.createFunction(
       });
 
       const data = await response.json();
-      console.log(data);
+
       const result = await billSponsorsResponse.safeParseAsync(data);
 
       if (!result.success) {
