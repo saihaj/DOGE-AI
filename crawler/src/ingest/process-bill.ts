@@ -99,6 +99,12 @@ export const processBill = inngest.createFunction(
         }
         const info = result.data;
 
+        if (info.textVersions.length === 0) {
+          throw new NonRetriableError('No text versions found', {
+            cause: `Bill text versions count: ${info.textVersions.length}`,
+          });
+        }
+
         const htmlVersionUrl = info.textVersions?.[0].formats.filter(
           f => f.type === 'Formatted Text',
         )?.[0].url;
