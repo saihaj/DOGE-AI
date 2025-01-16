@@ -47,7 +47,6 @@ const billSponsorsResponse = z.object({
         url: z.string(),
       })
       .optional(),
-    // Saw this in senate bills
     summaries: z
       .object({
         count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
