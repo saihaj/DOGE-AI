@@ -4,6 +4,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "start": "tsx ./src/server.ts",
+    "crawl-list": "tsx --env-file=.env ./src/crawl-senate-bills.ts",
     "enqueue": "tsx --env-file=.env ./src/enqueue-bill.ts",
     "dev:server": "tsx --watch --env-file=.env ./src/server.ts",
     "dev:inngest": "inngest dev -u http://localhost:3000/api/inngest",
