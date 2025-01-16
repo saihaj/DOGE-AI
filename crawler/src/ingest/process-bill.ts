@@ -159,6 +159,19 @@ export const processBill = inngest.createFunction(
         headers: HEADERS,
       });
       const data = await response.text();
+
+      // Poor man's way to detect rate limit
+      // I could see if there is HTTP status code but initially I had no way to grab those
+      if (
+        data.includes(
+          '<!DOCTYPE html><html lang="en-US"><head><title>Just a moment...</title>',
+        )
+      ) {
+        throw Error("Rate limited; trying to fetch bill's text", {
+          cause: `HTTP response: ${response.status}`,
+        });
+      }
+
       return data;
     });
 
