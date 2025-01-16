@@ -30,6 +30,36 @@ const billSponsorsResponse = z.object({
     updateDate: z.string(),
     updateDateIncludingText: z.string(),
     constitutionalAuthorityStatementText: z.string().optional(),
+    // In senate bills I found this field being returned.
+    laws: z
+      .array(
+        z.object({
+          number: z.string(),
+          type: z.string(),
+        }),
+      )
+      .optional(),
+    // --------------- //
+    // Saw this in senate bills
+    subjects: z
+      .object({
+        count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
+        url: z.string(),
+      })
+      .optional(),
+    // Saw this in senate bills
+    summaries: z
+      .object({
+        count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
+        url: z.string(),
+      })
+      .optional(),
+    policyArea: z
+      .object({
+        name: z.string(),
+      })
+      .optional(),
+    // --------------- //
     cosponsors: z
       .object({
         count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
@@ -47,10 +77,13 @@ const billSponsorsResponse = z.object({
       count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
       url: z.string(),
     }),
-    committees: z.object({
-      count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
-      url: z.string(),
-    }),
+    // Some senate bills don't even have this...
+    committees: z
+      .object({
+        count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
+        url: z.string(),
+      })
+      .optional(),
     titles: z.object({
       count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
       url: z.string(),
