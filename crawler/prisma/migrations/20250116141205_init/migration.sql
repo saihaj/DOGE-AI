@@ -16,5 +16,14 @@ CREATE TABLE "Bill" (
     "summary" TEXT NOT NULL,
     "impact" TEXT NOT NULL,
     "funding" TEXT NOT NULL,
-    "spending" TEXT NOT NULL
+    "spending" TEXT NOT NULL,
+    "introducedDate" TEXT NOT NULL,
+    "updateDate" TEXT NOT NULL,
+    "sponsorFirstName" TEXT NOT NULL,
+    "sponsorLastName" TEXT NOT NULL,
+    "sponsorParty" TEXT NOT NULL,
+    "sponsorInfoRaw" BLOB NOT NULL
 );
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Bill_congress_number_type_key" ON "Bill"("congress", "number", "type");
