@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { generateObject } from 'ai';
 import { google } from '@ai-sdk/google';
 import { prisma } from '../prisma';
+import { NonRetriableError } from 'inngest';
 
 const billInfoResponse = z.object({
   request: z.object({
@@ -23,6 +24,49 @@ const billInfoResponse = z.object({
   ),
 });
 
+const billSponsorsResponse = z.object({
+  bill: z.object({
+    introducedDate: z.string(),
+    updateDate: z.string(),
+    updateDateIncludingText: z.string(),
+    cosponsors: z.object({
+      count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
+      countIncludingWithdrawnCosponsors: z
+        .union([z.string(), z.number()])
+        .pipe(z.coerce.number()),
+      url: z.string(),
+    }),
+    latestAction: z.object({
+      actionDate: z.string(),
+      text: z.string(),
+    }),
+    actions: z.object({
+      count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
+      url: z.string(),
+    }),
+    committees: z.object({
+      count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
+      url: z.string(),
+    }),
+    titles: z.object({
+      count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
+      url: z.string(),
+    }),
+    sponsors: z.array(
+      z.object({
+        bioguideId: z.string(),
+        firstName: z.string(),
+        fullName: z.string(),
+        isByRequest: z.string(),
+        lastName: z.string(),
+        party: z.string(),
+        state: z.string(),
+        url: z.string(),
+      }),
+    ),
+  }),
+});
+
 export const processBill = inngest.createFunction(
   {
     id: 'process-bill',
@@ -36,47 +80,80 @@ export const processBill = inngest.createFunction(
   async ({ event, step }) => {
     const bill = event.data;
 
-    const info = await step.run('get-bill-info', async () => {
-      const url = new URL(bill.url);
-      url.pathname = url.pathname + '/text';
-      url.searchParams.set('api_key', API_KEY);
-      // Get the bill info from the API
-      const response = await fetch(url.toString(), {
-        headers: HEADERS,
-      });
-      const data = await response.json();
-      const result = await billInfoResponse.safeParseAsync(data);
-
-      if (!result.success) {
-        throw new Error('Failed to parse bill info response', {
-          cause: result.error,
+    const [info, sponsors] = await Promise.all([
+      step.run('get-bill-info', async () => {
+        const url = new URL(bill.url);
+        url.pathname = url.pathname + '/text';
+        url.searchParams.set('api_key', API_KEY);
+        // Get the bill info from the API
+        const response = await fetch(url.toString(), {
+          headers: HEADERS,
         });
-      }
-      const info = result.data;
+        const data = await response.json();
+        const result = await billInfoResponse.safeParseAsync(data);
 
-      const htmlVersionUrl = info.textVersions?.[0].formats.filter(
-        f => f.type === 'Formatted Text',
-      )?.[0].url;
+        if (!result.success) {
+          throw new Error('Failed to parse bill info response', {
+            cause: result.error,
+          });
+        }
+        const info = result.data;
 
-      const pdfVersionUrl = info.textVersions?.[0].formats.filter(
-        f => f.type === 'PDF',
-      )?.[0].url;
+        const htmlVersionUrl = info.textVersions?.[0].formats.filter(
+          f => f.type === 'Formatted Text',
+        )?.[0].url;
 
-      const xmlVersionUrl = info.textVersions?.[0].formats.filter(
-        f => f.type === 'Formatted XML',
-      )?.[0].url;
+        const pdfVersionUrl = info.textVersions?.[0].formats.filter(
+          f => f.type === 'PDF',
+        )?.[0].url;
 
-      return {
-        htmlVersionUrl,
-        pdfVersionUrl,
-        xmlVersionUrl,
-        billNumber: info.request.billNumber,
-      };
-    });
+        const xmlVersionUrl = info.textVersions?.[0].formats.filter(
+          f => f.type === 'Formatted XML',
+        )?.[0].url;
+
+        return {
+          htmlVersionUrl,
+          pdfVersionUrl,
+          xmlVersionUrl,
+          billNumber: info.request.billNumber,
+        };
+      }),
+      await step.run('get-bill-sponsors', async () => {
+        const url = new URL(bill.url);
+        url.searchParams.set('api_key', API_KEY);
+        // Get the bill info from the API
+        const response = await fetch(url.toString(), {
+          headers: HEADERS,
+        });
+
+        const data = await response.json();
+
+        const result = await billSponsorsResponse.safeParseAsync(data);
+
+        if (!result.success) {
+          throw new Error('Failed to parse bill sponsors response', {
+            cause: result.error,
+          });
+        }
+
+        // the first one in the list we consider the sponsor.
+        const primarySponsor = result.data.bill.sponsors?.[0];
+
+        if (!primarySponsor) {
+          throw new NonRetriableError('No primary sponsor found', {
+            cause: `Bill sponsors count: ${result.data.bill.sponsors.length}`,
+          });
+        }
+
+        return {
+          data: result.data.bill,
+          primarySponsor,
+        };
+      }),
+    ]);
 
     const fetchBillText = await step.run('fetch-bill-text', async () => {
       const url = new URL(info.htmlVersionUrl);
-
       // Get the bill text from the API
       const response = await fetch(url.toString(), {
         headers: HEADERS,
@@ -150,6 +227,14 @@ export const processBill = inngest.createFunction(
           impact: summarizeBill.impact,
           funding: summarizeBill.fundingAnalysis,
           spending: summarizeBill.spendingAnalysis,
+
+          introducedDate: sponsors.data.introducedDate,
+          updateDate: sponsors.data.updateDate,
+
+          sponsorFirstName: sponsors.primarySponsor.firstName,
+          sponsorLastName: sponsors.primarySponsor.lastName,
+          sponsorParty: sponsors.primarySponsor.party,
+          sponsorInfoRaw: Buffer.from(JSON.stringify(sponsors.data)),
         },
         create: {
           type: bill.type,
@@ -169,6 +254,14 @@ export const processBill = inngest.createFunction(
           impact: summarizeBill.impact,
           funding: summarizeBill.fundingAnalysis,
           spending: summarizeBill.spendingAnalysis,
+
+          introducedDate: sponsors.data.introducedDate,
+          updateDate: sponsors.data.updateDate,
+
+          sponsorFirstName: sponsors.primarySponsor.firstName,
+          sponsorLastName: sponsors.primarySponsor.lastName,
+          sponsorParty: sponsors.primarySponsor.party,
+          sponsorInfoRaw: Buffer.from(JSON.stringify(sponsors.data)),
         },
         select: {
           id: true,
@@ -176,6 +269,11 @@ export const processBill = inngest.createFunction(
       });
     });
 
-    return { billInfo: info, db: storeInDb.id, summary: summarizeBill };
+    return {
+      billInfo: info,
+      db: storeInDb.id,
+      summary: summarizeBill,
+      sponsors: sponsors.data,
+    };
   },
 );
