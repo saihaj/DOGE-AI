@@ -29,13 +29,16 @@ const billSponsorsResponse = z.object({
     introducedDate: z.string(),
     updateDate: z.string(),
     updateDateIncludingText: z.string(),
-    cosponsors: z.object({
-      count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
-      countIncludingWithdrawnCosponsors: z
-        .union([z.string(), z.number()])
-        .pipe(z.coerce.number()),
-      url: z.string(),
-    }),
+    constitutionalAuthorityStatementText: z.string().optional(),
+    cosponsors: z
+      .object({
+        count: z.union([z.string(), z.number()]).pipe(z.coerce.number()),
+        countIncludingWithdrawnCosponsors: z
+          .union([z.string(), z.number()])
+          .pipe(z.coerce.number()),
+        url: z.string(),
+      })
+      .optional(),
     latestAction: z.object({
       actionDate: z.string(),
       text: z.string(),
@@ -133,7 +136,7 @@ export const processBill = inngest.createFunction(
       });
 
       const data = await response.json();
-
+      console.log(data);
       const result = await billSponsorsResponse.safeParseAsync(data);
 
       if (!result.success) {
