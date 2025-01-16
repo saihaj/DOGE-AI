@@ -80,83 +80,82 @@ export const processBill = inngest.createFunction(
   async ({ event, step }) => {
     const bill = event.data;
 
-    const [info, sponsors] = await Promise.all([
-      step.run('get-bill-info', async () => {
-        const url = new URL(bill.url);
-        url.pathname = url.pathname + '/text';
-        url.searchParams.set('api_key', API_KEY);
-        // Get the bill info from the API
-        const response = await fetch(url.toString(), {
-          headers: HEADERS,
+    const info = await step.run('get-bill-info', async () => {
+      const url = new URL(bill.url);
+      url.pathname = url.pathname + '/text';
+      url.searchParams.set('api_key', API_KEY);
+      // Get the bill info from the API
+      const response = await fetch(url.toString(), {
+        headers: HEADERS,
+      });
+      const data = await response.json();
+      const result = await billInfoResponse.safeParseAsync(data);
+
+      if (!result.success) {
+        throw new Error('Failed to parse bill info response', {
+          cause: result.error,
         });
-        const data = await response.json();
-        const result = await billInfoResponse.safeParseAsync(data);
+      }
+      const info = result.data;
 
-        if (!result.success) {
-          throw new Error('Failed to parse bill info response', {
-            cause: result.error,
-          });
-        }
-        const info = result.data;
-
-        if (info.textVersions.length === 0) {
-          throw new NonRetriableError('No text versions found', {
-            cause: `Bill text versions count: ${info.textVersions.length}`,
-          });
-        }
-
-        const htmlVersionUrl = info.textVersions?.[0].formats.filter(
-          f => f.type === 'Formatted Text',
-        )?.[0].url;
-
-        const pdfVersionUrl = info.textVersions?.[0].formats.filter(
-          f => f.type === 'PDF',
-        )?.[0].url;
-
-        const xmlVersionUrl = info.textVersions?.[0].formats.filter(
-          f => f.type === 'Formatted XML',
-        )?.[0].url;
-
-        return {
-          htmlVersionUrl,
-          pdfVersionUrl,
-          xmlVersionUrl,
-          billNumber: info.request.billNumber,
-        };
-      }),
-      await step.run('get-bill-sponsors', async () => {
-        const url = new URL(bill.url);
-        url.searchParams.set('api_key', API_KEY);
-        // Get the bill info from the API
-        const response = await fetch(url.toString(), {
-          headers: HEADERS,
+      if (info.textVersions.length === 0) {
+        throw new NonRetriableError('No text versions found', {
+          cause: `Bill text versions count: ${info.textVersions.length}`,
         });
+      }
 
-        const data = await response.json();
+      const htmlVersionUrl = info.textVersions?.[0].formats.filter(
+        f => f.type === 'Formatted Text',
+      )?.[0].url;
 
-        const result = await billSponsorsResponse.safeParseAsync(data);
+      const pdfVersionUrl = info.textVersions?.[0].formats.filter(
+        f => f.type === 'PDF',
+      )?.[0].url;
 
-        if (!result.success) {
-          throw new Error('Failed to parse bill sponsors response', {
-            cause: result.error,
-          });
-        }
+      const xmlVersionUrl = info.textVersions?.[0].formats.filter(
+        f => f.type === 'Formatted XML',
+      )?.[0].url;
 
-        // the first one in the list we consider the sponsor.
-        const primarySponsor = result.data.bill.sponsors?.[0];
+      return {
+        htmlVersionUrl,
+        pdfVersionUrl,
+        xmlVersionUrl,
+        billNumber: info.request.billNumber,
+      };
+    });
 
-        if (!primarySponsor) {
-          throw new NonRetriableError('No primary sponsor found', {
-            cause: `Bill sponsors count: ${result.data.bill.sponsors.length}`,
-          });
-        }
+    const sponsors = await step.run('get-bill-sponsors', async () => {
+      const url = new URL(bill.url);
+      url.searchParams.set('api_key', API_KEY);
+      // Get the bill info from the API
+      const response = await fetch(url.toString(), {
+        headers: HEADERS,
+      });
 
-        return {
-          data: result.data.bill,
-          primarySponsor,
-        };
-      }),
-    ]);
+      const data = await response.json();
+
+      const result = await billSponsorsResponse.safeParseAsync(data);
+
+      if (!result.success) {
+        throw new Error('Failed to parse bill sponsors response', {
+          cause: result.error,
+        });
+      }
+
+      // the first one in the list we consider the sponsor.
+      const primarySponsor = result.data.bill.sponsors?.[0];
+
+      if (!primarySponsor) {
+        throw new NonRetriableError('No primary sponsor found', {
+          cause: `Bill sponsors count: ${result.data.bill.sponsors.length}`,
+        });
+      }
+
+      return {
+        data: result.data.bill,
+        primarySponsor,
+      };
+    });
 
     const fetchBillText = await step.run('fetch-bill-text', async () => {
       const url = new URL(info.htmlVersionUrl);
