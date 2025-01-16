@@ -32,4 +32,6 @@ model Bill {
   impact String // Impact of the bill
   funding String // Funding of the bill
   spending String // Spending of the bill
+
+  @@unique([congress, number, type])
 }

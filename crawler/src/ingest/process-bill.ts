@@ -127,8 +127,31 @@ export const processBill = inngest.createFunction(
     });
 
     const storeInDb = await step.run('store-in-db', async () => {
-      return prisma.bill.create({
-        data: {
+      return prisma.bill.upsert({
+        where: {
+          congress_number_type: {
+            type: bill.type,
+            number: info.billNumber,
+            congress: bill.congress,
+          },
+        },
+        update: {
+          originChamber: bill.originChamberCode,
+          title: bill.title,
+          url: bill.url,
+
+          htmlVersionUrl: info.htmlVersionUrl,
+          pdfVersionUrl: info.pdfVersionUrl,
+          xmlVersionUrl: info.xmlVersionUrl,
+
+          content: Buffer.from(fetchBillText),
+
+          summary: summarizeBill.summary,
+          impact: summarizeBill.impact,
+          funding: summarizeBill.fundingAnalysis,
+          spending: summarizeBill.spendingAnalysis,
+        },
+        create: {
           type: bill.type,
           number: info.billNumber,
           congress: bill.congress,
