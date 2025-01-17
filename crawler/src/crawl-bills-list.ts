@@ -11,7 +11,7 @@ const BILL_ENDPOINT = `${API_BASE_URL}/${API_VERSION}/bill`;
 const BILL_TYPE = 's';
 const API_URL = `${BILL_ENDPOINT}/${BILL_CONGRESS}/${BILL_TYPE}`;
 const DATA_DIR = 'data';
-const DATA_FILE = 'bill-s';
+const DATA_FILE = 'bill';
 
 function fetchBills({ offset = 0, limit = 20 }) {
   const searchParams = new URLSearchParams();
@@ -34,10 +34,16 @@ function fetchBills({ offset = 0, limit = 20 }) {
  */
 async function main() {
   // create a data directory if it doesn't exist
+  // if we already have the directory, we don't need to create it
   try {
-    await fs.mkdir(DATA_DIR);
+    await fs.access(DATA_DIR);
   } catch (error) {
-    throw new Error(`Failed to create data directory`);
+    // @ts-expect-error haven't put in effort to type this
+    if (error.code === 'ENOENT') {
+      await fs.mkdir(DATA_DIR);
+    } else {
+      throw error;
+    }
   }
 
   let offset = 0;
