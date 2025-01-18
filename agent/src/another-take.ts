@@ -1,7 +1,6 @@
 import { CoreMessage, generateText } from 'ai';
 import { createXai } from '@ai-sdk/xai';
 import dotenv from 'dotenv';
-import * as readline from 'node:readline/promises';
 import { writeFile } from 'node:fs/promises';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
@@ -83,11 +82,6 @@ Who loses? You, the taxpayer, footing the bill for potential mismanagement.
 
 const MESSAGE =
   'Here is the tweet format and example of a bill. Apply this same format to all bills I give you. The commentary should be custom to the bill but overall structure and layout should be the same. Tag the official twitter handle of the bill sponsor at the end of the thread.';
-
-const terminal = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
 
 const xAi = createXai({});
 
