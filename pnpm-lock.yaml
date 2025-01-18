@@ -14,9 +14,6 @@ importers:
 
   agent:
     dependencies:
-      '@ai-sdk/azure':
-        specifier: ^1.0.21
-        version: 1.0.21(zod@3.23.8)
       '@ai-sdk/openai':
         specifier: ^1.0.19
         version: 1.0.19(zod@3.23.8)
@@ -194,12 +191,6 @@ packages:
 
   '@ai-sdk/anthropic@0.0.56':
     resolution: {integrity: sha512-FC/XbeFANFp8rHH+zEZF34cvRu9T42rQxw9QnUzJ1LXTi1cWjxYOx2Zo4vfg0iofxxqgOe4fT94IdT2ERQ89bA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.0.0
-
-  '@ai-sdk/azure@1.0.21':
-    resolution: {integrity: sha512-KkVQb3c4dqNcLMDigdGb8SRU+PM804KBytkh8IjdZMMlE2JXqfgVAdaR5o6QFAJSSPxJN7Rair1vkItLLgp3XQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -7212,13 +7203,6 @@ snapshots:
       '@ai-sdk/provider-utils': 1.0.22(zod@3.23.8)
       zod: 3.23.8
 
-  '@ai-sdk/azure@1.0.21(zod@3.23.8)':
-    dependencies:
-      '@ai-sdk/openai': 1.0.19(zod@3.23.8)
-      '@ai-sdk/provider': 1.0.4
-      '@ai-sdk/provider-utils': 2.0.7(zod@3.23.8)
-      zod: 3.23.8
-
   '@ai-sdk/google-vertex@0.0.43(@google-cloud/vertexai@1.9.2)(zod@3.23.8)':
     dependencies:
       '@ai-sdk/provider': 0.0.26
@@ -10750,14 +10734,14 @@ snapshots:
 
   axios@0.27.2:
     dependencies:
-      follow-redirects: 1.15.9(debug@4.3.7)
+      follow-redirects: 1.15.9
       form-data: 4.0.1
     transitivePeerDependencies:
       - debug
 
   axios@1.7.9:
     dependencies:
-      follow-redirects: 1.15.9(debug@4.3.7)
+      follow-redirects: 1.15.9
       form-data: 4.0.1
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
@@ -12314,6 +12298,8 @@ snapshots:
     dependencies:
       async: 0.2.10
       which: 1.3.1
+
+  follow-redirects@1.15.9: {}
 
   follow-redirects@1.15.9(debug@4.3.7):
     optionalDependencies:

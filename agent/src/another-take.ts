@@ -1,4 +1,3 @@
-import { createAzure } from '@ai-sdk/azure';
 import { CoreMessage, generateText } from 'ai';
 import { createXai } from '@ai-sdk/xai';
 import dotenv from 'dotenv';
@@ -87,10 +86,6 @@ const messages: CoreMessage[] = [];
 messages.push({ role: 'system', content: SYSTEM_PROMPT });
 messages.push({ role: 'user', content: `${TEMPLATE_TWEET} ${MESSAGE}` });
 
-const azure = createAzure({
-  apiVersion: '2024-08-01-preview',
-});
-
 const xAi = createXai({});
 
 async function main() {
@@ -99,8 +94,7 @@ async function main() {
     messages.push({ role: 'user', content: userInput });
 
     const result = await generateText({
-      //       model: xAi('grok-2-1212'),
-      model: azure('gpt-4o'),
+      model: xAi('grok-2-1212'),
       messages,
     });
     const response = result.text;
