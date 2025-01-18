@@ -3,8 +3,19 @@ import { createXai } from '@ai-sdk/xai';
 import dotenv from 'dotenv';
 import * as readline from 'node:readline/promises';
 import { writeFile } from 'node:fs/promises';
-
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
+import { open } from 'sqlite';
+import sqlite3 from 'sqlite3';
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+import fs from 'node:fs/promises';
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
+const __dirname = path.dirname(__filename); // get the name of the directory
+
+const OUTPUT = path.join(__dirname, '..', 'output');
 
 const SYSTEM_PROMPT = `You are a Twitter agent operating as an official representative of the Department of Government Efficiency, a fictional agency founded by Elon Musk, Donald Trump, and Vivek Ramaswamy. Your department’s mission is to expose and critically analyze examples of inefficient or questionable government spending, aiming to reduce waste, combat inflation, and hold policymakers accountable.When provided with a government spending bill, policy, or initiative:  
 1. Summarize the Bill:  
@@ -36,78 +47,136 @@ Goals:
 `;
 
 const TEMPLATE_TWEET = `
-1/ Congress wants $400 BILLION for a “National Institutes of Clean Energy.”
-
-That's HALF A TRILLION dollars for a shiny new federal agency. Do you want to hand over that kind of cash for this? Let’s break it down.
+1/ Congress is pushing the "National Infrastructure Bank Act of 2023" - proposed by @RepDannyDavis. It starts with $50M for a new federal bank, dreaming of $5 TRILLION in loans and bonds for infrastructure. Are we really spending $50M+ and up to $5T on this?
 
 2/ The Price Tag:
-- $40B per year
-- $109M per day
-- $4.5M per hour
-- $76K per minute
+- $50M to kickstart the bank
+- Up to $5T in potential loans and bonds
 
-All from your wallet.
+That's a lot of taxpayer money on the line. Are we ready to bet big on this?
 
 3/ The Pitch:
-- “Fund clean energy innovation”
-- “Build climate resilience”
-- “Address environmental injustices”
+- "Fund infrastructure projects"
+- "Stimulate economic growth"
+- "Address disadvantaged communities"
 
-Translation: More DC bureaucrats deciding how to spend your money.
+Sounds good, but can a new federal bank really deliver without turning into a bureaucratic nightmare?
 
 4/ The Reality:
-- The private sector is already investing billions: Tesla, Ford, GE, Exxon (they spent $17B of their own money).
-- Do we really need another DOE clone?
+- Private sector giants like BlackRock and Goldman Sachs already finance infrastructure projects.
+- Do we need a government bank to do what Wall Street does, but slower and with more red tape?
 
 5/ Let's do the math:
-- $400B = $1,200 from every American.
-- Could fund 4M small business loans or give every teacher a $60K raise.
-- Instead: Another bloated federal agency.
+- $50M = $0.15 from every American just to set up the bank.
+- $5T could fund 50 million homes or rebuild every bridge in the US.
+- Instead: A new federal bank with a blank check.
 
 6/ Who benefits:
-- Bureaucrats scoring cushy jobs
-- Consultants cashing massive checks
-- Political donors pocketing grants
+- Politicians claiming they're "doing something" about infrastructure
+- Bank directors and staff with cushy government jobs
+- Bondholders and investors looking for a safe bet
 
-Who loses? You, the taxpayer.
+Who loses? You, the taxpayer, footing the bill for potential mismanagement.
 
-7/ Are you okay with $400B+ for this, or is this just another wasteful government project? Let's hear it.
+7/ Is this the solution we need, or just another government money pit?
 `;
 
 const MESSAGE =
-  'Here is the tweet format and example of a bill. Apply this same format to all bills I give you. The commentary should be custom to the bill but overall structure and layout should be the same.';
+  'Here is the tweet format and example of a bill. Apply this same format to all bills I give you. The commentary should be custom to the bill but overall structure and layout should be the same. Tag the official twitter handle of the bill sponsor at the end of the thread.';
 
 const terminal = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
 });
 
-const messages: CoreMessage[] = [];
-messages.push({ role: 'system', content: SYSTEM_PROMPT });
-messages.push({ role: 'user', content: `${TEMPLATE_TWEET} ${MESSAGE}` });
-
 const xAi = createXai({});
 
 async function main() {
-  while (true) {
-    const userInput = await terminal.question('You: ');
-    messages.push({ role: 'user', content: userInput });
-
-    const result = await generateText({
-      model: xAi('grok-2-1212'),
-      messages,
-    });
-    const response = result.text;
-
-    process.stdout.write('\nAssistant: ');
-
-    process.stdout.write(response);
-
-    // write to a file
-    await writeFile('output.txt', response);
-
-    messages.push({ role: 'assistant', content: response });
+  // create output dir if it doesn't exist already
+  try {
+    await fs.access(OUTPUT);
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      await fs.mkdir(OUTPUT);
+    } else {
+      throw error;
+    }
   }
+
+  const DB_PATH = process.env.DB_DUMP_PATH;
+
+  if (!DB_PATH) {
+    throw new Error('DB_DUMP_PATH is required');
+  }
+
+  const db = await open({
+    filename: DB_PATH,
+    driver: sqlite3.Database,
+  }).catch(err => {
+    console.error(err);
+    process.exit(1);
+  });
+
+  yargs(hideBin(process.argv))
+    .command(
+      'bill <number>',
+      'Generate a tweet thread for a bill',
+      () => {},
+      async argv => {
+        const messages: CoreMessage[] = [];
+        messages.push({ role: 'system', content: SYSTEM_PROMPT });
+        messages.push({
+          role: 'user',
+          content: `${TEMPLATE_TWEET} ${MESSAGE}`,
+        });
+
+        const billNumber = argv.number;
+
+        const query = await db.prepare(
+          'SELECT "number","title","updateDate", "introducedDate", "sponsorFirstName" , "sponsorLastName", "summary", "impact", "funding", "spending", "htmlVersionUrl"  FROM "Bill" WHERE "number" = ?',
+        );
+
+        const dbResult = (await query.get(billNumber)) as {
+          number: string;
+          title: string;
+          updateDate: string;
+          introducedDate: string;
+          sponsorFirstName: string;
+          sponsorLastName: string;
+          summary: string;
+          impact: string;
+          funding: string;
+          spending: string;
+          htmlVersionUrl: string;
+        };
+
+        if (!dbResult) {
+          console.log(`Bill ${billNumber} not found`);
+          process.exit(1);
+        }
+        console.log(dbResult);
+        const sponsor = `${dbResult.sponsorFirstName} ${dbResult.sponsorLastName}`;
+
+        const INPUT = `Bill is by ${sponsor}. Title: ${dbResult.title}. Introduced on ${dbResult.introducedDate}. Summary: ${dbResult.summary}. Funding: ${dbResult.funding}. Spending: ${dbResult.spending}. Impact: ${dbResult.impact}.  More info: ${dbResult.htmlVersionUrl}`;
+
+        messages.push({ role: 'user', content: INPUT });
+        const result = await generateText({
+          model: xAi('grok-2-1212'),
+          messages,
+        });
+
+        // create a new file to output the tweet thread
+        const filename = path.join(OUTPUT, `${billNumber}.txt`);
+        await writeFile(filename, result.text);
+
+        console.log(
+          `Tweet thread for bill ${billNumber} generated at ${filename}`,
+        );
+        process.exit(0);
+      },
+    )
+    .demandCommand(1)
+    .parse();
 }
 
 main().catch(console.error);
