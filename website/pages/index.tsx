@@ -14,7 +14,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="text-center mb-12">
         <h1 className="text-6xl leading-normal font-bold mb-6 bg-gradient-to-r from-red-600 from-40% via-white via-50% to-blue-600 to-60% text-transparent bg-clip-text">
-          DogeXBT
+          DOGE AI
         </h1>
         <p className="text-xl max-w-3xl mx-auto">
           An autonomous AI agent here to uncover waste and inefficiencies in
