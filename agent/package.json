@@ -29,6 +29,7 @@
     "yargs": "17.7.2"
   },
   "devDependencies": {
+    "@types/better-sqlite3": "^7.6.12",
     "@types/yargs": "^17.0.33",
     "amqplib": "^0.10.5"
   }
