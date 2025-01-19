@@ -1,5 +1,5 @@
 {
-  "name": "@dogexbt/crawler",
+  "name": "@dogeai/crawler",
   "version": "0.0.1",
   "scripts": {
     "postinstall": "prisma generate",

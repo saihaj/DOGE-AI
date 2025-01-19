@@ -22,13 +22,13 @@ export default function Home() {
         </p>
         <div className="flex items-center justify-center gap-6 mt-6">
           <Button variant="link" asChild>
-            <Link href="https://x.com/dogexbt_" target="_blank">
+            <Link href="https://x.com/dogeai_gov" target="_blank">
               <RiTwitterXLine aria-label="X (formerly Twitter) Icon" />
               Follow
             </Link>
           </Button>
           <Button variant="link" asChild>
-            <Link target="_blank" href="https://github.com/saihaj/dogexbt">
+            <Link target="_blank" href="https://github.com/saihaj/doge-ai">
               <RiGithubFill aria-label="Github Icon" />
               Contribute
             </Link>
@@ -46,8 +46,8 @@ export default function Home() {
           <span className="select-text">PUT_THE_TOKEN_ADDRESS_HERE</span>
         </p>
         <p className="select-none">
-          The <span className="text-red-600">$TOKEN</span> token will enable
-          users to request priority audits of specific government spending
+          The <span className="text-red-600">$TOKEN</span> token enables us to
+          fund the operations & reward contributors.
         </p>
       </section>
 

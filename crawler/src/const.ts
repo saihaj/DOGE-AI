@@ -10,7 +10,7 @@ export const API_KEY = (() => {
 export const BILL_CONGRESS = '119';
 export const HEADERS = {
   'Content-Type': 'application/json',
-  'User-Agent': `@dogexbt/crawler@${version}`,
+  'User-Agent': `@dogeai/crawler@${version}`,
 };
 export const TURSO_AUTH_TOKEN = (() => {
   if (!process.env.TURSO_AUTH_TOKEN) {
