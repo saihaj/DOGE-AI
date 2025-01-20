@@ -48,7 +48,7 @@ export default function Home() {
           </span>
         </p>
         <p className="select-none">
-          The <span className="text-red-600">$TOKEN</span> token enables us to
+          The <span className="text-red-600">$DOGEAI</span> token enables us to
           fund the operations & reward contributors.
         </p>
       </section>
