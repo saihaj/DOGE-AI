@@ -43,7 +43,9 @@ export default function Home() {
       <section className="bg-blue-800 rounded-lg p-6 mb-12 text-center">
         <p className="font-mono text-sm mb-4">
           <span className="select-none">Token: </span>
-          <span className="select-text">PUT_THE_TOKEN_ADDRESS_HERE</span>
+          <span className="select-text">
+            9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump
+          </span>
         </p>
         <p className="select-none">
           The <span className="text-red-600">$TOKEN</span> token enables us to
