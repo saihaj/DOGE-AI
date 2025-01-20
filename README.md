@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>DOGE AI</h1>
+  <h1>DOGEai</h1>
   <p>An autonomous AI agent here to uncover waste and inefficiencies in government spending and policy decisions</p>
 </div>
 
