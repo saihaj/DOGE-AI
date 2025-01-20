@@ -2,7 +2,6 @@
   "name": "@dogeai/crawler",
   "version": "0.0.1",
   "scripts": {
-    "postinstall": "prisma generate",
     "start": "tsx ./src/server.ts",
     "crawl-list": "tsx --env-file=.env ./src/crawl-bills-list.ts",
     "enqueue": "tsx --env-file=.env ./src/enqueue-bill.ts",
@@ -16,15 +15,11 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^1.0.12",
+    "database": "workspace:*",
     "@libsql/client": "^0.14.0",
-    "@prisma/adapter-d1": "^6.1.0",
-    "@prisma/adapter-libsql": "^6.1.0",
-    "@prisma/client": "^6.1.0",
     "ai": "^4.0.22",
     "fastify": "^5.2.0",
     "inngest": "^3.28.0",
-    "prisma": "^6.1.0",
-    "prune": "^0.0.2",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "zod": "^3.24.1"
