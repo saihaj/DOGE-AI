@@ -51,7 +51,7 @@ a strong foundation while iterating based on feedback and evolving requirements.
 ### Phase 1:
 
 - Set up infrastructure to process government bills.
-- Scrape all Senate bills and analyze them to identify those that may be
+- Scrape all Senate & House bills and analyze them to identify those that may be
   wasteful of government funds.
 - Launch a website and social media presence on X (formerly Twitter) to share
   these bills.
@@ -59,11 +59,11 @@ a strong foundation while iterating based on feedback and evolving requirements.
 
 ### Phase 2:
 
+- Make agent to reply to X replies,
+- Make agent to reply to mentions.
+- Highlight wasteful funding we have captured on the website.
 - Configure agent to tweet 2-3 bills daily.
-- Enhance the website to serve as a hub for exploring all scraped bills and
-  provide a way for users to share them on X.
-- Ingest all House of Representatives (HR) bills.
-- Formalize framework components to enable real-time bill extraction.
+- CRON interval to scrape bills from the U.S. Congress API.
 
 ### Future:
 
@@ -72,9 +72,10 @@ a strong foundation while iterating based on feedback and evolving requirements.
 > Things evolve quickly. We want to keep the roadmap flexible and community
 > driven. These are just ideas for now.
 
+- Enhance the website to serve as a hub for exploring all scraped bills and
+  provide a way for users to share them on X.
 - Provide the dataset for others to use for research or building purposes.
 - Enable interaction with the agent on X.
-- Highlight wasteful funding we have captured on the website.
 - Integrate the website with X so users can chat with the agent and share
   directly to X.
 
