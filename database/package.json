@@ -1,0 +1,20 @@
+{
+  "name": "database",
+  "version": "0.0.1",
+  "private": true,
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "dev": "tsx --watch ./src/client.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "drizzle-kit": "^0.30.2",
+    "tsx": "^4.19.2"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.14.0",
+    "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.4"
+  }
+}

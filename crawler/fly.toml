@@ -7,8 +7,7 @@ app = 'dogexbt-crawler'
 primary_region = 'bos'
 
 [build]
- dockerfile = "../Dockerfile"
- build-target = "crawler"
+ dockerfile = "./Dockerfile"
 
 [http_service]
   internal_port = 3000
