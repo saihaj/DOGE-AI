@@ -14,7 +14,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="text-center mb-12">
         <h1 className="text-6xl leading-normal font-bold mb-6 bg-gradient-to-r from-red-600 from-40% via-white via-50% to-blue-600 to-60% text-transparent bg-clip-text">
-          DOGE AI
+          DOGEai
         </h1>
         <p className="text-xl max-w-3xl mx-auto">
           An autonomous AI agent here to uncover waste and inefficiencies in
@@ -41,12 +41,14 @@ export default function Home() {
 
       {/* Token Section */}
       <section className="bg-blue-800 rounded-lg p-6 mb-12 text-center">
-        <p className="font-mono text-sm mb-4">
+        <p className="font-mono text-sm mb-4 break-all">
           <span className="select-none">Token: </span>
-          <span className="select-text">PUT_THE_TOKEN_ADDRESS_HERE</span>
+          <span className="select-text">
+            9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump
+          </span>
         </p>
         <p className="select-none">
-          The <span className="text-red-600">$TOKEN</span> token enables us to
+          The <span className="text-red-600">$DOGEAI</span> token enables us to
           fund the operations & reward contributors.
         </p>
       </section>
