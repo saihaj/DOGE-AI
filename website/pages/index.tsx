@@ -1,11 +1,5 @@
 import Link from 'next/link';
 import { RiGithubFill, RiTwitterXLine } from '@remixicon/react';
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
@@ -159,10 +153,10 @@ export default function Home() {
 
           {/* Content Layer */}
           <div className="relative z-10 flex flex-col items-center">
-            <div className="h-[320px]">
+            <div className="max-h-[320px] w-full">
               <Image
                 src={hero}
-                width={1170}
+                width={1536}
                 height={320}
                 alt="Doge team art"
                 loading="lazy"
@@ -170,7 +164,7 @@ export default function Home() {
               />
             </div>
 
-            <h1 className="text-5xl leading-[56px] font-bold max-w-3xl mx-auto my-8 text-center">
+            <h1 className="text-3xl leading-[40px] md:text-5xl md:leading-[56px] font-bold max-w-3xl mx-auto my-8 text-center">
               An{' '}
               <span className="text-transparent bg-clip-text bg-gradient-america">
                 autonomous AI agent
@@ -180,7 +174,7 @@ export default function Home() {
             </h1>
 
             <div className="relative rounded-lg bg-[#121623] shadow-lg py-5 px-6 pb-8 flex flex-col items-center">
-              <h2 className="font-bold text-xl text-center">
+              <h2 className="font-bold text-lg md:text-xl text-center">
                 The{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-america">
                   $DOGEai
@@ -225,7 +219,7 @@ export default function Home() {
           }}
         >
           <time
-            className="py-2 px-3 text-lg select-none"
+            className="py-2 px-3 md:text-lg select-none"
             style={{
               borderRadius: '210px',
               border: '1px solid #232A43',
@@ -236,7 +230,7 @@ export default function Home() {
             <span className="font-semibold">January 16, 2025</span>
           </time>
 
-          <div className="grid grid-cols-2 gap-4 w-full">
+          <div className="grid md:grid-cols-2 gap-4 w-full">
             <CongressCard
               number={118}
               total={15636}
@@ -248,7 +242,7 @@ export default function Home() {
         </section>
 
         {/* Features Section */}
-        <section className="mt-12 mb-24">
+        <section className="mt-12 mb-16 md:mb-24">
           <div className="grid md:grid-cols-2 gap-4">
             {[
               {
@@ -475,13 +469,15 @@ export default function Home() {
                   background:
                     'linear-gradient(151deg, rgba(70, 86, 137, 0.10) -16.41%, rgba(18, 22, 35, 0.10) 76.64%)',
                 }}
-                className="px-8 py-7 flex gap-6"
+                className="px-4 md:px-8 py-7 flex gap-3 md:gap-6"
                 key={feature.title}
               >
                 <div>{feature.icon}</div>
-                <div className="flex gap-6 flex-col">
-                  <h3 className="font-bold text-3xl">{feature.title}</h3>
-                  <p className="text-lg">{feature.description}</p>
+                <div className="flex gap-3 md:gap-6 flex-col">
+                  <h3 className="font-bold text-2xl md:text-3xl">
+                    {feature.title}
+                  </h3>
+                  <p className="md:text-lg">{feature.description}</p>
                 </div>
               </div>
             ))}
@@ -491,19 +487,21 @@ export default function Home() {
 
       <footer className="border-t py-4">
         <div className="flex justify-between items-center container mx-auto px-4">
-          <p>© {new Date().getFullYear()} DOGEai. All rights reserved.</p>
+          <p className="text-sm">
+            © {new Date().getFullYear()} DOGEai. All rights reserved.
+          </p>
 
           <div className="flex items-center gap-3">
             <Button variant="outline" asChild size="sm">
               <Link href="https://x.com/dogeai_gov" target="_blank">
                 <RiTwitterXLine aria-label="X (formerly Twitter) Icon" />
-                Follow
+                <span className="md:block hidden">Follow</span>
               </Link>
             </Button>
             <Button variant="outline" asChild size="sm">
               <Link target="_blank" href="https://github.com/saihaj/doge-ai">
                 <RiGithubFill aria-label="Github Icon" />
-                Contribute
+                <span className="md:block hidden">Contribute</span>
               </Link>
             </Button>
           </div>
