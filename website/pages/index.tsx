@@ -105,19 +105,19 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
-            <p className="text-lg font-medium">
+            <p className="text-lg font-medium lg:block hidden">
               Built by the community, for the community
             </p>
-            <Button variant="outline" asChild>
-              <Link href="https://x.com/dogeai_gov" target="_blank" size="sm">
+            <Button variant="outline" asChild size="sm">
+              <Link href="https://x.com/dogeai_gov" target="_blank">
                 <RiTwitterXLine aria-label="X (formerly Twitter) Icon" />
-                Follow
+                <span className="md:block hidden">Follow</span>
               </Link>
             </Button>
             <Button variant="outline" asChild size="sm">
               <Link target="_blank" href="https://github.com/saihaj/doge-ai">
                 <RiGithubFill aria-label="Github Icon" />
-                Contribute
+                <span className="md:block hidden">Contribute</span>
               </Link>
             </Button>
           </div>
