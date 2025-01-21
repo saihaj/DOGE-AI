@@ -1,4 +1,4 @@
-import { createClient } from '@libsql/client';
+import { createClient } from '@libsql/client/web';
 import { TURSO_AUTH_TOKEN, TURSO_DATABASE_URL } from './const';
 
 import { drizzle } from 'drizzle-orm/libsql';

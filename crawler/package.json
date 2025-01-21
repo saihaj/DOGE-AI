@@ -2,22 +2,25 @@
   "name": "@dogeai/crawler",
   "version": "0.0.1",
   "scripts": {
-    "start": "tsx ./src/server.ts",
+    "start": "node ./dist/server.js",
     "crawl-list": "tsx --env-file=.env ./src/crawl-bills-list.ts",
     "enqueue": "tsx --env-file=.env ./src/enqueue-bill.ts",
     "dev:server": "tsx --watch --env-file=.env ./src/server.ts",
     "dev:inngest": "inngest dev -u http://localhost:3000/api/inngest",
-    "dev": "pnpm run dev:server & pnpm run dev:inngest"
+    "dev": "pnpm run dev:server & pnpm run dev:inngest",
+    "build": "esbuild --bundle --platform=node --outdir=dist src/server.ts '--external:@libsql/client'",
+    "predeploy": "pnpm run build",
+    "deploy": "fly deploy"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "esbuild": "^0.24.2",
     "inngest-cli": "^1.3.3"
   },
   "dependencies": {
     "@ai-sdk/google": "^1.0.12",
-    "database": "workspace:*",
-    "@libsql/client": "^0.14.0",
     "ai": "^4.0.22",
+    "database": "workspace:*",
     "fastify": "^5.2.0",
     "inngest": "^3.28.0",
     "tsx": "^4.19.2",
