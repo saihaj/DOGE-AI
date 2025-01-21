@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import plugins from 'tailwindcss/plugin';
 
 export default {
   darkMode: ['class'],
@@ -61,5 +62,15 @@ export default {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    plugins(({ addUtilities }) => {
+      addUtilities({
+        '.bg-gradient-america': {
+          backgroundImage:
+            'linear-gradient(101deg, #DF2421 6.89%, #FFF 47.34%, #2065E9 88.39%)',
+        },
+      });
+    }),
+  ],
 } satisfies Config;
