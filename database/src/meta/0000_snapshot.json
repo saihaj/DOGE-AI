@@ -1,0 +1,265 @@
+{
+  "id": "00000000-0000-0000-0000-000000000000",
+  "prevId": "",
+  "version": "6",
+  "dialect": "sqlite",
+  "tables": {
+    "_prisma_migrations": {
+      "name": "_prisma_migrations",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "checksum": {
+          "autoincrement": false,
+          "name": "checksum",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "finished_at": {
+          "autoincrement": false,
+          "name": "finished_at",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "migration_name": {
+          "autoincrement": false,
+          "name": "migration_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "logs": {
+          "autoincrement": false,
+          "name": "logs",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "rolled_back_at": {
+          "autoincrement": false,
+          "name": "rolled_back_at",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "started_at": {
+          "default": "(current_timestamp)",
+          "autoincrement": false,
+          "name": "started_at",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "applied_steps_count": {
+          "default": 0,
+          "autoincrement": false,
+          "name": "applied_steps_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {},
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "Bill": {
+      "name": "Bill",
+      "columns": {
+        "id": {
+          "autoincrement": false,
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "createdAt": {
+          "default": "(CURRENT_TIMESTAMP)",
+          "autoincrement": false,
+          "name": "createdAt",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updatedAt": {
+          "autoincrement": false,
+          "name": "updatedAt",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "autoincrement": false,
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "number": {
+          "autoincrement": false,
+          "name": "number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "congress": {
+          "autoincrement": false,
+          "name": "congress",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "originChamber": {
+          "autoincrement": false,
+          "name": "originChamber",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "title": {
+          "autoincrement": false,
+          "name": "title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "autoincrement": false,
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "htmlVersionUrl": {
+          "autoincrement": false,
+          "name": "htmlVersionUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pdfVersionUrl": {
+          "autoincrement": false,
+          "name": "pdfVersionUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "xmlVersionUrl": {
+          "autoincrement": false,
+          "name": "xmlVersionUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "content": {
+          "autoincrement": false,
+          "name": "content",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "summary": {
+          "autoincrement": false,
+          "name": "summary",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "impact": {
+          "autoincrement": false,
+          "name": "impact",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "funding": {
+          "autoincrement": false,
+          "name": "funding",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "spending": {
+          "autoincrement": false,
+          "name": "spending",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "introducedDate": {
+          "autoincrement": false,
+          "name": "introducedDate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updateDate": {
+          "autoincrement": false,
+          "name": "updateDate",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sponsorFirstName": {
+          "autoincrement": false,
+          "name": "sponsorFirstName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sponsorLastName": {
+          "autoincrement": false,
+          "name": "sponsorLastName",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sponsorParty": {
+          "autoincrement": false,
+          "name": "sponsorParty",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sponsorInfoRaw": {
+          "autoincrement": false,
+          "name": "sponsorInfoRaw",
+          "type": "blob",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "compositePrimaryKeys": {},
+      "indexes": {
+        "Bill_congress_number_type_key": {
+          "name": "Bill_congress_number_type_key",
+          "columns": [
+            "congress",
+            "number",
+            "type"
+          ],
+          "isUnique": true
+        }
+      },
+      "foreignKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    }
+  },
+  "views": {},
+  "enums": {},
+  "_meta": {
+    "schemas": {},
+    "tables": {},
+    "columns": {}
+  }
+}

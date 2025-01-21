@@ -3,8 +3,8 @@ import { inngest } from './client';
 import { z } from 'zod';
 import { generateObject } from 'ai';
 import { google } from '@ai-sdk/google';
-import { prisma } from '../prisma';
 import { NonRetriableError } from 'inngest';
+import { db, bill as billDbSchema } from 'database';
 
 const billInfoResponse = z.object({
   request: z.object({
@@ -257,74 +257,51 @@ export const processBill = inngest.createFunction(
     });
 
     const storeInDb = await step.run('store-in-db', async () => {
-      return prisma.bill.upsert({
-        where: {
-          congress_number_type: {
-            type: bill.type,
-            number: info.billNumber,
-            congress: bill.congress,
-          },
-        },
-        update: {
-          originChamber: bill.originChamberCode,
-          title: bill.title,
-          url: bill.url,
+      const billData = {
+        type: bill.type,
+        number: info.billNumber,
+        congress: bill.congress,
+        originChamber: bill.originChamberCode,
+        title: bill.title,
+        url: bill.url,
 
-          htmlVersionUrl: info.htmlVersionUrl,
-          pdfVersionUrl: info.pdfVersionUrl,
-          xmlVersionUrl: info.xmlVersionUrl,
+        htmlVersionUrl: info.htmlVersionUrl,
+        pdfVersionUrl: info.pdfVersionUrl,
+        xmlVersionUrl: info.xmlVersionUrl,
 
-          content: Buffer.from(fetchBillText),
+        content: Buffer.from(fetchBillText),
 
-          summary: summarizeBill.summary,
-          impact: summarizeBill.impact,
-          funding: summarizeBill.fundingAnalysis,
-          spending: summarizeBill.spendingAnalysis,
+        summary: summarizeBill.summary,
+        impact: summarizeBill.impact,
+        funding: summarizeBill.fundingAnalysis,
+        spending: summarizeBill.spendingAnalysis,
 
-          introducedDate: sponsors.data.introducedDate,
-          updateDate: sponsors.data.updateDate,
+        introducedDate: sponsors.data.introducedDate,
+        updateDate: sponsors.data.updateDate,
 
-          sponsorFirstName: sponsors.primarySponsor.firstName,
-          sponsorLastName: sponsors.primarySponsor.lastName,
-          sponsorParty: sponsors.primarySponsor.party,
-          sponsorInfoRaw: Buffer.from(JSON.stringify(sponsors.data)),
-        },
-        create: {
-          type: bill.type,
-          number: info.billNumber,
-          congress: bill.congress,
-          originChamber: bill.originChamberCode,
-          title: bill.title,
-          url: bill.url,
+        sponsorFirstName: sponsors.primarySponsor.firstName,
+        sponsorLastName: sponsors.primarySponsor.lastName,
+        sponsorParty: sponsors.primarySponsor.party,
+        sponsorInfoRaw: Buffer.from(JSON.stringify(sponsors.data)),
+      };
 
-          htmlVersionUrl: info.htmlVersionUrl,
-          pdfVersionUrl: info.pdfVersionUrl,
-          xmlVersionUrl: info.xmlVersionUrl,
-
-          content: Buffer.from(fetchBillText),
-
-          summary: summarizeBill.summary,
-          impact: summarizeBill.impact,
-          funding: summarizeBill.fundingAnalysis,
-          spending: summarizeBill.spendingAnalysis,
-
-          introducedDate: sponsors.data.introducedDate,
-          updateDate: sponsors.data.updateDate,
-
-          sponsorFirstName: sponsors.primarySponsor.firstName,
-          sponsorLastName: sponsors.primarySponsor.lastName,
-          sponsorParty: sponsors.primarySponsor.party,
-          sponsorInfoRaw: Buffer.from(JSON.stringify(sponsors.data)),
-        },
-        select: {
-          id: true,
-        },
-      });
+      return db
+        .insert(billDbSchema)
+        .values(billData)
+        .onConflictDoUpdate({
+          set: billData,
+          target: [
+            billDbSchema.type,
+            billDbSchema.number,
+            billDbSchema.congress,
+          ],
+        })
+        .returning();
     });
 
     return {
       billInfo: info,
-      db: storeInDb.id,
+      db: storeInDb?.[0].id,
       summary: summarizeBill,
       sponsors: sponsors.data,
     };
