@@ -42,6 +42,9 @@ export default function Document() {
           property="og:title"
           content="AI-Powered Transparency | Uncover Government Waste & Inefficiencies"
         />
+        <meta property="og:site_name" content="DOGEai" />
+        <meta property="og:url" content="https://dogeai.info" />
+        <meta property="og:image" content="/images/hero.png" />
         <meta property="og:type" content="website" />
       </Head>
       <body className="antialiased">
