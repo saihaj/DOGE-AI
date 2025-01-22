@@ -296,14 +296,11 @@ export const processBill = inngest.createFunction(
             billDbSchema.congress,
           ],
         })
-        .returning();
+        .returning({ id: billDbSchema.id });
     });
 
     return {
-      billInfo: info,
       db: storeInDb?.[0].id,
-      summary: summarizeBill,
-      sponsors: sponsors.data,
     };
   },
 );
