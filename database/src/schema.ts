@@ -92,7 +92,7 @@ export const billVector = sqliteTable('BillVector', {
   bill: text()
     .notNull()
     .references(() => bill.id, { onDelete: 'cascade' }),
-  vector: float32Array('vector', { dimensions: 512 }),
+  vector: float32Array('vector', { dimensions: 1536 }),
   text: text().notNull(), // the chunk that we are embedding
   source: text({
     enum: ['raw', 'summary', 'impact', 'funding', 'spending'],

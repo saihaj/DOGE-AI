@@ -1,6 +1,6 @@
 import { inngest } from './client';
 import { embedMany } from 'ai';
-import { google } from '@ai-sdk/google';
+import { openai } from '@ai-sdk/openai';
 import { NonRetriableError } from 'inngest';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import {
@@ -31,9 +31,7 @@ function cleanText(html: string) {
   return text.replace(/\s+/g, ' ').trim();
 }
 
-const model = google.textEmbeddingModel('text-embedding-004', {
-  outputDimensionality: 512,
-});
+const model = openai.textEmbeddingModel('text-embedding-3-small');
 
 function canIgnoreAnalysis(text: string) {
   return (
