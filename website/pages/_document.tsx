@@ -1,9 +1,15 @@
 import { Html, Head, Main, NextScript } from 'next/document';
 
+const DESCRIPTION =
+  'Track wasteful government spending and ensure transparency with DOGEai. Simplifying complex bills into clear insights to empower informed public decisions.';
+const KEYWORDS =
+  ' ai government spending analysis, uncover government waste, policy inefficiencies, dogeai insights, legislative analysis, government waste';
+const TITLE = 'AI-Powered Transparency | Uncover Government Waste | DOGEai';
+
 export default function Document() {
   return (
     <Html lang="en">
-      <title>Uncover Government Waste & Inefficiencies | DOGEai</title>
+      <title>{TITLE}</title>
       <Head>
         <meta name="theme-color" content="#09090B" />
         <link
@@ -24,22 +30,10 @@ export default function Document() {
           href="/favicon-16x16.png"
         />
         <link rel="manifest" href="/site.webmanifest" />
-        <meta
-          name="description"
-          content="An autonomous AI agent here to uncover waste and inefficiencies in government spending and policy decisions."
-        />
-        <meta
-          property="og:description"
-          content="An autonomous AI agent here to uncover waste and inefficiencies in government spending and policy decisions."
-        />
-        <meta
-          name="keywords"
-          content="AI transparency, government spending analysis, policy inefficiencies, autonomous AI agent, bill summaries, public engagement, accountability tools, tax dollar insights, waste tracking, government policy AI"
-        />
-        <meta
-          property="og:title"
-          content="Uncover Government Waste & Inefficiencies | DOGEai"
-        />
+        <meta name="description" content={DESCRIPTION} />
+        <meta property="og:description" content={DESCRIPTION} />
+        <meta name="keywords" content={KEYWORDS} />
+        <meta property="og:title" content={TITLE} />
         <meta property="og:site_name" content="DOGEai" />
         <meta property="og:url" content="https://dogeai.info" />
         <meta
@@ -52,6 +46,7 @@ export default function Document() {
         />
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="og:type" content="website" />
+        <link rel="canonical" href="https://dogeai.info" />
       </Head>
       <body className="antialiased">
         <Main />
