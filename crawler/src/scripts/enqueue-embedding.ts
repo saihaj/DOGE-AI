@@ -48,7 +48,29 @@ async function main() {
   console.log(`Sent ${ing.ids.length} bills to Inngest.`);
 
   //   //   grab remaining bills
-  //   const billsLeft = contents.slice(10);
+  const billsLeft = contents.slice(10);
+  // chunk arrays of 200
+  const chunks = [];
+  while (billsLeft.length) {
+    chunks.push(billsLeft.splice(0, 200));
+  }
+
+  for await (const chunk of chunks) {
+    console.log(`Sending ${chunk.length} bills to Inngest...`);
+
+    const ing = await inngest.send(
+      // @ts-expect-error - gotta type this better
+      chunk.map(bill => ({
+        name: 'bill.embed',
+        id: `${bill.id}-take-2`,
+        data: {
+          id: bill.id,
+        },
+      })),
+    );
+
+    console.log(`Sent ${ing.ids.length} bills to Inngest.`);
+  }
   //   console.log(`Sending ${billsLeft.length} bills to Inngest...`);
 }
 
