@@ -3,9 +3,7 @@ import { Html, Head, Main, NextScript } from 'next/document';
 export default function Document() {
   return (
     <Html lang="en">
-      <title>
-        AI-Powered Transparency | Uncover Government Waste & Inefficiencies
-      </title>
+      <title>Uncover Government Waste & Inefficiencies | DOGEai</title>
       <Head>
         <meta name="theme-color" content="#09090B" />
         <link
@@ -40,7 +38,7 @@ export default function Document() {
         />
         <meta
           property="og:title"
-          content="AI-Powered Transparency | Uncover Government Waste & Inefficiencies"
+          content="Uncover Government Waste & Inefficiencies | DOGEai"
         />
         <meta property="og:site_name" content="DOGEai" />
         <meta property="og:url" content="https://dogeai.info" />
