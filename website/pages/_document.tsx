@@ -12,6 +12,10 @@ export default function Document() {
       <title>{TITLE}</title>
       <Head>
         <meta name="theme-color" content="#09090B" />
+        <meta name="description" content={DESCRIPTION} />
+        <meta name="keywords" content={KEYWORDS} />
+
+        {/* favicon */}
         <link
           rel="apple-touch-icon"
           sizes="180x180"
@@ -30,9 +34,9 @@ export default function Document() {
           href="/favicon-16x16.png"
         />
         <link rel="manifest" href="/site.webmanifest" />
-        <meta name="description" content={DESCRIPTION} />
+
+        {/* opengraph */}
         <meta property="og:description" content={DESCRIPTION} />
-        <meta name="keywords" content={KEYWORDS} />
         <meta property="og:title" content={TITLE} />
         <meta property="og:site_name" content="DOGEai" />
         <meta property="og:url" content="https://dogeai.info" />
@@ -40,12 +44,14 @@ export default function Document() {
           property="og:image"
           content="https://dogeai.info/images/hero.png"
         />
+        <meta property="og:type" content="website" />
+
+        {/* twitter */}
         <meta
           property="twitter:image"
           content="https://dogeai.info/images/hero.png"
         />
         <meta property="twitter:card" content="summary_large_image" />
-        <meta property="og:type" content="website" />
         <link rel="canonical" href="https://dogeai.info" />
       </Head>
       <body className="antialiased">
