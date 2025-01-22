@@ -45,10 +45,10 @@ function canIgnoreAnalysis(text: string) {
 export const embedBill = inngest.createFunction(
   {
     id: 'embed-bill',
-    // this will ensure our processing rate is 10/min
+    // this will ensure our processing rate is 1000/hour
     throttle: {
-      limit: 10,
-      period: '1m',
+      limit: 1000,
+      period: '1h',
     },
   },
   { event: 'bill.embed' },
