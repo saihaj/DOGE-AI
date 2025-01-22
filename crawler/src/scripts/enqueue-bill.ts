@@ -1,4 +1,4 @@
-import { inngest } from './ingest';
+import { inngest } from '../ingest';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
 
-const DATA = path.join(__dirname, '..', 'data');
+const DATA = path.join(__dirname, '..', '..', 'data');
 
 async function main() {
   // list all files
