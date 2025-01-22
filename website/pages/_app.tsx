@@ -10,8 +10,8 @@ const mainFont = Funnel_Display({
 
 export default function App({ Component, pageProps }: AppProps) {
   return (
-    <main className={`${mainFont.variable} font-serif`}>
+    <div className={`${mainFont.variable} font-serif`}>
       <Component {...pageProps} />
-    </main>
+    </div>
   );
 }
