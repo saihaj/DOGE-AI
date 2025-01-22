@@ -7,6 +7,24 @@ import {
   blob,
 } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
+import { customType } from 'drizzle-orm/sqlite-core';
+
+const float32Array = customType<{
+  data: number[];
+  config: { dimensions: number };
+  configRequired: true;
+  driverData: Buffer;
+}>({
+  dataType(config) {
+    return `F32_BLOB(${config.dimensions})`;
+  },
+  fromDriver(value: Buffer) {
+    return Array.from(new Float32Array(value.buffer));
+  },
+  toDriver(value: number[]) {
+    return sql`vector32(${JSON.stringify(value)})`;
+  },
+});
 
 export const prismaMigrations = sqliteTable('_prisma_migrations', {
   id: text().primaryKey().notNull(),
@@ -24,12 +42,13 @@ export const prismaMigrations = sqliteTable('_prisma_migrations', {
 export const bill = sqliteTable(
   'Bill',
   {
-    id: text().primaryKey().default(crypto.randomUUID()).notNull(),
+    id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
     createdAt: numeric()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
     updatedAt: numeric()
       .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
       .notNull(),
     type: text().notNull(),
     number: integer().notNull(),
@@ -60,3 +79,22 @@ export const bill = sqliteTable(
     ),
   ],
 );
+
+export const billVector = sqliteTable('BillVector', {
+  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  bill: text()
+    .notNull()
+    .references(() => bill.id, { onDelete: 'cascade' }),
+  vector: float32Array('vector', { dimensions: 512 }),
+  text: text().notNull(), // the chunk that we are embedding
+  source: text({
+    enum: ['raw', 'summary', 'impact', 'funding', 'spending'],
+  }).notNull(),
+});

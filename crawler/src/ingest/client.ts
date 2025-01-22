@@ -17,5 +17,10 @@ export const inngest = new Inngest({
         url: string;
       };
     };
+    'bill.embed': {
+      data: {
+        id: string;
+      };
+    };
   }>(),
 });

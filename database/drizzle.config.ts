@@ -3,7 +3,7 @@ import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
   dialect: 'turso',
-  out: './drizzle',
+  out: './src',
   schema: './src/schema.ts',
   // Print all statements
   verbose: true,

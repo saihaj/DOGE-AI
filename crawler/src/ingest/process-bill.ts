@@ -287,7 +287,7 @@ export const processBill = inngest.createFunction(
 
       return db
         .insert(billDbSchema)
-        .values(billData)
+        .values({ ...billData, id: crypto.randomUUID().toString() })
         .onConflictDoUpdate({
           set: billData,
           target: [
