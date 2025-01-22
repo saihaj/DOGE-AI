@@ -30,39 +30,18 @@ async function main() {
   const contents = JSON.parse(data);
   console.log(`Read ${contents.length} bills from file...`);
 
-  // grab first 10 bills
-  const bills = contents.slice(0, 10);
-  console.log(`Sending ${bills.length} bills to Inngest...`);
-
-  const ing = await inngest.send(
-    // @ts-expect-error - gotta type this better
-    bills.map(bill => ({
-      name: 'bill.embed',
-      id: `${bill.id}-take-2`,
-      data: {
-        id: bill.id,
-      },
-    })),
-  );
-
-  console.log(`Sent ${ing.ids.length} bills to Inngest.`);
-
-  //   //   grab remaining bills
-  const billsLeft = contents.slice(10);
   // chunk arrays of 200
   const chunks = [];
-  while (billsLeft.length) {
-    chunks.push(billsLeft.splice(0, 200));
+  while (contents.length) {
+    chunks.push(contents.splice(0, 200));
   }
 
   for await (const chunk of chunks) {
-    console.log(`Sending ${chunk.length} bills to Inngest...`);
-
     const ing = await inngest.send(
       // @ts-expect-error - gotta type this better
       chunk.map(bill => ({
         name: 'bill.embed',
-        id: `${bill.id}-take-2`,
+        id: `${bill.id}-take-3`,
         data: {
           id: bill.id,
         },
@@ -71,7 +50,6 @@ async function main() {
 
     console.log(`Sent ${ing.ids.length} bills to Inngest.`);
   }
-  //   console.log(`Sending ${billsLeft.length} bills to Inngest...`);
 }
 
 main().catch(console.error);
