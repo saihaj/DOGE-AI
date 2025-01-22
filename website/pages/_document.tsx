@@ -44,7 +44,15 @@ export default function Document() {
         />
         <meta property="og:site_name" content="DOGEai" />
         <meta property="og:url" content="https://dogeai.info" />
-        <meta property="og:image" content="/images/hero.png" />
+        <meta
+          property="og:image"
+          content="https://dogeai.info/images/hero.png"
+        />
+        <meta
+          property="twitter:image"
+          content="https://dogeai.info/images/hero.png"
+        />
+        <meta property="twitter:card" content="summary_large_image" />
         <meta property="og:type" content="website" />
       </Head>
       <body className="antialiased">
