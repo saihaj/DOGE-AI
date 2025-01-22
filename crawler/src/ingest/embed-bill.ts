@@ -8,6 +8,7 @@ import {
   bill as billDbSchema,
   eq,
   billVector as billVectorDbSchema,
+  sql,
 } from 'database';
 import sanitize from 'sanitize-html';
 import he from 'he';
@@ -165,35 +166,35 @@ export const embedBill = inngest.createFunction(
             source: 'raw' as const,
             bill: bill.id,
             text: value,
-            vector: embedding,
+            vector: sql`vector32(${JSON.stringify(embedding)})`,
             id: crypto.randomUUID().toString(),
           })),
           ...embeddingsForSummary.map(({ value, embedding }) => ({
             source: 'summary' as const,
             bill: bill.id,
             text: value,
-            vector: embedding,
+            vector: sql`vector32(${JSON.stringify(embedding)})`,
             id: crypto.randomUUID().toString(),
           })),
           ...embeddingsForFunding.map(({ value, embedding }) => ({
             source: 'funding' as const,
             bill: bill.id,
             text: value,
-            vector: embedding,
+            vector: sql`vector32(${JSON.stringify(embedding)})`,
             id: crypto.randomUUID().toString(),
           })),
           ...embeddingsForImpact.map(({ value, embedding }) => ({
             source: 'impact' as const,
             bill: bill.id,
             text: value,
-            vector: embedding,
+            vector: sql`vector32(${JSON.stringify(embedding)})`,
             id: crypto.randomUUID().toString(),
           })),
           ...embeddingsForSpending.map(({ value, embedding }) => ({
             source: 'spending' as const,
             bill: bill.id,
             text: value,
-            vector: embedding,
+            vector: sql`vector32(${JSON.stringify(embedding)})`,
             id: crypto.randomUUID().toString(),
           })),
         ])

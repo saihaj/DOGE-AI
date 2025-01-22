@@ -2,12 +2,13 @@
   "name": "@dogeai/agent",
   "version": "0.0.1",
   "main": "src/index.ts",
-  "type": "module",
   "scripts": {
     "start": "tsx src/index.ts",
-    "dev": "tsx src/another-take.ts"
+    "dev": "tsx src/another-take.ts",
+    "test-kb": "tsx --watch src/test-kb.ts"
   },
   "dependencies": {
+    "@ai-sdk/google": "^1.0.12",
     "@ai-sdk/openai": "^1.0.19",
     "@ai-sdk/xai": "^1.0.17",
     "@ai16z/adapter-sqlite": "v0.1.6",
@@ -19,6 +20,7 @@
     "@ai16z/plugin-bootstrap": "v0.1.6",
     "@ai16z/plugin-node": "v0.1.6",
     "ai": "^4.0.22",
+    "database": "workspace:*",
     "dotenv": "^16.4.7",
     "readline": "^1.3.0",
     "sqlite": "^5.1.1",
@@ -26,7 +28,8 @@
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "ws": "^8.18.0",
-    "yargs": "17.7.2"
+    "yargs": "17.7.2",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.12",

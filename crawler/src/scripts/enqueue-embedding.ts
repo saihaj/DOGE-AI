@@ -38,7 +38,7 @@ async function main() {
     // @ts-expect-error - gotta type this better
     bills.map(bill => ({
       name: 'bill.embed',
-      id: bill.id,
+      id: `${bill.id}-take-2`,
       data: {
         id: bill.id,
       },
