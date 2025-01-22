@@ -58,7 +58,7 @@ function CongressCard({
         </defs>
       </svg>
 
-      <h3 className="font-bold text-2xl">
+      <h3 className="font-bold text-2xl md:text-3xl">
         {number}
         <sup>th</sup> Congress
       </h3>
@@ -71,17 +71,23 @@ function CongressCard({
       <div className="flex gap-5 w-full">
         <div className="flex flex-col items-center w-full">
           <h4 className="text-[#839EFF] text-lg">Total Bills</h4>
-          <p className="font-bold text-2xl">{total.toLocaleString('en')}</p>
+          <p className="font-bold text-2xl md:text-3xl">
+            {total.toLocaleString('en')}
+          </p>
         </div>
 
         <div className="flex flex-col items-center w-full">
           <h4 className="text-[#839EFF] text-lg">Senate</h4>
-          <p className="font-bold text-2xl">{senate.toLocaleString('en')}</p>
+          <p className="font-bold text-2xl md:text-3xl">
+            {senate.toLocaleString('en')}
+          </p>
         </div>
 
         <div className="flex flex-col items-center w-full">
           <h4 className="text-[#839EFF] text-lg">House</h4>
-          <p className="font-bold text-2xl">{house.toLocaleString('en')}</p>
+          <p className="font-bold text-2xl md:text-3xl">
+            {house.toLocaleString('en')}
+          </p>
         </div>
       </div>
     </div>
@@ -169,7 +175,7 @@ export default function Home() {
 
           {/* Content Layer */}
           <div className="relative z-10 flex flex-col items-center">
-            <div className="max-h-[320px] w-full">
+            <div className="w-full max-w-screen-2xl mx-auto">
               <Image
                 src={hero}
                 width={1536}
@@ -177,6 +183,7 @@ export default function Home() {
                 alt="Doge team art"
                 loading="lazy"
                 placeholder="blur"
+                className="w-full h-auto object-cover"
               />
             </div>
 
