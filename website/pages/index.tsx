@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/logo';
 import Image from 'next/image';
 import hero from '../public/images/hero.png';
+import { useCopyToClipboard } from '@uidotdev/usehooks';
+import { useEffect, useState } from 'react';
 
 function CongressCard({
   number,
@@ -86,11 +88,21 @@ function CongressCard({
   );
 }
 
+const TOKEN = '9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump';
 const truncateToken = (token: string) => {
   return `${token.slice(0, 8)}...${token.slice(-8)}`;
 };
 
 export default function Home() {
+  const [, copyToClipboard] = useCopyToClipboard();
+  const [hasCopied, setHasCopied] = useState(false);
+
+  useEffect(() => {
+    setTimeout(() => {
+      setHasCopied(false);
+    }, 2000);
+  }, [hasCopied]);
+
   return (
     <>
       <div className="min-h-screen container mx-auto px-4 py-5">
@@ -190,27 +202,55 @@ export default function Home() {
                 <p className="text-sm flex flex-row items-center gap-1">
                   <span className="select-none">Token: </span>
                   <span className="md:hidden block select-text text-[#839EFF]">
-                    {truncateToken(
-                      '9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump',
-                    )}
+                    {truncateToken(TOKEN)}
                   </span>
                   <span className="hidden md:block select-text text-[#839EFF]">
-                    9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump
+                    {TOKEN}
                   </span>
-                  <Button variant="ghost" className="h-6 w-2">
-                    <svg
-                      className="h-3 w-3"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
-                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                    </svg>
+                  <Button
+                    variant="ghost"
+                    className="h-6 w-2"
+                    onClick={() => {
+                      copyToClipboard(TOKEN);
+                      setHasCopied(true);
+                    }}
+                  >
+                    {hasCopied ? (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <path d="M20 6 9 17l-5-5" />
+                      </svg>
+                    ) : (
+                      <svg
+                        className="h-3 w-3"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      >
+                        <rect
+                          width="14"
+                          height="14"
+                          x="8"
+                          y="8"
+                          rx="2"
+                          ry="2"
+                        />
+                        <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                      </svg>
+                    )}
                   </Button>
                 </p>
               </div>
