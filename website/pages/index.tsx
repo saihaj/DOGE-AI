@@ -86,6 +86,10 @@ function CongressCard({
   );
 }
 
+const truncateToken = (token: string) => {
+  return `${token.slice(0, 8)}...${token.slice(-8)}`;
+};
+
 export default function Home() {
   return (
     <>
@@ -173,7 +177,7 @@ export default function Home() {
               and policy decisions.
             </h1>
 
-            <div className="relative rounded-lg bg-[#121623] shadow-lg py-5 px-6 pb-8 flex flex-col items-center">
+            <div className="relative rounded-lg bg-[#121623] shadow-lg py-5 px-6 pb-4 md:pb-8 flex flex-col items-center">
               <h2 className="font-bold text-lg md:text-xl text-center">
                 The{' '}
                 <span className="text-transparent bg-clip-text bg-gradient-america">
@@ -182,10 +186,15 @@ export default function Home() {
                 token enables us to fund the operations & reward contributors.
               </h2>
 
-              <div className="absolute w-fit bottom-0 translate-y-1/2 left-1/2 -translate-x-1/2 border border-[rgba(255, 255, 255, 0.08)] bg-[#0F121D] rounded-[36px] py-2 px-4 w-fit">
+              <div className="mt-4 md:mt-0 md:absolute w-fit md:bottom-0 md:translate-y-1/2 md:left-1/2 md:-translate-x-1/2 border border-[rgba(255, 255, 255, 0.08)] bg-[#0F121D] rounded-[36px] py-2 px-4 w-fit">
                 <p className="text-sm flex flex-row items-center gap-1">
                   <span className="select-none">Token: </span>
-                  <span className="select-text text-[#839EFF]">
+                  <span className="md:hidden block select-text text-[#839EFF]">
+                    {truncateToken(
+                      '9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump',
+                    )}
+                  </span>
+                  <span className="hidden md:block select-text text-[#839EFF]">
                     9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump
                   </span>
                   <Button variant="ghost" className="h-6 w-2">
