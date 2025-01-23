@@ -100,6 +100,20 @@ build DogeXBT.
 1. Clone the repository.
 2. Run `pnpm install` to install the project dependencies.
 
+#### Running the Website
+
+To view the website locally, follow these steps:
+
+1. Navigate to the `website` directory:
+   ```bash
+   cd website
+   ```
+2. Run the development server:
+   ```bash
+   pnpm dev
+   ```
+3. Open your browser and go to http://localhost:3000.
+
 ### How can I help?
 
 There are lot of things to build and improve in this project. You can look at
