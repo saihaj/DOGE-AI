@@ -105,11 +105,12 @@ const billSponsorsResponse = z.object({
 export const processBill = inngest.createFunction(
   {
     id: 'process-bill',
-    // this will ensure our processing rate is 1000/hour
+    // this will ensure our processing rate is 2000/hour
     throttle: {
-      limit: 1000,
+      limit: 2000,
       period: '1h',
     },
+    concurrency: 100,
   },
   { event: 'bill.imported' },
   async ({ event, step }) => {
@@ -287,7 +288,7 @@ export const processBill = inngest.createFunction(
 
       return db
         .insert(billDbSchema)
-        .values(billData)
+        .values({ ...billData, id: crypto.randomUUID().toString() })
         .onConflictDoUpdate({
           set: billData,
           target: [
@@ -296,14 +297,19 @@ export const processBill = inngest.createFunction(
             billDbSchema.congress,
           ],
         })
-        .returning();
+        .returning({ id: billDbSchema.id });
+    });
+
+    // make sure to create a new event for the embeddings
+    await step.sendEvent('process-embeddings', {
+      name: 'bill.embed',
+      data: {
+        id: storeInDb?.[0].id,
+      },
     });
 
     return {
-      billInfo: info,
       db: storeInDb?.[0].id,
-      summary: summarizeBill,
-      sponsors: sponsors.data,
     };
   },
 );
