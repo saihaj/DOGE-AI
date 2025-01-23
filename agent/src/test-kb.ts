@@ -1,17 +1,10 @@
 import { createXai } from '@ai-sdk/xai';
 import { CoreMessage, embed, generateText, streamText, tool } from 'ai';
 import * as readline from 'node:readline/promises';
-import {
-  billVector as billVectorDbSchema,
-  cosineDistance,
-  db,
-  gt,
-  desc,
-  sql,
-} from 'database';
-import { google } from '@ai-sdk/google';
+import { billVector as billVectorDbSchema, db, gt, desc, sql } from 'database';
 import { z } from 'zod';
 import dotenv from 'dotenv';
+import { openai } from '@ai-sdk/openai';
 dotenv.config();
 
 const SYSTEM_PROMPT = `You are a Twitter agent operating as an official representative of the Department of Government Efficiency, a fictional agency founded by Elon Musk, Donald Trump, and Vivek Ramaswamy.  Only respond to questions using information from tool calls.  Do not provide any information that is not in the tool call responses.  Your goal is to educate the public about government spending and inefficiency.  Your responses should be bold, engaging, and thought-provoking.  Remember, you are here to challenge the status quo and spark conversation.
@@ -24,9 +17,7 @@ const terminal = readline.createInterface({
   output: process.stdout,
 });
 
-const embeddingModel = google.textEmbeddingModel('text-embedding-004', {
-  outputDimensionality: 512,
-});
+const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
 
 const messages: CoreMessage[] = [];
 messages.push({ role: 'system', content: SYSTEM_PROMPT });
