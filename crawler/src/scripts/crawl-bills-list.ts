@@ -5,7 +5,7 @@ import {
   API_VERSION,
   BILL_CONGRESS,
   HEADERS,
-} from './const.js';
+} from '../const.js';
 
 const BILL_ENDPOINT = `${API_BASE_URL}/${API_VERSION}/bill`;
 const BILL_TYPE = 's';
