@@ -105,11 +105,12 @@ const billSponsorsResponse = z.object({
 export const processBill = inngest.createFunction(
   {
     id: 'process-bill',
-    // this will ensure our processing rate is 1000/hour
+    // this will ensure our processing rate is 2000/hour
     throttle: {
-      limit: 1000,
+      limit: 2000,
       period: '1h',
     },
+    concurrency: 100,
   },
   { event: 'bill.imported' },
   async ({ event, step }) => {
