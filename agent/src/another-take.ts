@@ -78,10 +78,12 @@ Sounds good, but can a new federal bank really deliver without turning into a bu
 Who loses? You, the taxpayer, footing the bill for potential mismanagement.
 
 7/ Is this the solution we need, or just another government money pit?
+
+Source: https://www.congress.gov/118/bills/hr4052/BILLS-118hr4052ih.htm
 `;
 
 const MESSAGE =
-  'Here is the tweet format and example of a bill. Apply this same format to all bills I give you. The commentary should be custom to the bill but overall structure and layout should be the same. Tag the official twitter handle of the bill sponsor at the end of the thread.';
+  'Here is the tweet format and example of a bill. Apply this same format to all bills I give you. The commentary should be custom to the bill but overall structure and layout should be the same. Tag the official twitter handle of the bill sponsor at the end of the thread. Also include the source link at the end of the thread.';
 
 const xAi = createXai({});
 
