@@ -300,6 +300,14 @@ export const processBill = inngest.createFunction(
         .returning({ id: billDbSchema.id });
     });
 
+    // make sure to create a new event for the embeddings
+    await step.sendEvent('process-embeddings', {
+      name: 'bill.embed',
+      data: {
+        id: storeInDb?.[0].id,
+      },
+    });
+
     return {
       db: storeInDb?.[0].id,
     };
