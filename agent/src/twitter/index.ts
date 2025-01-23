@@ -4,9 +4,10 @@ import { newDogeXbt } from '../mixed-2';
 import shuffle from 'lodash-es/shuffle';
 import { createXai } from '@ai-sdk/xai';
 import dotenv from 'dotenv';
-import { generateText } from 'ai';
+import { CoreMessage, generateText } from 'ai';
 import { writeFile } from 'node:fs/promises';
 import { bill as billDbSchema, db, eq } from 'database';
+import * as readline from 'node:readline/promises';
 dotenv.config();
 
 const MAX_TWEET_LENGTH = 280;
@@ -76,6 +77,33 @@ Mixed critiques government inefficiency, misplaced priorities, and systemic cont
 Topic to discuss: {{billDetails}}
 `;
 
+const TWITTER_REPLY_TEMPLATE = `# Guidelines for Replies:
+- No Pleasantries: Do not use phrases like "Thanks!" or "Glad you asked.". Maintain a professional, fact-driven tone.
+- No Reiteration: Do not restate the user's question in your response. Begin directly with the information or argument.
+- Concise Responses: Replies should be short and to the point, avoiding fluff or repetition.
+- Stay on Topic: Address the specific issue raised by the user.
+- No need to include the source if it already was provided earlier.
+- Be punchy and engaging: Use strong, clear language to make your point effectively.
+
+---
+
+# Examples:
+#### Tweet:
+"The government wants to shuffle around Homeland Security like it's a game of bureaucratic musical chairs. They're renaming ICE and splitting off investigations into a new entity, but at what cost? More red tape and less action against real threats. It's time to focus on results, not restructuring. Source: https://www.congress.gov/118/bills/hr9896/BILLS-118hr9896ih.htm"
+
+User: Splitting HSI from ICE—how much will it really cost us?
+Assistant: Restructuring sounds fancy, but they haven’t told us the price tag. Time to demand transparency before taxpayers foot the bill.
+
+User: How do we stop the HSI split from becoming a money pit?
+Assistant: Demand a detailed cost breakdown and clear goals now. Bureaucratic shuffles waste taxpayer money without accountability.
+
+User: Will renaming ICE just be a PR move or actually fix shit?
+Assistant: Renaming ICE sounds like a PR stunt. We need real reforms, not rebranding to distract from deeper issues.
+
+User: How will HSI maintain its edge after splitting from ICE?
+Assistant: Without clear funding and a solid plan, HSI risks losing its edge. Transparency on the game plan is critical.
+`;
+
 // const TWITTER_POST_TEMPLATE = `
 // # About {{agentName}} (@{{twitterUserName}}):
 // {{bio}}
@@ -92,6 +120,13 @@ Topic to discuss: {{billDetails}}
 // Your response should not contain any questions. Brief, concise statements only. The total character count MUST be less than {{maxTweetLength}}. No emojis. Use \\n\\n (double spaces) between statements if there are multiple statements in your response.`;
 
 const postTemplate = Handlebars.compile(TWITTER_POST_TEMPLATE);
+const messages: CoreMessage[] = [];
+messages.push({ role: 'system', content: newDogeXbt.system });
+
+const terminal = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
 
 async function main() {
   // await twitter.login(
@@ -102,7 +137,7 @@ async function main() {
   // );
 
   const bill = await db.query.bill.findFirst({
-    where: eq(billDbSchema.number, 9896),
+    where: eq(billDbSchema.number, 7571),
   });
 
   const INPUT_BILL = `Bill ${bill.title} introduced by ${bill.sponsorFirstName} ${bill.sponsorLastName} on ${bill.introducedDate}. Summary: ${bill.summary}. Funding: ${bill.funding}. Spending: ${bill.spending}. Impact: ${bill.impact}.  More info: ${bill.htmlVersionUrl}`;
@@ -124,53 +159,30 @@ async function main() {
 
   writeFile('prompt.txt', post);
 
-  const r1 = await generateText({
+  messages.push({ role: 'user', content: post });
+  const result = await generateText({
     model: xAi('grok-2-1212'),
-    messages: [
-      {
-        role: 'system',
-        content: newDogeXbt.system,
-      },
-      {
-        role: 'user',
-        content: post,
-      },
-    ],
+    messages,
   });
 
-  console.log('\n\nTweet:\n', r1.text);
+  console.log(`Tweet: ${result.text}\n`);
 
-  const reply = 'Splitting HSI from ICE - how much will it really cost us?';
-  const r2 = await generateText({
-    model: xAi('grok-2-1212'),
-    messages: [
-      {
-        role: 'system',
-        content: newDogeXbt.system,
-      },
-      {
-        role: 'user',
-        content: post,
-      },
-      {
-        role: 'assistant',
-        content: r1.text,
-      },
-      {
-        role: 'user',
-        content: reply,
-      },
-    ],
-  });
+  messages.push({ role: 'system', content: TWITTER_REPLY_TEMPLATE });
 
-  console.log('\n\nReply:\n', reply);
-  console.log('\n\Respnse:\n', r2.text);
-  // const twitterResult = await twitter.sendTweet(result.text);
-  // if (twitterResult.ok) {
-  //   console.log('Tweet sent');
-  // } else {
-  //   console.log('Tweet failed to send');
-  // }
+  while (true) {
+    const userInput = await terminal.question('You: ');
+    messages.push({ role: 'user', content: userInput });
+
+    const result = await generateText({
+      model: xAi('grok-2-1212'),
+      messages,
+    });
+    const fullResponse = result.text;
+    process.stdout.write('\DOGEai: ');
+    process.stdout.write(fullResponse);
+    process.stdout.write('\n\n');
+    messages.push({ role: 'assistant', content: fullResponse });
+  }
 }
 
 main().catch(console.error);
