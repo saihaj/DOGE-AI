@@ -61,6 +61,22 @@ export const embedBill = inngest.createFunction(
       throw new NonRetriableError(`Bill ${bill.id} not found`);
     }
 
+    /**
+     * The only reason one would trigger to re-embed is if the bill content has changed.
+     * This is what makes the job idempotent.
+     * We don't want to add infinite embeddings for the same bill.
+     * So we remove the existing embeddings before adding new ones.
+     */
+    await step.run('remove-existing-embeddings', async () => {
+      const result = await db
+        .delete(billVectorDbSchema)
+        .where(eq(billVectorDbSchema.bill, bill.id));
+
+      console.log(
+        `removed ${result.rowsAffected} existing embeddings for bill ${bill.id}`,
+      );
+    });
+
     const embeddingsForRaw = await step.run(
       'embeddings-for-bill-text',
       async () => {
