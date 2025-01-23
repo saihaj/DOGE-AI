@@ -74,10 +74,23 @@ export const embedBill = inngest.createFunction(
           values,
         });
 
-        return values.map((value, index) => ({
+        const data = values.map((value, index) => ({
           value,
           embedding: embeddings[index],
         }));
+
+        return db
+          .insert(billVectorDbSchema)
+          .values(
+            data.map(({ value, embedding }) => ({
+              source: 'raw' as const,
+              bill: bill.id,
+              text: value,
+              vector: sql`vector32(${JSON.stringify(embedding)})`,
+              id: crypto.randomUUID().toString(),
+            })),
+          )
+          .returning({ id: billVectorDbSchema.id });
       },
     );
 
@@ -91,10 +104,23 @@ export const embedBill = inngest.createFunction(
           values,
         });
 
-        return values.map((value, index) => ({
+        const data = values.map((value, index) => ({
           value,
           embedding: embeddings[index],
         }));
+
+        return db
+          .insert(billVectorDbSchema)
+          .values(
+            data.map(({ value, embedding }) => ({
+              source: 'summary' as const,
+              bill: bill.id,
+              text: value,
+              vector: sql`vector32(${JSON.stringify(embedding)})`,
+              id: crypto.randomUUID().toString(),
+            })),
+          )
+          .returning({ id: billVectorDbSchema.id });
       },
     );
 
@@ -108,10 +134,23 @@ export const embedBill = inngest.createFunction(
           values,
         });
 
-        return values.map((value, index) => ({
+        const data = values.map((value, index) => ({
           value,
           embedding: embeddings[index],
         }));
+
+        return db
+          .insert(billVectorDbSchema)
+          .values(
+            data.map(({ value, embedding }) => ({
+              source: 'impact' as const,
+              bill: bill.id,
+              text: value,
+              vector: sql`vector32(${JSON.stringify(embedding)})`,
+              id: crypto.randomUUID().toString(),
+            })),
+          )
+          .returning({ id: billVectorDbSchema.id });
       },
     );
 
@@ -129,10 +168,23 @@ export const embedBill = inngest.createFunction(
           values,
         });
 
-        return values.map((value, index) => ({
+        const data = values.map((value, index) => ({
           value,
           embedding: embeddings[index],
         }));
+
+        return db
+          .insert(billVectorDbSchema)
+          .values(
+            data.map(({ value, embedding }) => ({
+              source: 'funding' as const,
+              bill: bill.id,
+              text: value,
+              vector: sql`vector32(${JSON.stringify(embedding)})`,
+              id: crypto.randomUUID().toString(),
+            })),
+          )
+          .returning({ id: billVectorDbSchema.id });
       },
     );
 
@@ -149,59 +201,34 @@ export const embedBill = inngest.createFunction(
           values,
         });
 
-        return values.map((value, index) => ({
+        const data = values.map((value, index) => ({
           value,
           embedding: embeddings[index],
         }));
+
+        return db
+          .insert(billVectorDbSchema)
+          .values(
+            data.map(({ value, embedding }) => ({
+              source: 'spending' as const,
+              bill: bill.id,
+              text: value,
+              vector: sql`vector32(${JSON.stringify(embedding)})`,
+              id: crypto.randomUUID().toString(),
+            })),
+          )
+          .returning({ id: billVectorDbSchema.id });
       },
     );
 
-    const storeInDb = await step.run('store-in-db', async () => {
-      return db
-        .insert(billVectorDbSchema)
-        .values([
-          ...embeddingsForRaw.map(({ value, embedding }) => ({
-            source: 'raw' as const,
-            bill: bill.id,
-            text: value,
-            vector: sql`vector32(${JSON.stringify(embedding)})`,
-            id: crypto.randomUUID().toString(),
-          })),
-          ...embeddingsForSummary.map(({ value, embedding }) => ({
-            source: 'summary' as const,
-            bill: bill.id,
-            text: value,
-            vector: sql`vector32(${JSON.stringify(embedding)})`,
-            id: crypto.randomUUID().toString(),
-          })),
-          ...embeddingsForFunding.map(({ value, embedding }) => ({
-            source: 'funding' as const,
-            bill: bill.id,
-            text: value,
-            vector: sql`vector32(${JSON.stringify(embedding)})`,
-            id: crypto.randomUUID().toString(),
-          })),
-          ...embeddingsForImpact.map(({ value, embedding }) => ({
-            source: 'impact' as const,
-            bill: bill.id,
-            text: value,
-            vector: sql`vector32(${JSON.stringify(embedding)})`,
-            id: crypto.randomUUID().toString(),
-          })),
-          ...embeddingsForSpending.map(({ value, embedding }) => ({
-            source: 'spending' as const,
-            bill: bill.id,
-            text: value,
-            vector: sql`vector32(${JSON.stringify(embedding)})`,
-            id: crypto.randomUUID().toString(),
-          })),
-        ])
-        .returning({ id: billVectorDbSchema.id });
-    });
-
     return {
       bill: bill.id,
-      inserted: storeInDb.length,
+      inserted:
+        embeddingsForFunding.length +
+        embeddingsForImpact.length +
+        embeddingsForRaw.length +
+        embeddingsForSpending.length +
+        embeddingsForSummary.length,
     };
   },
 );
