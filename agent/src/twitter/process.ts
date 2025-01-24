@@ -17,6 +17,17 @@ export const processTweets = inngest.createFunction(
   async ({ event, step }) => {
     // This is where we can try to filter out any unwanted tweets
 
+    const shouldEngage = await step.run('should-engage', () => {
+      // We can add any logic here to determine if we should engage with the tweet
+      // For example, we can check if the tweet is a question, or if it contains a specific keyword
+      // For now, we will engage with all tweets
+      return true;
+    });
+
+    if (!shouldEngage) {
+      throw new NonRetriableError(REJECTION_REASON.SPAM_DETECTED_DO_NOT_ENGAGE);
+    }
+
     // For stage one rollout we want to focus on processing replies in a thread it gets
     if (event.data?.inReplyToUsername === TWITTER_USERNAME) {
       const mainTweet = await getTweet({ id: event.data.inReplyToId }).catch(
@@ -33,6 +44,7 @@ export const processTweets = inngest.createFunction(
           data: {
             tweetId: event.data.id,
             action: 'reply',
+            tweetUrl: event.data.url,
           },
         });
       } else {

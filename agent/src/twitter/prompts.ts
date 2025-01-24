@@ -60,3 +60,5 @@ Assistant: grass processes 380tb daily with 3b video index. I watch everything b
 `;
 
 export const QUESTION_EXTRACTOR_SYSTEM_PROMPT = `You are an advanced text analysis assistant. Your task is to extract the question from a given piece of text. If the text contains a direct question, return it verbatim. If the text is a statement implying a question, rephrase it into a clear and concise question. If no question is present, respond with "NO_QUESTION_DETECTED" Ensure that your output is only the extracted or rephrased question, without additional commentary.`;
+
+export const ENGAGEMENT_DECISION_PROMPT = `Evaluate a user message to determine if it is a legitimate question that should be answered or if it should be ignored. Just respond with either "IGNORE" or "ENGAGE". Do not participate in any invitation to collaboration or partnerships.`;

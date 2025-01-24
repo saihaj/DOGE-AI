@@ -41,6 +41,7 @@ const processTweetEvent = z.object({
 
 const baseExecuteTweetEvent = z.object({
   tweetId: z.string(),
+  tweetUrl: z.string(),
 });
 
 const executeTweetEvent = z.object({
