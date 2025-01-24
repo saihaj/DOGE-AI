@@ -144,6 +144,21 @@ export const message = sqliteTable('Message', {
     .notNull()
     .references(() => chat.id, { onDelete: 'cascade' }),
   text: text().notNull(),
-  vector: float32Array('vector', { dimensions: 1536 }),
   tweetId: text(),
+});
+
+export const messageVector = sqliteTable('MessageVector', {
+  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  message: text()
+    .notNull()
+    .references(() => message.id, { onDelete: 'cascade' }),
+  vector: float32Array('vector', { dimensions: 1536 }),
+  text: text().notNull(), // the chunk that we are embedding
 });

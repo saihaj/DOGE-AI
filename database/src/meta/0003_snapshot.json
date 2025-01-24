@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "565e889a-6bd5-4a7e-a6a5-11df6a10accf",
+  "id": "cc5d0647-d0ab-401f-a199-f5ddae922d06",
   "prevId": "970a57db-11c2-4294-8612-d414ee2f19a3",
   "tables": {
     "Bill": {
@@ -378,13 +378,6 @@
           "notNull": true,
           "autoincrement": false
         },
-        "vector": {
-          "name": "vector",
-          "type": "F32_BLOB(1536)",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "tweetId": {
           "name": "tweetId",
           "type": "text",
@@ -401,6 +394,74 @@
           "tableTo": "Chat",
           "columnsFrom": [
             "chat"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "MessageVector": {
+      "name": "MessageVector",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(CURRENT_TIMESTAMP)"
+        },
+        "message": {
+          "name": "message",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "vector": {
+          "name": "vector",
+          "type": "F32_BLOB(1536)",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "text": {
+          "name": "text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "MessageVector_message_Message_id_fk": {
+          "name": "MessageVector_message_Message_id_fk",
+          "tableFrom": "MessageVector",
+          "tableTo": "Message",
+          "columnsFrom": [
+            "message"
           ],
           "columnsTo": [
             "id"
