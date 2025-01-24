@@ -98,3 +98,52 @@ export const billVector = sqliteTable('BillVector', {
     enum: ['raw', 'summary', 'impact', 'funding', 'spending'],
   }).notNull(),
 });
+
+export const user = sqliteTable('User', {
+  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  twitterId: text().notNull(),
+});
+
+export const chat = sqliteTable('Chat', {
+  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  user: text()
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  /**
+   * This would be tweetId for the reply user has made.
+   * Essential the first tweet that started conversation with the bot
+   */
+  tweetId: text().unique(),
+});
+
+export const message = sqliteTable('Message', {
+  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  role: text({ enum: ['user', 'assistant'] }).notNull(),
+  chat: text()
+    .notNull()
+    .references(() => chat.id, { onDelete: 'cascade' }),
+  text: text().notNull(),
+  vector: float32Array('vector', { dimensions: 1536 }),
+  tweetId: text(),
+});
