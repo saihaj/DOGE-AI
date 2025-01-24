@@ -34,10 +34,10 @@ export const ingestTweets = inngest.createFunction(
      *
      * Learn more about syntax here: https://github.com/igorbrigadir/twitter-advanced-search
      */
-    const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} within_time:1h`;
+    const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} within_time:1d`;
     API.searchParams.set('query', searchQuery);
     API.searchParams.set('queryType', 'Latest');
-    console.log(API.toString());
+
     let tweets: z.infer<typeof SearchResultResponseSchema>['tweets'] = [];
     let cursor = '';
     API.searchParams.set('cursor', cursor);
@@ -52,7 +52,7 @@ export const ingestTweets = inngest.createFunction(
       const data = await response.json();
 
       const result = await SearchResultResponseSchema.safeParseAsync(data);
-      console.log(result.error);
+
       if (result.success === false) {
         throw new Error(result.error.errors.join(', '));
       }

@@ -10,6 +10,13 @@ import {
 import { inngest, TweetResponse } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import { getTweet } from './helpers.ts';
+import { createOpenAI } from '@ai-sdk/openai';
+import { generateText } from 'ai';
+import { ENGAGEMENT_DECISION_PROMPT } from './prompts.ts';
+
+const openai = createOpenAI({
+  compatibility: 'strict',
+});
 
 /**
  * Fetches tweets from the Twitter API and queues them for processing.
@@ -42,6 +49,10 @@ export const processTweets = inngest.createFunction(
 
       console.log('Failed to process tweet:', error.message);
     },
+    throttle: {
+      limit: 10,
+      period: '1m',
+    },
   },
   { event: 'tweet.process' },
   async ({ event, step }) => {
@@ -58,11 +69,25 @@ export const processTweets = inngest.createFunction(
       // basically we are narrowing down to 1 level replies so if a bot tweet got a reply or not
       if (mainTweet.author.id === event.data.inReplyToUserId) {
         // deter scammers
-        const shouldEngage = await step.run('should-engage', () => {
-          // We can add any logic here to determine if we should engage with the tweet
-          // For example, we can check if the tweet is a question, or if it contains a specific keyword
-          // For now, we will engage with all tweets
-          return true;
+        const shouldEngage = await step.run('should-engage', async () => {
+          const result = await generateText({
+            model: openai('gpt-4o'),
+            temperature: 0,
+            messages: [
+              { role: 'system', content: ENGAGEMENT_DECISION_PROMPT },
+              {
+                role: 'assistant',
+                content: mainTweet.text,
+              },
+              {
+                role: 'user',
+                content: `Now give me a determination for this tweet: ${event.data.text}`,
+              },
+            ],
+          });
+
+          const decision = result.text.toLowerCase().trim();
+          return decision === 'engage';
         });
 
         if (!shouldEngage) {
