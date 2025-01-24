@@ -144,7 +144,7 @@ export const message = sqliteTable('Message', {
     .notNull()
     .references(() => chat.id, { onDelete: 'cascade' }),
   text: text().notNull(),
-  tweetId: text(),
+  tweetId: text().unique(),
 });
 
 export const messageVector = sqliteTable('MessageVector', {

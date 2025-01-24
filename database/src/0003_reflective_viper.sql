@@ -19,6 +19,7 @@ CREATE TABLE `Message` (
 	FOREIGN KEY (`chat`) REFERENCES `Chat`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `Message_tweetId_unique` ON `Message` (`tweetId`);--> statement-breakpoint
 CREATE TABLE `MessageVector` (
 	`id` text PRIMARY KEY NOT NULL,
 	`createdAt` numeric DEFAULT (CURRENT_TIMESTAMP) NOT NULL,

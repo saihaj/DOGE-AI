@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "104b4fd8-b747-43f7-b97d-d1a628cc99b7",
+  "id": "a294154e-3d90-4ef9-bfa7-2f07aa229036",
   "prevId": "970a57db-11c2-4294-8612-d414ee2f19a3",
   "tables": {
     "Bill": {
@@ -386,7 +386,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "Message_tweetId_unique": {
+          "name": "Message_tweetId_unique",
+          "columns": [
+            "tweetId"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {
         "Message_chat_Chat_id_fk": {
           "name": "Message_chat_Chat_id_fk",
