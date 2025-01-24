@@ -3,6 +3,7 @@
     "paths": {
       "database": ["../database/src"]
     },
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": false,
     "allowImportingTsExtensions": true,
@@ -21,7 +22,6 @@
     "strict": false,
     "noEmit": true,
     "module": "esnext",
-    "moduleResolution": "node",
     "isolatedModules": true,
     "incremental": true
   },
