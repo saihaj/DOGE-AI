@@ -7,7 +7,7 @@ export const API_KEY = (() => {
   }
   return process.env.API_KEY;
 })();
-export const BILL_CONGRESS = '119';
+export const BILL_CONGRESS = '118';
 export const HEADERS = {
   'Content-Type': 'application/json',
   'User-Agent': `@dogeai/crawler@${version}`,
