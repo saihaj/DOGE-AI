@@ -39,8 +39,25 @@ const processTweetEvent = z.object({
   data: TweetResponse,
 }) satisfies LiteralZodEventSchema;
 
+const baseExecuteTweetEvent = z.object({
+  tweetId: z.string(),
+});
+
+const executeTweetEvent = z.object({
+  name: z.literal('tweet.execute'),
+  data: z.union([
+    baseExecuteTweetEvent.extend({ action: z.literal('like') }),
+    baseExecuteTweetEvent.extend({ action: z.literal('retweet') }),
+    baseExecuteTweetEvent.extend({
+      action: z.literal('quote'),
+      text: z.string().nullish(),
+    }),
+    baseExecuteTweetEvent.extend({ action: z.literal('reply') }),
+  ]),
+}) satisfies LiteralZodEventSchema;
+
 // Create a client to send and receive events
 export const inngest = new Inngest({
   id: '@dogexbt/agent',
-  schemas: new EventSchemas().fromZod([processTweetEvent]),
+  schemas: new EventSchemas().fromZod([processTweetEvent, executeTweetEvent]),
 });
