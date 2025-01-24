@@ -97,7 +97,7 @@ export const processTweets = inngest.createFunction(
         }
 
         // now we can send to execution job
-        step.sendEvent('fire-off-tweet', {
+        await step.sendEvent('fire-off-tweet', {
           name: 'tweet.execute',
           data: {
             tweetId: event.data.id,
