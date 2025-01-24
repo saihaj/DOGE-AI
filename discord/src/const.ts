@@ -36,4 +36,5 @@ export const REJECTED_CHANNEL_ID = (() => {
   }
   return process.env.REJECTED_CHANNEL_ID;
 })();
+
 export const MAX_TWEET_LENGTH = 280;

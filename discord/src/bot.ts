@@ -13,6 +13,7 @@ import {
 } from 'discord.js';
 import { sendInngestRequest } from './utils';
 import { MAX_TWEET_LENGTH } from './const';
+
 const client: Client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
