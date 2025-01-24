@@ -6,7 +6,7 @@ import { createXai } from '@ai-sdk/xai';
 import dotenv from 'dotenv';
 import { CoreMessage, generateText } from 'ai';
 import { writeFile } from 'node:fs/promises';
-import { bill as billDbSchema, db, eq } from 'database';
+import { and, bill as billDbSchema, db, eq } from 'database';
 import * as readline from 'node:readline/promises';
 dotenv.config();
 
@@ -134,15 +134,15 @@ const terminal = readline.createInterface({
 });
 
 async function main() {
-  // await twitter.login(
-  //   TWITTER_USERNAME,
-  //   TWITTER_PASSWORD,
-  //   TWITTER_EMAIL,
-  //   TWITTER_2FA_SECRET,
-  // );
+  await twitter.login(
+    TWITTER_USERNAME,
+    TWITTER_PASSWORD,
+    TWITTER_EMAIL,
+    TWITTER_2FA_SECRET,
+  );
 
   const bill = await db.query.bill.findFirst({
-    where: eq(billDbSchema.number, 10393),
+    where: and(eq(billDbSchema.number, 10393)),
   });
 
   const INPUT_BILL = `Bill ${bill.title} introduced by ${bill.sponsorFirstName} ${bill.sponsorLastName} on ${bill.introducedDate}. Summary: ${bill.summary}. Funding: ${bill.funding}. Spending: ${bill.spending}. Impact: ${bill.impact}.  More info: ${bill.htmlVersionUrl}`;
@@ -162,35 +162,53 @@ async function main() {
     maxTweetLength: MAX_TWEET_LENGTH,
   });
 
-  writeFile('prompt.txt', post);
+  // writeFile('prompt.txt', post);
 
   messages.push({ role: 'system', content: newDogeXbt.system });
   messages.push({ role: 'user', content: post });
+  // const result = await generateText({
+  //   model: xAi('grok-2-1212'),
+  //   messages,
+  // });
+
+  // console.log(`Tweet: ${result.text}\n`);
+
+  messages.push({ role: 'user', content: TWITTER_REPLY_TEMPLATE });
+  // https://x.com/dogeai_gov/status/1882584768866570575
+  const tweet = await twitter.getTweet('1882584768866570575');
+  messages.push({
+    role: 'user',
+    content: tweet.text.replace('@dogeai_gov', ''),
+  });
+  console.log('User: ', tweet.text);
+
   const result = await generateText({
     model: xAi('grok-2-1212'),
     messages,
+    temperature: 0,
+    seed: Math.floor(Math.random() * 10000),
   });
 
-  console.log(`Tweet: ${result.text}\n`);
+  console.log('DOGEai: ', result.text);
 
-  messages.push({ role: 'user', content: TWITTER_REPLY_TEMPLATE });
+  await twitter.sendTweet(result.text, '1882242650360983719');
 
-  while (true) {
-    const userInput = await terminal.question('You: ');
-    messages.push({ role: 'user', content: userInput });
+  // while (true) {
+  //   const userInput = await terminal.question('You: ');
+  //   messages.push({ role: 'user', content: userInput });
 
-    const result = await generateText({
-      model: xAi('grok-2-1212'),
-      messages,
-      temperature: 0,
-      seed: Math.floor(Math.random() * 10000),
-    });
-    const fullResponse = result.text;
-    process.stdout.write('\DOGEai: ');
-    process.stdout.write(fullResponse);
-    process.stdout.write('\n\n');
-    messages.push({ role: 'assistant', content: fullResponse });
-  }
+  //   const result = await generateText({
+  //     model: xAi('grok-2-1212'),
+  //     messages,
+  //     temperature: 0,
+  //     seed: Math.floor(Math.random() * 10000),
+  //   });
+  //   const fullResponse = result.text;
+  //   process.stdout.write('\DOGEai: ');
+  //   process.stdout.write(fullResponse);
+  //   process.stdout.write('\n\n');
+  //   messages.push({ role: 'assistant', content: fullResponse });
+  // }
 }
 
 main().catch(console.error);
