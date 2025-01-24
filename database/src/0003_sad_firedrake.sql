@@ -35,3 +35,5 @@ CREATE TABLE `User` (
 	`updatedAt` numeric DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`twitterId` text NOT NULL
 );
+--> statement-breakpoint
+CREATE UNIQUE INDEX `User_twitterId_unique` ON `User` (`twitterId`);

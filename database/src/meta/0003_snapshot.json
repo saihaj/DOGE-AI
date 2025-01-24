@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "cc5d0647-d0ab-401f-a199-f5ddae922d06",
+  "id": "104b4fd8-b747-43f7-b97d-d1a628cc99b7",
   "prevId": "970a57db-11c2-4294-8612-d414ee2f19a3",
   "tables": {
     "Bill": {
@@ -576,7 +576,15 @@
           "autoincrement": false
         }
       },
-      "indexes": {},
+      "indexes": {
+        "User_twitterId_unique": {
+          "name": "User_twitterId_unique",
+          "columns": [
+            "twitterId"
+          ],
+          "isUnique": true
+        }
+      },
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},

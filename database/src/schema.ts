@@ -108,7 +108,7 @@ export const user = sqliteTable('User', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  twitterId: text().notNull(),
+  twitterId: text().notNull().unique(),
 });
 
 export const chat = sqliteTable('Chat', {
