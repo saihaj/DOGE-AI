@@ -3,12 +3,16 @@ import Fastify from 'fastify';
 import { inngest } from './inngest';
 import { ingestTweets } from './twitter/ingest';
 import { processTweets } from './twitter/process';
+import { executeTweets } from './twitter/execute';
 
 const fastify = Fastify();
 
 fastify.route({
   method: ['GET', 'POST', 'PUT'],
-  handler: serve({ client: inngest, functions: [ingestTweets, processTweets] }),
+  handler: serve({
+    client: inngest,
+    functions: [ingestTweets, processTweets, executeTweets],
+  }),
   url: '/api/inngest',
 });
 
