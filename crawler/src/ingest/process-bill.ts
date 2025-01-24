@@ -2,12 +2,9 @@ import { API_KEY, HEADERS } from '../const';
 import { inngest } from './client';
 import { z } from 'zod';
 import { generateObject } from 'ai';
-import OpenAI from 'openai';
-import { zodResponseFormat } from 'openai/helpers/zod';
+import { google } from '@ai-sdk/google';
 import { NonRetriableError } from 'inngest';
 import { db, bill as billDbSchema } from 'database';
-
-const openai = new OpenAI();
 
 const billInfoResponse = z.object({
   request: z.object({
@@ -220,17 +217,14 @@ export const processBill = inngest.createFunction(
     });
 
     const summarizeBill = await step.run('summarize-bill', async () => {
-      const result = await openai.beta.chat.completions.parse({
-        model: 'gpt-4o-mini',
-        response_format: zodResponseFormat(
-          z.object({
-            summary: z.string(),
-            impact: z.string(),
-            fundingAnalysis: z.string(),
-            spendingAnalysis: z.string(),
-          }),
-          'bill_summary',
-        ),
+      const result = await generateObject({
+        model: google('gemini-1.5-flash-8b'),
+        schema: z.object({
+          summary: z.string(),
+          impact: z.string(),
+          fundingAnalysis: z.string(),
+          spendingAnalysis: z.string(),
+        }),
         messages: [
           {
             role: 'system',
@@ -260,7 +254,7 @@ export const processBill = inngest.createFunction(
         ],
       });
 
-      return result.choices[0].message.parsed;
+      return result.object;
     });
 
     const storeInDb = await step.run('store-in-db', async () => {
