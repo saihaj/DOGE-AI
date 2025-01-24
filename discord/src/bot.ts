@@ -94,9 +94,11 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
   else if (interaction.isModalSubmit()) {
     const modalInteraction = interaction as ModalSubmitInteraction;
     try {
-      const [modalType, itemId, encodedUrl] =
+      const [modalType, modalKeyword, itemId, ...rest] =
         modalInteraction.customId.split('_');
-      if (modalType === 'quote' && encodedUrl) {
+      if (modalType === 'quote' && modalKeyword === 'modal') {
+        const encodedUrl = rest.join('_');
+
         const itemUrl = decodeURIComponent(encodedUrl);
         const quoteText =
           modalInteraction.fields.getTextInputValue('quote_text');

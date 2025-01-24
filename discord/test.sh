@@ -1,5 +1,5 @@
-# Note for testing this is hard coded to localhost:3000
-SERVER_URL="http://localhost:3000"
+# Note for testing this is hard coded to localhost:2053
+SERVER_URL="http://localhost:2053"
 
 # Approved
 curl -X POST \

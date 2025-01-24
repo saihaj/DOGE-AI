@@ -31,12 +31,6 @@ importers:
       database:
         specifier: workspace:^
         version: link:../database
-      discord.js:
-        specifier: ^14.17.3
-        version: 14.17.3
-      discordx:
-        specifier: ^11.12.2
-        version: 11.12.2(discord.js@14.17.3)
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
@@ -47,8 +41,8 @@ importers:
         specifier: ^4.7.8
         version: 4.7.8
       inngest:
-        specifier: ^3.28.0
-        version: 3.30.0(encoding@0.1.13)(express@4.21.1)(fastify@5.2.1)(next@15.1.4(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(typescript@5.7.3)
+        specifier: ^3.30.0
+        version: 3.30.0(encoding@0.1.13)(express@4.21.2)(fastify@5.2.1)(next@15.1.4(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(typescript@5.7.3)
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -6481,13 +6475,6 @@ packages:
     engines: { node: '>=18.0.0' }
     hasBin: true
 
-  tsyringe@4.8.0:
-    resolution:
-      {
-        integrity: sha512-YB1FG+axdxADa3ncEtRnQCFq/M0lALGLxSZeVNbTU8NqhOVc51nnv2CISTcvc1kyv6EGPtXVr0v6lWeDxiijOA==,
-      }
-    engines: { node: '>= 6.0.0' }
-
   tunnel-agent@0.6.0:
     resolution:
       {
@@ -10741,10 +10728,6 @@ snapshots:
       get-tsconfig: 4.9.0
     optionalDependencies:
       fsevents: 2.3.3
-
-  tsyringe@4.8.0:
-    dependencies:
-      tslib: 1.9.3
 
   tunnel-agent@0.6.0:
     dependencies:

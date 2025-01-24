@@ -28,6 +28,12 @@ export const TWITTER_2FA_SECRET = (() => {
   }
   return process.env.TWITTER_2FA_SECRET;
 })();
+export const DISCORD_SERVER_URL = (() => {
+  if (!process.env.DISCORD_SERVER_URL) {
+    throw new Error('DISCORD_SERVER_URL is not set');
+  }
+  return process.env.DISCORD_SERVER_URL;
+})();
 export const MAX_TWEET_LENGTH = 280;
 export const TWITTER_API_BASE_URL = 'https://api.twitterapi.io';
 /**
