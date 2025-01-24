@@ -1,4 +1,4 @@
-import { REJECTION_REASON } from '../const';
+import { DISCORD_SERVER_URL, REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import { getTweet } from './helpers.ts';
@@ -20,9 +20,30 @@ const xAi = createXai({});
 export const executeTweets = inngest.createFunction(
   {
     id: 'execute-tweets',
-    onFailure: ({ error }) => {
-      // TODO: send to discord
-      console.log('Failed to process tweet', error.message);
+    onFailure: async ({ event, error }) => {
+      const id = event?.data?.event?.data?.tweetId;
+      // const url = event?.data?.event?.data?.url;
+
+      // if (!id || !url) {
+      //   console.error('Failed to extract tweet ID or URL from event data');
+      //   return;
+      // }
+
+      // try {
+      //   await fetch(`${DISCORD_SERVER_URL}/rejected`, {
+      //     method: 'POST',
+      //     headers: { 'Content-Type': 'application/json' },
+      //     body: JSON.stringify({
+      //       id,
+      //       url,
+      //       reason: error.message,
+      //     }),
+      //   });
+      // } catch (err) {
+      //   console.error('Failed to send rejection to Discord:', err);
+      // }
+
+      console.log('Failed to process tweet:', error.message);
     },
   },
   { event: 'tweet.execute' },
