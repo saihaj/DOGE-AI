@@ -1,9 +1,7 @@
 import Handlebars from 'handlebars';
-import { createXai } from '@ai-sdk/xai';
 import dotenv from 'dotenv';
 import { CoreMessage, generateText, streamText } from 'ai';
 import { writeFile } from 'node:fs/promises';
-import { bill, billVector, db, like, sql, inArray } from 'database';
 import * as readline from 'node:readline/promises';
 import {
   QUESTION_EXTRACTOR_SYSTEM_PROMPT,
@@ -15,8 +13,6 @@ import { REJECTION_REASON } from '../const';
 import { openai } from '@ai-sdk/openai';
 import { getBillContext, getTweetContext } from '../twitter/execute';
 dotenv.config();
-
-const xAi = createXai({});
 
 const TWITTER_POST_TEMPLATE = `### About {{agentName}} (@{{twitterUserName}}):
 Mixed critiques government inefficiency, misplaced priorities, and systemic contradictions, offering sharp, engaging takes on policies that matter to everyday Americans.
