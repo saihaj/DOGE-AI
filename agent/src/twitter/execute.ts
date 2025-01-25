@@ -1,15 +1,10 @@
-import {
-  DISCORD_SERVER_URL,
-  REJECTION_REASON,
-  twitter,
-  TWITTER_BEARER_TOKEN,
-} from '../const';
+import { REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import { getTweet } from './helpers.ts';
 import { createXai } from '@ai-sdk/xai';
 import { generateText, embedMany } from 'ai';
-import { createOpenAI, openai } from '@ai-sdk/openai';
+import { openai } from '@ai-sdk/openai';
 import {
   QUESTION_EXTRACTOR_SYSTEM_PROMPT,
   SYSTEM_PROMPT,
@@ -25,6 +20,12 @@ import {
   sql,
   user as userDbSchema,
 } from 'database';
+import {
+  approvedTweet,
+  rejectedTweet,
+  reportFailureToDiscord,
+} from '../discord/action.ts';
+import { twitterClient } from './client.ts';
 
 const textSplitter = new RecursiveCharacterTextSplitter({
   // Recommendations from ChatGPT
@@ -92,31 +93,24 @@ async function upsertChat({
 export const executeTweets = inngest.createFunction(
   {
     id: 'execute-tweets',
-    // onFailure: async ({ event, error }) => {
-    //   const id = event?.data?.event?.data?.tweetId;
-    //   const url = event?.data?.event?.data?.tweetUrl;
+    onFailure: async ({ event, error }) => {
+      const id = event?.data?.event?.data?.tweetId;
+      const url = event?.data?.event?.data?.tweetUrl;
 
-    //   if (!id || !url) {
-    //     console.error('Failed to extract tweet ID or URL from event data');
-    //     return;
-    //   }
+      if (!id || !url) {
+        console.error('Failed to extract tweet ID or URL from event data');
+        await reportFailureToDiscord({
+          message: `[execute-tweets]: unable to extract tweet ID or URL from event data. Run id: ${event.data.run_id}`,
+        });
+        return;
+      }
 
-    //   try {
-    //     await fetch(`${DISCORD_SERVER_URL}/rejected`, {
-    //       method: 'POST',
-    //       headers: { 'Content-Type': 'application/json' },
-    //       body: JSON.stringify({
-    //         id,
-    //         url,
-    //         reason: error.message,
-    //       }),
-    //     });
-    //   } catch (err) {
-    //     console.error('Failed to send rejection to Discord:', err);
-    //   }
-
-    //   console.log('Failed to process tweet:', error.message);
-    // },
+      await rejectedTweet({
+        tweetId: id,
+        tweetUrl: url,
+        reason: error.message,
+      });
+    },
   },
   { event: 'tweet.execute' },
   async ({ event, step }) => {
@@ -166,7 +160,7 @@ export const executeTweets = inngest.createFunction(
               },
             ],
           });
-          console.log('question', result.text);
+
           if (result.text.startsWith('NO_QUESTION_DETECTED')) {
             throw new NonRetriableError(REJECTION_REASON.NO_QUESTION_DETECTED);
           }
@@ -179,6 +173,7 @@ export const executeTweets = inngest.createFunction(
         const reply = await step.run('generate-reply', async () => {
           const response = await generateText({
             model: xAi('grok-2-1212'),
+            temperature: 0,
             messages: [
               {
                 role: 'system',
@@ -202,27 +197,23 @@ export const executeTweets = inngest.createFunction(
           return response.text;
         });
 
-        // const repliedTweet = await step.run('send-tweet', async () => {
-        //   const options = {
-        //     method: 'POST',
-        //     headers: {
-        //       Authorization: `Bearer ${TWITTER_BEARER_TOKEN}`,
-        //       'Content-Type': 'application/json',
-        //     },
-        //     body: `{"text":"${reply}","reply":{"in_reply_to_tweet_id":"${tweetToActionOn.id}"}}`,
-        //   };
-
-        //   const a = fetch('https://api.x.com/2/tweets', options)
-        //     .then(response => response.json())
-        //     .then(response => console.log(response))
-        //     .catch(err => console.error(err));
-        // });
         // send reply
         const repliedTweet = await step.run('send-tweet', async () => {
-          const resp = await twitter.sendTweet(reply, tweetToActionOn.id);
-          const result = await resp.json();
+          const resp = await twitterClient.v2.tweet(reply, {
+            reply: {
+              in_reply_to_tweet_id: tweetToActionOn.id,
+            },
+          });
 
-          return result?.data?.create_tweet?.tweet_results?.result?.rest_id;
+          return {
+            id: resp.data.id,
+          };
+        });
+
+        await step.run('notify-discord', async () => {
+          await approvedTweet({
+            tweetUrl: `https://twitter.com/i/web/status/${repliedTweet.id}`,
+          });
         });
 
         // embed and store reply
@@ -255,7 +246,7 @@ export const executeTweets = inngest.createFunction(
                 text: reply,
                 chat: chat.id,
                 role: 'assistant',
-                tweetId: repliedTweet,
+                tweetId: repliedTweet.id,
               },
             ])
             .returning({

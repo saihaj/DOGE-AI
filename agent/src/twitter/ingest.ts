@@ -6,6 +6,7 @@ import {
 import { inngest, TweetResponse } from '../inngest';
 import { z } from 'zod';
 import { chunk } from 'lodash-es';
+import { reportFailureToDiscord } from '../discord/action';
 
 const API = new URL(TWITTER_API_BASE_URL);
 API.pathname = '/twitter/tweet/advanced_search';
@@ -24,8 +25,12 @@ const USERNAME = '@dogeai_gov';
 export const ingestTweets = inngest.createFunction(
   {
     id: 'ingest-tweets',
-    // TODO: set an alert to notify you if the function fails
-    onFailure: () => {},
+    onFailure: async ({ error }) => {
+      const errorMessage = error.message;
+      await reportFailureToDiscord({
+        message: `[ingest-tweets]: ${errorMessage}`,
+      });
+    },
   },
   //   Runs every 5 minutes
   { cron: '30 * * * *' },

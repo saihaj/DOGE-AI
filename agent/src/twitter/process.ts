@@ -1,14 +1,11 @@
-import {
-  TWITTER_USERNAME,
-  REJECTION_REASON,
-  DISCORD_SERVER_URL,
-} from '../const';
+import { TWITTER_USERNAME, REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import { getTweet } from './helpers.ts';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { ENGAGEMENT_DECISION_PROMPT } from './prompts.ts';
+import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
 
 const openai = createOpenAI({
   compatibility: 'strict',
@@ -20,31 +17,24 @@ const openai = createOpenAI({
 export const processTweets = inngest.createFunction(
   {
     id: 'process-tweets',
-    // onFailure: async ({ event, error }) => {
-    //   const id = event?.data?.event?.data?.id;
-    //   const url = event?.data?.event?.data?.url;
+    onFailure: async ({ event, error }) => {
+      const id = event?.data?.event?.data?.id;
+      const url = event?.data?.event?.data?.url;
 
-    //   if (!id || !url) {
-    //     console.error('Failed to extract tweet ID or URL from event data');
-    //     return;
-    //   }
+      if (!id || !url) {
+        console.error('Failed to extract tweet ID or URL from event data');
+        await reportFailureToDiscord({
+          message: `[process-tweets]: unable to extract tweet ID or URL from event data. Run id: ${event.data.run_id}`,
+        });
+        return;
+      }
 
-    //   try {
-    //     await fetch(`${DISCORD_SERVER_URL}/rejected`, {
-    //       method: 'POST',
-    //       headers: { 'Content-Type': 'application/json' },
-    //       body: JSON.stringify({
-    //         id,
-    //         url,
-    //         reason: error.message,
-    //       }),
-    //     });
-    //   } catch (err) {
-    //     console.error('Failed to send rejection to Discord:', err);
-    //   }
-
-    //   console.log('Failed to process tweet:', error.message);
-    // },
+      await rejectedTweet({
+        tweetId: id,
+        tweetUrl: url,
+        reason: error.message,
+      });
+    },
     throttle: {
       limit: 100,
       period: '1m',

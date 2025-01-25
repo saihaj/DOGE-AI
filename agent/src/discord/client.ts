@@ -14,7 +14,7 @@ import {
 import { inngest } from '../inngest';
 import { MAX_TWEET_LENGTH } from '../const';
 
-export const client: Client = new Client({
+export const discordClient: Client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
@@ -23,7 +23,7 @@ export const client: Client = new Client({
   partials: [Partials.Channel],
 });
 
-client.on(Events.InteractionCreate, async (interaction: Interaction) => {
+discordClient.on(Events.InteractionCreate, async (interaction: Interaction) => {
   // Handle button interactions
   if (interaction.isButton()) {
     try {
