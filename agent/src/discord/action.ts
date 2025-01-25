@@ -10,11 +10,10 @@ import {
   DISCORD_ERROR_LOG_CHANNEL_ID,
   DISCORD_REJECTED_CHANNEL_ID,
   DISCORD_SERVER_ID,
-  REJECTION_REASON,
 } from '../const';
 
 export async function approvedTweet({ tweetUrl }: { tweetUrl: string }) {
-  const url = tweetUrl.replace('twitter.com', 'vxtwitter.com');
+  const url = tweetUrl.replace('x.com', 'vxtwitter.com');
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
   const channel = await guild.channels.fetch(DISCORD_APPROVED_CHANNEL_ID);
 
@@ -34,7 +33,7 @@ export async function rejectedTweet({
   tweetUrl: string;
   reason: string;
 }) {
-  const url = tweetUrl.replace('twitter.com', 'vxtwitter.com');
+  const url = tweetUrl.replace('x.com', 'vxtwitter.com');
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
   const channel = await guild.channels.fetch(DISCORD_REJECTED_CHANNEL_ID);
 
