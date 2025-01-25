@@ -31,15 +31,14 @@ export const ingestTweets = inngest.createFunction(
     },
   },
   //   Runs every 5 minutes
-  { cron: '30 * * * *' },
+  { cron: '5 * * * *' },
   async () => {
     /**
      * Search for all the tweets for the bot and not it's own tweets
-     * within the last 24 hours.
      *
      * Learn more about syntax here: https://github.com/igorbrigadir/twitter-advanced-search
      */
-    const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} within_time:1d`;
+    const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} within_time:12h`;
     API.searchParams.set('query', searchQuery);
     API.searchParams.set('queryType', 'Latest');
 
