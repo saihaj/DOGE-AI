@@ -30,15 +30,18 @@ export const ingestTweets = inngest.createFunction(
       });
     },
   },
-  // Runs every 2 minutes
-  { cron: '*/2 * * * *' },
+  // Runs every 5 minutes
+  { cron: '*/5 * * * *' },
   async () => {
     /**
      * Search for all the tweets for the bot and not it's own tweets
      *
+     * Reason we look at last 7 minutes is to account for any delay in processing.
+     * Idempotency is relied on inngest based on tweet id.
+     *
      * Learn more about syntax here: https://github.com/igorbrigadir/twitter-advanced-search
      */
-    const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} within_time:5m`;
+    const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} within_time:7m`;
     API.searchParams.set('query', searchQuery);
     API.searchParams.set('queryType', 'Latest');
 
