@@ -3,6 +3,7 @@
     "paths": {
       "database": ["../database/src"]
     },
+    "moduleResolution": "bundler",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": false,
     "allowImportingTsExtensions": true,
@@ -15,13 +16,11 @@
     "noEmitOnError": false,
     "moduleDetection": "force",
     "allowArbitraryExtensions": true,
-    "target": "ESNext",
     "lib": ["dom", "dom.iterable", "esnext"],
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
     "noEmit": true,
-    "module": "esnext",
-    "moduleResolution": "node",
+    "target": "ES2017",
     "isolatedModules": true,
     "incremental": true
   },
