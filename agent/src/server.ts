@@ -19,10 +19,18 @@ fastify.route({
   url: '/api/inngest',
 });
 
-try {
-} catch (e) {
-  console.error('Failed to login to Twitter:', e);
-}
+// So in fly.io, health should do both the health check and the readiness check
+fastify.route({
+  method: 'GET',
+  handler: async (request, reply) => {
+    if (discordClient.isReady()) {
+      return reply.send({ status: 'ready' }).code(200);
+    } else {
+      return reply.send({ status: 'not ready' }).code(503);
+    }
+  },
+  url: '/api/health',
+});
 
 fastify.listen({ host: '0.0.0.0', port: 3000 }, async function (err, address) {
   console.log(`Server listening on ${address}`);
@@ -36,7 +44,7 @@ fastify.listen({ host: '0.0.0.0', port: 3000 }, async function (err, address) {
 
   if (err) {
     await reportFailureToDiscord({ message: 'Agent server crashes: ' + err });
-    fastify.log.error(err);
+    console.error(err);
     process.exit(1);
   }
 });

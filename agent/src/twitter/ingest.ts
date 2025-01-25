@@ -38,7 +38,7 @@ export const ingestTweets = inngest.createFunction(
      *
      * Learn more about syntax here: https://github.com/igorbrigadir/twitter-advanced-search
      */
-    const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} within_time:12h`;
+    const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} within_time:5m`;
     API.searchParams.set('query', searchQuery);
     API.searchParams.set('queryType', 'Latest');
 

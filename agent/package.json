@@ -4,7 +4,9 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "tsx src/index.ts",
-    "build": "esbuild --bundle --platform=node --outdir=dist ./src/server.ts",
+    "build": "esbuild --bundle --platform=node --outdir=dist ./src/server.ts '--external:@libsql/client'",
+    "predeploy": "pnpm run build",
+    "deploy": "fly deploy",
     "dev:tweet": "tsx src/temp/another-take.ts",
     "twitter": "tsx --watch ./src/temp/reply-testing.ts",
     "test-kb": "tsx --watch ./src/temp/test-kb.ts",
