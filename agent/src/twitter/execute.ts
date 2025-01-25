@@ -2,8 +2,7 @@ import { REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import { generateEmbedding, generateEmbeddings, getTweet } from './helpers.ts';
-import { createXai } from '@ai-sdk/xai';
-import { generateText, embedMany, embed } from 'ai';
+import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import {
   EXTRACT_BILL_TITLE_PROMPT,
@@ -37,8 +36,6 @@ const textSplitter = new RecursiveCharacterTextSplitter({
   chunkSize: 512,
   chunkOverlap: 100,
 });
-
-const xAi = createXai({});
 
 async function upsertUser({ twitterId }: { twitterId: string }) {
   const user = await db.query.user.findFirst({
@@ -297,7 +294,7 @@ export const executeTweets = inngest.createFunction(
           });
 
           const response = await generateText({
-            model: xAi('grok-2-1212'),
+            model: openai('gpt-4o'),
             temperature: 0,
             messages: [
               {
