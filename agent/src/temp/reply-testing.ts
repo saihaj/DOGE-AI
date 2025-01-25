@@ -170,9 +170,11 @@ async function main() {
   });
   const text = tweetToActionOn.text;
 
-  const threadContext = await getTweetContext({
-    id: tweetToActionOn.inReplyToId!,
-  });
+  const threadContext = tweetToActionOn.inReplyToId
+    ? await getTweetContext({
+        id: tweetToActionOn.inReplyToId,
+      })
+    : tweetToActionOn.text;
 
   const questionResult = await generateText({
     model: openai('gpt-4o'),
@@ -223,7 +225,7 @@ async function main() {
   ];
 
   const response = streamText({
-    model: xAi('grok-2-1212'),
+    model: openai('gpt-4o'),
     temperature: 0,
     messages,
   });
