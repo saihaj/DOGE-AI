@@ -30,8 +30,8 @@ export const ingestTweets = inngest.createFunction(
       });
     },
   },
-  //   Runs every 5 minutes
-  { cron: '5 * * * *' },
+  // Runs every 2 minutes
+  { cron: '2 * * * *' },
   async () => {
     /**
      * Search for all the tweets for the bot and not it's own tweets
@@ -79,7 +79,11 @@ export const ingestTweets = inngest.createFunction(
 
     chunkTweets.forEach(async chunk => {
       const inngestSent = await inngest.send(
-        chunk.map(tweet => ({ name: 'tweet.process', data: tweet })),
+        chunk.map(tweet => ({
+          name: 'tweet.process',
+          data: tweet,
+          id: tweet.id,
+        })),
       );
 
       console.log(`Sent ${inngestSent.ids.length} tweets to inngest`);
