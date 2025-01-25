@@ -6,7 +6,7 @@ export const TWITTER_API_KEY = (() => {
 })();
 export const TWITTER_USERNAME = (() => {
   if (!process.env.TWITTER_USERNAME) {
-    throw new Error('DISCORD_TOKEN is not set');
+    throw new Error('TWITTER_USERNAME is not set');
   }
   return process.env.TWITTER_USERNAME;
 })();
