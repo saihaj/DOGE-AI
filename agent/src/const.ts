@@ -57,3 +57,27 @@ export const REJECTION_REASON = {
   ALREADY_REPLIED: 'ALREADY_REPLIED',
 } as const;
 export const twitter = new Scraper();
+export const DISCORD_TOKEN = (() => {
+  if (!process.env.DISCORD_TOKEN) {
+    throw new Error('DISCORD_TOKEN is not set');
+  }
+  return process.env.DISCORD_TOKEN;
+})();
+export const DISCORD_APPROVED_CHANNEL_ID = (() => {
+  if (!process.env.DISCORD_APPROVED_CHANNEL_ID) {
+    throw new Error('DISCORD_APPROVED_CHANNEL_ID is not set in your .env');
+  }
+  return process.env.DISCORD_APPROVED_CHANNEL_ID;
+})();
+export const DISCORD_REJECTED_CHANNEL_ID = (() => {
+  if (!process.env.DISCORD_REJECTED_CHANNEL_ID) {
+    throw new Error('DISCORD_REJECTED_CHANNEL_ID is not set in your .env');
+  }
+  return process.env.DISCORD_REJECTED_CHANNEL_ID;
+})();
+export const DISCORD_SERVER_ID = (() => {
+  if (!process.env.DISCORD_SERVER_ID) {
+    throw new Error('DISCORD_SERVER_ID is not set in your .env');
+  }
+  return process.env.DISCORD_SERVER_ID;
+})();

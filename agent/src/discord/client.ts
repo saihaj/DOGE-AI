@@ -11,10 +11,10 @@ import {
   ModalSubmitInteraction,
   EmbedBuilder,
 } from 'discord.js';
-import { sendInngestRequest } from './utils';
-import { MAX_TWEET_LENGTH } from './const';
+import { inngest } from '../inngest';
+import { MAX_TWEET_LENGTH } from '../const';
 
-const client: Client = new Client({
+export const client: Client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
@@ -53,11 +53,16 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
 
         await interaction.showModal(modal);
       } else if (action === 'retweet') {
-        await sendInngestRequest({
-          type: 'retweet',
-          itemId: Number(itemId),
-          itemUrl,
-        });
+        await inngest.send([
+          {
+            name: 'tweet.execute',
+            data: {
+              tweetId: itemId,
+              tweetUrl: itemUrl,
+              action: 'retweet',
+            },
+          },
+        ]);
 
         const originalMessage = interaction.message;
         if (originalMessage) {
@@ -104,12 +109,17 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         const quoteText =
           modalInteraction.fields.getTextInputValue('quote_text');
 
-        await sendInngestRequest({
-          type: 'quote',
-          itemId: Number(itemId),
-          itemUrl,
-          text: quoteText,
-        });
+        await inngest.send([
+          {
+            name: 'tweet.execute',
+            data: {
+              tweetId: itemId,
+              tweetUrl: itemUrl,
+              text: quoteText,
+              action: 'quote',
+            },
+          },
+        ]);
 
         const originalMessage = modalInteraction.message;
         if (originalMessage) {
@@ -145,5 +155,3 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     }
   }
 });
-
-export default client;

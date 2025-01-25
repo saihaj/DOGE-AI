@@ -5,12 +5,14 @@ import { ingestTweets } from './twitter/ingest';
 import { processTweets } from './twitter/process';
 import { executeTweets } from './twitter/execute';
 import {
+  DISCORD_TOKEN,
   twitter,
   TWITTER_2FA_SECRET,
   TWITTER_EMAIL,
   TWITTER_PASSWORD,
   TWITTER_USERNAME,
 } from './const';
+import { client } from './discord/client';
 
 const fastify = Fastify();
 
@@ -31,15 +33,26 @@ try {
 fastify.listen({ host: '0.0.0.0', port: 3000 }, async function (err, address) {
   console.log(`Server listening on ${address}`);
 
-  await twitter.login(
-    TWITTER_USERNAME,
-    TWITTER_PASSWORD,
-    TWITTER_EMAIL,
-    TWITTER_2FA_SECRET,
-  );
+  try {
+    const discord = await client.login(DISCORD_TOKEN);
+    console.log(`Logged into Discord as ${discord.user?.tag}`);
+  } catch (e) {
+    console.error('Failed to login to Discord:', e);
+  }
 
-  const cookies = await twitter.getCookies();
-  console.log(JSON.stringify(cookies));
+  try {
+    await twitter.login(
+      TWITTER_USERNAME,
+      TWITTER_PASSWORD,
+      TWITTER_EMAIL,
+      TWITTER_2FA_SECRET,
+    );
+    const cookies = await twitter.getCookies();
+    console.log(JSON.stringify(cookies));
+  } catch (err) {
+    console.error('Failed to login to Twitter:', err);
+  }
+
   if (err) {
     fastify.log.error(err);
     process.exit(1);

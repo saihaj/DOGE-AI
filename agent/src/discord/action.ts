@@ -1,0 +1,61 @@
+import {
+  TextChannel,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  Guild,
+} from 'discord.js';
+import { client } from './client';
+import {
+  DISCORD_APPROVED_CHANNEL_ID,
+  DISCORD_REJECTED_CHANNEL_ID,
+  DISCORD_SERVER_ID,
+  REJECTION_REASON,
+} from '../const';
+
+export async function approvedTweet({ tweetUrl }: { tweetUrl: string }) {
+  const url = tweetUrl.replace('twitter.com', 'vxtwitter.com');
+  const guild: Guild = await client.guilds.fetch(DISCORD_SERVER_ID);
+  const channel = await guild.channels.fetch(DISCORD_APPROVED_CHANNEL_ID);
+
+  if (!channel || !(channel instanceof TextChannel)) {
+    throw Error('Approved channel not found or not a text channel');
+  }
+
+  await channel.send(`**Accepted**: ${url}`);
+}
+
+export async function rejectedTweet({
+  tweetUrl,
+  tweetId,
+  reason,
+}: {
+  tweetId: string;
+  tweetUrl: string;
+  reason: typeof REJECTION_REASON;
+}) {
+  const url = tweetUrl.replace('twitter.com', 'vxtwitter.com');
+  const guild: Guild = await client.guilds.fetch(DISCORD_SERVER_ID);
+  const channel = await guild.channels.fetch(DISCORD_REJECTED_CHANNEL_ID);
+
+  if (!channel || !(channel instanceof TextChannel)) {
+    throw Error('Rejection channel not found or not a text channel');
+  }
+
+  // EXAMPLE FORMAT: quote_{tweetId}_{url} or retweet_{tweetId}_{url}
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`quote_${tweetId}_${url}`)
+      .setLabel('Quote')
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId(`retweet_${tweetId}_${url}`)
+      .setLabel('Retweet')
+      .setStyle(ButtonStyle.Secondary),
+  );
+
+  await channel.send({
+    content: `**Rejected**: ${url}\n**Reason**: ${reason}`,
+    components: [row],
+  });
+}
