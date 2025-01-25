@@ -4,17 +4,9 @@ import { inngest } from './inngest';
 import { ingestTweets } from './twitter/ingest';
 import { processTweets } from './twitter/process';
 import { executeTweets } from './twitter/execute';
-import {
-  DISCORD_TOKEN,
-  twitter,
-  TWITTER_2FA_SECRET,
-  TWITTER_EMAIL,
-  TWITTER_PASSWORD,
-  TWITTER_USERNAME,
-} from './const';
+import { DISCORD_TOKEN } from './const';
 import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
-import { TwitterApi } from 'twitter-api-v2';
 
 const fastify = Fastify();
 
