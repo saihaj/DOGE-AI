@@ -4,7 +4,12 @@ export const TWITTER_API_KEY = (() => {
   }
   return process.env.TWITTER_IO_API_KEY;
 })();
-export const TWITTER_USERNAME = 'dogeai_gov';
+export const TWITTER_USERNAME = (() => {
+  if (!process.env.TWITTER_USERNAME) {
+    throw new Error('DISCORD_TOKEN is not set');
+  }
+  return process.env.TWITTER_USERNAME;
+})();
 export const MAX_TWEET_LENGTH = 280;
 export const TWITTER_API_BASE_URL = 'https://api.twitterapi.io';
 /**
