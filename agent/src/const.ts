@@ -1,3 +1,10 @@
+import { Scraper } from 'agent-twitter-client';
+export const TWITTER_BEARER_TOKEN = (() => {
+  if (!process.env.TWITTER_BEARER_TOKEN) {
+    throw new Error('TWITTER_BEARER_TOKEN is required');
+  }
+  return process.env.TWITTER_BEARER_TOKEN;
+})();
 export const TWITTER_API_KEY = (() => {
   if (!process.env.TWITTER_IO_API_KEY) {
     throw new Error('TWITTER_IO_API_KEY is required');
@@ -47,4 +54,6 @@ export const REJECTION_REASON = {
   ACTION_NOT_SUPPORTED: 'ACTION_NOT_SUPPORTED',
   NO_QUESTION_DETECTED: 'NO_QUESTION_DETECTED',
   SPAM_DETECTED_DO_NOT_ENGAGE: 'SPAM_DETECTED_DO_NOT_ENGAGE',
+  ALREADY_REPLIED: 'ALREADY_REPLIED',
 } as const;
+export const twitter = new Scraper();

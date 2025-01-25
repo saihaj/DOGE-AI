@@ -15,6 +15,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^1.0.19",
     "@ai-sdk/xai": "^1.0.17",
+    "@langchain/textsplitters": "^0.1.0",
     "agent-twitter-client": "^0.0.18",
     "ai": "^4.0.22",
     "bentocache": "1.0.0-beta.9",

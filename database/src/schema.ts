@@ -8,6 +8,7 @@ import {
 } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 import { customType } from 'drizzle-orm/sqlite-core';
+import * as crypto from 'node:crypto';
 
 const float32Array = customType<{
   data: number[];

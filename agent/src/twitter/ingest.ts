@@ -16,6 +16,8 @@ const SearchResultResponseSchema = z.object({
   next_cursor: z.string().nullable(),
 });
 
+const USERNAME = '@dogeai_gov';
+
 /**
  * Fetches tweets from the Twitter API and queues them for processing.
  */
@@ -26,7 +28,7 @@ export const ingestTweets = inngest.createFunction(
     onFailure: () => {},
   },
   //   Runs every 5 minutes
-  { cron: '5 * * * *' },
+  { cron: '30 * * * *' },
   async () => {
     /**
      * Search for all the tweets for the bot and not it's own tweets
@@ -34,7 +36,7 @@ export const ingestTweets = inngest.createFunction(
      *
      * Learn more about syntax here: https://github.com/igorbrigadir/twitter-advanced-search
      */
-    const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} within_time:1d`;
+    const searchQuery = `@${USERNAME} -from:${USERNAME} within_time:1d`;
     API.searchParams.set('query', searchQuery);
     API.searchParams.set('queryType', 'Latest');
 
@@ -58,7 +60,7 @@ export const ingestTweets = inngest.createFunction(
       }
 
       tweets = tweets.concat(result.data.tweets);
-      cursor = result.data.next_cursor;
+      cursor = result.data.next_cursor || '';
       API.searchParams.set('cursor', cursor);
 
       // If there are no more tweets to fetch, break out of the loop
