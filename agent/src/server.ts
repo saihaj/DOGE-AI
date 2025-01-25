@@ -34,24 +34,24 @@ fastify.listen({ host: '0.0.0.0', port: 3000 }, async function (err, address) {
   console.log(`Server listening on ${address}`);
 
   try {
-    const discord = await client.login(DISCORD_TOKEN);
-    console.log(`Logged into Discord as ${discord.user?.tag}`);
+    await client.login(DISCORD_TOKEN);
+    console.log(`Logged into Discord as ${client.user?.tag}`);
   } catch (e) {
     console.error('Failed to login to Discord:', e);
   }
 
-  try {
-    await twitter.login(
-      TWITTER_USERNAME,
-      TWITTER_PASSWORD,
-      TWITTER_EMAIL,
-      TWITTER_2FA_SECRET,
-    );
-    const cookies = await twitter.getCookies();
-    console.log(JSON.stringify(cookies));
-  } catch (err) {
-    console.error('Failed to login to Twitter:', err);
-  }
+  // try {
+  //   await twitter.login(
+  //     TWITTER_USERNAME,
+  //     TWITTER_PASSWORD,
+  //     TWITTER_EMAIL,
+  //     TWITTER_2FA_SECRET,
+  //   );
+  //   const cookies = await twitter.getCookies();
+  //   console.log(JSON.stringify(cookies));
+  // } catch (err) {
+  //   console.error('Failed to login to Twitter:', err);
+  // }
 
   if (err) {
     fastify.log.error(err);
