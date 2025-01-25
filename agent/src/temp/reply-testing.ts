@@ -1,34 +1,22 @@
-import { Scraper } from 'agent-twitter-client';
 import Handlebars from 'handlebars';
-import { newDogeXbt } from '../mixed-2';
-import shuffle from 'lodash-es/shuffle';
 import { createXai } from '@ai-sdk/xai';
 import dotenv from 'dotenv';
-import { CoreMessage, generateText } from 'ai';
+import { CoreMessage, generateText, streamText } from 'ai';
 import { writeFile } from 'node:fs/promises';
-import { and, bill as billDbSchema, db, eq } from 'database';
+import { billVector, db, sql } from 'database';
 import * as readline from 'node:readline/promises';
+import {
+  QUESTION_EXTRACTOR_SYSTEM_PROMPT,
+  SYSTEM_PROMPT,
+  TWITTER_REPLY_TEMPLATE,
+} from '../twitter/prompts';
+import { generateEmbedding, getTweet } from '../twitter/helpers';
+import { REJECTION_REASON } from '../const';
+import { openai } from '@ai-sdk/openai';
 dotenv.config();
 
 const xAi = createXai({});
 
-const twitter = new Scraper();
-
-const CHARACTER_POST_EXAMPLES = [
-  'Congress has millions for lung cancer awareness ads but ignores the unaffordable cost of screenings for most Americans. Awareness isn’t reform—affordable care is. Source: https://www.congress.gov/118/bills/hr4286/BILLS-118hr4286ih.htm',
-  'The government’s answer to lung cancer: ads. The real question: When will they address the cost of care that keeps people from screening in the first place? Source: https://www.congress.gov/118/bills/hr4286/BILLS-118hr4286ih.htm',
-  'Imagine if the $50 million for cancer ads actually went to subsidizing treatments. Awareness doesn’t save lives—action does. Source: https://www.congress.gov/118/bills/hr4286/BILLS-118hr4286ih.htm',
-  '$50 million for cancer screening ads when patients are struggling to afford basic care. Government isn’t just inefficient—it’s blind to what people actually need. Source: https://www.congress.gov/118/bills/hr4286/BILLS-118hr4286ih.htm',
-];
-
-const OUTPUT_EXAMPLES = [
-  'The government has $50 million for ads about cancer screenings but won’t cover everyone’s treatments. Stop throwing money at awareness when lives are on the line. Source: https://www.congress.gov/118/bills/hr4286/BILLS-118hr4286ih.htm',
-  'Millions of Americans skip routine screenings because of cost, yet Congress thinks an ad campaign is the solution. This isn’t healthcare reform—it’s healthcare theater. Source: https://www.congress.gov/118/bills/hr4286/BILLS-118hr4286ih.htm',
-  'Imagine if the $50 million for cancer ads actually went to subsidizing treatments. Awareness doesn’t save lives—action does. Source: https://www.congress.gov/118/bills/hr4286/BILLS-118hr4286ih.htm',
-  'We’re funding lung cancer awareness campaigns while Big Tobacco keeps cashing in. Maybe start with the root of the problem instead of throwing money at symptoms. Source: https://www.congress.gov/118/bills/hr4286/BILLS-118hr4286ih.htm',
-];
-
-// https://github.com/elizaOS/eliza/blob/c0529a07995f7b06bb1add5a4b837ced1cc64ca3/packages/client-twitter/src/post.ts#L33-L51
 const TWITTER_POST_TEMPLATE = `### About {{agentName}} (@{{twitterUserName}}):
 Mixed critiques government inefficiency, misplaced priorities, and systemic contradictions, offering sharp, engaging takes on policies that matter to everyday Americans.
 
@@ -51,23 +39,7 @@ Mixed critiques government inefficiency, misplaced priorities, and systemic cont
 Topic to discuss: {{billDetails}}
 `;
 
-// const TWITTER_POST_TEMPLATE = `
-// # About {{agentName}} (@{{twitterUserName}}):
-// {{bio}}
-// {{lore}}
-// {{topics}}
-
-// {{characterPostExamples}}
-
-// {{postDirections}}
-
-// # Task: Generate a post in the voice and style and perspective of {{agentName}} @{{twitterUserName}}.
-// Write a post that is {{adjective}} about {{topic}} (without mentioning {{topic}} directly), from the perspective of {{agentName}}. Do not add commentary or acknowledge this request, just write the post.
-// Your response should be 1, 2, or 3 sentences (choose the length at random).
-// Your response should not contain any questions. Brief, concise statements only. The total character count MUST be less than {{maxTweetLength}}. No emojis. Use \\n\\n (double spaces) between statements if there are multiple statements in your response.`;
-
 const postTemplate = Handlebars.compile(TWITTER_POST_TEMPLATE);
-const messages: CoreMessage[] = [];
 
 const terminal = readline.createInterface({
   input: process.stdin,
@@ -75,81 +47,102 @@ const terminal = readline.createInterface({
 });
 
 async function main() {
-  await twitter.login(
-    TWITTER_USERNAME,
-    TWITTER_PASSWORD,
-    TWITTER_EMAIL,
-    TWITTER_2FA_SECRET,
-  );
+  const tweetUrl = await terminal.question('Enter the tweet URL: ');
+  const tweetId = tweetUrl.split('/').pop();
+  if (!tweetId) {
+    throw new Error('No tweet ID found');
+  }
 
-  const bill = await db.query.bill.findFirst({
-    where: and(eq(billDbSchema.number, 10393)),
+  const tweetToActionOn = await getTweet({
+    id: tweetId,
+  });
+  const text = tweetToActionOn.text;
+
+  const mainTweet = await getTweet({
+    id: tweetToActionOn.inReplyToId!,
   });
 
-  const INPUT_BILL = `Bill ${bill.title} introduced by ${bill.sponsorFirstName} ${bill.sponsorLastName} on ${bill.introducedDate}. Summary: ${bill.summary}. Funding: ${bill.funding}. Spending: ${bill.spending}. Impact: ${bill.impact}.  More info: ${bill.htmlVersionUrl}`;
-
-  const post = postTemplate({
-    twitterUserName: TWITTER_USERNAME,
-    agentName: 'DOGEai',
-    outputExamples: OUTPUT_EXAMPLES.map((a, i) => `${i + 1}. ${a}`).join('\n'),
-    topics: shuffle(newDogeXbt.topics).slice(0, 5).join(', '),
-    characterPostExamples: CHARACTER_POST_EXAMPLES.map(
-      (a, i) => `${i + 1}. ${a}`,
-    ).join('\n'),
-    topic: newDogeXbt.topics,
-    billSourceUrl: bill.htmlVersionUrl,
-    billDetails: INPUT_BILL,
-    billTitle: bill.title,
-    maxTweetLength: MAX_TWEET_LENGTH,
-  });
-
-  // writeFile('prompt.txt', post);
-
-  messages.push({ role: 'system', content: newDogeXbt.system });
-  messages.push({ role: 'user', content: post });
-  // const result = await generateText({
-  //   model: xAi('grok-2-1212'),
-  //   messages,
-  // });
-
-  // console.log(`Tweet: ${result.text}\n`);
-
-  messages.push({ role: 'user', content: TWITTER_REPLY_TEMPLATE });
-  // https://x.com/dogeai_gov/status/1882584768866570575
-  const tweet = await twitter.getTweet('1882584768866570575');
-  messages.push({
-    role: 'user',
-    content: tweet.text.replace('@dogeai_gov', ''),
-  });
-  console.log('User: ', tweet.text);
-
-  const result = await generateText({
-    model: xAi('grok-2-1212'),
-    messages,
+  const questionResult = await generateText({
+    model: openai('gpt-4o'),
     temperature: 0,
-    seed: Math.floor(Math.random() * 10000),
+    messages: [
+      {
+        role: 'system',
+        content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
+      },
+      {
+        role: 'user',
+        content: text,
+      },
+    ],
   });
 
-  console.log('DOGEai: ', result.text);
+  if (questionResult.text.startsWith('NO_QUESTION_DETECTED')) {
+    throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
+  }
 
-  await twitter.sendTweet(result.text, '1882242650360983719');
+  const question = questionResult.text;
+  const questionEmbedding = await generateEmbedding(question);
+  const embeddingArrayString = JSON.stringify(questionEmbedding);
 
-  // while (true) {
-  //   const userInput = await terminal.question('You: ');
-  //   messages.push({ role: 'user', content: userInput });
+  const vectorSearch = await db
+    .select({
+      id: billVector.id,
+      text: billVector.text,
+      bill: billVector.bill,
+      distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
+    })
+    .from(billVector)
+    .orderBy(
+      // ascending order
+      sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
+    )
+    .limit(5);
 
-  //   const result = await generateText({
-  //     model: xAi('grok-2-1212'),
-  //     messages,
-  //     temperature: 0,
-  //     seed: Math.floor(Math.random() * 10000),
-  //   });
-  //   const fullResponse = result.text;
-  //   process.stdout.write('\DOGEai: ');
-  //   process.stdout.write(fullResponse);
-  //   process.stdout.write('\n\n');
-  //   messages.push({ role: 'assistant', content: fullResponse });
-  // }
+  const relevantContext = vectorSearch.map(row => row.text).join('\n---\n');
+
+  const messages: CoreMessage[] = [
+    {
+      role: 'system',
+      content: SYSTEM_PROMPT,
+    },
+    {
+      role: 'user',
+      content: relevantContext,
+    },
+    {
+      role: 'user',
+      content: mainTweet.text,
+    },
+    {
+      role: 'user',
+      content: TWITTER_REPLY_TEMPLATE,
+    },
+    {
+      role: 'user',
+      content: question,
+    },
+  ];
+
+  const response = streamText({
+    model: xAi('grok-2-1212'),
+    temperature: 0,
+    messages,
+  });
+
+  process.stdout.write('\DOGEai: ');
+  let fullResponse = '';
+  for await (const delta of response.textStream) {
+    fullResponse += delta;
+    process.stdout.write(delta);
+  }
+  process.stdout.write('\n\n');
+
+  await writeFile(
+    `dev-test/${tweetId}.txt`,
+    messages.map(m => `"${m.role}": ${m.content}\n\n`).join('\n') +
+      `"assistant": ${fullResponse}\n`,
+  );
 }
 
 main().catch(console.error);
