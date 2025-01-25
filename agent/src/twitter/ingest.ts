@@ -88,5 +88,9 @@ export const ingestTweets = inngest.createFunction(
 
       console.log(`Sent ${inngestSent.ids.length} tweets to inngest`);
     });
+
+    return {
+      message: `Sent ${tweets.length} tweets to inngest`,
+    };
   },
 );
