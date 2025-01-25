@@ -46,7 +46,7 @@ export const processTweets = inngest.createFunction(
 
     // For stage one rollout we want to focus on processing replies in a thread it gets
     if (event.data?.inReplyToUsername === TWITTER_USERNAME) {
-      const mainTweet = await getTweet({ id: event.data.inReplyToId }).catch(
+      const mainTweet = await getTweet({ id: event.data.inReplyToId! }).catch(
         e => {
           throw new NonRetriableError(e.message);
         },

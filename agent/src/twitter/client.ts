@@ -1,4 +1,4 @@
-import TwitterApi from 'twitter-api-v2';
+import { TwitterApi } from 'twitter-api-v2';
 import {
   TWITTER_ACCESS_SECRET,
   TWITTER_ACCESS_TOKEN,
