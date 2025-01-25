@@ -1,9 +1,9 @@
 import { REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
-import { getTweet } from './helpers.ts';
+import { generateEmbedding, generateEmbeddings, getTweet } from './helpers.ts';
 import { createXai } from '@ai-sdk/xai';
-import { generateText, embedMany } from 'ai';
+import { generateText, embedMany, embed } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import {
   QUESTION_EXTRACTOR_SYSTEM_PROMPT,
@@ -12,6 +12,7 @@ import {
 } from './prompts';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import {
+  billVector,
   chat as chatDbSchema,
   db,
   eq,
@@ -34,7 +35,6 @@ const textSplitter = new RecursiveCharacterTextSplitter({
 });
 
 const xAi = createXai({});
-const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
 
 async function upsertUser({ twitterId }: { twitterId: string }) {
   const user = await db.query.user.findFirst({
@@ -168,7 +168,30 @@ export const executeTweets = inngest.createFunction(
           return result.text;
         });
 
-        // TODO: improvement is connecting it with the KB store and provide more context
+        const relevantContext = await step.run(
+          'fetch-relevant-context',
+          async () => {
+            // TODO: rerank the embeddings
+            const questionEmbedding = await generateEmbedding(question);
+            const embeddingArrayString = JSON.stringify(questionEmbedding);
+
+            const vectorSearch = await db
+              .select({
+                id: billVector.id,
+                text: billVector.text,
+                bill: billVector.bill,
+                distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
+              })
+              .from(billVector)
+              .orderBy(
+                // ascending order
+                sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
+              )
+              .limit(5);
+
+            return vectorSearch.map(row => row.text).join('\n---\n');
+          },
+        );
 
         const reply = await step.run('generate-reply', async () => {
           const response = await generateText({
@@ -178,6 +201,10 @@ export const executeTweets = inngest.createFunction(
               {
                 role: 'system',
                 content: SYSTEM_PROMPT,
+              },
+              {
+                role: 'user',
+                content: relevantContext,
               },
               {
                 role: 'user',
@@ -208,6 +235,12 @@ export const executeTweets = inngest.createFunction(
           return {
             id: resp.data.id,
           };
+
+          // await rejectedTweet({
+          //   tweetId: tweetToActionOn.id,
+          //   tweetUrl: tweetToActionOn.url,
+          //   reason: reply,
+          // });
         });
 
         await step.run('notify-discord', async () => {
@@ -260,10 +293,7 @@ export const executeTweets = inngest.createFunction(
             textSplitter.splitText(reply),
           ]);
 
-          const { embeddings: mainEmbeddings } = await embedMany({
-            model: embeddingModel,
-            values: chunkMain,
-          });
+          const mainEmbeddings = await generateEmbeddings(chunkMain);
 
           await db.insert(messageVector).values(
             chunkMain
@@ -278,10 +308,8 @@ export const executeTweets = inngest.createFunction(
               })),
           );
 
-          const { embeddings: actionTweetEmbeddings } = await embedMany({
-            model: embeddingModel,
-            values: chunkActionTweet,
-          });
+          const actionTweetEmbeddings =
+            await generateEmbeddings(chunkActionTweet);
 
           await db.insert(messageVector).values(
             chunkActionTweet
@@ -296,10 +324,7 @@ export const executeTweets = inngest.createFunction(
               })),
           );
 
-          const { embeddings: replyEmbeddings } = await embedMany({
-            model: embeddingModel,
-            values: chunkReply,
-          });
+          const replyEmbeddings = await generateEmbeddings(chunkReply);
 
           await db.insert(messageVector).values(
             chunkReply
