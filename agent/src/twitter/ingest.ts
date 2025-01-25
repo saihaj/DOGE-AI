@@ -31,7 +31,7 @@ export const ingestTweets = inngest.createFunction(
     },
   },
   // Runs every 2 minutes
-  { cron: '2 * * * *' },
+  { cron: '*/2 * * * *' },
   async () => {
     /**
      * Search for all the tweets for the bot and not it's own tweets
