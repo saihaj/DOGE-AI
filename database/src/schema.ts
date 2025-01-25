@@ -8,6 +8,7 @@ import {
 } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
 import { customType } from 'drizzle-orm/sqlite-core';
+import * as crypto from 'node:crypto';
 
 const float32Array = customType<{
   data: number[];
@@ -97,4 +98,68 @@ export const billVector = sqliteTable('BillVector', {
   source: text({
     enum: ['raw', 'summary', 'impact', 'funding', 'spending'],
   }).notNull(),
+});
+
+export const user = sqliteTable('User', {
+  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  twitterId: text().notNull().unique(),
+});
+
+export const chat = sqliteTable('Chat', {
+  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  user: text()
+    .notNull()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  /**
+   * This would be tweetId for the reply user has made.
+   * Essential the first tweet that started conversation with the bot
+   */
+  tweetId: text().unique(),
+});
+
+export const message = sqliteTable('Message', {
+  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  role: text({ enum: ['user', 'assistant'] }).notNull(),
+  chat: text()
+    .notNull()
+    .references(() => chat.id, { onDelete: 'cascade' }),
+  text: text().notNull(),
+  tweetId: text().unique(),
+});
+
+export const messageVector = sqliteTable('MessageVector', {
+  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
+    .notNull(),
+  message: text()
+    .notNull()
+    .references(() => message.id, { onDelete: 'cascade' }),
+  vector: float32Array('vector', { dimensions: 1536 }),
+  text: text().notNull(), // the chunk that we are embedding
 });
