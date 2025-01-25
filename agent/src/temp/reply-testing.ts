@@ -1,9 +1,9 @@
 import Handlebars from 'handlebars';
 import { createXai } from '@ai-sdk/xai';
 import dotenv from 'dotenv';
-import { CoreMessage, generateText, streamText } from 'ai';
+import { CoreMessage, generateText, streamText, tool } from 'ai';
 import { writeFile } from 'node:fs/promises';
-import { billVector, db, sql } from 'database';
+import { bill, billVector, db, desc, gt, sql } from 'database';
 import * as readline from 'node:readline/promises';
 import {
   QUESTION_EXTRACTOR_SYSTEM_PROMPT,
@@ -13,6 +13,7 @@ import {
 import { generateEmbedding, getTweet } from '../twitter/helpers';
 import { REJECTION_REASON } from '../const';
 import { openai } from '@ai-sdk/openai';
+import { z } from 'zod';
 dotenv.config();
 
 const xAi = createXai({});
@@ -46,6 +47,35 @@ const terminal = readline.createInterface({
   output: process.stdout,
 });
 
+async function getTweetContext({ id }: { id: string }) {
+  let tweets: Awaited<ReturnType<typeof getTweet>>[] = [];
+
+  let searchId: null | string = id;
+  do {
+    const tweet = await getTweet({ id: searchId });
+    tweets.push(tweet);
+    if (tweet.inReplyToId) {
+      searchId = tweet.inReplyToId;
+    }
+
+    if (tweet.inReplyToId === null) {
+      searchId = null;
+    }
+
+    // Limit to 5 tweets
+    if (tweets.length > 5) {
+      searchId = null;
+    }
+  } while (searchId);
+
+  return tweets
+    .reverse()
+    .map(tweet => tweet.text)
+    .join('\n---\n');
+}
+
+function getBillInfo({ text }: { text: string }) {}
+
 async function main() {
   const tweetUrl = await terminal.question('Enter the tweet URL: ');
   const tweetId = tweetUrl.split('/').pop();
@@ -58,7 +88,7 @@ async function main() {
   });
   const text = tweetToActionOn.text;
 
-  const mainTweet = await getTweet({
+  const threadContext = await getTweetContext({
     id: tweetToActionOn.inReplyToId!,
   });
 
@@ -81,13 +111,33 @@ async function main() {
     throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
   }
 
-  const question = questionResult.text;
-  const questionEmbedding = await generateEmbedding(question);
+  const billTitle = await generateText({
+    model: openai('gpt-4o'),
+    temperature: 0,
+    messages: [
+      {
+        role: 'system',
+        content: `You are an AI specialized in analyzing tweets related to U.S. Congressional bills. Given a tweet, extract the official title of the bill mentioned. If multiple bills are referenced, list all their titles. If no bill is mentioned, respond with 'NO_TITLE_FOUND.' Return only the title(s) without additional commentary.`,
+      },
+      {
+        role: 'user',
+        content: threadContext,
+      },
+    ],
+  });
+
+  const embeddingQueryQuestion = (() => {
+    if (billTitle.text.startsWith('NO_TITLE_FOUND')) {
+      return questionResult.text;
+    }
+    return billTitle.text;
+  })();
+  console.log(billTitle.text);
+  const questionEmbedding = await generateEmbedding(embeddingQueryQuestion);
   const embeddingArrayString = JSON.stringify(questionEmbedding);
 
   const vectorSearch = await db
     .select({
-      id: billVector.id,
       text: billVector.text,
       bill: billVector.bill,
       distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
@@ -97,9 +147,11 @@ async function main() {
       // ascending order
       sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
     )
-    .limit(5);
+    .limit(10);
 
   const relevantContext = vectorSearch.map(row => row.text).join('\n---\n');
+
+  const question = questionResult.text;
 
   const messages: CoreMessage[] = [
     {
@@ -108,11 +160,11 @@ async function main() {
     },
     {
       role: 'user',
-      content: relevantContext,
+      content: `Context from X: ${threadContext}`,
     },
     {
       role: 'user',
-      content: mainTweet.text,
+      content: `Context from database: ${relevantContext}`,
     },
     {
       role: 'user',
