@@ -2,7 +2,6 @@
   "name": "@dogeai/agent",
   "version": "0.0.1",
   "main": "src/index.ts",
-  "type": "module",
   "scripts": {
     "start": "tsx src/index.ts",
     "build": "esbuild --bundle --platform=node --outdir=dist ./src/server.ts",

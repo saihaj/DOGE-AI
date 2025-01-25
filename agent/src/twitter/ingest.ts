@@ -17,8 +17,6 @@ const SearchResultResponseSchema = z.object({
   next_cursor: z.string().nullable(),
 });
 
-const USERNAME = '@dogeai_gov';
-
 /**
  * Fetches tweets from the Twitter API and queues them for processing.
  */
@@ -41,7 +39,7 @@ export const ingestTweets = inngest.createFunction(
      *
      * Learn more about syntax here: https://github.com/igorbrigadir/twitter-advanced-search
      */
-    const searchQuery = `@${USERNAME} -from:${USERNAME} within_time:1d`;
+    const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} within_time:1d`;
     API.searchParams.set('query', searchQuery);
     API.searchParams.set('queryType', 'Latest');
 
