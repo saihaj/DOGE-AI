@@ -93,7 +93,7 @@ async function upsertChat({
  * given a tweet id, we try to follow the thread get more context about the tweet
  */
 export async function getTweetContext({ id }: { id: string }) {
-  const LIMIT = 5;
+  const LIMIT = 50;
   let tweets: Awaited<ReturnType<typeof getTweet>>[] = [];
 
   let searchId: null | string = id;
