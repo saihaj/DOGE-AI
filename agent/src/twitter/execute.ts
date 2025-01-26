@@ -1,20 +1,24 @@
 import { REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
-import { getTweet } from './helpers.ts';
-import { createXai } from '@ai-sdk/xai';
-import { generateText, embedMany } from 'ai';
+import { generateEmbedding, generateEmbeddings, getTweet } from './helpers.ts';
+import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import {
+  EXTRACT_BILL_TITLE_PROMPT,
   QUESTION_EXTRACTOR_SYSTEM_PROMPT,
   SYSTEM_PROMPT,
   TWITTER_REPLY_TEMPLATE,
 } from './prompts';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import {
+  bill,
+  billVector,
   chat as chatDbSchema,
   db,
   eq,
+  inArray,
+  like,
   message as messageDbSchema,
   messageVector,
   sql,
@@ -32,9 +36,6 @@ const textSplitter = new RecursiveCharacterTextSplitter({
   chunkSize: 512,
   chunkOverlap: 100,
 });
-
-const xAi = createXai({});
-const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
 
 async function upsertUser({ twitterId }: { twitterId: string }) {
   const user = await db.query.user.findFirst({
@@ -87,6 +88,122 @@ async function upsertChat({
 
   return chat[0];
 }
+
+/**
+ * given a tweet id, we try to follow the thread get more context about the tweet
+ */
+export async function getTweetContext({ id }: { id: string }) {
+  const LIMIT = 5;
+  let tweets: Awaited<ReturnType<typeof getTweet>>[] = [];
+
+  let searchId: null | string = id;
+  do {
+    const tweet = await getTweet({ id: searchId });
+    tweets.push(tweet);
+    if (tweet.inReplyToId) {
+      searchId = tweet.inReplyToId;
+    }
+
+    if (tweet.inReplyToId === null) {
+      searchId = null;
+    }
+
+    // Limit max tweets
+    if (tweets.length > LIMIT) {
+      searchId = null;
+    }
+  } while (searchId);
+
+  return tweets
+    .reverse()
+    .map(tweet => tweet.text)
+    .join('\n---\n');
+}
+
+/**
+ * Given some text try to narrow down the bill to focus on.
+ *
+ * If you get a bill title.
+ * then we can filter the embeddings to that title
+ * and then try to search for user question for embeddings
+ *
+ * If you do not get a bill title
+ * we are out of luck and we just use the user question to search all the embeddings
+ */
+export async function getBillContext({
+  text,
+  question,
+}: {
+  text: string;
+  question: string;
+}) {
+  const LIMIT = 10;
+  const billTitleResult = await generateText({
+    model: openai('gpt-4o'),
+    temperature: 0,
+    messages: [
+      {
+        role: 'system',
+        content: EXTRACT_BILL_TITLE_PROMPT,
+      },
+
+      {
+        role: 'user',
+        content: text,
+      },
+    ],
+  });
+
+  const questionEmbedding = await generateEmbedding(question);
+  const embeddingArrayString = JSON.stringify(questionEmbedding);
+
+  const billTitle = billTitleResult.text;
+
+  if (billTitle.startsWith('NO_TITLE_FOUND')) {
+    const vectorSearch = await db
+      .select({
+        text: billVector.text,
+        bill: billVector.bill,
+        distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
+      })
+      .from(billVector)
+      .orderBy(
+        // ascending order
+        sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
+      )
+      .limit(LIMIT);
+
+    return vectorSearch.map(row => row.text).join('\n---\n');
+  }
+
+  const billSearch = await db
+    .select({ id: bill.id })
+    .from(bill)
+    .where(like(bill.title, billTitle))
+    .limit(LIMIT);
+
+  const vectorSearch = await db
+    .select({
+      text: billVector.text,
+      bill: billVector.bill,
+      distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
+    })
+    .from(billVector)
+    .where(
+      inArray(
+        billVector.bill,
+        billSearch.map(row => row.id),
+      ),
+    )
+    .orderBy(
+      // ascending order
+      sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
+    )
+    .limit(10);
+
+  return vectorSearch.map(row => row.text).join('\n---\n');
+}
+
 /**
  * Fetches tweets from the Twitter API and queues them for processing.
  */
@@ -138,12 +255,6 @@ export const executeTweets = inngest.createFunction(
           throw new NonRetriableError(e);
         });
 
-        const mainTweet = await getTweet({
-          id: tweetToActionOn.inReplyToId!,
-        }).catch(e => {
-          throw new NonRetriableError(e);
-        });
-
         const question = await step.run('extract-question', async () => {
           const text = tweetToActionOn.text;
           const result = await generateText({
@@ -168,11 +279,22 @@ export const executeTweets = inngest.createFunction(
           return result.text;
         });
 
-        // TODO: improvement is connecting it with the KB store and provide more context
-
         const reply = await step.run('generate-reply', async () => {
+          const threadContext = tweetToActionOn.inReplyToId
+            ? await getTweetContext({
+                id: tweetToActionOn.inReplyToId,
+              }).catch(e => {
+                throw new NonRetriableError(e);
+              })
+            : tweetToActionOn.text;
+
+          const relevantContext = await getBillContext({
+            text: threadContext,
+            question,
+          });
+
           const response = await generateText({
-            model: xAi('grok-2-1212'),
+            model: openai('gpt-4o'),
             temperature: 0,
             messages: [
               {
@@ -181,7 +303,11 @@ export const executeTweets = inngest.createFunction(
               },
               {
                 role: 'user',
-                content: mainTweet.text,
+                content: `Context from X: ${threadContext}`,
+              },
+              {
+                role: 'user',
+                content: `Context from database: ${relevantContext}`,
               },
               {
                 role: 'user',
@@ -197,7 +323,6 @@ export const executeTweets = inngest.createFunction(
           return response.text;
         });
 
-        // send reply
         const repliedTweet = await step.run('send-tweet', async () => {
           const resp = await twitterClient.v2.tweet(reply, {
             reply: {
@@ -231,12 +356,6 @@ export const executeTweets = inngest.createFunction(
             .insert(messageDbSchema)
             .values([
               {
-                text: mainTweet.text,
-                chat: chat.id,
-                role: 'assistant',
-                tweetId: mainTweet.id,
-              },
-              {
                 text: tweetToActionOn.text,
                 chat: chat.id,
                 role: 'user',
@@ -254,34 +373,13 @@ export const executeTweets = inngest.createFunction(
               tweetId: messageDbSchema.tweetId,
             });
 
-          const [chunkMain, chunkActionTweet, chunkReply] = await Promise.all([
-            textSplitter.splitText(mainTweet.text),
+          const [chunkActionTweet, chunkReply] = await Promise.all([
             textSplitter.splitText(tweetToActionOn.text),
             textSplitter.splitText(reply),
           ]);
 
-          const { embeddings: mainEmbeddings } = await embedMany({
-            model: embeddingModel,
-            values: chunkMain,
-          });
-
-          await db.insert(messageVector).values(
-            chunkMain
-              .map((value, index) => ({
-                value,
-                embedding: mainEmbeddings[index],
-              }))
-              .map(({ value, embedding }) => ({
-                message: message[0].id,
-                text: value,
-                vector: sql`vector32(${JSON.stringify(embedding)})`,
-              })),
-          );
-
-          const { embeddings: actionTweetEmbeddings } = await embedMany({
-            model: embeddingModel,
-            values: chunkActionTweet,
-          });
+          const actionTweetEmbeddings =
+            await generateEmbeddings(chunkActionTweet);
 
           await db.insert(messageVector).values(
             chunkActionTweet
@@ -290,16 +388,13 @@ export const executeTweets = inngest.createFunction(
                 embedding: actionTweetEmbeddings[index],
               }))
               .map(({ value, embedding }) => ({
-                message: message[1].id,
+                message: message[0].id,
                 text: value,
                 vector: sql`vector32(${JSON.stringify(embedding)})`,
               })),
           );
 
-          const { embeddings: replyEmbeddings } = await embedMany({
-            model: embeddingModel,
-            values: chunkReply,
-          });
+          const replyEmbeddings = await generateEmbeddings(chunkReply);
 
           await db.insert(messageVector).values(
             chunkReply
@@ -308,7 +403,7 @@ export const executeTweets = inngest.createFunction(
                 embedding: replyEmbeddings[index],
               }))
               .map(({ value, embedding }) => ({
-                message: message[2].id,
+                message: message[1].id,
                 text: value,
                 vector: sql`vector32(${JSON.stringify(embedding)})`,
               })),
