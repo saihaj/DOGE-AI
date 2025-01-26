@@ -167,6 +167,9 @@ export async function getBillContext({
         distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
       })
       .from(billVector)
+      .where(
+        sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < 0.4`,
+      )
       .orderBy(
         // ascending order
         sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,

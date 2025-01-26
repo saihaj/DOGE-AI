@@ -93,11 +93,11 @@ async function main() {
     },
     {
       role: 'user',
-      content: `Context from X: ${threadContext}`,
+      content: `Context from database: ${relevantContext}`,
     },
     {
       role: 'user',
-      content: `Context from database: ${relevantContext}`,
+      content: `If there is no matching bill or detailed information available from the knowledge base, but the original ${threadContext} provides relevant details, you may discuss the topic freely while adhering to strict guidelines: Avoid stating concrete facts or figures that cannot be verified from the knowledge base; instead, focus on general insights or implications tied to the topic. Acknowledge gaps in clarity by using phrases like “Details unclear” or “Specifics not provided” to maintain transparency. Provide thoughtful analysis and actionable commentary without speculating or assuming unsupported details. For example, if the ${threadContext} states, “Government overspent $3B on redundant infrastructure projects while delaying disaster funding,” and someone asks, “What infrastructure projects were these, and why were they redundant?” an appropriate response would be, "Details unclear, but redundancy often stems from overlapping projects without coordination. Better oversight and clear priorities could prevent waste."`,
     },
     {
       role: 'user',
