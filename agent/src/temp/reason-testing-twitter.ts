@@ -5,14 +5,19 @@ import { and, bill as billDbSchema, db, eq } from 'database';
 import Handlebars from 'handlebars';
 import { writeFile } from 'node:fs/promises';
 import { ANALYZE_PROMPT, ANSWER_SYSTEM_PROMPT, TWEET_SYSTEM_PROMPT, TWEET_USER_PROMPT } from './reason-prompts';
-import { getReasonBillContext } from '../twitter/execute';
+import { getReasonBillContext, getTweetContext } from '../twitter/execute';
+import * as readline from 'node:readline/promises';
+import { getTweet } from '../twitter/helpers';
+import { QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
+import { REJECTION_REASON } from '../const';
+
 dotenv.config();
 
 const deepseek = createDeepSeek({
   apiKey: process.env.DEEPSEEK_API_KEY ?? '',
 });
 
-async function getAnswer(bill: string, user: string, tweet: string) {
+async function getAnswer(bill: string, user: string, threadContext: string) {
   const messages: CoreMessage[] = [];
 
   messages.push({
@@ -22,47 +27,8 @@ async function getAnswer(bill: string, user: string, tweet: string) {
 
   messages.push({
     role: 'user',
-    content: "Bill: {{bill}}\n\n Create a tweet based on the summary, hand pick the most important information and make it concise and to the point.",
+    content: `Context from X: ${threadContext} \n\n Context from database: ${bill} \n\n Question: ${user}`,
   });
-
-  messages.push({
-    role: 'assistant',
-    content: tweet,
-  });
-
-  messages.push({
-    role: 'user',
-    content: user,
-  });
-
-  const result = await generateText({
-    // @ts-ignore
-    model: deepseek('deepseek-reasoner'),
-    messages,
-    maxTokens: 100
-  });
-
-  return result.text;
-}
-
-async function getTweet(bill: string) {
-  const messages: CoreMessage[] = [];
-
-  const userTemplate = Handlebars.compile(TWEET_USER_PROMPT);
-  const userPrompt = userTemplate({
-    summary: bill,
-  });
-
-  messages.push({
-    role: 'system',
-    content: TWEET_SYSTEM_PROMPT,
-  });
-
-  messages.push({
-    role: 'user',
-    content: userPrompt,
-  });
-
   const result = await generateText({
     // @ts-ignore
     model: deepseek('deepseek-reasoner'),
@@ -103,22 +69,62 @@ async function getBillSummary(bill: typeof billDbSchema.$inferSelect | null) {
   return result.text;
 }
 
+const terminal = readline.createInterface({
+  input: process.stdin,
+  output: process.stdout,
+});
+
 async function main() {
-  const user = 'How would you suggest people work together to block their Stop the Scroll Act?';
+  const tweetUrl = await terminal.question('Enter the tweet URL: ');
+  const tweetId = tweetUrl.split('/').pop();
+  if (!tweetId) {
+    throw new Error('No tweet ID found');
+  }
+
+  const tweetToActionOn = await getTweet({
+    id: tweetId,
+  });
+
+  const text = tweetToActionOn.text;
+
+  const threadContext = tweetToActionOn.inReplyToId
+    ? await getTweetContext({
+        id: tweetToActionOn.inReplyToId,
+      })
+    : tweetToActionOn.text;
+
+const originalBillPost = threadContext;
+
+console.log(originalBillPost);
+
+  const questionResult = await generateText({
+    model: deepseek('deepseek-chat'),
+    temperature: 0,
+    messages: [
+      {
+        role: 'system',
+        content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
+      },
+      {
+        role: 'user',
+        content: text,
+      },
+    ],
+  });
+
+  if (questionResult.text.startsWith('NO_QUESTION_DETECTED')) {
+    throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
+  }
+
   
-  const bill = await getReasonBillContext({question:user, text: user});
+  const user = questionResult.text;
+
+  const bill = await getReasonBillContext({question:originalBillPost, text: originalBillPost});
 
   const summary = await getBillSummary(bill);
   console.log('DOGEai: ', summary);
 
-  const tweet = await getTweet(summary);
-
-  await writeFile(
-    `dev-test/tweet.txt`,
-    tweet,
-  );
-
-  const answer = await getAnswer(summary, user, tweet);
+  const answer = await getAnswer(summary, user, threadContext);
 
   const answerWithQuestion = `User: ${user}\nDogeAI: ${answer}`;
   await writeFile(

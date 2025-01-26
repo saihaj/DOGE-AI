@@ -2,7 +2,7 @@ import { IS_PROD, REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import { generateEmbedding, generateEmbeddings, getTweet } from './helpers.ts';
-import { generateText } from 'ai';
+import { generateText, tool } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import {
   EXTRACT_BILL_TITLE_PROMPT,
@@ -12,6 +12,7 @@ import {
 } from './prompts';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import {
+  and,
   bill,
   billVector,
   chat as chatDbSchema,
@@ -23,7 +24,9 @@ import {
   messageVector,
   sql,
   user as userDbSchema,
+  bill as billDbSchema,
 } from 'database';
+
 import {
   approvedTweet,
   rejectedTweet,
@@ -31,6 +34,7 @@ import {
   sendDevTweet,
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
+import { z } from 'zod';
 
 const textSplitter = new RecursiveCharacterTextSplitter({
   // Recommendations from ChatGPT
@@ -206,6 +210,140 @@ export async function getBillContext({
     .limit(10);
 
   return vectorSearch.map(row => row.text).join('\n---\n');
+}
+
+/**
+ * Given some text try to find the specific bill.
+ *
+ * If you do not get a bill title
+ * we are out of luck and safely error
+ */
+export async function getReasonBillContext({
+  text,
+  question,
+}: {
+  text: string;
+  question: string;
+}) {
+  const LIMIT = 10;
+
+  const billTitleResult = await generateText({
+    model: openai('gpt-4o'),
+    temperature: 0,
+    messages: [
+      {
+        role: 'user',
+        content: "You are an AI specialized in analyzing tweets related to U.S. Congressional bills. Given a tweet, extract the official title of the bill mentioned. If multiple bills are referenced, list all their titles. If no bill is mentioned, respond with 'NO_TITLE_FOUND.' Return only the title(s) without additional commentary. \n\n Text:" + text,
+      },
+    ],
+  });
+
+  if (billTitleResult.text.startsWith('NO_TITLE_FOUND')) {
+    new Error('No bills matched');
+  }
+
+  const questionEmbedding = await generateEmbedding(billTitleResult.text);
+  const embeddingArrayString = JSON.stringify(questionEmbedding);
+
+  const vectorSearch = await db
+    .select({
+      text: billVector.text,
+      bill: billVector.bill,
+      distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
+    })
+    .from(billVector)
+    .orderBy(
+      // ascending order
+      sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
+    )
+    .limit(LIMIT);
+
+  const baseText = vectorSearch.map(row => row.text).join('\n---\n');
+
+  // 1) Ask LLM to extract the Bill Title from the text.
+  const finalBill = await generateText({
+    model: openai('gpt-4o'),
+    temperature: 0,
+    tools: {
+      searchBill: tool({
+        description: `Given a bill title, find the corresponding bill ID in the database. If no bill is found, return 'NO_TITLE_FOUND'.`,
+        parameters: z.object({
+          title: z.string(),
+        }),
+        execute: async ({ title }) => {
+          const bill = await db
+            .select()
+            .from(billDbSchema)
+            .where(eq(billDbSchema.title, title))
+            .limit(1);
+          if (bill.length === 1) {
+            return bill[0].id;
+          } else {
+            return 'NO_TITLE_FOUND';
+          }
+        },
+      }),
+      searchEmbeddings: tool({
+        description: 'Find similar bills based on the text. Return up to 5 bills.',
+        parameters: z.object({
+          text: z.string(),
+        }),
+        execute: async ({ text }) => {
+          const embedding = await generateEmbedding(text);
+          const embeddingArrayString = JSON.stringify(embedding);
+          
+          const vectorSearch = await db
+            .select({
+              text: billVector.text,
+              bill: billVector.bill,
+              distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
+            })
+            .from(billVector)
+            .orderBy(
+              sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`
+            )
+            .limit(5);
+
+          return vectorSearch.map(row => ({
+            id: row.bill,
+            text: row.text,
+            distance: row.distance,
+          }));
+        },
+      }),
+    },
+    messages: [
+      {
+        role: 'system',
+        content: "Analyze the text and identify the exact bill mentioned. Return ONLY the single corresponding bill ID from the database. If uncertain or no exact match is found, respond with 'NO_EXACT_MATCH'. Do not provide any additional commentary.",
+      },
+      {
+        role: 'user',
+        content: `startingPoint: ${baseText}\n\nText: ${text} `,
+      },
+    ],
+    maxSteps: 10,
+  });
+
+  console.log(finalBill);
+
+  const billId = finalBill.steps[finalBill.steps.length - 1].text;
+  if (billId === 'NO_TITLE_FOUND') {
+    throw new Error('No bills matched');
+  }
+
+  if (typeof billId === 'string') {
+    console.log('billId', billId);
+    const bill = await db.select().from(billDbSchema).where(eq(billDbSchema.id, billId));
+    if (bill.length === 0) {
+      throw new Error('No bills matched');
+    }
+    console.log("real number: ", bill[0].htmlVersionUrl);
+    return bill[0];
+  }
+
+  // everything else failed :(
+  throw new Error('No bills matched');
 }
 
 /**
