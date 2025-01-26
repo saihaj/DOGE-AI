@@ -6,6 +6,11 @@ import {
 } from '../const';
 import { TweetResponse } from '../inngest';
 import { bento } from '../cache';
+import { embed, embedMany, type Embedding } from 'ai';
+import { openai } from '@ai-sdk/openai';
+
+// Ada V2 31.4% vs 54.9% large
+const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
 
 const API = new URL(TWITTER_API_BASE_URL);
 
@@ -40,3 +45,22 @@ export async function getTweet({ id }: { id: string }) {
     return tweet.data.tweets[0];
   });
 }
+
+export const generateEmbedding = async (value: string): Promise<Embedding> => {
+  const input = value.replaceAll('\\n', ' ');
+  const { embedding } = await embed({
+    model: embeddingModel,
+    value: input,
+  });
+  return embedding;
+};
+
+export const generateEmbeddings = async (
+  data: string[],
+): Promise<Embedding[]> => {
+  const { embeddings } = await embedMany({
+    model: embeddingModel,
+    values: data,
+  });
+  return embeddings;
+};
