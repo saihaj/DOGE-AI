@@ -85,4 +85,4 @@ export const DISCORD_LOCAL_TWEETS_CHANNEL_ID = (() => {
   }
   return process.env.DISCORD_LOCAL_TWEETS_CHANNEL_ID;
 })();
-export const LOCAL_MODE = process.env.LOCAL_MODE === 'true';
+export const IS_PROD = process.env.NODE_ENV === 'production';

@@ -1,4 +1,4 @@
-import { LOCAL_MODE, REJECTION_REASON } from '../const';
+import { IS_PROD, REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import { generateEmbedding, generateEmbeddings, getTweet } from './helpers.ts';
@@ -329,7 +329,7 @@ export const executeTweets = inngest.createFunction(
 
         const repliedTweet = await step.run('send-tweet', async () => {
           // Locally we don't want to send anything to Twitter
-          if (LOCAL_MODE) {
+          if (!IS_PROD) {
             await sendDevTweet({
               tweetUrl: `https://twitter.com/i/web/status/${tweetToActionOn.id}`,
               question,
@@ -353,7 +353,7 @@ export const executeTweets = inngest.createFunction(
 
         await step.run('notify-discord', async () => {
           // No need to send to discord in local mode since we are already spamming dev test channel
-          if (LOCAL_MODE) return;
+          if (!IS_PROD) return;
 
           await approvedTweet({
             tweetUrl: `https://twitter.com/i/web/status/${repliedTweet.id}`,
