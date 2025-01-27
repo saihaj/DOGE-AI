@@ -307,7 +307,7 @@ export default function Home() {
                 borderRadius: '210px',
                 border: '1px solid #232A43',
               }}
-              dateTime="2025-01-16"
+              dateTime="2025-01-27"
             >
               <span className="text-[#839EFF]">Cutoff Date: </span>
               <span className="font-semibold">January 27, 2025</span>
