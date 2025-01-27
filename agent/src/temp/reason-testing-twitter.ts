@@ -4,7 +4,12 @@ import { createDeepSeek } from '@ai-sdk/deepseek';
 import { and, bill as billDbSchema, db, eq } from 'database';
 import Handlebars from 'handlebars';
 import { writeFile } from 'node:fs/promises';
-import { ANALYZE_PROMPT, ANSWER_SYSTEM_PROMPT, TWEET_SYSTEM_PROMPT, TWEET_USER_PROMPT } from './reason-prompts';
+import {
+  ANALYZE_PROMPT,
+  ANSWER_SYSTEM_PROMPT,
+  TWEET_SYSTEM_PROMPT,
+  TWEET_USER_PROMPT,
+} from './reason-prompts';
 import { getReasonBillContext, getTweetContext } from '../twitter/execute';
 import * as readline from 'node:readline/promises';
 import { getTweet } from '../twitter/helpers';
@@ -33,7 +38,8 @@ async function getAnswer(bill: string, user: string, threadContext: string) {
     // @ts-ignore
     model: deepseek('deepseek-reasoner'),
     messages,
-    maxTokens: 100
+    maxTokens: 100,
+    temperature: 0.6,
   });
 
   return result.text;
@@ -64,6 +70,7 @@ async function getBillSummary(bill: typeof billDbSchema.$inferSelect | null) {
     // @ts-ignore
     model: deepseek('deepseek-reasoner'),
     messages,
+    temperature: 0.6,
   });
 
   return result.text;
@@ -93,9 +100,9 @@ async function main() {
       })
     : tweetToActionOn.text;
 
-const originalBillPost = threadContext;
+  const originalBillPost = threadContext;
 
-console.log(originalBillPost);
+  console.log(originalBillPost);
 
   const questionResult = await generateText({
     model: deepseek('deepseek-chat'),
@@ -116,10 +123,12 @@ console.log(originalBillPost);
     throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
   }
 
-  
   const user = questionResult.text;
 
-  const bill = await getReasonBillContext({question:originalBillPost, text: originalBillPost});
+  const bill = await getReasonBillContext({
+    question: originalBillPost,
+    text: originalBillPost,
+  });
 
   const summary = await getBillSummary(bill);
   console.log('DOGEai: ', summary);
@@ -127,10 +136,9 @@ console.log(originalBillPost);
   const answer = await getAnswer(summary, user, threadContext);
 
   const answerWithQuestion = `User: ${user}\nDogeAI: ${answer}`;
-  await writeFile(
-    `dev-test/answer.txt`,
-    answerWithQuestion,
-  );
+  await writeFile(`dev-test/answer.txt`, answerWithQuestion);
+
+  console.log(answerWithQuestion);
 }
 
 main().catch(console.error);
