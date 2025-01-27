@@ -1,6 +1,7 @@
 import dotenv from 'dotenv';
 import { CoreMessage, generateText } from 'ai';
 import { createDeepSeek } from '@ai-sdk/deepseek';
+import { createOpenAI } from '@ai-sdk/openai';
 import { and, bill as billDbSchema, db, eq } from 'database';
 import Handlebars from 'handlebars';
 import { writeFile } from 'node:fs/promises';
@@ -10,7 +11,11 @@ import {
   TWEET_SYSTEM_PROMPT,
   TWEET_USER_PROMPT,
 } from './reason-prompts';
-import { getReasonBillContext, getTweetContext } from '../twitter/execute';
+import {
+  getReasonBillContext,
+  getTweetContext,
+  getTweetMessages,
+} from '../twitter/execute';
 import * as readline from 'node:readline/promises';
 import { getTweet } from '../twitter/helpers';
 import { QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
@@ -18,29 +23,37 @@ import { REJECTION_REASON } from '../const';
 
 dotenv.config();
 
-const deepseek = createDeepSeek({
-  apiKey: process.env.DEEPSEEK_API_KEY ?? '',
+const openai = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY ?? '',
 });
 
-async function getAnswer(bill: string, user: string, threadContext: string) {
+async function getAnswer(
+  bill: string,
+  user: string,
+  threadMessages: CoreMessage[],
+) {
   const messages: CoreMessage[] = [];
 
   messages.push({
-    role: 'system',
+    // @ts-ignore
+    role: 'developer',
     content: ANSWER_SYSTEM_PROMPT,
   });
 
+  messages.push(...threadMessages);
+
   messages.push({
     role: 'user',
-    content: `Context from X: ${threadContext} \n\n Context from database: ${bill} \n\n Question: ${user}`,
+    content: `Context from database: ${bill} \n\n Question: ${user}`,
   });
   const result = await generateText({
     // @ts-ignore
-    model: deepseek('deepseek-reasoner'),
+    // Temperature is not supported for o1-mini
+    model: openai('o1-mini'),
     messages,
-    maxTokens: 100,
-    temperature: 0.6,
   });
+
+  console.log(result);
 
   return result.text;
 }
@@ -68,9 +81,9 @@ async function getBillSummary(bill: typeof billDbSchema.$inferSelect | null) {
 
   const result = await generateText({
     // @ts-ignore
-    model: deepseek('deepseek-reasoner'),
+    // Temperature is not supported for o1-mini
+    model: openai('o1-mini'),
     messages,
-    temperature: 0.6,
   });
 
   return result.text;
@@ -94,18 +107,14 @@ async function main() {
 
   const text = tweetToActionOn.text;
 
-  const threadContext = tweetToActionOn.inReplyToId
-    ? await getTweetContext({
+  const threadMessages = tweetToActionOn.inReplyToId
+    ? await getTweetMessages({
         id: tweetToActionOn.inReplyToId,
       })
     : tweetToActionOn.text;
 
-  const originalBillPost = threadContext;
-
-  console.log(originalBillPost);
-
   const questionResult = await generateText({
-    model: deepseek('deepseek-chat'),
+    model: openai('gpt-4o'),
     temperature: 0,
     messages: [
       {
@@ -126,14 +135,13 @@ async function main() {
   const user = questionResult.text;
 
   const bill = await getReasonBillContext({
-    question: originalBillPost,
-    text: originalBillPost,
+    messages: threadMessages,
   });
 
   const summary = await getBillSummary(bill);
-  console.log('DOGEai: ', summary);
+  console.log('Summary Context: ', summary);
 
-  const answer = await getAnswer(summary, user, threadContext);
+  const answer = await getAnswer(summary, user, threadMessages);
 
   const answerWithQuestion = `User: ${user}\nDogeAI: ${answer}`;
   await writeFile(`dev-test/answer.txt`, answerWithQuestion);
