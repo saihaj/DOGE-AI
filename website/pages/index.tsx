@@ -310,7 +310,7 @@ export default function Home() {
               dateTime="2025-01-16"
             >
               <span className="text-[#839EFF]">Cutoff Date: </span>
-              <span className="font-semibold">January 16, 2025</span>
+              <span className="font-semibold">January 27, 2025</span>
             </time>
 
             <div className="grid md:grid-cols-2 gap-4 w-full">
