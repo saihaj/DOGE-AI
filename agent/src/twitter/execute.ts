@@ -25,6 +25,7 @@ import {
   sql,
   user as userDbSchema,
   bill as billDbSchema,
+  or,
 } from 'database';
 
 import { TWITTER_USERNAME } from '../const.ts';
@@ -261,7 +262,7 @@ export async function getReasonBillContext({
   const LIMIT = 5;
   const THRESHOLD = 0.6;
 
-  const billTitleResult = await generateObject({
+  const { object: billTitleResult } = await generateObject({
     model: openai('gpt-4o', {
       structuredOutputs: true,
     }),
@@ -287,62 +288,81 @@ export async function getReasonBillContext({
     }),
   });
 
-  console.log(billTitleResult.object);
+  console.log(billTitleResult);
 
   if (
-    billTitleResult.object.names.length === 0 &&
-    billTitleResult.object.keywords.length === 0
+    billTitleResult.names.length === 0 &&
+    billTitleResult.keywords.length === 0
   ) {
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
-  const searchPromises = [
-    ...billTitleResult.object.names,
-    ...billTitleResult.object.keywords,
-  ].map(async term => {
-    const termEmbedding = await generateEmbedding(term);
-    const termEmbeddingString = JSON.stringify(termEmbedding);
+  const billIds = await (async () => {
+    if (billTitleResult.names.length > 0) {
+      const loweredTitles = billTitleResult.names.map(title =>
+        title.toLowerCase(),
+      );
+      console.log(loweredTitles);
+      const billSearch = await db
+        .select({ id: billDbSchema.id })
+        .from(billDbSchema)
+        .where(inArray(sql`LOWER(${billDbSchema.title})`, loweredTitles))
+        .limit(LIMIT);
 
-    return db
-      .select({
-        text: billVector.text,
-        billId: billVector.bill,
-        distance: sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString}))`,
-      })
-      .from(billVector)
-      .orderBy(
-        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
-      )
-      .limit(LIMIT);
-  });
+      return billSearch.map(row => row.id);
+    }
+    return [];
+  })();
+  console.log(`Found ${billIds.length} bill IDs.`);
 
-  const searchResults = await Promise.all(searchPromises);
+  // we got bills from the title, we can just return the first one
+  if (billIds.length > 0) {
+    const bill = await db
+      .select()
+      .from(billDbSchema)
+      .where(inArray(billDbSchema.id, billIds))
+      .limit(1);
 
-  const seenBills = new Set<string>();
-  const vectorSearch = searchResults.flat().filter(row => {
-    if (seenBills.has(row.billId)) return false;
-    seenBills.add(row.billId);
-    return true;
-  });
-
-  const uniqueBillIds = Array.from(seenBills);
-  const bills = await db
-    .select()
-    .from(billDbSchema)
-    .where(inArray(billDbSchema.id, uniqueBillIds));
-
-  // lookup map from billId -> bill data
-  const billLookup = new Map<string, { id: string; title: string }>();
-  for (const bill of bills) {
-    billLookup.set(bill.id, bill);
+    return bill[0];
   }
 
-  const baseText = vectorSearch
-    .filter(row => typeof row.distance === 'number' && row.distance < THRESHOLD)
-    .map(row => {
-      const billRecord = billLookup.get(row.billId);
-      const billTitle = billRecord?.title ?? 'Unknown Title';
-      return `Bill: ${billTitle}\nText:\n\n${row.text}`;
+  const embeddingsForKeywords = await Promise.all(
+    billTitleResult.keywords.map(async term => {
+      const termEmbedding = await generateEmbedding(term);
+      return JSON.stringify(termEmbedding);
+    }),
+  );
+  console.log(`Found ${embeddingsForKeywords.length} embeddings.`);
+
+  const searchPromises = embeddingsForKeywords.map(
+    async termEmbeddingString => {
+      const embeddingsQuery = db
+        .select({
+          text: billVector.text,
+          billId: billVector.bill,
+          distance: sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString}))`,
+          title: billDbSchema.title,
+        })
+        .from(billVector)
+        .where(
+          sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
+        )
+        .orderBy(
+          sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
+        )
+        .leftJoin(billDbSchema, eq(billDbSchema.id, billVector.bill))
+        .limit(LIMIT);
+
+      return embeddingsQuery;
+    },
+  );
+
+  const searchResults = (await Promise.all(searchPromises)).flat();
+  console.log(`Found ${searchResults.length} vector search results.`);
+
+  const baseText = searchResults
+    .map(({ title, text }) => {
+      return `Bill: ${title}\nText:\n\n${text}`;
     })
     .join('\n\n');
 
@@ -351,24 +371,6 @@ export async function getReasonBillContext({
     model: openai('gpt-4o'),
     temperature: 0,
     tools: {
-      searchBill: tool({
-        description: `Given a bill title, find the corresponding bill ID in the database. If no bill is found, return 'NO_TITLE_FOUND'.`,
-        parameters: z.object({
-          title: z.string(),
-        }),
-        execute: async ({ title }) => {
-          const bill = await db
-            .select()
-            .from(billDbSchema)
-            .where(eq(billDbSchema.title, title))
-            .limit(1);
-          if (bill.length === 1) {
-            return bill[0].originChamber + bill[0].number;
-          } else {
-            return 'NO_TITLE_FOUND';
-          }
-        },
-      }),
       searchEmbeddings: tool({
         description:
           'Find similar bills based on the text. Return up to 5 bills.',
@@ -384,36 +386,21 @@ export async function getReasonBillContext({
               text: billVector.text,
               billId: billVector.bill,
               distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
+              title: billDbSchema.title,
             })
             .from(billVector)
+            .where(
+              sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < ${THRESHOLD}`,
+            )
             .orderBy(
               sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
             )
-            .limit(5);
+            .leftJoin(billDbSchema, eq(billDbSchema.id, billVector.bill))
+            .limit(LIMIT);
 
-          const filteredRows = vectorSearch.filter(
-            row => row.distance < THRESHOLD,
-          );
-
-          const uniqueBillIds = [
-            ...new Set(filteredRows.map(row => row.billId)),
-          ];
-
-          const bills = await db
-            .select()
-            .from(billDbSchema)
-            .where(inArray(billDbSchema.id, uniqueBillIds));
-
-          // lookup map from billId -> bill data
-          const billLookup = new Map<string, { id: string; title: string }>();
-          for (const bill of bills) {
-            billLookup.set(bill.id, bill);
-          }
-
-          const results = filteredRows.map(row => {
-            const billRecord = billLookup.get(row.billId);
+          const results = vectorSearch.map(row => {
             return {
-              title: billRecord?.title ?? 'Unknown Title',
+              title: row.title,
               text: row.text,
             };
           });
@@ -426,51 +413,35 @@ export async function getReasonBillContext({
       {
         role: 'system',
         content:
-          "Analyze the text and identify the exact bill mentioned. Return ONLY the single corresponding bill ID from the database. If uncertain or no exact match is found, respond with 'NO_EXACT_MATCH'. Do not provide any additional commentary.",
+          "Analyze the text and identify the exact bill mentioned. Return ONLY the single corresponding bill title from the database. If uncertain or no exact match is found, respond with 'NO_EXACT_MATCH'. Do not provide any additional commentary.",
       },
       {
         role: 'user',
-        content: `startingPoint: ${baseText}\n\nText: ${billTitleResult.object.names.join('\n')} ${billTitleResult.object.keywords.join('\n')}`,
+        content: `startingPoint: ${baseText}\n\nText: ${billTitleResult.names.join('\n')} ${billTitleResult.keywords.join('\n')}`,
       },
     ],
     maxSteps: 10,
   });
 
-  console.log(finalBill);
+  console.log(finalBill.text);
 
-  const billId = finalBill.text;
-  if (billId === 'NO_TITLE_FOUND' || billId === 'NO_EXACT_MATCH') {
+  const billTitle = finalBill.text;
+  if (
+    billTitle.startsWith('NO_TITLE_FOUND') ||
+    billTitle.startsWith('NO_EXACT_MATCH')
+  ) {
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
-  if (typeof billId === 'string') {
-    // ai too dumb to handle: "S.5446", "S. 5445", "S 5446" and "S5446"
-    const parts = billId.includes('.')
-      ? billId.split('.')
-      : [billId[0], billId.slice(1)];
-    const type = parts[0];
-    const number = parts[1];
+  const bill = await db.query.bill.findFirst({
+    where: eq(sql`lower(${billDbSchema.title})`, billTitle.toLowerCase()),
+  });
 
-    const bill = await db
-      .select()
-      .from(billDbSchema)
-      .where(
-        and(
-          eq(billDbSchema.type, type),
-          eq(billDbSchema.number, Number(number)),
-        ),
-      );
-    if (bill.length === 0) {
-      throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
-    }
-
-    console.log(`billId: ${billId}, billName: ${bill[0].title}`);
-    console.log('real number: ', bill[0].htmlVersionUrl);
-    return bill[0];
+  if (!bill) {
+    throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
-  // everything else failed :(
-  throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
+  return bill;
 }
 
 /**
