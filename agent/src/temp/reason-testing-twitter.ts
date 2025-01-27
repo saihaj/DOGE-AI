@@ -5,9 +5,12 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { and, bill as billDbSchema, db, eq } from 'database';
 import Handlebars from 'handlebars';
 import { writeFile } from 'node:fs/promises';
+import * as readline from 'node:readline/promises';
+import { QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
 import {
   ANALYZE_PROMPT,
   ANSWER_SYSTEM_PROMPT,
+  AUTONOMOUS_ANSWER_SYSTEM_PROMPT,
   TWEET_SYSTEM_PROMPT,
   TWEET_USER_PROMPT,
 } from './reason-prompts';
@@ -16,10 +19,7 @@ import {
   getTweetContext,
   getTweetMessages,
 } from '../twitter/execute';
-import * as readline from 'node:readline/promises';
 import { getTweet } from '../twitter/helpers';
-import { QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
-import { REJECTION_REASON } from '../const';
 
 dotenv.config();
 
@@ -28,60 +28,65 @@ const openai = createOpenAI({
 });
 
 async function getAnswer(
-  bill: string,
   user: string,
   threadMessages: CoreMessage[],
-) {
-  const messages: CoreMessage[] = [];
+  autonomous: boolean = false,
+  bill?: string,
+): Promise<string> {
+  const messages: CoreMessage[] = [
+    {
+      role: 'user',
+      content: autonomous
+        ? AUTONOMOUS_ANSWER_SYSTEM_PROMPT
+        : ANSWER_SYSTEM_PROMPT,
+    },
+    ...threadMessages,
+    {
+      role: 'user',
+      content: bill
+        ? `Context from database: ${bill}\n\n Question: ${user}`
+        : `Question: ${user}`,
+    },
+  ];
 
-  messages.push({
-    // @ts-ignore
-    role: 'user',
-    content: ANSWER_SYSTEM_PROMPT,
-  });
-
-  messages.push(...threadMessages);
-
-  messages.push({
-    role: 'user',
-    content: `Context from database: ${bill} \n\n Question: ${user}`,
-  });
   const result = await generateText({
+    // o1-mini does not support temperature
     // @ts-ignore
-    // Temperature is not supported for o1-mini
     model: openai('o1-mini'),
     messages,
   });
 
-  console.log(result);
-
   return result.text;
 }
 
-async function getBillSummary(bill: typeof billDbSchema.$inferSelect | null) {
-  const messages: CoreMessage[] = [];
+async function getBillSummary(
+  bill: typeof billDbSchema.$inferSelect | null,
+): Promise<string> {
+  if (!bill) return '';
 
   const template = Handlebars.compile(ANALYZE_PROMPT);
   const prompt = template({
-    billType: bill?.type,
-    billNumber: bill?.number,
-    billCongress: bill?.congress,
-    billOriginChamber: bill?.originChamber,
-    billTitle: bill?.title,
-    content: bill?.content,
-    impact: bill?.impact,
-    funding: bill?.funding,
-    spending: bill?.spending,
+    billType: bill.type,
+    billNumber: bill.number,
+    billCongress: bill.congress,
+    billOriginChamber: bill.originChamber,
+    billTitle: bill.title,
+    content: bill.content,
+    impact: bill.impact,
+    funding: bill.funding,
+    spending: bill.spending,
   });
 
-  messages.push({
-    role: 'user',
-    content: prompt,
-  });
+  const messages: CoreMessage[] = [
+    {
+      role: 'user',
+      content: prompt,
+    },
+  ];
 
   const result = await generateText({
+    // o1-mini does not support temperature
     // @ts-ignore
-    // Temperature is not supported for o1-mini
     model: openai('o1-mini'),
     messages,
   });
@@ -89,39 +94,7 @@ async function getBillSummary(bill: typeof billDbSchema.$inferSelect | null) {
   return result.text;
 }
 
-const terminal = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-async function main() {
-  const tweetUrl = await terminal.question('Enter the tweet URL: ');
-  const tweetId = tweetUrl.split('/').pop();
-  if (!tweetId) {
-    throw new Error('No tweet ID found');
-  }
-
-  const tweetToActionOn = await getTweet({
-    id: tweetId,
-  });
-
-  const text = tweetToActionOn.text;
-
-  let threadMessages = tweetToActionOn.inReplyToId
-    ? await getTweetMessages({
-        id: tweetToActionOn.inReplyToId,
-      })
-    : tweetToActionOn.text;
-
-  if (typeof threadMessages === 'string') {
-    threadMessages = [
-      {
-        role: 'user',
-        content: threadMessages,
-      },
-    ];
-  }
-
+async function extractQuestion(text: string): Promise<string> {
   const questionResult = await generateText({
     model: openai('gpt-4o'),
     temperature: 0,
@@ -137,26 +110,95 @@ async function main() {
     ],
   });
 
-  let extractedText = questionResult.text;
+  let extractedText = questionResult.text.trim();
   if (extractedText.startsWith('NO_QUESTION_DETECTED')) {
+    // If no question was detected, just return the original text
     extractedText = text;
   }
 
-  const user = extractedText;
+  return extractedText;
+}
 
-  const bill = await getReasonBillContext({
-    messages: threadMessages,
+async function main() {
+  const terminal = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
   });
 
-  const summary = await getBillSummary(bill);
-  console.log('Summary Context: ', summary);
+  try {
+    const tweetUrl = await terminal.question('Enter the tweet URL: ');
+    terminal.close();
 
-  const answer = await getAnswer(summary, user, threadMessages);
+    const tweetId = tweetUrl.split('/').pop();
+    if (!tweetId) {
+      throw new Error('No tweet ID found in the provided URL.');
+    }
 
-  const answerWithQuestion = `User: ${user}\nDogeAI: ${answer}`;
-  await writeFile(`dev-test/answer.txt`, answerWithQuestion);
+    const tweetToActionOn = await getTweet({ id: tweetId });
+    const text = tweetToActionOn.text;
 
-  console.log(answerWithQuestion);
+    let autonomous = false;
+    let threadMessages: CoreMessage[] | string = tweetToActionOn.text;
+    if (tweetToActionOn.inReplyToId) {
+      threadMessages = await getTweetMessages({
+        id: tweetToActionOn.inReplyToId,
+      });
+    }
+
+    // if threadMessages is a string, it means we only have text
+    // we are in "autonomous" mode
+    if (typeof threadMessages === 'string') {
+      threadMessages = [
+        {
+          role: 'user',
+          content: threadMessages,
+        },
+      ];
+      autonomous = true;
+    }
+
+    const userQuestion = await extractQuestion(text);
+
+    // Extract the bill object from the thread. TODO: accept an array of bills.
+    let bill: typeof billDbSchema.$inferSelect | null = null;
+    let noContext = false;
+    try {
+      bill = await getReasonBillContext({ messages: threadMessages });
+    } catch (err) {
+      console.log(
+        'Error retrieving bill context. Proceeding without context...',
+        err,
+      );
+      noContext = true;
+    }
+
+    // Summarize the bill if we found one
+    let summary = '';
+    if (!noContext && bill) {
+      summary = await getBillSummary(bill);
+      console.log('Summary Context:\n', summary, '\n');
+    }
+
+    if (!bill) {
+      autonomous = true;
+    }
+
+    const finalAnswer = await getAnswer(
+      userQuestion,
+      threadMessages,
+      autonomous,
+      summary,
+    );
+
+    const answerWithQuestion = `User: ${userQuestion}\n\nDogeAI: ${finalAnswer}`;
+    await writeFile(`dev-test/answer.txt`, answerWithQuestion);
+
+    // Also print to console
+    console.log('\n----- Final Answer -----');
+    console.log(answerWithQuestion);
+  } catch (error) {
+    console.error('An error occurred:', error);
+  }
 }
 
 main().catch(console.error);
