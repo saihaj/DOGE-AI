@@ -73,10 +73,16 @@ export const TWITTER_ACCESS_TOKEN = (() => {
   }
   return process.env.TWITTER_ACCESS_TOKEN;
 })();
-
 export const TWITTER_ACCESS_SECRET = (() => {
   if (!process.env.TWITTER_ACCESS_SECRET) {
     throw new Error('TWITTER_ACCESS_SECRET is not set in your .env');
   }
   return process.env.TWITTER_ACCESS_SECRET;
 })();
+export const DISCORD_LOCAL_TWEETS_CHANNEL_ID = (() => {
+  if (!process.env.DISCORD_LOCAL_TWEETS_CHANNEL_ID) {
+    throw new Error('DISCORD_LOCAL_TWEETS_CHANNEL_ID is not set in your .env');
+  }
+  return process.env.DISCORD_LOCAL_TWEETS_CHANNEL_ID;
+})();
+export const IS_PROD = process.env.NODE_ENV === 'production';
