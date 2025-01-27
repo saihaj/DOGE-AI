@@ -8,6 +8,7 @@ import { discordClient } from './client';
 import {
   DISCORD_APPROVED_CHANNEL_ID,
   DISCORD_ERROR_LOG_CHANNEL_ID,
+  DISCORD_LOCAL_TWEETS_CHANNEL_ID,
   DISCORD_REJECTED_CHANNEL_ID,
   DISCORD_SERVER_ID,
 } from '../const';
@@ -68,5 +69,26 @@ export async function reportFailureToDiscord({ message }: { message: string }) {
   }
   await channel.send({
     content: message,
+  });
+}
+
+export async function sendDevTweet({
+  tweetUrl,
+  question,
+  response,
+}: {
+  tweetUrl: string;
+  question: string;
+  response: string;
+}) {
+  const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
+  const channel = await guild.channels.fetch(DISCORD_LOCAL_TWEETS_CHANNEL_ID);
+
+  if (!channel || !(channel instanceof TextChannel)) {
+    throw Error('Rejection channel not found or not a text channel');
+  }
+
+  await channel.send({
+    content: `**Tweet**: ${tweetUrl}\n**Extracted question**: ${question}\n**Response**: ${response}`,
   });
 }

@@ -1,4 +1,4 @@
-import { REJECTION_REASON } from '../const';
+import { LOCAL_MODE, REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import { generateEmbedding, generateEmbeddings, getTweet } from './helpers.ts';
@@ -28,6 +28,7 @@ import {
   approvedTweet,
   rejectedTweet,
   reportFailureToDiscord,
+  sendDevTweet,
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
 
@@ -327,6 +328,18 @@ export const executeTweets = inngest.createFunction(
         });
 
         const repliedTweet = await step.run('send-tweet', async () => {
+          // Locally we don't want to send anything to Twitter
+          if (LOCAL_MODE) {
+            await sendDevTweet({
+              tweetUrl: `https://twitter.com/i/web/status/${tweetToActionOn.id}`,
+              question,
+              response: reply,
+            });
+            return {
+              id: 'local_id',
+            };
+          }
+
           const resp = await twitterClient.v2.tweet(reply, {
             reply: {
               in_reply_to_tweet_id: tweetToActionOn.id,
@@ -339,6 +352,9 @@ export const executeTweets = inngest.createFunction(
         });
 
         await step.run('notify-discord', async () => {
+          // No need to send to discord in local mode since we are already spamming dev test channel
+          if (LOCAL_MODE) return;
+
           await approvedTweet({
             tweetUrl: `https://twitter.com/i/web/status/${repliedTweet.id}`,
           });
