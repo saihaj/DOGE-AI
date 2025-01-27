@@ -7,6 +7,7 @@ import { executeTweets } from './twitter/execute';
 import { DISCORD_TOKEN } from './const';
 import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
+import { ingestInteractionTweets } from './twitter/ingest-interact';
 
 const fastify = Fastify();
 
@@ -14,7 +15,12 @@ fastify.route({
   method: ['GET', 'POST', 'PUT'],
   handler: serve({
     client: inngest,
-    functions: [ingestTweets, processTweets, executeTweets],
+    functions: [
+      ingestTweets,
+      processTweets,
+      executeTweets,
+      ingestInteractionTweets,
+    ],
   }),
   url: '/api/inngest',
 });
