@@ -36,7 +36,7 @@ async function getAnswer(
 
   messages.push({
     // @ts-ignore
-    role: 'developer',
+    role: 'user',
     content: ANSWER_SYSTEM_PROMPT,
   });
 
@@ -107,11 +107,20 @@ async function main() {
 
   const text = tweetToActionOn.text;
 
-  const threadMessages = tweetToActionOn.inReplyToId
+  let threadMessages = tweetToActionOn.inReplyToId
     ? await getTweetMessages({
         id: tweetToActionOn.inReplyToId,
       })
     : tweetToActionOn.text;
+
+  if (typeof threadMessages === 'string') {
+    threadMessages = [
+      {
+        role: 'user',
+        content: threadMessages,
+      },
+    ];
+  }
 
   const questionResult = await generateText({
     model: openai('gpt-4o'),
@@ -128,11 +137,12 @@ async function main() {
     ],
   });
 
-  if (questionResult.text.startsWith('NO_QUESTION_DETECTED')) {
-    throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
+  let extractedText = questionResult.text;
+  if (extractedText.startsWith('NO_QUESTION_DETECTED')) {
+    extractedText = text;
   }
 
-  const user = questionResult.text;
+  const user = extractedText;
 
   const bill = await getReasonBillContext({
     messages: threadMessages,
