@@ -2,3 +2,5 @@ website/.next/**
 website/out/**
 website/public/**
 crawler/data/**
+pnpm-lock.yaml
+database/src/meta/**
