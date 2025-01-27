@@ -290,7 +290,7 @@ export async function getReasonBillContext({
     }),
   });
 
-  console.log(billTitleResult);
+  console.log(billTitleResult.object);
 
   if (
     billTitleResult.object.names.length === 0 &&
@@ -394,7 +394,7 @@ export async function getReasonBillContext({
     maxSteps: 5,
   });
 
-  console.log(finalBill);
+  console.log(finalBill.object);
 
   const billId = finalBill.object.billId;
   if (billId === 'NO_TITLE_FOUND') {
