@@ -2,7 +2,7 @@ import { REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import { generateEmbedding, generateEmbeddings, getTweet } from './helpers.ts';
-import { generateText, tool } from 'ai';
+import { CoreMessage, generateObject, generateText, tool } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import {
   EXTRACT_BILL_TITLE_PROMPT,
@@ -26,6 +26,8 @@ import {
   user as userDbSchema,
   bill as billDbSchema,
 } from 'database';
+
+import { TWITTER_USERNAME } from '../const.ts';
 
 import {
   approvedTweet,
@@ -125,6 +127,43 @@ export async function getTweetContext({ id }: { id: string }) {
 }
 
 /**
+ * Given a tweet id, we return a list of messages.
+ */
+export async function getTweetMessages({
+  id,
+}: {
+  id: string;
+}): Promise<CoreMessage[]> {
+  const LIMIT = 50;
+  let tweets: Awaited<ReturnType<typeof getTweet>>[] = [];
+
+  let searchId: null | string = id;
+  do {
+    const tweet = await getTweet({ id: searchId });
+    tweets.push(tweet);
+    if (tweet.inReplyToId) {
+      searchId = tweet.inReplyToId;
+    }
+
+    if (tweet.inReplyToId === null) {
+      searchId = null;
+    }
+
+    if (tweets.length > LIMIT) {
+      searchId = null;
+    }
+  } while (searchId);
+
+  return tweets.map(tweet => ({
+    role:
+      tweet.author.userName === TWITTER_USERNAME && tweet.author.isAutomated
+        ? 'assistant'
+        : 'user',
+    content: tweet.text,
+  }));
+}
+
+/**
  * Given some text try to narrow down the bill to focus on.
  *
  * If you get a bill title.
@@ -218,30 +257,51 @@ export async function getBillContext({
  * we are out of luck and safely error
  */
 export async function getReasonBillContext({
-  text,
-  question,
+  messages,
 }: {
-  text: string;
-  question: string;
+  messages: CoreMessage[];
 }) {
   const LIMIT = 10;
 
-  const billTitleResult = await generateText({
-    model: openai('gpt-4o'),
+  const billTitleResult = await generateObject({
+    model: openai('gpt-4o', {
+      structuredOutputs: true,
+    }),
     temperature: 0,
     messages: [
       {
+        role: 'system',
+        content:
+          'As a AI specialized in retrieving bill names and relevant keywords, you will be given a list of tweets and asked to extract the bill name and relevant keywords.',
+      },
+      ...messages,
+      {
         role: 'user',
-        content: "You are an AI specialized in analyzing tweets related to U.S. Congressional bills. Given a tweet, extract the official title of the bill mentioned. If multiple bills are referenced, list all their titles. If no bill is mentioned, respond with 'NO_TITLE_FOUND.' Return only the title(s) without additional commentary. \n\n Text:" + text,
+        content:
+          'Based on the above tweets, extract the bill names and relevant bill keywords. If multiple bills are referenced, list all their titles.',
       },
     ],
+    schemaName: 'bill',
+    schemaDescription: 'A bill name and relevant keywords.',
+    schema: z.object({
+      names: z.array(z.string()),
+      keywords: z.array(z.string()),
+    }),
   });
 
-  if (billTitleResult.text.startsWith('NO_TITLE_FOUND')) {
-    new Error('No bills matched');
+  console.log(billTitleResult);
+
+  if (
+    billTitleResult.object.names.length === 0 &&
+    billTitleResult.object.keywords.length === 0
+  ) {
+    throw new Error('No bills matched');
   }
 
-  const questionEmbedding = await generateEmbedding(billTitleResult.text);
+  const questionEmbedding = await generateEmbedding(
+    billTitleResult.object.names.join('\n---\n') +
+      billTitleResult.object.keywords.join('\n---\n'),
+  );
   const embeddingArrayString = JSON.stringify(questionEmbedding);
 
   const vectorSearch = await db
@@ -260,8 +320,10 @@ export async function getReasonBillContext({
   const baseText = vectorSearch.map(row => row.text).join('\n---\n');
 
   // 1) Ask LLM to extract the Bill Title from the text.
-  const finalBill = await generateText({
-    model: openai('gpt-4o'),
+  const finalBill = await generateObject({
+    model: openai('gpt-4o', {
+      structuredOutputs: true,
+    }),
     temperature: 0,
     tools: {
       searchBill: tool({
@@ -276,21 +338,22 @@ export async function getReasonBillContext({
             .where(eq(billDbSchema.title, title))
             .limit(1);
           if (bill.length === 1) {
-            return bill[0].id;
+            return bill[0].originChamber + bill[0].number;
           } else {
             return 'NO_TITLE_FOUND';
           }
         },
       }),
       searchEmbeddings: tool({
-        description: 'Find similar bills based on the text. Return up to 5 bills.',
+        description:
+          'Find similar bills based on the text. Return up to 5 bills.',
         parameters: z.object({
           text: z.string(),
         }),
         execute: async ({ text }) => {
           const embedding = await generateEmbedding(text);
           const embeddingArrayString = JSON.stringify(embedding);
-          
+
           const vectorSearch = await db
             .select({
               text: billVector.text,
@@ -299,7 +362,7 @@ export async function getReasonBillContext({
             })
             .from(billVector)
             .orderBy(
-              sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`
+              sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
             )
             .limit(5);
 
@@ -314,30 +377,47 @@ export async function getReasonBillContext({
     messages: [
       {
         role: 'system',
-        content: "Analyze the text and identify the exact bill mentioned. Return ONLY the single corresponding bill ID from the database. If uncertain or no exact match is found, respond with 'NO_EXACT_MATCH'. Do not provide any additional commentary.",
+        content:
+          "Analyze the text and identify the exact bill mentioned. Return ONLY the single corresponding bill ID from the database. If uncertain or no exact match is found, respond with 'NO_EXACT_MATCH'. Do not provide any additional commentary.",
       },
       {
         role: 'user',
-        content: `startingPoint: ${baseText}\n\nText: ${text} `,
+        content: `startingPoint: ${baseText}\n\nText: ${billTitleResult.object.names.join('\n')} ${billTitleResult.object.keywords.join('\n')}`,
       },
     ],
-    maxSteps: 10,
+    schemaName: 'billId',
+    schemaDescription: 'The ID of the identified bill',
+    schema: z.object({
+      billId: z.string(),
+    }),
+    maxSteps: 5,
   });
 
   console.log(finalBill);
 
-  const billId = finalBill.steps[finalBill.steps.length - 1].text;
+  const billId = finalBill.object.billId;
   if (billId === 'NO_TITLE_FOUND') {
     throw new Error('No bills matched');
   }
 
   if (typeof billId === 'string') {
     console.log('billId', billId);
-    const bill = await db.select().from(billDbSchema).where(eq(billDbSchema.id, billId));
+    const type = billId.split('.')[0];
+    const number = billId.split('.')[1];
+
+    const bill = await db
+      .select()
+      .from(billDbSchema)
+      .where(
+        and(
+          eq(billDbSchema.type, type),
+          eq(billDbSchema.number, Number(number)),
+        ),
+      );
     if (bill.length === 0) {
       throw new Error('No bills matched');
     }
-    console.log("real number: ", bill[0].htmlVersionUrl);
+    console.log('real number: ', bill[0].htmlVersionUrl);
     return bill[0];
   }
 
