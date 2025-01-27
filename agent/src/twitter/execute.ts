@@ -156,10 +156,7 @@ export async function getTweetMessages({
   } while (searchId);
 
   return tweets.map(tweet => ({
-    role:
-      tweet.author.userName === TWITTER_USERNAME && tweet.author.isAutomated
-        ? 'assistant'
-        : 'user',
+    role: tweet.author.isAutomated ? 'assistant' : 'user',
     content: tweet.text,
   }));
 }
@@ -262,7 +259,8 @@ export async function getReasonBillContext({
 }: {
   messages: CoreMessage[];
 }) {
-  const LIMIT = 10;
+  const LIMIT = 5;
+  const THRESHOLD = 0.6;
 
   const billTitleResult = await generateObject({
     model: openai('gpt-4o', {
@@ -299,26 +297,55 @@ export async function getReasonBillContext({
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
-  const questionEmbedding = await generateEmbedding(
-    billTitleResult.object.names.join('\n---\n') +
-      billTitleResult.object.keywords.join('\n---\n'),
-  );
-  const embeddingArrayString = JSON.stringify(questionEmbedding);
+  const searchPromises = [
+    ...billTitleResult.object.names,
+    ...billTitleResult.object.keywords,
+  ].map(async term => {
+    const termEmbedding = await generateEmbedding(term);
+    const termEmbeddingString = JSON.stringify(termEmbedding);
 
-  const vectorSearch = await db
-    .select({
-      text: billVector.text,
-      bill: billVector.bill,
-      distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
+    return db
+      .select({
+        text: billVector.text,
+        billId: billVector.bill,
+        distance: sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString}))`,
+      })
+      .from(billVector)
+      .orderBy(
+        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
+      )
+      .limit(LIMIT);
+  });
+
+  const searchResults = await Promise.all(searchPromises);
+
+  const seenBills = new Set<string>();
+  const vectorSearch = searchResults.flat().filter(row => {
+    if (seenBills.has(row.billId)) return false;
+    seenBills.add(row.billId);
+    return true;
+  });
+
+  const uniqueBillIds = Array.from(seenBills);
+  const bills = await db
+    .select()
+    .from(billDbSchema)
+    .where(inArray(billDbSchema.id, uniqueBillIds));
+
+  // lookup map from billId -> bill data
+  const billLookup = new Map<string, { id: string; title: string }>();
+  for (const bill of bills) {
+    billLookup.set(bill.id, bill);
+  }
+
+  const baseText = vectorSearch
+    .filter(row => typeof row.distance === 'number' && row.distance < THRESHOLD)
+    .map(row => {
+      const billRecord = billLookup.get(row.billId);
+      const billTitle = billRecord?.title ?? 'Unknown Title';
+      return `Bill: ${billTitle}\nText:\n\n${row.text}`;
     })
-    .from(billVector)
-    .orderBy(
-      // ascending order
-      sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
-    )
-    .limit(LIMIT);
-
-  const baseText = vectorSearch.map(row => row.text).join('\n---\n');
+    .join('\n\n');
 
   // 1) Ask LLM to extract the Bill Title from the text.
   const finalBill = await generateText({
@@ -356,7 +383,7 @@ export async function getReasonBillContext({
           const vectorSearch = await db
             .select({
               text: billVector.text,
-              bill: billVector.bill,
+              billId: billVector.bill,
               distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
             })
             .from(billVector)
@@ -365,11 +392,34 @@ export async function getReasonBillContext({
             )
             .limit(5);
 
-          return vectorSearch.map(row => ({
-            id: row.bill,
-            text: row.text,
-            distance: row.distance,
-          }));
+          const filteredRows = vectorSearch.filter(
+            row => row.distance < THRESHOLD,
+          );
+
+          const uniqueBillIds = [
+            ...new Set(filteredRows.map(row => row.billId)),
+          ];
+
+          const bills = await db
+            .select()
+            .from(billDbSchema)
+            .where(inArray(billDbSchema.id, uniqueBillIds));
+
+          // lookup map from billId -> bill data
+          const billLookup = new Map<string, { id: string; title: string }>();
+          for (const bill of bills) {
+            billLookup.set(bill.id, bill);
+          }
+
+          const results = filteredRows.map(row => {
+            const billRecord = billLookup.get(row.billId);
+            return {
+              title: billRecord?.title ?? 'Unknown Title',
+              text: row.text,
+            };
+          });
+
+          return results;
         },
       }),
     },
@@ -386,6 +436,8 @@ export async function getReasonBillContext({
     ],
     maxSteps: 10,
   });
+
+  console.log(finalBill);
 
   const billId = finalBill.text;
   if (billId === 'NO_TITLE_FOUND' || billId === 'NO_EXACT_MATCH') {

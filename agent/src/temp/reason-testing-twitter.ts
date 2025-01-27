@@ -33,6 +33,11 @@ async function getAnswer(
   autonomous: boolean = false,
   bill?: string,
 ): Promise<string> {
+  if (!bill) {
+    console.log('No bill found. Proceeding in autonomous mode...');
+    autonomous = true;
+  }
+
   const messages: CoreMessage[] = [
     {
       role: 'user',
@@ -40,14 +45,16 @@ async function getAnswer(
         ? AUTONOMOUS_ANSWER_SYSTEM_PROMPT
         : ANSWER_SYSTEM_PROMPT,
     },
-    ...threadMessages,
+    ...(autonomous ? threadMessages.slice(0, -1) : threadMessages),
     {
       role: 'user',
       content: bill
         ? `Context from database: ${bill}\n\n Question: ${user}`
-        : `Question: ${user}`,
+        : `${user}`,
     },
   ];
+
+  // console.log('Messages:', messages);
 
   const result = await generateText({
     // o1-mini does not support temperature
@@ -113,6 +120,7 @@ async function extractQuestion(text: string): Promise<string> {
   let extractedText = questionResult.text.trim();
   if (extractedText.startsWith('NO_QUESTION_DETECTED')) {
     // If no question was detected, just return the original text
+    console.log('No question detected.');
     extractedText = text;
   }
 
@@ -177,10 +185,6 @@ async function main() {
     if (!noContext && bill) {
       summary = await getBillSummary(bill);
       console.log('Summary Context:\n', summary, '\n');
-    }
-
-    if (!bill) {
-      autonomous = true;
     }
 
     const finalAnswer = await getAnswer(
