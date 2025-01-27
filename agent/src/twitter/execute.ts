@@ -296,7 +296,7 @@ export async function getReasonBillContext({
     billTitleResult.object.names.length === 0 &&
     billTitleResult.object.keywords.length === 0
   ) {
-    throw new Error('No bills matched');
+    throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
   const questionEmbedding = await generateEmbedding(
@@ -321,10 +321,8 @@ export async function getReasonBillContext({
   const baseText = vectorSearch.map(row => row.text).join('\n---\n');
 
   // 1) Ask LLM to extract the Bill Title from the text.
-  const finalBill = await generateObject({
-    model: openai('gpt-4o', {
-      structuredOutputs: true,
-    }),
+  const finalBill = await generateText({
+    model: openai('gpt-4o'),
     temperature: 0,
     tools: {
       searchBill: tool({
@@ -386,25 +384,21 @@ export async function getReasonBillContext({
         content: `startingPoint: ${baseText}\n\nText: ${billTitleResult.object.names.join('\n')} ${billTitleResult.object.keywords.join('\n')}`,
       },
     ],
-    schemaName: 'billId',
-    schemaDescription: 'The ID of the identified bill',
-    schema: z.object({
-      billId: z.string(),
-    }),
-    maxSteps: 5,
+    maxSteps: 10,
   });
 
-  console.log(finalBill.object);
-
-  const billId = finalBill.object.billId;
-  if (billId === 'NO_TITLE_FOUND') {
-    throw new Error('No bills matched');
+  const billId = finalBill.text;
+  if (billId === 'NO_TITLE_FOUND' || billId === 'NO_EXACT_MATCH') {
+    throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
   if (typeof billId === 'string') {
-    console.log('billId', billId);
-    const type = billId.split('.')[0];
-    const number = billId.split('.')[1];
+    // ai too dumb to handle: "S.5446", "S. 5445", "S 5446" and "S5446"
+    const parts = billId.includes('.')
+      ? billId.split('.')
+      : [billId[0], billId.slice(1)];
+    const type = parts[0];
+    const number = parts[1];
 
     const bill = await db
       .select()
@@ -416,14 +410,16 @@ export async function getReasonBillContext({
         ),
       );
     if (bill.length === 0) {
-      throw new Error('No bills matched');
+      throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
     }
+
+    console.log(`billId: ${billId}, billName: ${bill[0].title}`);
     console.log('real number: ', bill[0].htmlVersionUrl);
     return bill[0];
   }
 
   // everything else failed :(
-  throw new Error('No bills matched');
+  throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
 }
 
 /**
