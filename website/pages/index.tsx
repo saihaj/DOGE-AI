@@ -320,7 +320,7 @@ export default function Home() {
                 senate={5335}
                 house={10301}
               />
-              <CongressCard number={119} total={12} senate={2} house={10} />
+              <CongressCard number={119} total={28} senate={7} house={21} />
             </div>
           </section>
 
