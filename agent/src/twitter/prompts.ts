@@ -141,3 +141,22 @@ export const QUESTION_EXTRACTOR_SYSTEM_PROMPT = `You are an advanced text analys
 export const ENGAGEMENT_DECISION_PROMPT = `Your role is to determine whether a reply to a tweet warrants engagement ("ENGAGE") or should be ignored ("IGNORE"). Your responses must consist of only one word: either "ENGAGE" or "IGNORE." Do not include any analysis, commentary, or reasoning—just output the decision. To decide, analyze replies based on three criteria: connection to context, presence of a clear question, and good-faith indicators. For example, if the reply directly relates to the tweet’s topic and includes a question demonstrating curiosity or seeking clarification, respond with "ENGAGE." Otherwise, respond with "IGNORE." Examples of replies to engage with include: Tweet: "The government is wasting $50 million on forensic DNA gadgets while ignoring community crime prevention programs," Reply: "Why spend $50 million on gadgets instead of reducing crime at the root?" → ENGAGE, Reply: "Can the government explain how this spending benefits public safety?" → ENGAGE; Tweet: "Another $25M for DNA equipment grants. Couldn’t that money fund something more impactful?" Reply: "How do DNA equipment grants actually reduce crime rates?" → ENGAGE, Reply: "Does anyone know how much of this spending goes toward administrative costs?" → ENGAGE. Examples of replies to ignore include: Reply: "Love your project! 🚀 Let’s connect!" → IGNORE, Reply: "Cool post, man! Keep it up!" → IGNORE, Reply: "@elonmusk" → IGNORE, Reply: "This is interesting!" → IGNORE. Analyze tone for good-faith indicators—spam-like or vague replies, such as "Let’s collaborate!" or "Nice work," should always be ignored. For borderline cases, such as "I like parks more than war," use the absence of a clear question to decide on "IGNORE." In all cases, output only "ENGAGE" or "IGNORE," ensuring clarity, brevity, and precision.`;
 
 export const EXTRACT_BILL_TITLE_PROMPT = `You are an AI specialized in analyzing tweets related to U.S. Congressional bills. Given a tweet, extract the official title of the bill mentioned. If multiple bills are referenced, list all their titles. If no bill is mentioned, respond with 'NO_TITLE_FOUND.' Return only the title(s) without additional commentary.`;
+
+export const INTERACTION_ENGAGEMENT_DECISION_PROMPT = `Evaluate a tweet's relevance based on specific topics: government contracts, defense procurement, legislation, funding, public policy decisions, foreign aid, national security, wildlife protection, Real estate, Immigration policy, gun control, environmental governance and influential leaders and their roles in driving change.
+
+### Steps:
+1. **Identify Content**: Check for mentions of government contracts, legislation, defense, or public policy.
+2. **Relevance Check**: Look for key influencers, such as prominent senators, and assess the validity of statements or retweets.
+3. **Criteria for Engagement**:
+- If the tweet mentions defense procurement, key leaders, or in-depth analyses, return "ENGAGE."
+- If a prominent Democratic senator discusses the negative impact of foreign aid reduction, return "ENGAGE," regardless of supporting evidence or analysis.
+- If a prominent Democratic senator makes blanket statements about savings or tax cuts without supporting evidence, return "ENGAGE".
+- If the tweet mentions a specific piece of legislation, return "ENGAGE"
+- if a prominent Republican senator retweets an analysis of overspending, return "ENGAGE"
+- If the tweet criticizes accuses actions being illegal, undemocratic, or paving the way for corruption, return "ENGAGE"
+- If the tweet reflects on the memory of all those lost, return "ENGAGE"
+
+### Output:
+- Return "ENGAGE" if relevant.
+- If not, provide a short reason.
+`;
