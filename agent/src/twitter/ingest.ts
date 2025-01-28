@@ -7,15 +7,10 @@ import { inngest, TweetResponse } from '../inngest';
 import { z } from 'zod';
 import { chunk } from 'lodash-es';
 import { reportFailureToDiscord } from '../discord/action';
+import { SearchResultResponseSchema } from './helpers';
 
 const API = new URL(TWITTER_API_BASE_URL);
 API.pathname = '/twitter/tweet/advanced_search';
-
-const SearchResultResponseSchema = z.object({
-  tweets: z.array(TweetResponse),
-  has_next_page: z.boolean(),
-  next_cursor: z.string().nullable(),
-});
 
 /**
  * Fetches tweets from the Twitter API and queues them for processing.

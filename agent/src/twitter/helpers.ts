@@ -12,12 +12,11 @@ import { openai } from '@ai-sdk/openai';
 // Ada V2 31.4% vs 54.9% large
 const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
 
-const API = new URL(TWITTER_API_BASE_URL);
-
 const GetTweetResponse = z.object({
   tweets: z.array(TweetResponse),
 });
 
+const API = new URL(TWITTER_API_BASE_URL);
 export async function getTweet({ id }: { id: string }) {
   API.pathname = '/twitter/tweets';
   return bento.getOrSet(`/tweet/${id}`, async () => {
@@ -64,3 +63,9 @@ export const generateEmbeddings = async (
   });
   return embeddings;
 };
+
+export const SearchResultResponseSchema = z.object({
+  tweets: z.array(TweetResponse),
+  has_next_page: z.boolean(),
+  next_cursor: z.string().nullable(),
+});
