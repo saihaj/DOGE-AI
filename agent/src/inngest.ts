@@ -62,6 +62,17 @@ const executeTweetEvent = z.object({
   ]),
 }) satisfies LiteralZodEventSchema;
 
+const executeInteractionTweetEvent = z.object({
+  name: z.literal('tweet.execute.interaction'),
+  data: z.union([
+    baseExecuteTweetEvent.extend({
+      action: z.literal('quote'),
+      text: z.string().nullish(),
+    }),
+    baseExecuteTweetEvent.extend({ action: z.literal('reply') }),
+  ]),
+}) satisfies LiteralZodEventSchema;
+
 // Create a client to send and receive events
 export const inngest = new Inngest({
   id: '@dogexbt/agent',
@@ -69,5 +80,6 @@ export const inngest = new Inngest({
     processTweetEvent,
     executeTweetEvent,
     processInteractionTweetEvent,
+    executeInteractionTweetEvent,
   ]),
 });

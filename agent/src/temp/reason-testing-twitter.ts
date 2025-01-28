@@ -1,40 +1,14 @@
-import dotenv from 'dotenv';
 import { CoreMessage, generateText } from 'ai';
-import { createDeepSeek } from '@ai-sdk/deepseek';
-import { createOpenAI } from '@ai-sdk/openai';
-import { createGoogleGenerativeAI } from '@ai-sdk/google';
-import { and, bill as billDbSchema, db, eq } from 'database';
-import Handlebars from 'handlebars';
+import { openai } from '@ai-sdk/openai';
+import { bill as billDbSchema } from 'database';
 import { writeFile } from 'node:fs/promises';
 import * as readline from 'node:readline/promises';
-import { QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
-import {
-  ANALYZE_PROMPT,
-  ANSWER_SYSTEM_PROMPT,
-  AUTONOMOUS_ANSWER_SYSTEM_PROMPT,
-  TWEET_SYSTEM_PROMPT,
-  TWEET_USER_PROMPT,
-} from './reason-prompts';
+import { INTERACTION_SYSTEM_PROMPT } from '../twitter/prompts';
+import { getTweet } from '../twitter/helpers';
 import {
   getReasonBillContext,
-  getTweetContext,
   getTweetMessages,
-} from '../twitter/execute';
-import { getTweet } from '../twitter/helpers';
-
-dotenv.config();
-
-const openai = createOpenAI({
-  apiKey: process.env.OPENAI_API_KEY ?? '',
-});
-
-const google = createGoogleGenerativeAI({
-  apiKey: process.env.GOOGLE_API_KEY ?? '',
-});
-
-const deepseek = createDeepSeek({
-  apiKey: process.env.DEEPSEEK_API_KEY ?? '',
-});
+} from '../twitter/execute-interaction';
 
 async function getAnswer(
   user: string,
@@ -50,9 +24,7 @@ async function getAnswer(
   const messages: CoreMessage[] = [
     {
       role: 'system',
-      content: autonomous
-        ? AUTONOMOUS_ANSWER_SYSTEM_PROMPT
-        : ANSWER_SYSTEM_PROMPT,
+      content: INTERACTION_SYSTEM_PROMPT,
     },
     ...(autonomous ? threadMessages.slice(0, -1) : threadMessages),
     {

@@ -9,6 +9,7 @@ import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
 import { ingestInteractionTweets } from './twitter/ingest-interaction';
 import { processInteractionTweets } from './twitter/process-interactions';
+import { executeInteractionTweets } from './twitter/execute-interaction';
 
 const fastify = Fastify();
 
@@ -22,6 +23,7 @@ fastify.route({
       executeTweets,
       ingestInteractionTweets,
       processInteractionTweets,
+      executeInteractionTweets,
     ],
   }),
   url: '/api/inngest',

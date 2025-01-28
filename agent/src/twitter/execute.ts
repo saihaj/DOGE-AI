@@ -1,8 +1,15 @@
 import { IS_PROD, REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
-import { generateEmbedding, generateEmbeddings, getTweet } from './helpers.ts';
-import { CoreMessage, generateObject, generateText, tool } from 'ai';
+import {
+  generateEmbedding,
+  generateEmbeddings,
+  getTweet,
+  textSplitter,
+  upsertChat,
+  upsertUser,
+} from './helpers.ts';
+import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import {
   EXTRACT_BILL_TITLE_PROMPT,
@@ -10,26 +17,18 @@ import {
   SYSTEM_PROMPT,
   TWITTER_REPLY_TEMPLATE,
 } from './prompts';
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import {
-  and,
   bill,
   billVector,
-  chat as chatDbSchema,
   db,
   eq,
   inArray,
   like,
   message as messageDbSchema,
+  chat as chatDbSchema,
   messageVector,
   sql,
-  user as userDbSchema,
-  bill as billDbSchema,
-  or,
 } from 'database';
-
-import { TWITTER_USERNAME } from '../const.ts';
-
 import {
   approvedTweet,
   rejectedTweet,
@@ -37,65 +36,6 @@ import {
   sendDevTweet,
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
-import { z } from 'zod';
-
-const textSplitter = new RecursiveCharacterTextSplitter({
-  // Recommendations from ChatGPT
-  chunkSize: 512,
-  chunkOverlap: 100,
-});
-
-async function upsertUser({ twitterId }: { twitterId: string }) {
-  const user = await db.query.user.findFirst({
-    where: eq(userDbSchema.twitterId, twitterId),
-    columns: {
-      id: true,
-    },
-  });
-
-  if (user) {
-    return user;
-  }
-
-  const created = await db
-    .insert(userDbSchema)
-    .values({
-      twitterId,
-    })
-    .returning({ id: userDbSchema.id });
-
-  const [result] = created;
-  return result;
-}
-
-async function upsertChat({
-  user,
-  tweetId,
-}: {
-  user: string;
-  tweetId: string;
-}) {
-  const lookupChat = await db.query.chat.findFirst({
-    where: eq(chatDbSchema.tweetId, tweetId),
-    columns: {
-      id: true,
-    },
-  });
-
-  if (lookupChat) {
-    return lookupChat;
-  }
-
-  const chat = await db
-    .insert(chatDbSchema)
-    .values({
-      user,
-      tweetId,
-    })
-    .returning({ id: chatDbSchema.id });
-
-  return chat[0];
-}
 
 /**
  * given a tweet id, we try to follow the thread get more context about the tweet
@@ -126,40 +66,6 @@ export async function getTweetContext({ id }: { id: string }) {
     .reverse()
     .map(tweet => tweet.text)
     .join('\n---\n');
-}
-
-/**
- * Given a tweet id, we return a list of messages.
- */
-export async function getTweetMessages({
-  id,
-}: {
-  id: string;
-}): Promise<CoreMessage[]> {
-  const LIMIT = 50;
-  let tweets: Awaited<ReturnType<typeof getTweet>>[] = [];
-
-  let searchId: null | string = id;
-  do {
-    const tweet = await getTweet({ id: searchId });
-    tweets.push(tweet);
-    if (tweet.inReplyToId) {
-      searchId = tweet.inReplyToId;
-    }
-
-    if (tweet.inReplyToId === null) {
-      searchId = null;
-    }
-
-    if (tweets.length > LIMIT) {
-      searchId = null;
-    }
-  } while (searchId);
-
-  return tweets.map(tweet => ({
-    role: tweet.author.userName === TWITTER_USERNAME ? 'assistant' : 'user',
-    content: `@${tweet.author.userName}: ${tweet.text}`,
-  }));
 }
 
 /**
@@ -247,202 +153,6 @@ export async function getBillContext({
     .limit(10);
 
   return vectorSearch.map(row => row.text).join('\n---\n');
-}
-
-/**
- * Given some text try to find the specific bill.
- *
- * If you do not get a bill title
- * we are out of luck and safely error
- */
-export async function getReasonBillContext({
-  messages,
-}: {
-  messages: CoreMessage[];
-}) {
-  const LIMIT = 5;
-  const THRESHOLD = 0.6;
-
-  const { object: billTitleResult } = await generateObject({
-    model: openai('gpt-4o', {
-      structuredOutputs: true,
-    }),
-    temperature: 0,
-    messages: [
-      {
-        role: 'system',
-        content:
-          'As a AI specialized in retrieving bill names and relevant keywords, you will be given a list of tweets and asked to extract the bill name and relevant keywords.',
-      },
-      ...messages,
-      {
-        role: 'user',
-        content:
-          'Based on the above tweets, extract the bill names and relevant bill keywords. If multiple bills are referenced, list all their titles.',
-      },
-    ],
-    schemaName: 'bill',
-    schemaDescription: 'A bill name and relevant keywords.',
-    schema: z.object({
-      names: z.array(z.string()),
-      keywords: z.array(z.string()),
-    }),
-  });
-
-  console.log(billTitleResult);
-
-  if (
-    billTitleResult.names.length === 0 &&
-    billTitleResult.keywords.length === 0
-  ) {
-    throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
-  }
-
-  const billIds = await (async () => {
-    if (billTitleResult.names.length > 0) {
-      const loweredTitles = billTitleResult.names.map(title =>
-        title.toLowerCase(),
-      );
-      console.log(loweredTitles);
-      const billSearch = await db
-        .select({ id: billDbSchema.id })
-        .from(billDbSchema)
-        .where(inArray(sql`LOWER(${billDbSchema.title})`, loweredTitles))
-        .limit(LIMIT);
-
-      return billSearch.map(row => row.id);
-    }
-    return [];
-  })();
-  console.log(`Found ${billIds.length} bill IDs.`);
-
-  // we got bills from the title, we can just return the first one
-  if (billIds.length > 0) {
-    const bill = await db
-      .select()
-      .from(billDbSchema)
-      .where(inArray(billDbSchema.id, billIds))
-      .limit(1);
-
-    return bill[0];
-  }
-
-  const embeddingsForKeywords = await Promise.all(
-    billTitleResult.keywords.map(async term => {
-      const termEmbedding = await generateEmbedding(term);
-      return JSON.stringify(termEmbedding);
-    }),
-  );
-  console.log(`Found ${embeddingsForKeywords.length} embeddings.`);
-
-  const searchPromises = embeddingsForKeywords.map(
-    async termEmbeddingString => {
-      const embeddingsQuery = db
-        .select({
-          text: billVector.text,
-          billId: billVector.bill,
-          distance: sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString}))`,
-          title: billDbSchema.title,
-        })
-        .from(billVector)
-        .where(
-          sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
-        )
-        .orderBy(
-          sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
-        )
-        .leftJoin(billDbSchema, eq(billDbSchema.id, billVector.bill))
-        .limit(LIMIT);
-
-      return embeddingsQuery;
-    },
-  );
-
-  const searchResults = (await Promise.all(searchPromises)).flat();
-  console.log(`Found ${searchResults.length} vector search results.`);
-
-  const baseText = searchResults
-    .map(({ title, text }) => {
-      return `Bill: ${title}\nText:\n\n${text}`;
-    })
-    .join('\n\n');
-
-  // 1) Ask LLM to extract the Bill Title from the text.
-  const finalBill = await generateText({
-    model: openai('gpt-4o'),
-    temperature: 0,
-    tools: {
-      searchEmbeddings: tool({
-        description:
-          'Find similar bills based on the text. Return up to 5 bills.',
-        parameters: z.object({
-          text: z.string(),
-        }),
-        execute: async ({ text }) => {
-          const embedding = await generateEmbedding(text);
-          const embeddingArrayString = JSON.stringify(embedding);
-
-          const vectorSearch = await db
-            .select({
-              text: billVector.text,
-              billId: billVector.bill,
-              distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
-              title: billDbSchema.title,
-            })
-            .from(billVector)
-            .where(
-              sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < ${THRESHOLD}`,
-            )
-            .orderBy(
-              sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
-            )
-            .leftJoin(billDbSchema, eq(billDbSchema.id, billVector.bill))
-            .limit(LIMIT);
-
-          const results = vectorSearch.map(row => {
-            return {
-              title: row.title,
-              text: row.text,
-            };
-          });
-
-          return results;
-        },
-      }),
-    },
-    messages: [
-      {
-        role: 'system',
-        content:
-          "Analyze the text and identify the exact bill mentioned. Return ONLY the single corresponding bill title from the database. If uncertain or no exact match is found, respond with 'NO_EXACT_MATCH'. Do not provide any additional commentary.",
-      },
-      {
-        role: 'user',
-        content: `startingPoint: ${baseText}\n\nText: ${billTitleResult.names.join('\n')} ${billTitleResult.keywords.join('\n')}`,
-      },
-    ],
-    maxSteps: 10,
-  });
-
-  console.log(finalBill.text);
-
-  const billTitle = finalBill.text;
-  if (
-    billTitle.startsWith('NO_TITLE_FOUND') ||
-    billTitle.startsWith('NO_EXACT_MATCH')
-  ) {
-    throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
-  }
-
-  const bill = await db.query.bill.findFirst({
-    where: eq(sql`lower(${billDbSchema.title})`, billTitle.toLowerCase()),
-  });
-
-  if (!bill) {
-    throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
-  }
-
-  return bill;
 }
 
 /**
