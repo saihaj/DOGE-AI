@@ -14,7 +14,7 @@ const terminal = readline.createInterface({
 
 async function main() {
   const question = await terminal.question('Enter your question: ');
-  
+
   const relevantContext = await getBillContext({
     text: question,
     question: question,
