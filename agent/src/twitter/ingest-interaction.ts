@@ -89,7 +89,11 @@ export const ingestInteractionTweets = inngest.createFunction(
         }),
       ]);
 
-    const tweets = congress119Senators.concat(dogeAiEngager, houseMembers);
+    const tweets = congress119Senators
+      .concat(dogeAiEngager, houseMembers)
+      // make sure to filter out any replies - for now
+      // even though we set `includeReplies` to false in the API call above it still returns replies sometimes.
+      .filter(t => t.isReply === false);
 
     /**
      * There is a limit of 512KB for batching events. To avoid hitting this limit, we chunk the tweets
@@ -100,20 +104,20 @@ export const ingestInteractionTweets = inngest.createFunction(
       `Chunked ${tweets.length} tweets into ${chunkTweets.length} chunks`,
     );
 
-    // chunkTweets.forEach(async chunk => {
-    //   const inngestSent = await inngest.send(
-    //     chunk.map(tweet => ({
-    //       name: 'tweet.process',
-    //       data: tweet,
-    //       id: tweet.id,
-    //     })),
-    //   );
+    chunkTweets.forEach(async chunk => {
+      const inngestSent = await inngest.send(
+        chunk.map(tweet => ({
+          name: 'tweet.process.interaction',
+          data: tweet,
+          id: tweet.id,
+        })),
+      );
 
-    //   console.log(`Sent ${inngestSent.ids.length} tweets to inngest`);
-    // });
+      console.log(`Sent ${inngestSent.ids.length} tweets to inngest`);
+    });
 
-    // return {
-    //   message: `Sent ${tweets.length} tweets to inngest`,
-    // };
+    return {
+      message: `Sent ${tweets.length} tweets to inngest`,
+    };
   },
 );

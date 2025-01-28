@@ -44,6 +44,11 @@ const baseExecuteTweetEvent = z.object({
   tweetUrl: z.string(),
 });
 
+const processInteractionTweetEvent = z.object({
+  name: z.literal('tweet.process.interaction'),
+  data: TweetResponse,
+}) satisfies LiteralZodEventSchema;
+
 const executeTweetEvent = z.object({
   name: z.literal('tweet.execute'),
   data: z.union([
@@ -60,5 +65,9 @@ const executeTweetEvent = z.object({
 // Create a client to send and receive events
 export const inngest = new Inngest({
   id: '@dogexbt/agent',
-  schemas: new EventSchemas().fromZod([processTweetEvent, executeTweetEvent]),
+  schemas: new EventSchemas().fromZod([
+    processTweetEvent,
+    executeTweetEvent,
+    processInteractionTweetEvent,
+  ]),
 });
