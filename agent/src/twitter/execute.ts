@@ -157,8 +157,8 @@ export async function getTweetMessages({
   } while (searchId);
 
   return tweets.map(tweet => ({
-    role: tweet.author.isAutomated ? 'assistant' : 'user',
-    content: tweet.text,
+    role: tweet.author.userName === TWITTER_USERNAME ? 'assistant' : 'user',
+    content: `@${tweet.author.userName}: ${tweet.text}`,
   }));
 }
 

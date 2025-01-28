@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import { CoreMessage, generateText } from 'ai';
 import { createDeepSeek } from '@ai-sdk/deepseek';
 import { createOpenAI } from '@ai-sdk/openai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { and, bill as billDbSchema, db, eq } from 'database';
 import Handlebars from 'handlebars';
 import { writeFile } from 'node:fs/promises';
@@ -27,6 +28,14 @@ const openai = createOpenAI({
   apiKey: process.env.OPENAI_API_KEY ?? '',
 });
 
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GOOGLE_API_KEY ?? '',
+});
+
+const deepseek = createDeepSeek({
+  apiKey: process.env.DEEPSEEK_API_KEY ?? '',
+});
+
 async function getAnswer(
   user: string,
   threadMessages: CoreMessage[],
@@ -40,7 +49,7 @@ async function getAnswer(
 
   const messages: CoreMessage[] = [
     {
-      role: 'user',
+      role: 'system',
       content: autonomous
         ? AUTONOMOUS_ANSWER_SYSTEM_PROMPT
         : ANSWER_SYSTEM_PROMPT,
@@ -54,78 +63,79 @@ async function getAnswer(
     },
   ];
 
-  // console.log('Messages:', messages);
+  await writeFile(`dev-test/messages.txt`, JSON.stringify(messages));
 
   const result = await generateText({
     // o1-mini does not support temperature
     // @ts-ignore
-    model: openai('o1-mini'),
-    messages,
-  });
-
-  return result.text;
-}
-
-async function getBillSummary(
-  bill: typeof billDbSchema.$inferSelect | null,
-): Promise<string> {
-  if (!bill) return '';
-
-  const template = Handlebars.compile(ANALYZE_PROMPT);
-  const prompt = template({
-    billType: bill.type,
-    billNumber: bill.number,
-    billCongress: bill.congress,
-    billOriginChamber: bill.originChamber,
-    billTitle: bill.title,
-    content: bill.content,
-    impact: bill.impact,
-    funding: bill.funding,
-    spending: bill.spending,
-  });
-
-  const messages: CoreMessage[] = [
-    {
-      role: 'user',
-      content: prompt,
-    },
-  ];
-
-  const result = await generateText({
-    // o1-mini does not support temperature
-    // @ts-ignore
-    model: openai('o1-mini'),
-    messages,
-  });
-
-  return result.text;
-}
-
-async function extractQuestion(text: string): Promise<string> {
-  const questionResult = await generateText({
-    model: openai('gpt-4o'),
     temperature: 0,
-    messages: [
-      {
-        role: 'system',
-        content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
-      },
-      {
-        role: 'user',
-        content: text,
-      },
-    ],
+    model: openai('gpt-4o'),
+    messages,
   });
 
-  let extractedText = questionResult.text.trim();
-  if (extractedText.startsWith('NO_QUESTION_DETECTED')) {
-    // If no question was detected, just return the original text
-    console.log('No question detected.');
-    extractedText = text;
-  }
-
-  return extractedText;
+  return result.text;
 }
+
+// async function getBillSummary(
+//   bill: typeof billDbSchema.$inferSelect | null,
+// ): Promise<string> {
+//   if (!bill) return '';
+
+//   const template = Handlebars.compile(ANALYZE_PROMPT);
+//   const prompt = template({
+//     billType: bill.type,
+//     billNumber: bill.number,
+//     billCongress: bill.congress,
+//     billOriginChamber: bill.originChamber,
+//     billTitle: bill.title,
+//     content: bill.content,
+//     impact: bill.impact,
+//     funding: bill.funding,
+//     spending: bill.spending,
+//   });
+
+//   const messages: CoreMessage[] = [
+//     {
+//       role: 'user',
+//       content: prompt,
+//     },
+//   ];
+
+//   const result = await generateText({
+//     // o1-mini does not support temperature
+//     // @ts-ignore
+//     model: openai('o1-mini'),
+//     messages,
+//   });
+
+//   return result.text;
+// }
+
+// async function extractQuestion(text: string): Promise<string> {
+//   const questionResult = await generateText({
+//     model: openai('gpt-4o'),
+//     temperature: 0,
+//     messages: [
+//       {
+//         role: 'system',
+//         content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
+//       },
+//       {
+//         role: 'user',
+//         content: text,
+//       },
+//     ],
+//   });
+
+//   let extractedText = questionResult.text.trim();
+//   if (extractedText.startsWith('NO_QUESTION_DETECTED')) {
+//     // If no question was detected, just return the original text
+//     console.log('No question detected.');
+//     extractedText = text;
+//   }
+
+//   return extractedText;
+// }
 
 async function main() {
   const terminal = readline.createInterface({
@@ -143,7 +153,7 @@ async function main() {
     }
 
     const tweetToActionOn = await getTweet({ id: tweetId });
-    const text = tweetToActionOn.text;
+    const text = `@${tweetToActionOn.author.userName}: ${tweetToActionOn.text}`;
 
     let autonomous = false;
     let threadMessages: CoreMessage[] | string = tweetToActionOn.text;
@@ -165,7 +175,8 @@ async function main() {
       autonomous = true;
     }
 
-    const userQuestion = await extractQuestion(text);
+    // const userQuestion = await extractQuestion(text);
+    const userQuestion = text;
 
     // Extract the bill object from the thread. TODO: accept an array of bills.
     let bill: typeof billDbSchema.$inferSelect | null = null;
@@ -183,7 +194,9 @@ async function main() {
     // Summarize the bill if we found one
     let summary = '';
     if (!noContext && bill) {
-      summary = await getBillSummary(bill);
+      // summary = await getBillSummary(bill);
+      // console.log('Summary Context:\n', summary, '\n');
+      summary = bill.title + ': \n\n' + bill.content;
       console.log('Summary Context:\n', summary, '\n');
     }
 
