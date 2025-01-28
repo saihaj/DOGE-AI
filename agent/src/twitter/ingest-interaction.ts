@@ -67,8 +67,8 @@ export const ingestInteractionTweets = inngest.createFunction(
       });
     },
   },
-  // Runs every 10 minutes
-  { cron: '*/10 * * * *' },
+  // Runs every 10 minutes between 8am and midnight
+  { cron: 'TZ=America/New_York */10 8-23 * * *' },
   async () => {
     const [congress119Senators, dogeAiEngager, houseMembers] =
       await Promise.all([
