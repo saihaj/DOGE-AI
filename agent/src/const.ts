@@ -82,10 +82,11 @@ export const TWITTER_ACCESS_SECRET = (() => {
   }
   return process.env.TWITTER_ACCESS_SECRET;
 })();
+export const IS_PROD = process.env.NODE_ENV === 'production';
 export const DISCORD_LOCAL_TWEETS_CHANNEL_ID = (() => {
+  if (IS_PROD) return '';
   if (!process.env.DISCORD_LOCAL_TWEETS_CHANNEL_ID) {
     throw new Error('DISCORD_LOCAL_TWEETS_CHANNEL_ID is not set in your .env');
   }
   return process.env.DISCORD_LOCAL_TWEETS_CHANNEL_ID;
 })();
-export const IS_PROD = process.env.NODE_ENV === 'production';
