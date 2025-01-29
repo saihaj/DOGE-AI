@@ -53,7 +53,7 @@ export async function rejectedTweet({
   );
 
   await channel.send({
-    content: `**Rejected**: ${url}\n**Reason**: ${reason}`,
+    content: `**Rejected**: ${tweetUrl}\n**Reason**: ${reason}`,
     components: [row],
   });
 }

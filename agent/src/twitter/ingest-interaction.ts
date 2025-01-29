@@ -41,7 +41,7 @@ async function fetchTweetsFromList({
     const result = await SearchResultResponseSchema.safeParseAsync(data);
 
     if (result.success === false) {
-      throw new Error(result.error.errors.join(', '));
+      throw new Error(result.error.message);
     }
 
     tweets = tweets.concat(result.data.tweets);
@@ -100,7 +100,7 @@ export const ingestInteractionTweets = inngest.createFunction(
       .filter(
         t =>
           t.extendedEntities == null ||
-          t.extendedEntities?.media?.some(m => m.type !== 'video'),
+          t.extendedEntities?.media?.some(m => m?.type !== 'video'),
       );
 
     /**

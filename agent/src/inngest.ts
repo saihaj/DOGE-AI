@@ -37,17 +37,19 @@ export const TweetResponse = z.object({
     .object({
       media: z
         .array(
-          z.object({
-            display_url: z.string(),
-            expanded_url: z.string(),
-            id_str: z.string(),
-            type: z.string(),
-            url: z.string(),
-          }),
+          z
+            .object({
+              display_url: z.string(),
+              expanded_url: z.string(),
+              id_str: z.string(),
+              type: z.string(),
+              url: z.string(),
+            })
+            .nullish(),
         )
-        .nullable(),
+        .nullish(),
     })
-    .nullable(),
+    .nullish(),
 });
 
 const processTweetEvent = z.object({
