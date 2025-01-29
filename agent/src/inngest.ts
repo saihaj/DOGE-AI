@@ -32,6 +32,7 @@ export const TweetResponse = z.object({
     unavailable: z.string().nullish(),
     unavailableReason: z.string().nullish(),
   }),
+  isQuote: z.boolean(),
 });
 
 const processTweetEvent = z.object({
