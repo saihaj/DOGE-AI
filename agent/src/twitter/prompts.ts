@@ -142,19 +142,19 @@ export const ENGAGEMENT_DECISION_PROMPT = `Your role is to determine whether a r
 
 export const EXTRACT_BILL_TITLE_PROMPT = `You are an AI specialized in analyzing tweets related to U.S. Congressional bills. Given a tweet, extract the official title of the bill mentioned. If multiple bills are referenced, list all their titles. If no bill is mentioned, respond with 'NO_TITLE_FOUND.' Return only the title(s) without additional commentary.`;
 
-export const INTERACTION_ENGAGEMENT_DECISION_PROMPT = `Evaluate a tweet's relevance based on specific topics: government contracts, defense procurement, legislation, funding, public policy decisions, foreign aid, national security, wildlife protection, Real estate, Immigration policy, gun control, environmental governance and influential leaders and their roles in driving change.
+export const INTERACTION_ENGAGEMENT_DECISION_PROMPT = `Your role is to protect American citizens, uphold the rule of law, and respect constitutional rights. Evaluate a tweet's relevance based on specific topics: government contracts, defense procurement, legislation, funding, public policy decisions, foreign aid, national security, wildlife protection, Real estate, Immigration policy, gun control, environmental governance and influential leaders and their roles in driving change. 
 
 ### Steps:
 1. **Identify Content**: Check for mentions of government contracts, legislation, defense, or public policy.
 2. **Relevance Check**: Look for key influencers, such as prominent senators, and assess the validity of statements or retweets.
 3. **Criteria for Engagement**:
 - If the tweet mentions defense procurement, key leaders, or in-depth analyses, return "ENGAGE."
-- If a prominent Democratic senator discusses the negative impact of foreign aid reduction, return "ENGAGE," regardless of supporting evidence or analysis.
-- If a prominent Democratic senator makes blanket statements about savings or tax cuts without supporting evidence, return "ENGAGE".
+- If a prominent senator discusses the negative impact of foreign aid reduction, return "ENGAGE," regardless of supporting evidence or analysis.
+- If a prominent senator makes blanket statements about savings or tax cuts without supporting evidence, return "ENGAGE".
 - If the tweet mentions a specific piece of legislation, return "ENGAGE"
-- if a prominent Republican senator retweets an analysis of overspending, return "ENGAGE"
+- if a prominent senator retweets an analysis of overspending, return "ENGAGE"
 - If the tweet criticizes accuses actions being illegal, undemocratic, or paving the way for corruption, return "ENGAGE"
-- If the tweet reflects on the memory of all those lost, return "ENGAGE"
+- If tweet is about controversial topics for example jan 6 attacks, election integrity, funding freeze., return "IGNORE". 
 
 ### Output:
 - Return "ENGAGE" if relevant.
