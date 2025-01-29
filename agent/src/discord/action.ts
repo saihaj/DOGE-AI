@@ -14,7 +14,6 @@ import {
 } from '../const';
 
 export async function approvedTweet({ tweetUrl }: { tweetUrl: string }) {
-  const url = tweetUrl.replace('x.com', 'vxtwitter.com');
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
   const channel = await guild.channels.fetch(DISCORD_APPROVED_CHANNEL_ID);
 
@@ -22,7 +21,7 @@ export async function approvedTweet({ tweetUrl }: { tweetUrl: string }) {
     throw Error('Approved channel not found or not a text channel');
   }
 
-  await channel.send(`**Accepted**: ${url}`);
+  await channel.send(`**Accepted**: ${tweetUrl}`);
 }
 
 export async function rejectedTweet({
@@ -34,7 +33,6 @@ export async function rejectedTweet({
   tweetUrl: string;
   reason: string;
 }) {
-  const url = tweetUrl.replace('x.com', 'vxtwitter.com');
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
   const channel = await guild.channels.fetch(DISCORD_REJECTED_CHANNEL_ID);
 
@@ -45,11 +43,11 @@ export async function rejectedTweet({
   // EXAMPLE FORMAT: quote_{tweetId}_{url} or retweet_{tweetId}_{url}
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setCustomId(`quote_${tweetId}_${url}`)
+      .setCustomId(`quote_${tweetId}_${tweetUrl}`)
       .setLabel('Quote')
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
-      .setCustomId(`retweet_${tweetId}_${url}`)
+      .setCustomId(`retweet_${tweetId}_${tweetUrl}`)
       .setLabel('Retweet')
       .setStyle(ButtonStyle.Secondary),
   );
