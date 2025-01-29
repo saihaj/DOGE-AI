@@ -13,9 +13,8 @@ import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import {
   EXTRACT_BILL_TITLE_PROMPT,
+  PROMPTS,
   QUESTION_EXTRACTOR_SYSTEM_PROMPT,
-  SYSTEM_PROMPT,
-  TWITTER_REPLY_TEMPLATE,
 } from './prompts';
 import {
   bill,
@@ -244,13 +243,15 @@ export const executeTweets = inngest.createFunction(
             question,
           });
 
+          const systemPrompt = await PROMPTS.SYSTEM_PROMPT();
+          const botUserPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
           const response = await generateText({
             model: openai('gpt-4o'),
             temperature: 0,
             messages: [
               {
                 role: 'system',
-                content: SYSTEM_PROMPT,
+                content: systemPrompt,
               },
               {
                 role: 'user',
@@ -262,7 +263,7 @@ export const executeTweets = inngest.createFunction(
               },
               {
                 role: 'user',
-                content: TWITTER_REPLY_TEMPLATE,
+                content: botUserPrompt,
               },
               {
                 role: 'user',

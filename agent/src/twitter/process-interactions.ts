@@ -3,7 +3,7 @@ import { NonRetriableError } from 'inngest';
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
-import { INTERACTION_ENGAGEMENT_DECISION_PROMPT } from './prompts.ts';
+import { PROMPTS } from './prompts.ts';
 
 export const processInteractionTweets = inngest.createFunction(
   {
@@ -34,11 +34,13 @@ export const processInteractionTweets = inngest.createFunction(
   { event: 'tweet.process.interaction' },
   async ({ event, step }) => {
     const shouldEngage = await step.run('should-engage', async () => {
+      const systemPrompt =
+        await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
       const result = await generateText({
         model: openai('gpt-4o'),
         temperature: 0,
         messages: [
-          { role: 'system', content: INTERACTION_ENGAGEMENT_DECISION_PROMPT },
+          { role: 'system', content: systemPrompt },
           {
             role: 'user',
             content: `Now give me a determination for this tweet: ${event.data.text}`,

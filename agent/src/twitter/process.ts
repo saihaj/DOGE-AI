@@ -4,7 +4,7 @@ import { NonRetriableError } from 'inngest';
 import { getTweet } from './helpers.ts';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
-import { ENGAGEMENT_DECISION_PROMPT } from './prompts.ts';
+import { PROMPTS } from './prompts.ts';
 import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
 
 const openai = createOpenAI({
@@ -92,11 +92,12 @@ export const processTweets = inngest.createFunction(
       if (mainTweet.author.id === event.data.inReplyToUserId) {
         // deter scammers
         const shouldEngage = await step.run('should-engage', async () => {
+          const systemPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
           const result = await generateText({
             model: openai('gpt-4o'),
             temperature: 0,
             messages: [
-              { role: 'system', content: ENGAGEMENT_DECISION_PROMPT },
+              { role: 'system', content: systemPrompt },
               {
                 role: 'assistant',
                 content: mainTweet.text,

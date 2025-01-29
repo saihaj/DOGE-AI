@@ -6,6 +6,7 @@ import {
   integer,
   blob,
 } from 'drizzle-orm/sqlite-core';
+import * as crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
 
 export const bill = sqliteTable(

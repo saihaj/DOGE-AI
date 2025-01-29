@@ -9,6 +9,7 @@
     "deploy": "fly deploy",
     "dev:tweet": "tsx src/temp/another-take.ts",
     "twitter": "tsx --watch --env-file=.env ./src/temp/reply-testing.ts",
+    "update-prompt": "tsx --watch ./src/temp/update-prompt-db.ts",
     "reason": "tsx --watch --env-file=.env ./src/temp/reason-testing.ts",
     "reason-twitter": "tsx --watch --env-file=.env ./src/temp/reason-testing-twitter.ts",
     "test-kb": "tsx --watch ./src/temp/test-kb.ts",

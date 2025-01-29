@@ -11,7 +11,7 @@ import {
 } from './helpers.ts';
 import { CoreMessage, generateObject, generateText, tool } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { INTERACTION_SYSTEM_PROMPT } from './prompts';
+import { PROMPTS } from './prompts';
 import {
   billVector,
   chat as chatDbSchema,
@@ -329,6 +329,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
 
+          const systemPrompt = await PROMPTS.SYSTEM_PROMPT();
           const response = await generateText({
             // o1-mini does not support temperature
             // @ts-ignore
@@ -337,7 +338,7 @@ export const executeInteractionTweets = inngest.createFunction(
             messages: [
               {
                 role: 'system',
-                content: INTERACTION_SYSTEM_PROMPT,
+                content: systemPrompt,
               },
               {
                 role: 'user',
