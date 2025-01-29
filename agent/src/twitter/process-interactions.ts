@@ -27,8 +27,8 @@ export const processInteractionTweets = inngest.createFunction(
       });
     },
     throttle: {
-      limit: 10,
-      period: '1m',
+      limit: 1,
+      period: '2m',
     },
   },
   { event: 'tweet.process.interaction' },
@@ -52,7 +52,14 @@ export const processInteractionTweets = inngest.createFunction(
     });
 
     if (shouldEngage === true) {
-      // TODO: integrate with the execute-tweet function
+      await step.sendEvent('fire-off-tweet', {
+        name: 'tweet.execute.interaction',
+        data: {
+          tweetId: event.data.id,
+          action: 'reply',
+          tweetUrl: event.data.url,
+        },
+      });
       return;
     }
 

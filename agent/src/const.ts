@@ -24,6 +24,9 @@ export const REJECTION_REASON = {
   NO_QUESTION_DETECTED: 'NO_QUESTION_DETECTED',
   SPAM_DETECTED_DO_NOT_ENGAGE: 'SPAM_DETECTED_DO_NOT_ENGAGE',
   ALREADY_REPLIED: 'ALREADY_REPLIED',
+  NO_EXACT_MATCH: 'NO_EXACT_MATCH',
+  TOO_DEEP_OF_A_THREAD: 'TOO_DEEP_OF_A_THREAD',
+  NO_REPLY_FOR_INTERACTION_THREADS: 'NO_REPLY_FOR_INTERACTION_THREADS',
 } as const;
 export const DISCORD_TOKEN = (() => {
   if (!process.env.DISCORD_TOKEN) {
@@ -79,10 +82,11 @@ export const TWITTER_ACCESS_SECRET = (() => {
   }
   return process.env.TWITTER_ACCESS_SECRET;
 })();
+export const IS_PROD = process.env.NODE_ENV === 'production';
 export const DISCORD_LOCAL_TWEETS_CHANNEL_ID = (() => {
+  if (IS_PROD) return '';
   if (!process.env.DISCORD_LOCAL_TWEETS_CHANNEL_ID) {
     throw new Error('DISCORD_LOCAL_TWEETS_CHANNEL_ID is not set in your .env');
   }
   return process.env.DISCORD_LOCAL_TWEETS_CHANNEL_ID;
 })();
-export const IS_PROD = process.env.NODE_ENV === 'production';

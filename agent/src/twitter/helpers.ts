@@ -8,6 +8,8 @@ import { TweetResponse } from '../inngest';
 import { bento } from '../cache';
 import { embed, embedMany, type Embedding } from 'ai';
 import { openai } from '@ai-sdk/openai';
+import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
+import { db, eq, user as userDbSchema, chat as chatDbSchema } from 'database';
 
 // Ada V2 31.4% vs 54.9% large
 const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
@@ -69,3 +71,61 @@ export const SearchResultResponseSchema = z.object({
   has_next_page: z.boolean(),
   next_cursor: z.string().nullable(),
 });
+
+export const textSplitter = new RecursiveCharacterTextSplitter({
+  // Recommendations from ChatGPT
+  chunkSize: 512,
+  chunkOverlap: 100,
+});
+
+export async function upsertUser({ twitterId }: { twitterId: string }) {
+  const user = await db.query.user.findFirst({
+    where: eq(userDbSchema.twitterId, twitterId),
+    columns: {
+      id: true,
+    },
+  });
+
+  if (user) {
+    return user;
+  }
+
+  const created = await db
+    .insert(userDbSchema)
+    .values({
+      twitterId,
+    })
+    .returning({ id: userDbSchema.id });
+
+  const [result] = created;
+  return result;
+}
+
+export async function upsertChat({
+  user,
+  tweetId,
+}: {
+  user: string;
+  tweetId: string;
+}) {
+  const lookupChat = await db.query.chat.findFirst({
+    where: eq(chatDbSchema.tweetId, tweetId),
+    columns: {
+      id: true,
+    },
+  });
+
+  if (lookupChat) {
+    return lookupChat;
+  }
+
+  const chat = await db
+    .insert(chatDbSchema)
+    .values({
+      user,
+      tweetId,
+    })
+    .returning({ id: chatDbSchema.id });
+
+  return chat[0];
+}
