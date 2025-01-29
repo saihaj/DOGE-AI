@@ -27,8 +27,8 @@ export const processInteractionTweets = inngest.createFunction(
       });
     },
     throttle: {
-      limit: 1,
-      period: '2m',
+      limit: 10,
+      period: '1m',
     },
   },
   { event: 'tweet.process.interaction' },
