@@ -33,6 +33,21 @@ export const TweetResponse = z.object({
     unavailableReason: z.string().nullish(),
   }),
   quoted_tweet: z.object({}).nullable(),
+  extendedEntities: z
+    .object({
+      media: z
+        .array(
+          z.object({
+            display_url: z.string(),
+            expanded_url: z.string(),
+            id_str: z.string(),
+            type: z.string(),
+            url: z.string(),
+          }),
+        )
+        .nullable(),
+    })
+    .nullable(),
 });
 
 const processTweetEvent = z.object({
