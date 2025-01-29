@@ -284,6 +284,11 @@ export const executeInteractionTweets = inngest.createFunction(
         reason: error.message,
       });
     },
+    throttle: {
+      limit: 1,
+      period: '15m',
+    },
+    concurrency: 3,
   },
   { event: 'tweet.execute.interaction' },
   async ({ event, step }) => {
