@@ -1,7 +1,14 @@
 import { IS_PROD, REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
-import { generateEmbedding, generateEmbeddings, getTweet } from './helpers.ts';
+import {
+  generateEmbedding,
+  generateEmbeddings,
+  getTweet,
+  textSplitter,
+  upsertChat,
+  upsertUser,
+} from './helpers.ts';
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import {
@@ -10,19 +17,17 @@ import {
   SYSTEM_PROMPT,
   TWITTER_REPLY_TEMPLATE,
 } from './prompts';
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import {
   bill,
   billVector,
-  chat as chatDbSchema,
   db,
   eq,
   inArray,
   like,
   message as messageDbSchema,
+  chat as chatDbSchema,
   messageVector,
   sql,
-  user as userDbSchema,
 } from 'database';
 import {
   approvedTweet,
@@ -31,64 +36,6 @@ import {
   sendDevTweet,
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
-
-const textSplitter = new RecursiveCharacterTextSplitter({
-  // Recommendations from ChatGPT
-  chunkSize: 512,
-  chunkOverlap: 100,
-});
-
-async function upsertUser({ twitterId }: { twitterId: string }) {
-  const user = await db.query.user.findFirst({
-    where: eq(userDbSchema.twitterId, twitterId),
-    columns: {
-      id: true,
-    },
-  });
-
-  if (user) {
-    return user;
-  }
-
-  const created = await db
-    .insert(userDbSchema)
-    .values({
-      twitterId,
-    })
-    .returning({ id: userDbSchema.id });
-
-  const [result] = created;
-  return result;
-}
-
-async function upsertChat({
-  user,
-  tweetId,
-}: {
-  user: string;
-  tweetId: string;
-}) {
-  const lookupChat = await db.query.chat.findFirst({
-    where: eq(chatDbSchema.tweetId, tweetId),
-    columns: {
-      id: true,
-    },
-  });
-
-  if (lookupChat) {
-    return lookupChat;
-  }
-
-  const chat = await db
-    .insert(chatDbSchema)
-    .values({
-      user,
-      tweetId,
-    })
-    .returning({ id: chatDbSchema.id });
-
-  return chat[0];
-}
 
 /**
  * given a tweet id, we try to follow the thread get more context about the tweet

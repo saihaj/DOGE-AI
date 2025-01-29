@@ -67,8 +67,8 @@ export const ingestInteractionTweets = inngest.createFunction(
       });
     },
   },
-  // Runs every 10 minutes
-  { cron: '*/10 * * * *' },
+  // Runs every 10 minutes between 8am and midnight
+  { cron: 'TZ=America/New_York */10 8-23 * * *' },
   async () => {
     const [congress119Senators, dogeAiEngager, houseMembers] =
       await Promise.all([
@@ -93,7 +93,9 @@ export const ingestInteractionTweets = inngest.createFunction(
       .concat(dogeAiEngager, houseMembers)
       // make sure to filter out any replies - for now
       // even though we set `includeReplies` to false in the API call above it still returns replies sometimes.
-      .filter(t => t.isReply === false);
+      .filter(t => t.isReply === false)
+      // ignore any quote tweets https://github.com/saihaj/DOGE-AI/issues/55
+      .filter(t => t.quoted_tweet == null);
 
     /**
      * There is a limit of 512KB for batching events. To avoid hitting this limit, we chunk the tweets

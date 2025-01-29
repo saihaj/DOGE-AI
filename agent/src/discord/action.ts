@@ -89,6 +89,6 @@ export async function sendDevTweet({
   }
 
   await channel.send({
-    content: `**Tweet**: ${tweetUrl}\n**Extracted question**: ${question}\n**Response**: ${response}`,
+    content: `**Tweet**: ${tweetUrl}\n\n**User**: ${question}\n\n**DOGEai**: ${response}\n\n`,
   });
 }

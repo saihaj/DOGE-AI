@@ -20,10 +20,10 @@
     "inngest-cli": "^1.3.3"
   },
   "dependencies": {
-    "@ai-sdk/google": "^1.0.12",
-    "@ai-sdk/openai": "^1.0.19",
+    "@ai-sdk/google": "^1.1.6",
+    "@ai-sdk/openai": "^1.1.5",
     "@langchain/textsplitters": "^0.1.0",
-    "ai": "^4.0.22",
+    "ai": "^4.1.10",
     "database": "workspace:*",
     "fastify": "^5.2.0",
     "he": "^1.2.0",
