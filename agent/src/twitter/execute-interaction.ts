@@ -286,9 +286,9 @@ export const executeInteractionTweets = inngest.createFunction(
     },
     throttle: {
       limit: 1,
-      period: '15m',
+      period: '10m',
     },
-    concurrency: 3,
+    concurrency: 4,
   },
   { event: 'tweet.execute.interaction' },
   async ({ event, step }) => {
@@ -355,7 +355,7 @@ export const executeInteractionTweets = inngest.createFunction(
           // Locally we don't want to send anything to Twitter
           if (!IS_PROD) {
             await sendDevTweet({
-              tweetUrl: `https://twitter.com/i/web/status/${tweetToActionOn.id}`,
+              tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
               question: text,
               response: reply,
             });
@@ -380,7 +380,7 @@ export const executeInteractionTweets = inngest.createFunction(
           if (!IS_PROD) return;
 
           await approvedTweet({
-            tweetUrl: `https://twitter.com/i/web/status/${repliedTweet.id}`,
+            tweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
           });
         });
 

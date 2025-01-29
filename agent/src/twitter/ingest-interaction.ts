@@ -41,7 +41,7 @@ async function fetchTweetsFromList({
     const result = await SearchResultResponseSchema.safeParseAsync(data);
 
     if (result.success === false) {
-      throw new Error(result.error.errors.join(', '));
+      throw new Error(result.error.message);
     }
 
     tweets = tweets.concat(result.data.tweets);
@@ -95,7 +95,15 @@ export const ingestInteractionTweets = inngest.createFunction(
       // even though we set `includeReplies` to false in the API call above it still returns replies sometimes.
       .filter(t => t.isReply === false)
       // ignore any quote tweets https://github.com/saihaj/DOGE-AI/issues/55
-      .filter(t => t.quoted_tweet == null);
+      .filter(t => t.quoted_tweet == null)
+      .filter(
+        t =>
+          t.extendedEntities == null ||
+          // if there are videos we ignore https://github.com/saihaj/DOGE-AI/issues/57
+          t.extendedEntities?.media?.some(m => m?.type !== 'video') ||
+          // photos we can ignore for now some are memes while others need OCR https://github.com/saihaj/DOGE-AI/issues/59
+          t.extendedEntities?.media?.some(m => m?.type !== 'photo'),
+      );
 
     /**
      * There is a limit of 512KB for batching events. To avoid hitting this limit, we chunk the tweets

@@ -56,7 +56,7 @@ export const ingestTweets = inngest.createFunction(
       const result = await SearchResultResponseSchema.safeParseAsync(data);
 
       if (result.success === false) {
-        throw new Error(result.error.errors.join(', '));
+        throw new Error(result.error.message);
       }
 
       tweets = tweets.concat(result.data.tweets);
