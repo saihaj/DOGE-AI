@@ -1,55 +1,22 @@
 import {
   sqliteTable,
+  uniqueIndex,
   text,
   numeric,
   integer,
-  uniqueIndex,
   blob,
 } from 'drizzle-orm/sqlite-core';
 import { sql } from 'drizzle-orm';
-import { customType } from 'drizzle-orm/sqlite-core';
-import * as crypto from 'node:crypto';
-
-const float32Array = customType<{
-  data: number[];
-  config: { dimensions: number };
-  configRequired: true;
-  driverData: Buffer;
-}>({
-  dataType(config) {
-    return `F32_BLOB(${config.dimensions})`;
-  },
-  fromDriver(value: Buffer) {
-    return Array.from(new Float32Array(value.buffer));
-  },
-  toDriver(value: number[]) {
-    return sql`vector32(${JSON.stringify(value)})`;
-  },
-});
-
-export const prismaMigrations = sqliteTable('_prisma_migrations', {
-  id: text().primaryKey().notNull(),
-  checksum: text().notNull(),
-  finishedAt: numeric('finished_at'),
-  migrationName: text('migration_name').notNull(),
-  logs: text(),
-  rolledBackAt: numeric('rolled_back_at'),
-  startedAt: numeric('started_at')
-    .default(sql`(current_timestamp)`)
-    .notNull(),
-  appliedStepsCount: integer('applied_steps_count').default(0).notNull(),
-});
 
 export const bill = sqliteTable(
   'Bill',
   {
-    id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+    id: text().primaryKey().notNull(),
     createdAt: numeric()
       .default(sql`(CURRENT_TIMESTAMP)`)
       .notNull(),
     updatedAt: numeric()
       .default(sql`(CURRENT_TIMESTAMP)`)
-      .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
       .notNull(),
     type: text().notNull(),
     number: integer().notNull(),
@@ -82,73 +49,93 @@ export const bill = sqliteTable(
 );
 
 export const billVector = sqliteTable('BillVector', {
-  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  id: text().primaryKey().notNull(),
   createdAt: numeric()
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   updatedAt: numeric()
     .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
     .notNull(),
   bill: text()
     .notNull()
     .references(() => bill.id, { onDelete: 'cascade' }),
-  vector: float32Array('vector', { dimensions: 1536 }),
-  text: text().notNull(), // the chunk that we are embedding
-  source: text({
-    enum: ['raw', 'summary', 'impact', 'funding', 'spending'],
-  }).notNull(),
+  vector: numeric(),
+  text: text().notNull(),
+  source: text().notNull(),
 });
 
-export const user = sqliteTable('User', {
-  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
-  createdAt: numeric()
-    .default(sql`(CURRENT_TIMESTAMP)`)
+export const prismaMigrations = sqliteTable('_prisma_migrations', {
+  id: text().primaryKey().notNull(),
+  checksum: text().notNull(),
+  finishedAt: numeric('finished_at'),
+  migrationName: text('migration_name').notNull(),
+  logs: text(),
+  rolledBackAt: numeric('rolled_back_at'),
+  startedAt: numeric('started_at')
+    .default(sql`(current_timestamp)`)
     .notNull(),
-  updatedAt: numeric()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  twitterId: text().notNull().unique(),
+  appliedStepsCount: integer('applied_steps_count').default(0).notNull(),
 });
 
 export const chat = sqliteTable('Chat', {
-  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  id: text().primaryKey().notNull(),
   createdAt: numeric()
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   updatedAt: numeric()
     .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
     .notNull(),
   user: text()
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
-  /**
-   * This would be tweetId for the reply user has made.
-   * Essential the first tweet that started conversation with the bot
-   */
-  tweetId: text().unique(),
+  tweetId: text(),
 });
 
 export const message = sqliteTable('Message', {
-  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+  id: text().primaryKey().notNull(),
   createdAt: numeric()
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
   updatedAt: numeric()
     .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  role: text({ enum: ['user', 'assistant'] }).notNull(),
+  role: text().notNull(),
   chat: text()
     .notNull()
     .references(() => chat.id, { onDelete: 'cascade' }),
   text: text().notNull(),
-  tweetId: text().unique(),
+  tweetId: text(),
 });
 
 export const messageVector = sqliteTable('MessageVector', {
+  id: text().primaryKey().notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  message: text()
+    .notNull()
+    .references(() => message.id, { onDelete: 'cascade' }),
+  vector: numeric(),
+  text: text().notNull(),
+});
+
+export const user = sqliteTable('User', {
+  id: text().primaryKey().notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  twitterId: text().notNull(),
+});
+
+export const drizzleMigrations = sqliteTable('__drizzle_migrations', {});
+
+export const botConfig = sqliteTable('BotConfig', {
   id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
   createdAt: numeric()
     .default(sql`(CURRENT_TIMESTAMP)`)
@@ -157,9 +144,6 @@ export const messageVector = sqliteTable('MessageVector', {
     .default(sql`(CURRENT_TIMESTAMP)`)
     .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
     .notNull(),
-  message: text()
-    .notNull()
-    .references(() => message.id, { onDelete: 'cascade' }),
-  vector: float32Array('vector', { dimensions: 1536 }),
-  text: text().notNull(), // the chunk that we are embedding
+  key: text().notNull().unique(),
+  value: text().notNull(),
 });

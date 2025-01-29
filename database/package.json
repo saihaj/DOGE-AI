@@ -6,7 +6,8 @@
   "type": "module",
   "types": "src/index.ts",
   "scripts": {
-    "dev": "tsx --watch ./src/client.ts"
+    "dev": "tsx --watch ./src/client.ts",
+    "generate": "drizzle-kit generate"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
