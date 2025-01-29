@@ -96,11 +96,13 @@ export const ingestInteractionTweets = inngest.createFunction(
       .filter(t => t.isReply === false)
       // ignore any quote tweets https://github.com/saihaj/DOGE-AI/issues/55
       .filter(t => t.quoted_tweet == null)
-      // if there are videos we ignore https://github.com/saihaj/DOGE-AI/issues/57
       .filter(
         t =>
           t.extendedEntities == null ||
-          t.extendedEntities?.media?.some(m => m?.type !== 'video'),
+          // if there are videos we ignore https://github.com/saihaj/DOGE-AI/issues/57
+          t.extendedEntities?.media?.some(m => m?.type !== 'video') ||
+          // photos we can ignore for now some are memes while others need OCR https://github.com/saihaj/DOGE-AI/issues/59
+          t.extendedEntities?.media?.some(m => m?.type !== 'photo'),
       );
 
     /**
