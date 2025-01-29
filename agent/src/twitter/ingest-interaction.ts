@@ -95,7 +95,7 @@ export const ingestInteractionTweets = inngest.createFunction(
       // even though we set `includeReplies` to false in the API call above it still returns replies sometimes.
       .filter(t => t.isReply === false)
       // ignore any quote tweets https://github.com/saihaj/DOGE-AI/issues/55
-      .filter(t => t.isQuote === false);
+      .filter(t => t.quoted_tweet == null);
 
     /**
      * There is a limit of 512KB for batching events. To avoid hitting this limit, we chunk the tweets
