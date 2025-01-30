@@ -22,5 +22,11 @@ export const inngest = new Inngest({
         id: string;
       };
     };
+    'document.imported': {
+      data: {
+        url: string;
+        name: string;
+      };
+    };
   }>(),
 });

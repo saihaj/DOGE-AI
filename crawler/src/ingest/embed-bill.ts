@@ -1,8 +1,6 @@
 import { inngest } from './client';
 import { embedMany } from 'ai';
-import { openai } from '@ai-sdk/openai';
 import { NonRetriableError } from 'inngest';
-import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import {
   db,
   bill as billDbSchema,
@@ -10,28 +8,7 @@ import {
   billVector as billVectorDbSchema,
   sql,
 } from 'database';
-import sanitize from 'sanitize-html';
-import he from 'he';
-
-// Recommendations from ChatGPT
-const CHUNK_SIZE = 2048;
-const CHUNK_OVERLAP = 24;
-
-const textSplitter = new RecursiveCharacterTextSplitter({
-  chunkSize: CHUNK_SIZE,
-  chunkOverlap: CHUNK_OVERLAP,
-});
-
-function cleanText(html: string) {
-  const decoded = he.decode(html); // Convert &lt; and &gt; to < and >
-  const text = sanitize(decoded, {
-    allowedTags: [],
-    allowedAttributes: {},
-  });
-  return text.replace(/\s+/g, ' ').trim();
-}
-
-const model = openai.textEmbeddingModel('text-embedding-3-small');
+import { cleanText, embeddingModel, textSplitter } from './helpers';
 
 function canIgnoreAnalysis(text: string) {
   return (
@@ -86,7 +63,7 @@ export const embedBill = inngest.createFunction(
         const values = await textSplitter.splitText(cleanText(content));
 
         const { embeddings } = await embedMany({
-          model,
+          model: embeddingModel,
           values,
         });
 
@@ -116,7 +93,7 @@ export const embedBill = inngest.createFunction(
         const values = await textSplitter.splitText(details.summary);
 
         const { embeddings } = await embedMany({
-          model,
+          model: embeddingModel,
           values,
         });
 
@@ -146,7 +123,7 @@ export const embedBill = inngest.createFunction(
         const values = await textSplitter.splitText(details.impact);
 
         const { embeddings } = await embedMany({
-          model,
+          model: embeddingModel,
           values,
         });
 
@@ -180,7 +157,7 @@ export const embedBill = inngest.createFunction(
         const values = await textSplitter.splitText(details.funding);
 
         const { embeddings } = await embedMany({
-          model,
+          model: embeddingModel,
           values,
         });
 
@@ -213,7 +190,7 @@ export const embedBill = inngest.createFunction(
         const values = await textSplitter.splitText(details.spending);
 
         const { embeddings } = await embedMany({
-          model,
+          model: embeddingModel,
           values,
         });
 
