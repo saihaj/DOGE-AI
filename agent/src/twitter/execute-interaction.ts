@@ -426,7 +426,7 @@ export const executeInteractionTweets = inngest.createFunction(
               },
               {
                 id: crypto.randomUUID(),
-                text: reply,
+                text: reply.refinedOutput,
                 chat: chat.id,
                 role: 'assistant',
                 tweetId: repliedTweet.id,
@@ -439,7 +439,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
           const [chunkActionTweet, chunkReply] = await Promise.all([
             textSplitter.splitText(tweetToActionOn.text),
-            textSplitter.splitText(reply),
+            textSplitter.splitText(reply.refinedOutput),
           ]);
 
           const actionTweetEmbeddings =
