@@ -23,6 +23,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^1.1.5
         version: 1.1.5(zod@3.24.1)
+      '@ai-sdk/xai':
+        specifier: ^1.1.6
+        version: 1.1.6(zod@3.24.1)
       '@langchain/textsplitters':
         specifier: ^0.1.0
         version: 0.1.0(@langchain/core@0.3.32(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)))
@@ -72,7 +75,7 @@ importers:
         specifier: ^1.19.0
         version: 1.19.0
       typescript:
-        specifier: ^5.7.2
+        specifier: ^5.7.3
         version: 5.7.3
       yargs:
         specifier: 17.7.2
@@ -130,7 +133,7 @@ importers:
         specifier: ^4.19.2
         version: 4.19.2
       typescript:
-        specifier: ^5.7.2
+        specifier: ^5.7.3
         version: 5.7.3
       zod:
         specifier: ^3.24.1
@@ -238,7 +241,7 @@ importers:
         specifier: ^3.4.1
         version: 3.4.17
       typescript:
-        specifier: ^5.7.2
+        specifier: ^5.7.3
         version: 5.7.3
 
 packages:
@@ -300,6 +303,12 @@ packages:
     peerDependenciesMeta:
       zod:
         optional: true
+
+  '@ai-sdk/xai@1.1.6':
+    resolution: {integrity: sha512-KP60K0mIgsRc6h9CNzm9LI4AGinkFpNOFBcIUqDmCKV4oAIbF7uUBDnOzyfDCrXVY5FrZGEFRhiAfe5S+ka/Ag==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -4219,6 +4228,13 @@ snapshots:
       '@ai-sdk/provider-utils': 2.1.5(zod@3.24.1)
       zod-to-json-schema: 3.24.1(zod@3.24.1)
     optionalDependencies:
+      zod: 3.24.1
+
+  '@ai-sdk/xai@1.1.6(zod@3.24.1)':
+    dependencies:
+      '@ai-sdk/openai-compatible': 0.1.6(zod@3.24.1)
+      '@ai-sdk/provider': 1.0.6
+      '@ai-sdk/provider-utils': 2.1.5(zod@3.24.1)
       zod: 3.24.1
 
   '@alloc/quick-lru@5.2.0': {}

@@ -11,6 +11,7 @@ import path from 'node:path';
 import fs from 'node:fs/promises';
 dotenv.config();
 
+// @ts-ignore -- temporary script
 const __filename = fileURLToPath(import.meta.url); // get the resolved path to the file
 const __dirname = path.dirname(__filename); // get the name of the directory
 
@@ -92,6 +93,7 @@ async function main() {
   try {
     await fs.access(OUTPUT);
   } catch (error) {
+    // @ts-expect-error not sure how to type this
     if (error.code === 'ENOENT') {
       await fs.mkdir(OUTPUT);
     } else {
