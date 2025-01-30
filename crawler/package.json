@@ -7,6 +7,7 @@
     "enqueue": "tsx --env-file=.env ./src/scripts/enqueue-bill.ts",
     "dev:server": "tsx --watch --env-file=.env ./src/server.ts",
     "dev:inngest": "inngest dev -u http://localhost:3000/api/inngest",
+    "check:types": "tsc --noEmit",
     "dev": "pnpm run dev:server & pnpm run dev:inngest",
     "build": "esbuild --bundle --platform=node --outdir=dist src/server.ts '--external:@libsql/client'",
     "predeploy": "pnpm run build",
