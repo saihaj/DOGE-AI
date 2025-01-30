@@ -366,7 +366,8 @@ export const executeInteractionTweets = inngest.createFunction(
           });
           const responseLong = _responseLong
             .replace(/<think>[\s\S]*?<\/think>/g, '')
-            .replace(/\[\d+\]/g, '');
+            .replace(/\[\d+\]/g, '')
+            .replace(/^(\n)+/, '');
 
           const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
           const { text: finalAnswer } = await generateText({
