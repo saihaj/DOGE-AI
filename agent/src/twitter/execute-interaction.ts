@@ -350,6 +350,7 @@ export const executeInteractionTweets = inngest.createFunction(
           const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
           const finalAnswer = await generateText({
             model: openai('gpt-4o'),
+            temperature: 0,
             messages: [
               {
                 role: 'user',
