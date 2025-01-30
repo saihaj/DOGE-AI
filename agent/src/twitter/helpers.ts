@@ -10,6 +10,7 @@ import { embed, embedMany, type Embedding } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { db, eq, user as userDbSchema, chat as chatDbSchema } from 'database';
+import * as crypto from 'node:crypto';
 
 // Ada V2 31.4% vs 54.9% large
 const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
@@ -93,6 +94,7 @@ export async function upsertUser({ twitterId }: { twitterId: string }) {
   const created = await db
     .insert(userDbSchema)
     .values({
+      id: crypto.randomUUID(),
       twitterId,
     })
     .returning({ id: userDbSchema.id });
@@ -122,6 +124,7 @@ export async function upsertChat({
   const chat = await db
     .insert(chatDbSchema)
     .values({
+      id: crypto.randomUUID(),
       user,
       tweetId,
     })
