@@ -2,7 +2,8 @@
   "name": "dogeai",
   "scripts": {
     "format": "prettier --write .",
-    "check:format": "prettier --check ."
+    "check:format": "prettier --check .",
+    "check:types": "pnpm -r check:types"
   },
   "devDependencies": {
     "prettier": "^3.4.2"

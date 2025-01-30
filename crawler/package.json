@@ -7,7 +7,9 @@
     "enqueue": "tsx --env-file=.env ./src/scripts/enqueue-bill.ts",
     "dev:server": "tsx --watch --env-file=.env ./src/server.ts",
     "dev:inngest": "inngest dev -u http://localhost:3000/api/inngest",
+    "check:types": "tsc --noEmit",
     "dev": "pnpm run dev:server & pnpm run dev:inngest",
+    "prebuild": "pnpm run check:types",
     "build": "esbuild --bundle --platform=node --outdir=dist src/server.ts '--external:@libsql/client'",
     "predeploy": "pnpm run build",
     "deploy": "fly deploy"
@@ -31,7 +33,7 @@
     "openai": "^4.80.0",
     "sanitize-html": "^2.14.0",
     "tsx": "^4.19.2",
-    "typescript": "^5.7.2",
+    "typescript": "^5.7.3",
     "zod": "^3.24.1"
   }
 }
