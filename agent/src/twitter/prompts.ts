@@ -46,6 +46,26 @@ export const PROMPTS = {
       { ttl: '1d' },
     );
   },
+  INTERACTION_REFINE_OUTPUT_PROMPT: async () => {
+    return bento.getOrSet(
+      'BOT_CONFIG_INTERACTION_REFINE_OUTPUT_PROMPT',
+      async () => {
+        const prompt = await db.query.botConfig.findFirst({
+          where: eq(botConfig.key, 'INTERACTION_REFINE_OUTPUT_PROMPT'),
+          columns: {
+            value: true,
+          },
+        });
+
+        if (!prompt) {
+          throw new Error('INTERACTION_REFINE_OUTPUT_PROMPT not found');
+        }
+
+        return prompt.value;
+      },
+      { ttl: '1d' },
+    );
+  },
   TWITTER_REPLY_TEMPLATE: async () => {
     return bento.getOrSet(
       'BOT_CONFIG_TWITTER_REPLY_TEMPLATE',
