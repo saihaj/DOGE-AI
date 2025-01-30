@@ -1,3 +1,6 @@
+if (!process.env.PERPLEXITY_API_KEY) {
+  throw new Error('PERPLEXITY_API_KEY is not set in your .env');
+}
 export const TWITTER_API_KEY = (() => {
   if (!process.env.TWITTER_IO_API_KEY) {
     throw new Error('TWITTER_IO_API_KEY is required');
