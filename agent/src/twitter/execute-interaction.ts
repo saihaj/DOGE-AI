@@ -1,6 +1,7 @@
 import { IS_PROD, REJECTION_REASON } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
+import * as crypto from 'node:crypto';
 import {
   generateEmbedding,
   generateEmbeddings,
@@ -330,7 +331,7 @@ export const executeInteractionTweets = inngest.createFunction(
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
 
           const systemPrompt = await PROMPTS.SYSTEM_PROMPT();
-          const response = await generateText({
+          const { text: responseLong } = await generateText({
             temperature: 0,
             model: openai('gpt-4o'),
             messages: [
@@ -354,7 +355,7 @@ export const executeInteractionTweets = inngest.createFunction(
             messages: [
               {
                 role: 'user',
-                content: `${refinePrompt} \n\n Response to modify: \n\n ${response.text}`,
+                content: `${refinePrompt} \n\n Response to modify: \n\n ${responseLong}`,
               },
             ],
           });
@@ -413,12 +414,14 @@ export const executeInteractionTweets = inngest.createFunction(
             .insert(messageDbSchema)
             .values([
               {
+                id: crypto.randomUUID(),
                 text: tweetToActionOn.text,
                 chat: chat.id,
                 role: 'user',
                 tweetId: tweetToActionOn.id,
               },
               {
+                id: crypto.randomUUID(),
                 text: reply,
                 chat: chat.id,
                 role: 'assistant',
@@ -441,10 +444,12 @@ export const executeInteractionTweets = inngest.createFunction(
           await db.insert(messageVector).values(
             chunkActionTweet
               .map((value, index) => ({
+                id: crypto.randomUUID(),
                 value,
                 embedding: actionTweetEmbeddings[index],
               }))
               .map(({ value, embedding }) => ({
+                id: crypto.randomUUID(),
                 message: message[0].id,
                 text: value,
                 vector: sql`vector32(${JSON.stringify(embedding)})`,
@@ -456,10 +461,12 @@ export const executeInteractionTweets = inngest.createFunction(
           await db.insert(messageVector).values(
             chunkReply
               .map((value, index) => ({
+                id: crypto.randomUUID(),
                 value,
                 embedding: replyEmbeddings[index],
               }))
               .map(({ value, embedding }) => ({
+                id: crypto.randomUUID(),
                 message: message[1].id,
                 text: value,
                 vector: sql`vector32(${JSON.stringify(embedding)})`,

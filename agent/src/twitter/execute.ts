@@ -10,6 +10,7 @@ import {
   upsertUser,
 } from './helpers.ts';
 import { generateText } from 'ai';
+import * as crypto from 'node:crypto';
 import { openai } from '@ai-sdk/openai';
 import {
   EXTRACT_BILL_TITLE_PROMPT,
@@ -323,12 +324,14 @@ export const executeTweets = inngest.createFunction(
             .insert(messageDbSchema)
             .values([
               {
+                id: crypto.randomUUID(),
                 text: tweetToActionOn.text,
                 chat: chat.id,
                 role: 'user',
                 tweetId: tweetToActionOn.id,
               },
               {
+                id: crypto.randomUUID(),
                 text: reply,
                 chat: chat.id,
                 role: 'assistant',
@@ -351,10 +354,12 @@ export const executeTweets = inngest.createFunction(
           await db.insert(messageVector).values(
             chunkActionTweet
               .map((value, index) => ({
+                id: crypto.randomUUID(),
                 value,
                 embedding: actionTweetEmbeddings[index],
               }))
               .map(({ value, embedding }) => ({
+                id: crypto.randomUUID(),
                 message: message[0].id,
                 text: value,
                 vector: sql`vector32(${JSON.stringify(embedding)})`,
@@ -366,10 +371,12 @@ export const executeTweets = inngest.createFunction(
           await db.insert(messageVector).values(
             chunkReply
               .map((value, index) => ({
+                id: crypto.randomUUID(),
                 value,
                 embedding: replyEmbeddings[index],
               }))
               .map(({ value, embedding }) => ({
+                id: crypto.randomUUID(),
                 message: message[1].id,
                 text: value,
                 vector: sql`vector32(${JSON.stringify(embedding)})`,
