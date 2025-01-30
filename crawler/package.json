@@ -9,6 +9,7 @@
     "dev:inngest": "inngest dev -u http://localhost:3000/api/inngest",
     "check:types": "tsc --noEmit",
     "dev": "pnpm run dev:server & pnpm run dev:inngest",
+    "prebuild": "pnpm run check:types",
     "build": "esbuild --bundle --platform=node --outdir=dist src/server.ts '--external:@libsql/client'",
     "predeploy": "pnpm run build",
     "deploy": "fly deploy"

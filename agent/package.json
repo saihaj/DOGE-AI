@@ -4,6 +4,7 @@
   "main": "src/index.ts",
   "scripts": {
     "start": "tsx src/index.ts",
+    "prebuild": "pnpm run check:types",
     "build": "esbuild --bundle --platform=node --outdir=dist ./src/server.ts '--external:@libsql/client'",
     "predeploy": "pnpm run build",
     "check:types": "tsc --noEmit",
