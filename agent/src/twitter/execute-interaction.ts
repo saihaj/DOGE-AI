@@ -33,6 +33,7 @@ import {
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
 import { z } from 'zod';
+import { perplexity } from '@ai-sdk/perplexity';
 
 /**
  * Given a tweet id, we return a list of messages.
@@ -320,7 +321,17 @@ export const executeInteractionTweets = inngest.createFunction(
         }).catch(e => {
           throw new NonRetriableError(e);
         });
-        const text = `@${tweetToActionOn.author.userName}: ${tweetToActionOn.text}`;
+
+        const text = (() => {
+          const mainTweetText = `@${tweetToActionOn.author.userName}: ${tweetToActionOn.text}`;
+          if (tweetToActionOn.quoted_tweet) {
+            const quotedTweetText = `Quote: @${tweetToActionOn.quoted_tweet.author.userName}: ${tweetToActionOn.quoted_tweet.text}`;
+
+            return `Quote: ${quotedTweetText}\n\n${mainTweetText}`;
+          }
+
+          return mainTweetText;
+        })();
 
         const reply = await step.run('generate-reply', async () => {
           const bill = await getReasonBillContext({
@@ -337,9 +348,9 @@ export const executeInteractionTweets = inngest.createFunction(
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
 
           const systemPrompt = await PROMPTS.INTERACTION_SYSTEM_PROMPT();
-          const { text: responseLong } = await generateText({
+          const { text: _responseLong } = await generateText({
             temperature: 0,
-            model: openai('gpt-4o'),
+            model: perplexity('sonar-reasoning'),
             messages: [
               {
                 role: 'system',
@@ -353,6 +364,9 @@ export const executeInteractionTweets = inngest.createFunction(
               },
             ],
           });
+          const responseLong = _responseLong
+            .replace(/<think>[\s\S]*?<\/think>/g, '')
+            .replace(/\[\d+\]/g, '');
 
           const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
           const { text: finalAnswer } = await generateText({
