@@ -243,8 +243,6 @@ export async function getReasonBillContext({
     maxSteps: 10,
   });
 
-  console.log(finalBill.text);
-
   const billTitle = finalBill.text;
   if (
     billTitle.startsWith('NO_TITLE_FOUND') ||
@@ -330,7 +328,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
 
-          const systemPrompt = await PROMPTS.SYSTEM_PROMPT();
+          const systemPrompt = await PROMPTS.INTERACTION_SYSTEM_PROMPT();
           const { text: responseLong } = await generateText({
             temperature: 0,
             model: openai('gpt-4o'),
