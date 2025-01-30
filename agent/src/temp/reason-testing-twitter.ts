@@ -46,7 +46,18 @@ async function getAnswer(
     messages,
   });
 
-  return result.text;
+  const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
+  const finalAnswer = await generateText({
+    model: openai('gpt-4o'),
+    messages: [
+      {
+        role: 'user',
+        content: `${refinePrompt} \n\n Response to modify: \n\n ${result.text}`,
+      },
+    ],
+  });
+
+  return finalAnswer.text;
 }
 
 // async function getBillSummary(

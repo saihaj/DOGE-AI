@@ -331,8 +331,6 @@ export const executeInteractionTweets = inngest.createFunction(
 
           const systemPrompt = await PROMPTS.SYSTEM_PROMPT();
           const response = await generateText({
-            // o1-mini does not support temperature
-            // @ts-ignore
             temperature: 0,
             model: openai('gpt-4o'),
             messages: [
@@ -349,7 +347,18 @@ export const executeInteractionTweets = inngest.createFunction(
             ],
           });
 
-          return response.text;
+          const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
+          const finalAnswer = await generateText({
+            model: openai('gpt-4o'),
+            messages: [
+              {
+                role: 'user',
+                content: `${refinePrompt} \n\n Response to modify: \n\n ${response.text}`,
+              },
+            ],
+          });
+
+          return finalAnswer.text;
         });
 
         const repliedTweet = await step.run('send-tweet', async () => {
