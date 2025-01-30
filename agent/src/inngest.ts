@@ -32,7 +32,7 @@ export const TweetResponse = z.object({
     unavailable: z.string().nullish(),
     unavailableReason: z.string().nullish(),
   }),
-  quoted_tweet: z.object({}).nullable(),
+  quoted_tweet: z.lazy(() => TweetResponse).nullable(),
   extendedEntities: z
     .object({
       media: z
@@ -44,6 +44,7 @@ export const TweetResponse = z.object({
               id_str: z.string(),
               type: z.string(),
               url: z.string(),
+              media_url_https: z.string(),
             })
             .nullish(),
         )
