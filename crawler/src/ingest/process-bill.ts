@@ -193,7 +193,7 @@ export const processBill = inngest.createFunction(
       };
     });
 
-    const fetchBillText = await step.run('fetch-bill-text', async () => {
+    const storeInDb = await step.run('fetch-summarize-store', async () => {
       const url = new URL(info.htmlVersionUrl);
       // Get the bill text from the API
       const response = await fetch(url.toString(), {
@@ -212,12 +212,9 @@ export const processBill = inngest.createFunction(
           cause: `HTTP response: ${response.status}`,
         });
       }
+      const fetchBillText = data;
 
-      return data;
-    });
-
-    const summarizeBill = await step.run('summarize-bill', async () => {
-      const result = await generateObject({
+      const { object: summarizeBill } = await generateObject({
         model: google('gemini-1.5-flash-8b'),
         schema: z.object({
           summary: z.string(),
@@ -254,10 +251,6 @@ export const processBill = inngest.createFunction(
         ],
       });
 
-      return result.object;
-    });
-
-    const storeInDb = await step.run('store-in-db', async () => {
       const billData = {
         type: bill.type,
         number: info.billNumber,
