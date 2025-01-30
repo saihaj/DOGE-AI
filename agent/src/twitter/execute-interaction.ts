@@ -62,10 +62,18 @@ export async function getTweetMessages({
     }
   } while (searchId);
 
-  return tweets.map(tweet => ({
-    role: tweet.author.userName === TWITTER_USERNAME ? 'assistant' : 'user',
-    content: `@${tweet.author.userName}: ${tweet.text}`,
-  }));
+  return tweets.map(tweet => {
+    const isAssistant = tweet.author.userName === TWITTER_USERNAME;
+    const role = isAssistant ? 'assistant' : 'user';
+
+    let content = `@${tweet.author.userName}: ${tweet.text}`;
+    if (tweet.quoted_tweet) {
+      const quote = `@${tweet.quoted_tweet.author.userName}: ${tweet.quoted_tweet.text}`;
+      content = `Quote: ${quote}\n\n${content}`;
+    }
+
+    return { role, content };
+  });
 }
 
 /**

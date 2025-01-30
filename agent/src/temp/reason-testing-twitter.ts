@@ -1,20 +1,52 @@
-import { CoreMessage, generateText } from 'ai';
+import {
+  CoreMessage,
+  generateText,
+  ImagePart,
+  TextPart,
+  UserContent,
+} from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { bill as billDbSchema } from 'database';
 import { writeFile } from 'node:fs/promises';
 import * as readline from 'node:readline/promises';
 import { PROMPTS } from '../twitter/prompts';
 import { getTweet } from '../twitter/helpers';
+import { perplexity } from '@ai-sdk/perplexity';
 import {
   getReasonBillContext,
   getTweetMessages,
 } from '../twitter/execute-interaction';
+function mergeConsecutiveSameRole(messages: CoreMessage[]): CoreMessage[] {
+  if (messages.length === 0) {
+    return [];
+  }
+
+  const merged: CoreMessage[] = [];
+
+  for (const current of messages) {
+    if (merged.length === 0) {
+      merged.push(current);
+    } else {
+      const last = merged[merged.length - 1];
+
+      if (last.role === current.role) {
+        // Merge the string content
+        last.content += '\n\n' + current.content;
+      } else {
+        merged.push(current);
+      }
+    }
+  }
+
+  return merged;
+}
 
 async function getAnswer(
   user: string,
   threadMessages: CoreMessage[],
   autonomous: boolean = false,
   bill?: string,
+  mediaContent: ImagePart[] = [],
 ): Promise<string> {
   if (!bill) {
     console.log('No bill found. Proceeding in autonomous mode...');
@@ -22,7 +54,7 @@ async function getAnswer(
   }
 
   const systemPrompt = await PROMPTS.INTERACTION_SYSTEM_PROMPT();
-  const messages: CoreMessage[] = [
+  let messages: CoreMessage[] = [
     {
       role: 'system',
       content: systemPrompt,
@@ -36,91 +68,50 @@ async function getAnswer(
     },
   ];
 
+  messages = mergeConsecutiveSameRole(messages);
+
   await writeFile(`dev-test/messages.txt`, JSON.stringify(messages));
 
   const result = await generateText({
     // o1-mini does not support temperature
     // @ts-ignore
     temperature: 0,
-    model: openai('gpt-4o'),
+    // model: openai('gpt-4o', {
+    //   downloadImages: true,
+    // }),
+    model: perplexity('sonar-reasoning'),
     messages,
   });
 
+  console.log(result.experimental_providerMetadata);
+
+  let firstLayer = result.text.replace(/<think>[\s\S]*?<\/think>/g, '');
+  firstLayer = firstLayer.replace(/\[\d+\]/g, '');
+  await writeFile(`dev-test/firstLayer.txt`, firstLayer);
+
+  if (firstLayer.length <= 240) {
+    return firstLayer;
+  }
+
+  console.log(
+    `BEFORE REFINEMENT: ${result.text} \n\n-------------------------`,
+  );
+
   const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
+
   const finalAnswer = await generateText({
     model: openai('gpt-4o'),
     temperature: 0,
     messages: [
       {
         role: 'user',
-        content: `${refinePrompt} \n\n Response to modify: \n\n ${result.text}`,
+        content: `${refinePrompt} \n\n Response to modify: \n\n ${firstLayer}`,
       },
     ],
   });
 
   return finalAnswer.text;
 }
-
-// async function getBillSummary(
-//   bill: typeof billDbSchema.$inferSelect | null,
-// ): Promise<string> {
-//   if (!bill) return '';
-
-//   const template = Handlebars.compile(ANALYZE_PROMPT);
-//   const prompt = template({
-//     billType: bill.type,
-//     billNumber: bill.number,
-//     billCongress: bill.congress,
-//     billOriginChamber: bill.originChamber,
-//     billTitle: bill.title,
-//     content: bill.content,
-//     impact: bill.impact,
-//     funding: bill.funding,
-//     spending: bill.spending,
-//   });
-
-//   const messages: CoreMessage[] = [
-//     {
-//       role: 'user',
-//       content: prompt,
-//     },
-//   ];
-
-//   const result = await generateText({
-//     // o1-mini does not support temperature
-//     // @ts-ignore
-//     model: openai('o1-mini'),
-//     messages,
-//   });
-
-//   return result.text;
-// }
-
-// async function extractQuestion(text: string): Promise<string> {
-//   const questionResult = await generateText({
-//     model: openai('gpt-4o'),
-//     temperature: 0,
-//     messages: [
-//       {
-//         role: 'system',
-//         content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
-//       },
-//       {
-//         role: 'user',
-//         content: text,
-//       },
-//     ],
-//   });
-
-//   let extractedText = questionResult.text.trim();
-//   if (extractedText.startsWith('NO_QUESTION_DETECTED')) {
-//     // If no question was detected, just return the original text
-//     console.log('No question detected.');
-//     extractedText = text;
-//   }
-
-//   return extractedText;
-// }
 
 async function main() {
   const terminal = readline.createInterface({
@@ -138,7 +129,30 @@ async function main() {
     }
 
     const tweetToActionOn = await getTweet({ id: tweetId });
-    const text = `@${tweetToActionOn.author.userName}: ${tweetToActionOn.text}`;
+    let content = `@${tweetToActionOn.author.userName}: ${tweetToActionOn.text}`;
+
+    if (tweetToActionOn.quoted_tweet) {
+      const quote = `@${tweetToActionOn.quoted_tweet.author.userName}: ${tweetToActionOn.quoted_tweet.text}`;
+      content = `Quote: ${quote}\n\n${content}`;
+    }
+
+    const mediaContent: ImagePart[] = [];
+    await writeFile(`dev-test/apitweet.txt`, JSON.stringify(tweetToActionOn));
+
+    // TODO: not being used right now. Perplexity does not support images
+    if (tweetToActionOn.extendedEntities?.media) {
+      for (const media of tweetToActionOn.extendedEntities.media) {
+        if (media?.type === 'photo') {
+          console.log('MEDIA FOUND:', media);
+          mediaContent.push({
+            type: 'image',
+            image: media.media_url_https,
+          });
+        }
+      }
+    }
+
+    const text = content;
 
     let autonomous = false;
     let threadMessages: CoreMessage[] | string = tweetToActionOn.text;
@@ -148,8 +162,6 @@ async function main() {
       });
     }
 
-    // if threadMessages is a string, it means we only have text
-    // we are in "autonomous" mode
     if (typeof threadMessages === 'string') {
       threadMessages = [
         {
@@ -160,10 +172,8 @@ async function main() {
       autonomous = true;
     }
 
-    // const userQuestion = await extractQuestion(text);
     const userQuestion = text;
 
-    // Extract the bill object from the thread. TODO: accept an array of bills.
     let bill: typeof billDbSchema.$inferSelect | null = null;
     let noContext = false;
     try {
@@ -179,7 +189,6 @@ async function main() {
     // Summarize the bill if we found one
     let summary = '';
     if (!noContext && bill) {
-      // summary = await getBillSummary(bill);
       // console.log('Summary Context:\n', summary, '\n');
       summary = bill.title + ': \n\n' + bill.content;
       console.log('Summary Context:\n', summary, '\n');
@@ -190,6 +199,7 @@ async function main() {
       threadMessages,
       autonomous,
       summary,
+      mediaContent,
     );
 
     const answerWithQuestion = `User: ${userQuestion}\n\nDogeAI: ${finalAnswer}`;
