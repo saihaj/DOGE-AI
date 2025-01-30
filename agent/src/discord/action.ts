@@ -13,7 +13,29 @@ import {
   DISCORD_SERVER_ID,
 } from '../const';
 
-export async function approvedTweet({ tweetUrl }: { tweetUrl: string }) {
+export async function approvedTweetEngagement({
+  tweetUrl,
+  longOutput,
+  refinedOutput,
+}: {
+  tweetUrl: string;
+  longOutput: string;
+  refinedOutput: string;
+}) {
+  const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
+  const channel = await guild.channels.fetch(DISCORD_APPROVED_CHANNEL_ID);
+
+  if (!channel || !(channel instanceof TextChannel)) {
+    throw Error('Approved channel not found or not a text channel');
+  }
+
+  await channel.send({
+    content: `${tweetUrl}\n\n**Long output**: ${longOutput}\n\n **Refined output**: ${refinedOutput}`,
+    allowedMentions: { parse: [] }, // Prevents unfurling
+  });
+}
+
+export async function approvedTweetReply({ tweetUrl }: { tweetUrl: string }) {
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
   const channel = await guild.channels.fetch(DISCORD_APPROVED_CHANNEL_ID);
 

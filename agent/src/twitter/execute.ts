@@ -30,7 +30,7 @@ import {
   sql,
 } from 'database';
 import {
-  approvedTweet,
+  approvedTweetReply,
   rejectedTweet,
   reportFailureToDiscord,
   sendDevTweet,
@@ -304,7 +304,7 @@ export const executeTweets = inngest.createFunction(
           // No need to send to discord in local mode since we are already spamming dev test channel
           if (!IS_PROD) return;
 
-          await approvedTweet({
+          await approvedTweetReply({
             tweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
           });
         });

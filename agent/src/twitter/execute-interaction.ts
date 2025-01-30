@@ -26,7 +26,7 @@ import {
 } from 'database';
 import { TWITTER_USERNAME } from '../const.ts';
 import {
-  approvedTweet,
+  approvedTweetEngagement,
   rejectedTweet,
   reportFailureToDiscord,
   sendDevTweet,
@@ -347,7 +347,7 @@ export const executeInteractionTweets = inngest.createFunction(
           });
 
           const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
-          const finalAnswer = await generateText({
+          const { text: finalAnswer } = await generateText({
             model: openai('gpt-4o'),
             temperature: 0,
             messages: [
@@ -358,7 +358,10 @@ export const executeInteractionTweets = inngest.createFunction(
             ],
           });
 
-          return finalAnswer.text;
+          return {
+            longOutput: responseLong,
+            refinedOutput: finalAnswer,
+          };
         });
 
         const repliedTweet = await step.run('send-tweet', async () => {
@@ -367,14 +370,14 @@ export const executeInteractionTweets = inngest.createFunction(
             await sendDevTweet({
               tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
               question: text,
-              response: reply,
+              response: reply.refinedOutput,
             });
             return {
               id: 'local_id',
             };
           }
 
-          const resp = await twitterClient.v2.tweet(reply, {
+          const resp = await twitterClient.v2.tweet(reply.refinedOutput, {
             reply: {
               in_reply_to_tweet_id: tweetToActionOn.id,
             },
@@ -389,8 +392,10 @@ export const executeInteractionTweets = inngest.createFunction(
           // No need to send to discord in local mode since we are already spamming dev test channel
           if (!IS_PROD) return;
 
-          await approvedTweet({
+          await approvedTweetEngagement({
             tweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
+            refinedOutput: reply.refinedOutput,
+            longOutput: reply.longOutput,
           });
         });
 
