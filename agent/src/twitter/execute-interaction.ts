@@ -348,22 +348,28 @@ export const executeInteractionTweets = inngest.createFunction(
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
 
           const systemPrompt = await PROMPTS.INTERACTION_SYSTEM_PROMPT();
-          const { text: _responseLong } = await generateText({
-            temperature: 0,
-            model: perplexity('sonar-reasoning'),
-            messages: [
-              {
-                role: 'system',
-                content: systemPrompt,
-              },
-              {
-                role: 'user',
-                content: summary
-                  ? `Context from database: ${summary}\n\n Question: ${text}`
-                  : `${text}`,
-              },
-            ],
-          });
+          const { text: _responseLong, experimental_providerMetadata } =
+            await generateText({
+              temperature: 0,
+              model: perplexity('sonar-reasoning'),
+              messages: [
+                {
+                  role: 'system',
+                  content: systemPrompt,
+                },
+                {
+                  role: 'user',
+                  content: summary
+                    ? `Context from database: ${summary}\n\n Question: ${text}`
+                    : `${text}`,
+                },
+              ],
+            });
+
+          const metadata = experimental_providerMetadata
+            ? JSON.stringify(experimental_providerMetadata)
+            : null;
+
           const responseLong = _responseLong
             .replace(/<think>[\s\S]*?<\/think>/g, '')
             .replace(/\[\d+\]/g, '')
@@ -381,9 +387,17 @@ export const executeInteractionTweets = inngest.createFunction(
             ],
           });
 
+          /**
+           * 80% time we want to send the long output
+           * 20% time we want to send the refined output
+           */
+          const response = Math.random() > 0.2 ? responseLong : finalAnswer;
+
           return {
             longOutput: responseLong,
             refinedOutput: finalAnswer,
+            metadata,
+            response,
           };
         });
 
@@ -393,7 +407,8 @@ export const executeInteractionTweets = inngest.createFunction(
             await sendDevTweet({
               tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
               question: text,
-              response: reply.refinedOutput,
+              response: reply.response,
+              refinedOutput: reply.refinedOutput,
               longOutput: reply.longOutput,
             });
             return {
@@ -401,7 +416,7 @@ export const executeInteractionTweets = inngest.createFunction(
             };
           }
 
-          const resp = await twitterClient.v2.tweet(reply.refinedOutput, {
+          const resp = await twitterClient.v2.tweet(reply.response, {
             reply: {
               in_reply_to_tweet_id: tweetToActionOn.id,
             },
@@ -418,6 +433,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
           await approvedTweetEngagement({
             tweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
+            sent: reply.response,
             refinedOutput: reply.refinedOutput,
             longOutput: reply.longOutput,
           });
@@ -449,7 +465,7 @@ export const executeInteractionTweets = inngest.createFunction(
               },
               {
                 id: crypto.randomUUID(),
-                text: reply.refinedOutput,
+                text: reply.response,
                 chat: chat.id,
                 role: 'assistant',
                 tweetId: repliedTweet.id,
@@ -462,7 +478,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
           const [chunkActionTweet, chunkReply] = await Promise.all([
             textSplitter.splitText(tweetToActionOn.text),
-            textSplitter.splitText(reply.refinedOutput),
+            textSplitter.splitText(reply.response),
           ]);
 
           const actionTweetEmbeddings =
