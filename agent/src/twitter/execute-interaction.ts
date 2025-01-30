@@ -284,8 +284,8 @@ export const executeInteractionTweets = inngest.createFunction(
       });
     },
     throttle: {
-      limit: 1,
-      period: '10m',
+      limit: 2,
+      period: '5m',
     },
     concurrency: 4,
   },
