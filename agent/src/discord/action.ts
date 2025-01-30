@@ -31,7 +31,7 @@ export async function approvedTweetEngagement({
 
   await channel.send({
     content: `${tweetUrl}\n\n**Long output**: ${longOutput}\n\n **Refined output**: ${refinedOutput}`,
-    allowedMentions: { parse: [] }, // Prevents unfurling
+    allowedMentions: { parse: [] },
   });
 }
 
@@ -43,7 +43,10 @@ export async function approvedTweetReply({ tweetUrl }: { tweetUrl: string }) {
     throw Error('Approved channel not found or not a text channel');
   }
 
-  await channel.send(`**Accepted**: ${tweetUrl}`);
+  await channel.send({
+    content: `**Accepted**: ${tweetUrl}`,
+    allowedMentions: { parse: [] },
+  });
 }
 
 export async function rejectedTweet({
@@ -77,6 +80,7 @@ export async function rejectedTweet({
   await channel.send({
     content: `**Rejected**: ${tweetUrl}\n**Reason**: ${reason}`,
     components: [row],
+    allowedMentions: { parse: [] },
   });
 }
 
@@ -89,6 +93,7 @@ export async function reportFailureToDiscord({ message }: { message: string }) {
   }
   await channel.send({
     content: message,
+    allowedMentions: { parse: [] },
   });
 }
 
@@ -96,10 +101,12 @@ export async function sendDevTweet({
   tweetUrl,
   question,
   response,
+  longOutput,
 }: {
   tweetUrl: string;
   question: string;
   response: string;
+  longOutput?: string;
 }) {
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
   const channel = await guild.channels.fetch(DISCORD_LOCAL_TWEETS_CHANNEL_ID);
@@ -108,7 +115,17 @@ export async function sendDevTweet({
     throw Error('Rejection channel not found or not a text channel');
   }
 
+  const content = [
+    `**Tweet**: ${tweetUrl}`,
+    `**User**: ${question}`,
+    longOutput ? `**Long output**: ${longOutput}` : '',
+    `**DOGEai**: ${response}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+
   await channel.send({
-    content: `**Tweet**: ${tweetUrl}\n\n**User**: ${question}\n\n**DOGEai**: ${response}\n\n`,
+    content: content,
+    allowedMentions: { parse: [] }, // Prevents unfurling
   });
 }

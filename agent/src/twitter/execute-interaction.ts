@@ -371,6 +371,7 @@ export const executeInteractionTweets = inngest.createFunction(
               tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
               question: text,
               response: reply.refinedOutput,
+              longOutput: reply.longOutput,
             });
             return {
               id: 'local_id',
