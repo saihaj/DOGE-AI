@@ -90,3 +90,9 @@ export const DISCORD_LOCAL_TWEETS_CHANNEL_ID = (() => {
   }
   return process.env.DISCORD_LOCAL_TWEETS_CHANNEL_ID;
 })();
+export const REDIS_URI = (() => {
+  if (!process.env.REDIS_URI) {
+    throw new Error('REDIS_URI is not set in your .env');
+  }
+  return process.env.REDIS_URI;
+})();
