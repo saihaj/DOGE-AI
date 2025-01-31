@@ -4,7 +4,7 @@ import {
   TWITTER_API_BASE_URL,
   TWITTER_API_KEY,
 } from '../const';
-import { TweetResponse } from '../inngest';
+import { TweetForListResponse, TweetResponse } from '../inngest';
 import { bento } from '../cache';
 import { embed, embedMany, type Embedding } from 'ai';
 import { openai } from '@ai-sdk/openai';
@@ -69,6 +69,12 @@ export const generateEmbeddings = async (
 
 export const SearchResultResponseSchema = z.object({
   tweets: z.array(TweetResponse),
+  has_next_page: z.boolean(),
+  next_cursor: z.string().nullable(),
+});
+
+export const ListResultResponseSchema = z.object({
+  tweets: z.array(TweetForListResponse),
   has_next_page: z.boolean(),
   next_cursor: z.string().nullable(),
 });
