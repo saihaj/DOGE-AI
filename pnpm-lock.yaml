@@ -26,6 +26,9 @@ importers:
       '@ai-sdk/xai':
         specifier: ^1.1.6
         version: 1.1.6(zod@3.24.1)
+      '@ai-sdk/perplexity':
+        specifier: ^0.0.4
+        version: 0.0.4(zod@3.24.1)
       '@langchain/textsplitters':
         specifier: ^0.1.0
         version: 0.1.0(@langchain/core@0.3.32(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)))
@@ -266,6 +269,12 @@ packages:
 
   '@ai-sdk/openai@1.1.5':
     resolution: {integrity: sha512-pmZPeb99oWlV3PqMH5DVWtMGZgwWznInjdF0Bi4q1mKoEjomDXSYw+imvzMoSbpCrcGB9uFFTVx2VeR/jvcppg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+
+  '@ai-sdk/perplexity@0.0.4':
+    resolution: {integrity: sha512-ZWk+Qk0SSxu7a7eZwUTC7PBGyo+ktY96YZYriQ967c58pzvZgnP4rioYri0Wn7jd/VE9JiOIghYI/NxvRUtMZA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -4195,6 +4204,13 @@ snapshots:
 
   '@ai-sdk/openai@1.1.5(zod@3.24.1)':
     dependencies:
+      '@ai-sdk/provider': 1.0.6
+      '@ai-sdk/provider-utils': 2.1.5(zod@3.24.1)
+      zod: 3.24.1
+
+  '@ai-sdk/perplexity@0.0.4(zod@3.24.1)':
+    dependencies:
+      '@ai-sdk/openai-compatible': 0.1.6(zod@3.24.1)
       '@ai-sdk/provider': 1.0.6
       '@ai-sdk/provider-utils': 2.1.5(zod@3.24.1)
       zod: 3.24.1

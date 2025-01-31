@@ -1,7 +1,7 @@
 import { EventSchemas, Inngest, LiteralZodEventSchema } from 'inngest';
 import { z } from 'zod';
 
-export const TweetResponse = z.object({
+const TweetBaseResponse = z.object({
   type: z.literal('tweet'),
   id: z.string(),
   url: z.string(),
@@ -32,7 +32,6 @@ export const TweetResponse = z.object({
     unavailable: z.string().nullish(),
     unavailableReason: z.string().nullish(),
   }),
-  quoted_tweet: z.object({}).nullable(),
   extendedEntities: z
     .object({
       media: z
@@ -50,6 +49,14 @@ export const TweetResponse = z.object({
         .nullish(),
     })
     .nullish(),
+});
+
+export const TweetForListResponse = TweetBaseResponse.extend({
+  quoted_tweet: z.object({}).nullable(),
+});
+
+export const TweetResponse = TweetBaseResponse.extend({
+  quoted_tweet: z.lazy(() => TweetResponse.nullable()).nullable(),
 });
 
 const processTweetEvent = z.object({

@@ -3,7 +3,7 @@ import { inngest } from '../inngest';
 import { z } from 'zod';
 import { chunk } from 'lodash-es';
 import { reportFailureToDiscord } from '../discord/action';
-import { SearchResultResponseSchema } from './helpers';
+import { ListResultResponseSchema } from './helpers';
 import { getUnixTime, subMinutes } from 'date-fns';
 
 const API = new URL(TWITTER_API_BASE_URL);
@@ -25,7 +25,7 @@ async function fetchTweetsFromList({
   );
   API.searchParams.set('untilTime', getUnixTime(current).toString());
 
-  let tweets: z.infer<typeof SearchResultResponseSchema>['tweets'] = [];
+  let tweets: z.infer<typeof ListResultResponseSchema>['tweets'] = [];
   let cursor = '';
   API.searchParams.set('cursor', cursor);
 
@@ -38,7 +38,7 @@ async function fetchTweetsFromList({
     });
     const data = await response.json();
 
-    const result = await SearchResultResponseSchema.safeParseAsync(data);
+    const result = await ListResultResponseSchema.safeParseAsync(data);
 
     if (result.success === false) {
       throw new Error(result.error.message);
