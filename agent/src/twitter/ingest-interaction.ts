@@ -94,8 +94,6 @@ export const ingestInteractionTweets = inngest.createFunction(
       // make sure to filter out any replies - for now
       // even though we set `includeReplies` to false in the API call above it still returns replies sometimes.
       .filter(t => t.isReply === false)
-      // ignore any quote tweets https://github.com/saihaj/DOGE-AI/issues/55
-      .filter(t => t.quoted_tweet == null)
       .filter(
         t =>
           t.extendedEntities == null ||
