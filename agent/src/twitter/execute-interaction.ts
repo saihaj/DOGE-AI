@@ -410,10 +410,10 @@ export const executeInteractionTweets = inngest.createFunction(
           });
 
           /**
-           * 80% time we want to send the long output
-           * 20% time we want to send the refined output
+           * 50% time we want to send the long output
+           * 50% time we want to send the refined output
            */
-          const response = Math.random() > 0.2 ? responseLong : finalAnswer;
+          const response = Math.random() > 0.5 ? responseLong : finalAnswer;
 
           return {
             longOutput: responseLong,
