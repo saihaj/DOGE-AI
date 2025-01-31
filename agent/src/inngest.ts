@@ -32,7 +32,7 @@ export const TweetResponse = z.object({
     unavailable: z.string().nullish(),
     unavailableReason: z.string().nullish(),
   }),
-  quoted_tweet: z.lazy(() => TweetResponse).nullable(),
+  quoted_tweet: z.lazy(() => TweetResponse.nullable()).nullable(),
   extendedEntities: z
     .object({
       media: z

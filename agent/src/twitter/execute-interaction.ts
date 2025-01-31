@@ -470,6 +470,7 @@ export const executeInteractionTweets = inngest.createFunction(
                 chat: chat.id,
                 role: 'assistant',
                 tweetId: repliedTweet.id,
+                meta: reply.metadata ? Buffer.from(reply.metadata) : null,
               },
             ])
             .returning({
