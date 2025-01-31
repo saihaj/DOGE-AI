@@ -324,6 +324,9 @@ export const executeInteractionTweets = inngest.createFunction(
     switch (event.data.action) {
       case 'reply': {
         const dbChat = await step.run('check-db', async () => {
+          // skip for local testing
+          if (!IS_PROD) return null;
+
           return db.query.chat.findFirst({
             columns: {
               id: true,
