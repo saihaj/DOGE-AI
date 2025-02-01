@@ -28,6 +28,8 @@ import {
   chat as chatDbSchema,
   messageVector,
   sql,
+  and,
+  isNotNull,
 } from 'database';
 import {
   approvedTweetReply,
@@ -116,7 +118,10 @@ export async function getBillContext({
       })
       .from(billVector)
       .where(
-        sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < 0.4`,
+        and(
+          sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < 0.4`,
+          isNotNull(billVector.bill),
+        ),
       )
       .orderBy(
         // ascending order
@@ -141,9 +146,12 @@ export async function getBillContext({
     })
     .from(billVector)
     .where(
-      inArray(
-        billVector.bill,
-        billSearch.map(row => row.id),
+      and(
+        inArray(
+          billVector.bill,
+          billSearch.map(row => row.id),
+        ),
+        isNotNull(billVector.bill),
       ),
     )
     .orderBy(

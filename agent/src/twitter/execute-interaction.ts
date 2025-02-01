@@ -23,6 +23,8 @@ import {
   messageVector,
   sql,
   bill as billDbSchema,
+  and,
+  isNotNull,
 } from 'database';
 import { TWITTER_USERNAME } from '../const.ts';
 import {
@@ -174,7 +176,10 @@ export async function getReasonBillContext({
         })
         .from(billVector)
         .where(
-          sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
+          and(
+            sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
+            isNotNull(billVector.bill),
+          ),
         )
         .orderBy(
           sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
@@ -240,7 +245,10 @@ export async function getReasonBillContext({
             })
             .from(billVector)
             .where(
-              sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < ${THRESHOLD}`,
+              and(
+                sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < ${THRESHOLD}`,
+                isNotNull(billVector.bill),
+              ),
             )
             .orderBy(
               sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
