@@ -75,7 +75,7 @@ export const processDocument = inngest.createFunction(
       .insert(documentDbSchema)
       .values({
         id: crypto.randomUUID(),
-        name: document.name,
+        title: document.title,
         url: document.url,
       })
       .returning({

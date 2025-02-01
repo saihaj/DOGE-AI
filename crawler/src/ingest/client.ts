@@ -25,7 +25,7 @@ export const inngest = new Inngest({
     'document.imported': {
       data: {
         url: string;
-        name: string;
+        title: string;
       };
     };
   }>(),
