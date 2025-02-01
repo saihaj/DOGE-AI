@@ -17,10 +17,12 @@ export async function approvedTweetEngagement({
   tweetUrl,
   longOutput,
   refinedOutput,
+  sent,
 }: {
   tweetUrl: string;
   longOutput: string;
   refinedOutput: string;
+  sent: string;
 }) {
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
   const channel = await guild.channels.fetch(DISCORD_APPROVED_CHANNEL_ID);
@@ -29,8 +31,17 @@ export async function approvedTweetEngagement({
     throw Error('Approved channel not found or not a text channel');
   }
 
+  const content = [
+    `**Tweet**: ${tweetUrl}`,
+    `**Long output**: ${longOutput}`,
+    `**Refined output**: ${refinedOutput}`,
+    `**DOGEai**: ${sent}`,
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+
   await channel.send({
-    content: `${tweetUrl}\n\n**Long output**: ${longOutput}\n\n **Refined output**: ${refinedOutput}`,
+    content: content,
     allowedMentions: { parse: [] },
   });
 }
@@ -102,10 +113,12 @@ export async function sendDevTweet({
   question,
   response,
   longOutput,
+  refinedOutput,
 }: {
   tweetUrl: string;
   question: string;
   response: string;
+  refinedOutput?: string;
   longOutput?: string;
 }) {
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
@@ -119,6 +132,7 @@ export async function sendDevTweet({
     `**Tweet**: ${tweetUrl}`,
     `**User**: ${question}`,
     longOutput ? `**Long output**: ${longOutput}` : '',
+    refinedOutput ? `**Refined output**: ${refinedOutput}` : '',
     `**DOGEai**: ${response}`,
   ]
     .filter(Boolean)

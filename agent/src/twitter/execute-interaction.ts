@@ -12,7 +12,7 @@ import {
 } from './helpers.ts';
 import { CoreMessage, generateObject, generateText, tool } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { PROMPTS } from './prompts';
+import { BILL_RELATED_TO_TWEET_PROMPT, PROMPTS } from './prompts';
 import {
   billVector,
   chat as chatDbSchema,
@@ -33,6 +33,7 @@ import {
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
 import { z } from 'zod';
+import { perplexity } from '@ai-sdk/perplexity';
 
 /**
  * Given a tweet id, we return a list of messages.
@@ -62,10 +63,18 @@ export async function getTweetMessages({
     }
   } while (searchId);
 
-  return tweets.map(tweet => ({
-    role: tweet.author.userName === TWITTER_USERNAME ? 'assistant' : 'user',
-    content: `@${tweet.author.userName}: ${tweet.text}`,
-  }));
+  return tweets.map(tweet => {
+    const isAssistant = tweet.author.userName === TWITTER_USERNAME;
+    const role = isAssistant ? 'assistant' : 'user';
+
+    let content = `@${tweet.author.userName}: ${tweet.text}`;
+    if (tweet.quoted_tweet) {
+      const quote = `@${tweet.quoted_tweet.author.userName}: ${tweet.quoted_tweet.text}`;
+      content = `Quote: ${quote}\n\n${content}`;
+    }
+
+    return { role, content };
+  });
 }
 
 /**
@@ -186,6 +195,27 @@ export async function getReasonBillContext({
     })
     .join('\n\n');
 
+  const { text } = await generateText({
+    model: openai('gpt-4o'),
+    temperature: 0,
+    messages: [
+      {
+        role: 'system',
+        content: BILL_RELATED_TO_TWEET_PROMPT,
+      },
+      {
+        role: 'user',
+        content: `Tweet: ${messages.map(m => m.content).join('\n')}\n\nBill: ${baseText}`,
+      },
+    ],
+  });
+
+  console.log(`Is bill related to tweet?: ${text}`);
+
+  if (text.toLowerCase().startsWith('no')) {
+    throw new Error(REJECTION_REASON.UNRELATED_BILL);
+  }
+
   // 1) Ask LLM to extract the Bill Title from the text.
   const finalBill = await generateText({
     model: openai('gpt-4o'),
@@ -294,6 +324,9 @@ export const executeInteractionTweets = inngest.createFunction(
     switch (event.data.action) {
       case 'reply': {
         const dbChat = await step.run('check-db', async () => {
+          // skip for local testing
+          if (!IS_PROD) return null;
+
           return db.query.chat.findFirst({
             columns: {
               id: true,
@@ -312,7 +345,17 @@ export const executeInteractionTweets = inngest.createFunction(
         }).catch(e => {
           throw new NonRetriableError(e);
         });
-        const text = `@${tweetToActionOn.author.userName}: ${tweetToActionOn.text}`;
+
+        const text = (() => {
+          const mainTweetText = `@${tweetToActionOn.author.userName}: ${tweetToActionOn.text}`;
+          if (tweetToActionOn.quoted_tweet) {
+            const quotedTweetText = `Quote: @${tweetToActionOn.quoted_tweet.author.userName}: ${tweetToActionOn.quoted_tweet.text}`;
+
+            return `Quote: ${quotedTweetText}\n\n${mainTweetText}`;
+          }
+
+          return mainTweetText;
+        })();
 
         const reply = await step.run('generate-reply', async () => {
           const bill = await getReasonBillContext({
@@ -329,22 +372,34 @@ export const executeInteractionTweets = inngest.createFunction(
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
 
           const systemPrompt = await PROMPTS.INTERACTION_SYSTEM_PROMPT();
-          const { text: responseLong } = await generateText({
-            temperature: 0,
-            model: openai('gpt-4o'),
-            messages: [
-              {
-                role: 'system',
-                content: systemPrompt,
-              },
-              {
-                role: 'user',
-                content: summary
-                  ? `Context from database: ${summary}\n\n Question: ${text}`
-                  : `${text}`,
-              },
-            ],
-          });
+          const { text: _responseLong, experimental_providerMetadata } =
+            await generateText({
+              temperature: 0,
+              model: perplexity('sonar-reasoning'),
+              messages: [
+                {
+                  role: 'system',
+                  content: systemPrompt,
+                },
+                {
+                  role: 'user',
+                  content: summary
+                    ? `Context from database: ${summary}\n\n Question: ${text}`
+                    : `${text}`,
+                },
+              ],
+            });
+
+          const metadata = experimental_providerMetadata
+            ? JSON.stringify(experimental_providerMetadata)
+            : null;
+
+          const responseLong = _responseLong
+            .trim()
+            .replace(/<think>[\s\S]*?<\/think>/g, '')
+            .replace(/\[\d+\]/g, '')
+            .replace(/^(\n)+/, '')
+            .replace(/\bDOGEai\b/gi, '');
 
           const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
           const { text: finalAnswer } = await generateText({
@@ -358,9 +413,17 @@ export const executeInteractionTweets = inngest.createFunction(
             ],
           });
 
+          /**
+           * 50% time we want to send the long output
+           * 50% time we want to send the refined output
+           */
+          const response = Math.random() > 0.5 ? responseLong : finalAnswer;
+
           return {
             longOutput: responseLong,
             refinedOutput: finalAnswer,
+            metadata,
+            response,
           };
         });
 
@@ -370,7 +433,8 @@ export const executeInteractionTweets = inngest.createFunction(
             await sendDevTweet({
               tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
               question: text,
-              response: reply.refinedOutput,
+              response: reply.response,
+              refinedOutput: reply.refinedOutput,
               longOutput: reply.longOutput,
             });
             return {
@@ -378,7 +442,7 @@ export const executeInteractionTweets = inngest.createFunction(
             };
           }
 
-          const resp = await twitterClient.v2.tweet(reply.refinedOutput, {
+          const resp = await twitterClient.v2.tweet(reply.response, {
             reply: {
               in_reply_to_tweet_id: tweetToActionOn.id,
             },
@@ -395,6 +459,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
           await approvedTweetEngagement({
             tweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
+            sent: reply.response,
             refinedOutput: reply.refinedOutput,
             longOutput: reply.longOutput,
           });
@@ -426,10 +491,11 @@ export const executeInteractionTweets = inngest.createFunction(
               },
               {
                 id: crypto.randomUUID(),
-                text: reply.refinedOutput,
+                text: reply.response,
                 chat: chat.id,
                 role: 'assistant',
                 tweetId: repliedTweet.id,
+                meta: reply.metadata ? Buffer.from(reply.metadata) : null,
               },
             ])
             .returning({
@@ -439,7 +505,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
           const [chunkActionTweet, chunkReply] = await Promise.all([
             textSplitter.splitText(tweetToActionOn.text),
-            textSplitter.splitText(reply.refinedOutput),
+            textSplitter.splitText(reply.response),
           ]);
 
           const actionTweetEmbeddings =

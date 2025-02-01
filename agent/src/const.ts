@@ -1,3 +1,9 @@
+if (!process.env.PERPLEXITY_API_KEY) {
+  throw new Error('PERPLEXITY_API_KEY is not set in your .env');
+}
+if (!process.env.OPENAI_API_KEY) {
+  throw new Error('OPENAI_API_KEY is required');
+}
 export const TWITTER_API_KEY = (() => {
   if (!process.env.TWITTER_IO_API_KEY) {
     throw new Error('TWITTER_IO_API_KEY is required');
@@ -27,6 +33,7 @@ export const REJECTION_REASON = {
   NO_EXACT_MATCH: 'NO_EXACT_MATCH',
   TOO_DEEP_OF_A_THREAD: 'TOO_DEEP_OF_A_THREAD',
   NO_REPLY_FOR_INTERACTION_THREADS: 'NO_REPLY_FOR_INTERACTION_THREADS',
+  UNRELATED_BILL: 'UNRELATED_BILL',
 } as const;
 export const DISCORD_TOKEN = (() => {
   if (!process.env.DISCORD_TOKEN) {

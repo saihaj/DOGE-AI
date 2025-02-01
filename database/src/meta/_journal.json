@@ -43,6 +43,13 @@
       "when": 1738168989837,
       "tag": "0005_closed_winter_soldier",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1738281598837,
+      "tag": "0006_supreme_shadow_king",
+      "breakpoints": true
     }
   ]
 }
