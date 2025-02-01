@@ -67,6 +67,18 @@ export const bill = sqliteTable(
   ],
 );
 
+export const document = sqliteTable('Document', {
+  id: text().primaryKey().notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  title: text().notNull(),
+  url: text().notNull(),
+});
+
 export const billVector = sqliteTable('BillVector', {
   id: text().primaryKey().notNull(),
   createdAt: numeric()
@@ -75,9 +87,8 @@ export const billVector = sqliteTable('BillVector', {
   updatedAt: numeric()
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
-  bill: text()
-    .notNull()
-    .references(() => bill.id, { onDelete: 'cascade' }),
+  bill: text().references(() => bill.id, { onDelete: 'cascade' }),
+  document: text().references(() => document.id, { onDelete: 'cascade' }),
   vector: float32Array({ dimensions: 1536 }).notNull(),
   text: text().notNull(),
   source: text().notNull(),
