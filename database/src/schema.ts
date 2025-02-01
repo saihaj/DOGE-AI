@@ -77,6 +77,7 @@ export const document = sqliteTable('Document', {
     .notNull(),
   title: text().notNull(),
   url: text().notNull(),
+  meta: blob(),
 });
 
 export const billVector = sqliteTable('BillVector', {
