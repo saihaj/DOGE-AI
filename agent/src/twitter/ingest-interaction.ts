@@ -19,11 +19,10 @@ async function fetchTweetsFromList({
   const current = new Date();
   API.searchParams.set('listId', id);
   API.searchParams.set('includeReplies', 'false');
-  API.searchParams.set(
-    'sinceTime',
-    getUnixTime(subMinutes(current, window)).toString(),
-  );
-  API.searchParams.set('untilTime', getUnixTime(current).toString());
+  const sinceTime = getUnixTime(subMinutes(current, window)).toString();
+  API.searchParams.set('sinceTime', sinceTime);
+  const untilTime = getUnixTime(current).toString();
+  API.searchParams.set('untilTime', untilTime);
 
   let tweets: z.infer<typeof ListResultResponseSchema>['tweets'] = [];
   let cursor = '';
@@ -54,8 +53,14 @@ async function fetchTweetsFromList({
     }
   } while (cursor);
 
-  return tweets;
+  return {
+    tweets,
+    sinceTime,
+    untilTime,
+  };
 }
+
+const WINDOW = 12;
 
 export const ingestInteractionTweets = inngest.createFunction(
   {
@@ -74,34 +79,30 @@ export const ingestInteractionTweets = inngest.createFunction(
       await Promise.all([
         // https://x.com/i/lists/1882132360512061660
         fetchTweetsFromList({
-          window: 12,
+          window: WINDOW,
           id: '1882132360512061660',
         }),
         // https://x.com/i/lists/1883919897194815632
         fetchTweetsFromList({
-          window: 12,
+          window: WINDOW,
           id: '1883919897194815632',
         }),
         // https://x.com/i/lists/225745413
         fetchTweetsFromList({
-          window: 12,
+          window: WINDOW,
           id: '225745413',
         }),
       ]);
 
-    const tweets = congress119Senators
-      .concat(dogeAiEngager, houseMembers)
+    const totalTweets = congress119Senators.tweets.concat(
+      dogeAiEngager.tweets,
+      houseMembers.tweets,
+    );
+
+    const tweets = totalTweets
       // make sure to filter out any replies - for now
       // even though we set `includeReplies` to false in the API call above it still returns replies sometimes.
-      .filter(t => t.isReply === false)
-      .filter(
-        t =>
-          t.extendedEntities == null ||
-          // if there are videos we ignore https://github.com/saihaj/DOGE-AI/issues/57
-          t.extendedEntities?.media?.some(m => m?.type !== 'video') ||
-          // photos we can ignore for now some are memes while others need OCR https://github.com/saihaj/DOGE-AI/issues/59
-          t.extendedEntities?.media?.some(m => m?.type !== 'photo'),
-      );
+      .filter(t => t.isReply === false);
 
     /**
      * There is a limit of 512KB for batching events. To avoid hitting this limit, we chunk the tweets
@@ -125,7 +126,7 @@ export const ingestInteractionTweets = inngest.createFunction(
     });
 
     return {
-      message: `Sent ${tweets.length} tweets to inngest`,
+      message: `Scraped: ${totalTweets.length}. Sent ${tweets.length} tweets to inngest. Since time: ${congress119Senators.sinceTime}, Until time: ${congress119Senators.untilTime}`,
     };
   },
 );
