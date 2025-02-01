@@ -395,10 +395,11 @@ export const executeInteractionTweets = inngest.createFunction(
             : null;
 
           const responseLong = _responseLong
+            .trim()
             .replace(/<think>[\s\S]*?<\/think>/g, '')
             .replace(/\[\d+\]/g, '')
             .replace(/^(\n)+/, '')
-            .replace(/^DOGEai:\s*/i, '');
+            .replace(/\bDOGEai\b/gi, '');
 
           const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
           const { text: finalAnswer } = await generateText({
