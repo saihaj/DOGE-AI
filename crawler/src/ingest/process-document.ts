@@ -55,7 +55,13 @@ export const processDocument = inngest.createFunction(
       .map(doc => {
         return sanitize(doc.pageContent, {
           allowedTags: [],
-        });
+        })
+          .toLowerCase()
+          .replace(/[\n\t\r\b\f\u200B]/g, '') // Remove whitespace-related and invisible characters
+          .replace(/[^\x20-\x7E]/g, '') // Remove non-printable ASCII characters
+          .replace(/<[^>]*>/g, '') // Remove HTML tags (optional)
+          .replace(/\s+/g, ' ') // Replace multiple spaces with a single space
+          .trim();
       })
       .join('\n\n\n\n\n');
 
