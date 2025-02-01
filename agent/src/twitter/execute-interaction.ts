@@ -12,7 +12,7 @@ import {
 } from './helpers.ts';
 import { CoreMessage, generateObject, generateText, tool } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { PROMPTS } from './prompts';
+import { BILL_RELATED_TO_TWEET_PROMPT, PROMPTS } from './prompts';
 import {
   billVector,
   chat as chatDbSchema,
@@ -195,6 +195,27 @@ export async function getReasonBillContext({
     })
     .join('\n\n');
 
+  const { text } = await generateText({
+    model: openai('gpt-4o'),
+    temperature: 0,
+    messages: [
+      {
+        role: 'system',
+        content: BILL_RELATED_TO_TWEET_PROMPT,
+      },
+      {
+        role: 'user',
+        content: `Tweet: ${messages.map(m => m.content).join('\n')}\n\nBill: ${baseText}`,
+      },
+    ],
+  });
+
+  console.log(`Is bill related to tweet?: ${text}`);
+
+  if (text.toLowerCase().startsWith('no')) {
+    throw new Error(REJECTION_REASON.UNRELATED_BILL);
+  }
+
   // 1) Ask LLM to extract the Bill Title from the text.
   const finalBill = await generateText({
     model: openai('gpt-4o'),
@@ -303,6 +324,9 @@ export const executeInteractionTweets = inngest.createFunction(
     switch (event.data.action) {
       case 'reply': {
         const dbChat = await step.run('check-db', async () => {
+          // skip for local testing
+          if (!IS_PROD) return null;
+
           return db.query.chat.findFirst({
             columns: {
               id: true,
