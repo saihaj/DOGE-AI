@@ -396,6 +396,7 @@ export const executeInteractionTweets = inngest.createFunction(
             .replace(/<think>[\s\S]*?<\/think>/g, '')
             .replace(/\[\d+\]/g, '')
             .replace(/^(\n)+/, '')
+            .replace(/[\[\]]/g, '')
             .replace(/\bDOGEai\b/gi, '');
 
           const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
