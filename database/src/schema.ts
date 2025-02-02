@@ -5,9 +5,27 @@ import {
   numeric,
   integer,
   blob,
+  customType,
 } from 'drizzle-orm/sqlite-core';
 import * as crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
+
+const float32Array = customType<{
+  data: number[];
+  config: { dimensions: number };
+  configRequired: true;
+  driverData: Buffer;
+}>({
+  dataType(config) {
+    return `F32_BLOB(${config.dimensions})`;
+  },
+  fromDriver(value: Buffer) {
+    return Array.from(new Float32Array(value.buffer));
+  },
+  toDriver(value: number[]) {
+    return sql`vector32(${JSON.stringify(value)})`;
+  },
+});
 
 export const bill = sqliteTable(
   'Bill',
@@ -49,6 +67,19 @@ export const bill = sqliteTable(
   ],
 );
 
+export const document = sqliteTable('Document', {
+  id: text().primaryKey().notNull(),
+  createdAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  updatedAt: numeric()
+    .default(sql`(CURRENT_TIMESTAMP)`)
+    .notNull(),
+  title: text().notNull(),
+  url: text().notNull(),
+  meta: blob(),
+});
+
 export const billVector = sqliteTable('BillVector', {
   id: text().primaryKey().notNull(),
   createdAt: numeric()
@@ -57,10 +88,9 @@ export const billVector = sqliteTable('BillVector', {
   updatedAt: numeric()
     .default(sql`(CURRENT_TIMESTAMP)`)
     .notNull(),
-  bill: text()
-    .notNull()
-    .references(() => bill.id, { onDelete: 'cascade' }),
-  vector: numeric(),
+  bill: text().references(() => bill.id, { onDelete: 'cascade' }),
+  document: text().references(() => document.id, { onDelete: 'cascade' }),
+  vector: float32Array({ dimensions: 1536 }).notNull(),
   text: text().notNull(),
   source: text().notNull(),
 });
@@ -120,7 +150,7 @@ export const messageVector = sqliteTable('MessageVector', {
   message: text()
     .notNull()
     .references(() => message.id, { onDelete: 'cascade' }),
-  vector: numeric(),
+  vector: float32Array({ dimensions: 1536 }).notNull(),
   text: text().notNull(),
 });
 
