@@ -33,7 +33,6 @@ import {
 } from 'database';
 import {
   approvedTweetReply,
-  rejectedTweet,
   reportFailureToDiscord,
   sendDevTweet,
 } from '../discord/action.ts';
@@ -171,20 +170,10 @@ export const executeTweets = inngest.createFunction(
     id: 'execute-tweets',
     onFailure: async ({ event, error }) => {
       const id = event?.data?.event?.data?.tweetId;
-      const url = event?.data?.event?.data?.tweetUrl;
+      const errorMessage = error.message;
 
-      if (!id || !url) {
-        console.error('Failed to extract tweet ID or URL from event data');
-        await reportFailureToDiscord({
-          message: `[execute-tweets]: unable to extract tweet ID or URL from event data. Run id: ${event.data.run_id}`,
-        });
-        return;
-      }
-
-      await rejectedTweet({
-        tweetId: id,
-        tweetUrl: url,
-        reason: error.message,
+      await reportFailureToDiscord({
+        message: `[execute-tweets]:${id} ${errorMessage}`,
       });
     },
   },
