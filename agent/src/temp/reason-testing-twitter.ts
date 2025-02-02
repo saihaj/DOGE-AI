@@ -146,6 +146,7 @@ async function main() {
           console.log('MEDIA FOUND:', media);
           mediaContent.push({
             type: 'image',
+            // @ts-ignore - TODO: fix this
             image: media.media_url_https,
           });
         }
