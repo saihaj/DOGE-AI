@@ -41,31 +41,34 @@ function mergeConsecutiveSameRole(messages: CoreMessage[]): CoreMessage[] {
   return merged;
 }
 
-async function getAnswer(
+export async function getAnswer(
   user: string,
   threadMessages: CoreMessage[],
   autonomous: boolean = false,
   bill?: string,
+  mainPrompt?: string,
+  refinePrompt?: string,
   mediaContent: ImagePart[] = [],
-): Promise<string> {
+): Promise<{
+  firstLayer: string;
+  finalAnswer: string;
+}> {
   if (!bill) {
     console.log('No bill found. Proceeding in autonomous mode...');
     autonomous = true;
   }
 
+  console.log('mainPrompt', mainPrompt);
+  console.log('refinePrompt', refinePrompt);
+
   const systemPrompt = await PROMPTS.INTERACTION_SYSTEM_PROMPT();
+  
+  let userMsg = bill ? `Context from database: ${bill}\n\n Question: ${user}` : `${user}`;
+  
   let messages: CoreMessage[] = [
-    {
-      role: 'system',
-      content: systemPrompt,
-    },
+    { role: 'system', content: mainPrompt ?? systemPrompt },
     ...(autonomous ? threadMessages.slice(0, -1) : threadMessages),
-    {
-      role: 'user',
-      content: bill
-        ? `Context from database: ${bill}\n\n Question: ${user}`
-        : `${user}`,
-    },
+    { role: 'user', content: userMsg },
   ];
 
   messages = mergeConsecutiveSameRole(messages);
@@ -89,18 +92,15 @@ async function getAnswer(
   firstLayer = firstLayer.replace(/\[\d+\]/g, '');
   await writeFile(`dev-test/firstLayer.txt`, firstLayer);
 
-  if (firstLayer.length <= 240) {
-    return firstLayer;
-  }
-
   console.log(
     `BEFORE REFINEMENT: ${result.text} \n\n-------------------------`,
   );
 
-  const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
-
+  if (!refinePrompt) {
+    refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
+  }
   const finalAnswer = await generateText({
-    model: openai('gpt-4o'),
+    model: openai('o3-mini'),
     temperature: 0,
     messages: [
       {
@@ -110,7 +110,10 @@ async function getAnswer(
     ],
   });
 
-  return finalAnswer.text;
+  return {
+    firstLayer,
+    finalAnswer: finalAnswer.text,
+  };
 }
 
 async function main() {
@@ -137,18 +140,36 @@ async function main() {
     }
 
     const mediaContent: ImagePart[] = [];
+    const mediaText: string[] = [];
     await writeFile(`dev-test/apitweet.txt`, JSON.stringify(tweetToActionOn));
 
-    // TODO: not being used right now. Perplexity does not support images
     if (tweetToActionOn.extendedEntities?.media) {
       for (const media of tweetToActionOn.extendedEntities.media) {
+        // We should only do this on the main message. The rest of the thread is not that relevant.
         if (media?.type === 'photo') {
           console.log('MEDIA FOUND:', media);
-          mediaContent.push({
-            type: 'image',
-            // @ts-ignore - TODO: fix this
-            image: media.media_url_https,
+          
+          const mediaItem: ImagePart = { type: 'image', image: media.media_url_https };
+          mediaContent.push(mediaItem);
+
+          let mediaPrompt = 'Analyze the following image and describe it in great detail. If the image has text, give me the full text.';
+
+          console.log('Media content found. Proceeding in media mode...');
+
+          const result = await generateText({
+            temperature: 0,
+            model: openai('gpt-4o', {
+              downloadImages: true,
+            }),
+            messages: [
+              {
+                role: 'user',
+                content: [{type: 'text', text: mediaPrompt}, mediaItem],
+              },
+            ],
           });
+
+          mediaText.push(result.text);
         }
       }
     }
@@ -156,7 +177,7 @@ async function main() {
     const text = content;
 
     let autonomous = false;
-    let threadMessages: CoreMessage[] | string = tweetToActionOn.text;
+    let threadMessages: CoreMessage[] | string = (mediaText.length > 0 ? `\n\n${mediaText.join('\n\n')}` : '') + tweetToActionOn.text;
     if (tweetToActionOn.inReplyToId) {
       threadMessages = await getTweetMessages({
         id: tweetToActionOn.inReplyToId,
@@ -195,12 +216,14 @@ async function main() {
       console.log('Summary Context:\n', summary, '\n');
     }
 
-    const finalAnswer = await getAnswer(
+    const { firstLayer, finalAnswer } = await getAnswer(
       userQuestion,
       threadMessages,
       autonomous,
       summary,
-      mediaContent,
+      undefined,
+      undefined,
+      mediaContent
     );
 
     const answerWithQuestion = `User: ${userQuestion}\n\nDogeAI: ${finalAnswer}`;
