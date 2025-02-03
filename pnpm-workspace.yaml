@@ -3,3 +3,4 @@ packages:
   - agent
   - website
   - database
+  - dashboard

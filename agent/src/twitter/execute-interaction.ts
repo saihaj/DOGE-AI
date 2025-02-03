@@ -182,8 +182,7 @@ export async function getReasonBillContext({
 
   // 1) Ask LLM to extract the Bill Title from the text.
   const finalBill = await generateText({
-    model: openai('gpt-4o'),
-    temperature: 0,
+    model: openai('o3-mini'),
     tools: {
       searchEmbeddings: tool({
         description:
@@ -230,11 +229,11 @@ export async function getReasonBillContext({
       {
         role: 'system',
         content:
-          "Analyze the text and identify the exact bill mentioned. Return ONLY the single corresponding bill title from the database. If uncertain or no exact match is found, respond with 'NO_EXACT_MATCH'. Do not provide any additional commentary.",
+          "Analyze the text and identify the exact bill mentioned. Make sure it's **SUPER** relevant to the chat. Return ONLY the single corresponding bill title from the database. If uncertain or no exact match is found, respond with 'NO_EXACT_MATCH'.",
       },
       {
         role: 'user',
-        content: `startingPoint: ${baseText}\n\nText: ${billTitleResult.names.join('\n')} ${billTitleResult.keywords.join('\n')}`,
+        content: `First Result: ${baseText}\n\nContext: ${messageContext}\n\nText: ${billTitleResult.names.join('\n')}\n\n${billTitleResult.keywords.join('\n')}`,
       },
     ],
     maxSteps: 10,

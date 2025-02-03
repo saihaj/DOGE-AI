@@ -10,6 +10,7 @@ import { reportFailureToDiscord } from './discord/action';
 import { ingestInteractionTweets } from './twitter/ingest-interaction';
 import { processInteractionTweets } from './twitter/process-interactions';
 import { executeInteractionTweets } from './twitter/execute-interaction';
+import { processTestRequest } from './web/test-handler';
 
 const fastify = Fastify();
 
@@ -27,6 +28,40 @@ fastify.route({
     ],
   }),
   url: '/api/inngest',
+});
+
+fastify.route({
+  method: 'POST',
+  handler: async (request, reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Methods', 'POST');
+    reply.header('Access-Control-Allow-Headers', 'Content-Type');
+
+    try {
+      // @ts-ignore
+      const { tweetUrl, mainPrompt, refinePrompt } = request.body;
+      const { answer, short } = await processTestRequest(tweetUrl, mainPrompt, refinePrompt);
+      reply.send({ success: true, answer, short });
+    } catch (error) {
+      console.error('Test error:', error);
+      reply.code(500).send({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+  url: '/api/test-bot',
+});
+
+fastify.route({
+  method: 'OPTIONS',
+  url: '/api/test-bot',
+  handler: (request, reply) => {
+    reply.header('Access-Control-Allow-Origin', '*');
+    reply.header('Access-Control-Allow-Methods', 'POST');
+    reply.header('Access-Control-Allow-Headers', 'Content-Type');
+    reply.send();
+  },
 });
 
 // So in fly.io, health should do both the health check and the readiness check
