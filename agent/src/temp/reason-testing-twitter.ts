@@ -160,8 +160,12 @@ async function main() {
         if (media?.type === 'photo') {
           console.log('MEDIA FOUND:', media);
 
-          const mediaItem: ImagePart = { type: 'image', image: media.media_url_https };
-          const mediaPrompt = 'Analyze the following image and describe it in great detail. If the image has text, give me the full text.';
+          const mediaItem: ImagePart = {
+            type: 'image',
+            image: media.media_url_https,
+          };
+          const mediaPrompt =
+            'Analyze the following image and describe it in great detail. If the image has text, give me the full text.';
           mediaContent.push(mediaItem);
 
           console.log('Media content found. Proceeding in media mode...');
@@ -174,7 +178,7 @@ async function main() {
             messages: [
               {
                 role: 'user',
-                content: [{type: 'text', text: mediaPrompt}, mediaItem],
+                content: [{ type: 'text', text: mediaPrompt }, mediaItem],
               },
             ],
           });
@@ -187,7 +191,9 @@ async function main() {
     const text = content;
 
     let autonomous = false;
-    let threadMessages: CoreMessage[] | string = (mediaText.length > 0 ? `\n\n${mediaText.join('\n\n')}` : '') + tweetToActionOn.text;
+    let threadMessages: CoreMessage[] | string =
+      (mediaText.length > 0 ? `\n\n${mediaText.join('\n\n')}` : '') +
+      tweetToActionOn.text;
     if (tweetToActionOn.inReplyToId) {
       threadMessages = await getTweetMessages({
         id: tweetToActionOn.inReplyToId,
