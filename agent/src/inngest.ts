@@ -57,7 +57,7 @@ export const TweetForListResponse = TweetBaseResponse.extend({
 });
 
 export const TweetResponse = TweetBaseResponse.extend({
-  quoted_tweet: z.lazy(() => TweetBaseResponse.nullable()).nullable(),
+  quoted_tweet: z.lazy(() => TweetResponse.nullable()).nullable(),
 });
 
 const processTweetEvent = z.object({
