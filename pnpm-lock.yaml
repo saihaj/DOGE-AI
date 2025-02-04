@@ -14,6 +14,9 @@ importers:
 
   agent:
     dependencies:
+      '@ai-sdk/anthropic':
+        specifier: ^1.1.6
+        version: 1.1.6(zod@3.24.1)
       '@ai-sdk/deepseek':
         specifier: ^0.1.6
         version: 0.1.6(zod@3.24.1)
@@ -23,12 +26,12 @@ importers:
       '@ai-sdk/openai':
         specifier: ^1.1.5
         version: 1.1.5(zod@3.24.1)
-      '@ai-sdk/xai':
-        specifier: ^1.1.6
-        version: 1.1.6(zod@3.24.1)
       '@ai-sdk/perplexity':
         specifier: ^0.0.4
         version: 0.0.4(zod@3.24.1)
+      '@ai-sdk/xai':
+        specifier: ^1.1.6
+        version: 1.1.6(zod@3.24.1)
       '@langchain/textsplitters':
         specifier: ^0.1.0
         version: 0.1.0(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)))
@@ -261,6 +264,12 @@ importers:
 
 packages:
 
+  '@ai-sdk/anthropic@1.1.6':
+    resolution: {integrity: sha512-4TZBg2VoU/F58DmnyfPPGU9wMUTwLP15XyAFSrUqk9sSdjszwcojXw3LE7YbxifZ+RK7wT7lTkuyK1k2UdfFng==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+
   '@ai-sdk/deepseek@0.1.6':
     resolution: {integrity: sha512-/bQQ4rpE32T3Ru3VGUAXh1PQf7cWnNFaJ1v3tmbe8EJd22g8Z808eTY1K0RvFhEyYjp4UbbSPvOy94oH8XcjMA==}
     engines: {node: '>=18'}
@@ -300,8 +309,21 @@ packages:
       zod:
         optional: true
 
+  '@ai-sdk/provider-utils@2.1.6':
+    resolution: {integrity: sha512-Pfyaj0QZS22qyVn5Iz7IXcJ8nKIKlu2MeSAdKJzTwkAks7zdLaKVB+396Rqcp1bfQnxl7vaduQVMQiXUrgK8Gw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+    peerDependenciesMeta:
+      zod:
+        optional: true
+
   '@ai-sdk/provider@1.0.6':
     resolution: {integrity: sha512-hwj/gFNxpDgEfTaYzCYoslmw01IY9kWLKl/wf8xuPvHtQIzlfXWmmUwc8PnCwxyt8cKzIuV0dfUghCf68HQ0SA==}
+    engines: {node: '>=18'}
+
+  '@ai-sdk/provider@1.0.7':
+    resolution: {integrity: sha512-q1PJEZ0qD9rVR+8JFEd01/QM++csMT5UVwYXSN2u54BrVw/D8TZLTeg2FEfKK00DgAx0UtWd8XOhhwITP9BT5g==}
     engines: {node: '>=18'}
 
   '@ai-sdk/react@1.1.6':
@@ -4815,6 +4837,12 @@ packages:
 
 snapshots:
 
+  '@ai-sdk/anthropic@1.1.6(zod@3.24.1)':
+    dependencies:
+      '@ai-sdk/provider': 1.0.7
+      '@ai-sdk/provider-utils': 2.1.6(zod@3.24.1)
+      zod: 3.24.1
+
   '@ai-sdk/deepseek@0.1.6(zod@3.24.1)':
     dependencies:
       '@ai-sdk/openai-compatible': 0.1.6(zod@3.24.1)
@@ -4856,7 +4884,20 @@ snapshots:
     optionalDependencies:
       zod: 3.24.1
 
+  '@ai-sdk/provider-utils@2.1.6(zod@3.24.1)':
+    dependencies:
+      '@ai-sdk/provider': 1.0.7
+      eventsource-parser: 3.0.0
+      nanoid: 3.3.8
+      secure-json-parse: 2.7.0
+    optionalDependencies:
+      zod: 3.24.1
+
   '@ai-sdk/provider@1.0.6':
+    dependencies:
+      json-schema: 0.4.0
+
+  '@ai-sdk/provider@1.0.7':
     dependencies:
       json-schema: 0.4.0
 
@@ -7438,7 +7479,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9)
+      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.0))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -8531,7 +8572,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9):
+  retry-axios@2.6.0(axios@1.7.9(debug@4.4.0)):
     dependencies:
       axios: 1.7.9(debug@4.4.0)
 
