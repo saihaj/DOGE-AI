@@ -36,6 +36,7 @@
     "handlebars": "^4.7.8",
     "inngest": "^3.30.0",
     "lodash-es": "^4.17.21",
+    "p-map": "^7.0.3",
     "readline": "^1.3.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^5.1.7",

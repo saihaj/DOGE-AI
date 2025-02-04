@@ -43,6 +43,7 @@ const TweetBaseResponse = z.object({
               id_str: z.string(),
               type: z.string(),
               url: z.string(),
+              media_url_https: z.string().nullish(),
             })
             .nullish(),
         )
