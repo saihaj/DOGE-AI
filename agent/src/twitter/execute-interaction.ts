@@ -6,18 +6,14 @@ import {
   generateEmbedding,
   generateEmbeddings,
   getTweet,
+  getTweetContentAsText,
   textSplitter,
   upsertChat,
   upsertUser,
 } from './helpers.ts';
-import { CoreMessage, generateObject, generateText, ImagePart, tool } from 'ai';
+import { CoreMessage, generateObject, generateText, tool } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import {
-  ANALYZE_TEXT_FROM_IMAGE,
-  BILL_RELATED_TO_TWEET_PROMPT,
-  PROMPTS,
-} from './prompts';
-import pMap from 'p-map';
+import { BILL_RELATED_TO_TWEET_PROMPT, PROMPTS } from './prompts';
 import {
   billVector,
   chat as chatDbSchema,
@@ -31,7 +27,6 @@ import {
   and,
   isNotNull,
 } from 'database';
-import { TWITTER_USERNAME } from '../const.ts';
 import {
   approvedTweetEngagement,
   reportFailureToDiscord,
@@ -41,92 +36,6 @@ import { twitterClient } from './client.ts';
 import { z } from 'zod';
 import { perplexity } from '@ai-sdk/perplexity';
 import { anthropic } from '@ai-sdk/anthropic';
-import { bento } from '../cache.ts';
-
-/**
- * Given a tweet id, we return a list of messages.
- */
-export async function getTweetMessages({
-  id,
-}: {
-  id: string;
-}): Promise<CoreMessage[]> {
-  const LIMIT = 50;
-  let tweets: Awaited<ReturnType<typeof getTweet>>[] = [];
-
-  let searchId: null | string = id;
-  do {
-    const tweet = await getTweet({ id: searchId });
-    tweets.push(tweet);
-    if (tweet.inReplyToId) {
-      searchId = tweet.inReplyToId;
-    }
-
-    if (tweet.inReplyToId === null) {
-      searchId = null;
-    }
-
-    if (tweets.length > LIMIT) {
-      searchId = null;
-    }
-  } while (searchId);
-
-  return await pMap(
-    tweets,
-    async tweet => {
-      const isAssistant = tweet.author.userName === TWITTER_USERNAME;
-      const role = isAssistant ? 'assistant' : 'user';
-
-      let content = `@${tweet.author.userName}: ${tweet.text}`;
-      if (tweet.quoted_tweet) {
-        const quote = `@${tweet.quoted_tweet.author.userName}: ${tweet.quoted_tweet.text}`;
-        content = `Quote: ${quote}\n\n${content}`;
-      }
-      if (tweet.extendedEntities?.media) {
-        for (const media of tweet.extendedEntities.media) {
-          if (media?.type === 'photo') {
-            if (!media.media_url_https) continue;
-
-            const mediaItem: ImagePart = {
-              type: 'image',
-              image: media.media_url_https,
-            };
-
-            console.log('Media content found. Proceeding in media mode...');
-
-            const result = await bento.getOrSet(
-              `image-analysis-${media.media_url_https}`,
-              async () => {
-                return generateText({
-                  temperature: 0,
-                  model: openai('gpt-4o', {
-                    downloadImages: true,
-                  }),
-                  messages: [
-                    {
-                      role: 'user',
-                      content: [
-                        { type: 'text', text: ANALYZE_TEXT_FROM_IMAGE },
-                        mediaItem,
-                      ],
-                    },
-                  ],
-                });
-              },
-            );
-
-            content += `\n\n${result.text}`;
-          }
-        }
-      }
-
-      return { role, content };
-    },
-    {
-      concurrency: 10,
-    },
-  );
-}
 
 /**
  * Given some text try to find the specific bill.
@@ -350,6 +259,82 @@ export async function getReasonBillContext({
   return bill;
 }
 
+/**
+ * Given summary of and text of tweet generate a long contextual response
+ */
+export async function getLongResponse({
+  summary,
+  text,
+}: {
+  summary: string;
+  text: string;
+}) {
+  const systemPrompt = await PROMPTS.INTERACTION_SYSTEM_PROMPT();
+  const { text: _responseLong, experimental_providerMetadata } =
+    await generateText({
+      temperature: 0,
+      model: perplexity('sonar-reasoning'),
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt,
+        },
+        {
+          role: 'user',
+          content: summary
+            ? `Context from database: ${summary}\n\n Question: ${text}`
+            : `${text}`,
+        },
+      ],
+    });
+
+  const metadata = experimental_providerMetadata
+    ? JSON.stringify(experimental_providerMetadata)
+    : null;
+
+  const responseLong = _responseLong
+    .trim()
+    .replace(/<think>[\s\S]*?<\/think>/g, '')
+    .replace(/\[\d+\]/g, '')
+    .replace(/^(\n)+/, '')
+    .replace(/[\[\]]/g, '')
+    .replace(/\bDOGEai\b/gi, '');
+
+  return {
+    responseLong,
+    metadata,
+  };
+}
+
+/**
+ * Using `getLongResponse` output generate a refined short response for more engaging output
+ */
+export async function getShortResponse({ topic }: { topic: string }) {
+  const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT({
+    topic,
+  });
+  const { text: _finalAnswer } = await generateText({
+    model: anthropic('claude-3-opus-20240229'),
+    temperature: 0,
+    messages: [
+      {
+        role: 'user',
+        content: refinePrompt,
+      },
+    ],
+  });
+
+  const finalAnswer = _finalAnswer
+    .trim()
+    .replace(/<\/?response_format>|<\/?mimicked_text>/g, '')
+    .replace(/\[\d+\]/g, '')
+    .replace(/^(\n)+/, '')
+    .replace(/[\[\]]/g, '')
+    .replace(/\bDOGEai\b/gi, '');
+
+  return finalAnswer;
+}
+
 export const executeInteractionTweets = inngest.createFunction(
   {
     id: 'execute-interaction-tweets',
@@ -393,16 +378,11 @@ export const executeInteractionTweets = inngest.createFunction(
           throw new NonRetriableError(e);
         });
 
-        const text = (() => {
-          const mainTweetText = `@${tweetToActionOn.author.userName}: ${tweetToActionOn.text}`;
-          if (tweetToActionOn.quoted_tweet) {
-            const quotedTweetText = `Quote: @${tweetToActionOn.quoted_tweet.author.userName}: ${tweetToActionOn.quoted_tweet.text}`;
-
-            return `Quote: ${quotedTweetText}\n\n${mainTweetText}`;
-          }
-
-          return mainTweetText;
-        })();
+        const text = await getTweetContentAsText({
+          id: event.data.tweetId,
+        }).catch(e => {
+          throw new NonRetriableError(e);
+        });
 
         const reply = await step.run('generate-reply', async () => {
           const bill = await getReasonBillContext({
@@ -418,58 +398,12 @@ export const executeInteractionTweets = inngest.createFunction(
 
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
 
-          const systemPrompt = await PROMPTS.INTERACTION_SYSTEM_PROMPT();
-          const { text: _responseLong, experimental_providerMetadata } =
-            await generateText({
-              temperature: 0,
-              model: perplexity('sonar-reasoning'),
-              messages: [
-                {
-                  role: 'system',
-                  content: systemPrompt,
-                },
-                {
-                  role: 'user',
-                  content: summary
-                    ? `Context from database: ${summary}\n\n Question: ${text}`
-                    : `${text}`,
-                },
-              ],
-            });
-
-          const metadata = experimental_providerMetadata
-            ? JSON.stringify(experimental_providerMetadata)
-            : null;
-
-          const responseLong = _responseLong
-            .trim()
-            .replace(/<think>[\s\S]*?<\/think>/g, '')
-            .replace(/\[\d+\]/g, '')
-            .replace(/^(\n)+/, '')
-            .replace(/[\[\]]/g, '')
-            .replace(/\bDOGEai\b/gi, '');
-
-          const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT({
-            topic: responseLong,
-          });
-          const { text: _finalAnswer } = await generateText({
-            model: anthropic('claude-3-opus-20240229'),
-            temperature: 0,
-            messages: [
-              {
-                role: 'user',
-                content: refinePrompt,
-              },
-            ],
+          const { responseLong, metadata } = await getLongResponse({
+            summary,
+            text,
           });
 
-          const finalAnswer = _finalAnswer
-            .trim()
-            .replace(/<\/?response_format>|<\/?mimicked_text>/g, '')
-            .replace(/\[\d+\]/g, '')
-            .replace(/^(\n)+/, '')
-            .replace(/[\[\]]/g, '')
-            .replace(/\bDOGEai\b/gi, '');
+          const finalAnswer = await getShortResponse({ topic: responseLong });
 
           /**
            * 30% time we want to send the long output

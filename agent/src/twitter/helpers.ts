@@ -6,11 +6,18 @@ import {
 } from '../const';
 import { TweetForListResponse, TweetResponse } from '../inngest';
 import { bento } from '../cache';
-import { embed, embedMany, type Embedding } from 'ai';
+import { embed, embedMany, generateText, type Embedding } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import { db, eq, user as userDbSchema, chat as chatDbSchema } from 'database';
+import {
+  db,
+  eq,
+  user as userDbSchema,
+  chat as chatDbSchema,
+  between,
+} from 'database';
 import * as crypto from 'node:crypto';
+import { ANALYZE_TEXT_FROM_IMAGE } from './prompts';
 
 // Ada V2 31.4% vs 54.9% large
 const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
@@ -46,6 +53,79 @@ export async function getTweet({ id }: { id: string }) {
 
     return tweet.data.tweets[0];
   });
+}
+
+/**
+ * Given a tweet it will recurse the quote tweet.
+ * It extracts any media and runs it through the AI any textual information
+ *
+ * Return you should get a string with the content of the tweet with full context
+ */
+export async function getTweetContentAsText({ id }: { id: string }) {
+  const CACHE_KEY = `tweet-content-${id}`;
+  const cache = (await bento.get(CACHE_KEY)) as string;
+
+  if (cache) return cache;
+
+  const tweet = await getTweet({ id });
+
+  const result: string[] = [];
+
+  if (tweet.quoted_tweet) {
+    const text = await getTweetContentAsText({ id: tweet.quoted_tweet.id });
+    const quotedTweetText = `Quote: ${text}`;
+    result.push(quotedTweetText);
+  }
+
+  const mainTweetText = `@${tweet.author.userName}: ${tweet.text}`;
+  result.push(mainTweetText);
+
+  if (tweet.extendedEntities?.media) {
+    for (const media of tweet.extendedEntities.media) {
+      if (!media) continue;
+      if (!media.type) continue;
+
+      // can only do photos for now
+      if (media.type !== 'photo') continue;
+
+      // we got no image url to work with
+      if (!media?.media_url_https) continue;
+
+      console.log('Media content found. Proceeding in media mode...');
+      const { text } = await bento.getOrSet(
+        `image-analysis-${media.media_url_https}`,
+        async () => {
+          return generateText({
+            temperature: 0,
+            model: openai('gpt-4o', {
+              downloadImages: true,
+            }),
+            messages: [
+              {
+                role: 'user',
+                content: [
+                  { type: 'text', text: ANALYZE_TEXT_FROM_IMAGE },
+                  { type: 'image', image: media.media_url_https! },
+                ],
+              },
+            ],
+          });
+        },
+      );
+
+      if (text.toLowerCase().startsWith('no_text_found')) {
+        console.warn('No text found in image');
+        continue;
+      }
+      result.push(`Image: ${text}`);
+    }
+  }
+
+  const content = result.join('\n\n');
+
+  await bento.set(CACHE_KEY, content, { ttl: '1d' });
+
+  return content;
 }
 
 export const generateEmbedding = async (value: string): Promise<Embedding> => {
