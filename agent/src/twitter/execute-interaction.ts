@@ -312,10 +312,10 @@ export const executeInteractionTweets = inngest.createFunction(
       });
     },
     throttle: {
-      limit: 2,
-      period: '5m',
+      limit: 1,
+      period: '2m',
     },
-    concurrency: 4,
+    concurrency: 5,
   },
   { event: 'tweet.execute.interaction' },
   async ({ event, step }) => {
