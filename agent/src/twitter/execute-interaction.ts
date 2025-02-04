@@ -10,7 +10,7 @@ import {
   upsertChat,
   upsertUser,
 } from './helpers.ts';
-import { CoreMessage, generateObject, generateText, tool } from 'ai';
+import { CoreMessage, generateObject, generateText, ImagePart, tool } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { BILL_RELATED_TO_TWEET_PROMPT, PROMPTS } from './prompts';
 import {
@@ -35,6 +35,7 @@ import {
 import { twitterClient } from './client.ts';
 import { z } from 'zod';
 import { perplexity } from '@ai-sdk/perplexity';
+import { bento } from '../cache.ts';
 
 /**
  * Given a tweet id, we return a list of messages.
@@ -64,7 +65,7 @@ export async function getTweetMessages({
     }
   } while (searchId);
 
-  return tweets.map(tweet => {
+  return await Promise.all(tweets.map(async (tweet) => {
     const isAssistant = tweet.author.userName === TWITTER_USERNAME;
     const role = isAssistant ? 'assistant' : 'user';
 
@@ -73,9 +74,36 @@ export async function getTweetMessages({
       const quote = `@${tweet.quoted_tweet.author.userName}: ${tweet.quoted_tweet.text}`;
       content = `Quote: ${quote}\n\n${content}`;
     }
+    if (tweet.extendedEntities?.media) {
+      for (const media of tweet.extendedEntities.media) {
+        if (media?.type === 'photo') {
+          const mediaPrompt = 'Analyze the following image and describe it in great detail. If the image has text, give me the full text.';
+          const mediaItem: ImagePart = { type: 'image', image: media.media_url_https };
+
+          console.log('Media content found. Proceeding in media mode...');
+
+          const result = await bento.getOrSet(`image-analysis-${media.media_url_https}`, async () => {
+            return generateText({
+              temperature: 0,
+              model: openai('gpt-4o', {
+                downloadImages: true,
+              }),
+              messages: [
+                {
+                  role: 'user',
+                  content: [{type: 'text', text: mediaPrompt}, mediaItem],
+                },
+              ],
+            });
+          });
+
+          content += `\n\n${result.text}`;
+        } 
+      }
+    }
 
     return { role, content };
-  });
+  }));
 }
 
 /**
@@ -217,6 +245,7 @@ export async function getReasonBillContext({
   console.log(`Is bill related to tweet?: ${text}`);
 
   if (text.toLowerCase().startsWith('no')) {
+    console.log(messages);
     throw new Error(REJECTION_REASON.UNRELATED_BILL);
   }
 

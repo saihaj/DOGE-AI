@@ -137,18 +137,35 @@ async function main() {
     }
 
     const mediaContent: ImagePart[] = [];
+    const mediaText: string[] = [];
     await writeFile(`dev-test/apitweet.txt`, JSON.stringify(tweetToActionOn));
 
-    // TODO: not being used right now. Perplexity does not support images
     if (tweetToActionOn.extendedEntities?.media) {
       for (const media of tweetToActionOn.extendedEntities.media) {
+        // We should only do this on the main message. The rest of the thread is not that relevant.
         if (media?.type === 'photo') {
           console.log('MEDIA FOUND:', media);
-          mediaContent.push({
-            type: 'image',
-            // @ts-ignore - TODO: fix this
-            image: media.media_url_https,
+
+          const mediaItem: ImagePart = { type: 'image', image: media.media_url_https };
+          const mediaPrompt = 'Analyze the following image and describe it in great detail. If the image has text, give me the full text.';
+          mediaContent.push(mediaItem);
+
+          console.log('Media content found. Proceeding in media mode...');
+
+          const result = await generateText({
+            temperature: 0,
+            model: openai('gpt-4o', {
+              downloadImages: true,
+            }),
+            messages: [
+              {
+                role: 'user',
+                content: [{type: 'text', text: mediaPrompt}, mediaItem],
+              },
+            ],
           });
+
+          mediaText.push(result.text);
         }
       }
     }
@@ -156,7 +173,7 @@ async function main() {
     const text = content;
 
     let autonomous = false;
-    let threadMessages: CoreMessage[] | string = tweetToActionOn.text;
+    let threadMessages: CoreMessage[] | string = (mediaText.length > 0 ? `\n\n${mediaText.join('\n\n')}` : '') + tweetToActionOn.text;
     if (tweetToActionOn.inReplyToId) {
       threadMessages = await getTweetMessages({
         id: tweetToActionOn.inReplyToId,
