@@ -60,21 +60,37 @@ export async function getTweet({ id }: { id: string }) {
  * It extracts any media and runs it through the AI any textual information
  *
  * Return you should get a string with the content of the tweet with full context
+ *
+ * Added safety to ensure we do not recurse more than 2 quote tweets.
  */
-export async function getTweetContentAsText({ id }: { id: string }) {
+export async function getTweetContentAsText(
+  { id }: { id: string },
+  depth = 0,
+  maxDepth = 2,
+) {
+  if (depth >= maxDepth) {
+    console.warn(`Max depth reached for tweet ID: ${id}`);
+    return REJECTION_REASON.MAX_RECURSION_DEPTH_REACHED;
+  }
+
   const CACHE_KEY = `tweet-content-${id}`;
   const cache = (await bento.get(CACHE_KEY)) as string;
 
   if (cache) return cache;
 
   const tweet = await getTweet({ id });
-
   const result: string[] = [];
 
   if (tweet.quoted_tweet) {
-    const text = await getTweetContentAsText({ id: tweet.quoted_tweet.id });
-    const quotedTweetText = `Quote: ${text}`;
-    result.push(quotedTweetText);
+    const text = await getTweetContentAsText(
+      { id: tweet.quoted_tweet.id },
+      depth + 1,
+      maxDepth,
+    );
+
+    if (text !== REJECTION_REASON.MAX_RECURSION_DEPTH_REACHED) {
+      result.push(`Quote: ${text}`);
+    }
   }
 
   const mainTweetText = `@${tweet.author.userName}: ${tweet.text}`;
@@ -82,14 +98,9 @@ export async function getTweetContentAsText({ id }: { id: string }) {
 
   if (tweet.extendedEntities?.media) {
     for (const media of tweet.extendedEntities.media) {
-      if (!media) continue;
-      if (!media.type) continue;
-
-      // can only do photos for now
-      if (media.type !== 'photo') continue;
-
-      // we got no image url to work with
-      if (!media?.media_url_https) continue;
+      if (!media?.type || media.type !== 'photo' || !media?.media_url_https) {
+        continue;
+      }
 
       console.log('Media content found. Proceeding in media mode...');
       const { text } = await bento.getOrSet(
@@ -97,14 +108,13 @@ export async function getTweetContentAsText({ id }: { id: string }) {
         async () => {
           return generateText({
             temperature: 0,
-            model: openai('gpt-4o', {
-              downloadImages: true,
-            }),
+            model: openai('gpt-4o', { downloadImages: true }),
             messages: [
               {
                 role: 'user',
                 content: [
                   { type: 'text', text: ANALYZE_TEXT_FROM_IMAGE },
+                  // we bail early but TS not smart enough to know
                   { type: 'image', image: media.media_url_https! },
                 ],
               },
