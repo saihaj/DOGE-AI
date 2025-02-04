@@ -25,6 +25,8 @@ export const BILL_RELATED_TO_TWEET_PROMPT = `You are an AI assistant tasked with
 Your decision should be based purely on textual and contextual analysis, avoiding assumptions beyond the provided content.  
 `;
 
+export const ANALYZE_TEXT_FROM_IMAGE = `Analyze the following image and describe it in great detail. If the image has text, give me the full text.`;
+
 export const PROMPTS = {
   SYSTEM_PROMPT: async () => {
     return bento.getOrSet(

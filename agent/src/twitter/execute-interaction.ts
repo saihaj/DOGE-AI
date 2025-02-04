@@ -12,7 +12,12 @@ import {
 } from './helpers.ts';
 import { CoreMessage, generateObject, generateText, ImagePart, tool } from 'ai';
 import { openai } from '@ai-sdk/openai';
-import { BILL_RELATED_TO_TWEET_PROMPT, PROMPTS } from './prompts';
+import {
+  ANALYZE_TEXT_FROM_IMAGE,
+  BILL_RELATED_TO_TWEET_PROMPT,
+  PROMPTS,
+} from './prompts';
+import pMap from 'p-map';
 import {
   billVector,
   chat as chatDbSchema,
@@ -66,8 +71,9 @@ export async function getTweetMessages({
     }
   } while (searchId);
 
-  return await Promise.all(
-    tweets.map(async tweet => {
+  return await pMap(
+    tweets,
+    async tweet => {
       const isAssistant = tweet.author.userName === TWITTER_USERNAME;
       const role = isAssistant ? 'assistant' : 'user';
 
@@ -79,8 +85,8 @@ export async function getTweetMessages({
       if (tweet.extendedEntities?.media) {
         for (const media of tweet.extendedEntities.media) {
           if (media?.type === 'photo') {
-            const mediaPrompt =
-              'Analyze the following image and describe it in great detail. If the image has text, give me the full text.';
+            if (!media.media_url_https) continue;
+
             const mediaItem: ImagePart = {
               type: 'image',
               image: media.media_url_https,
@@ -99,7 +105,10 @@ export async function getTweetMessages({
                   messages: [
                     {
                       role: 'user',
-                      content: [{ type: 'text', text: mediaPrompt }, mediaItem],
+                      content: [
+                        { type: 'text', text: ANALYZE_TEXT_FROM_IMAGE },
+                        mediaItem,
+                      ],
                     },
                   ],
                 });
@@ -112,7 +121,10 @@ export async function getTweetMessages({
       }
 
       return { role, content };
-    }),
+    },
+    {
+      concurrency: 10,
+    },
   );
 }
 
