@@ -426,7 +426,14 @@ export const executeInteractionTweets = inngest.createFunction(
            * 50% time we want to send the long output
            * 50% time we want to send the refined output
            */
-          const response = Math.random() > 0.5 ? responseLong : finalAnswer;
+          const response = (() => {
+            // some times claude safety kicks in and we get a NO
+            if (finalAnswer.toLowerCase().startsWith('no')) {
+              return responseLong;
+            }
+
+            return Math.random() > 0.5 ? responseLong : finalAnswer;
+          })();
 
           return {
             longOutput: responseLong,
