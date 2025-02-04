@@ -35,6 +35,7 @@ import {
 import { twitterClient } from './client.ts';
 import { z } from 'zod';
 import { perplexity } from '@ai-sdk/perplexity';
+import { anthropic } from '@ai-sdk/anthropic';
 
 /**
  * Given a tweet id, we return a list of messages.
@@ -399,23 +400,40 @@ export const executeInteractionTweets = inngest.createFunction(
             .replace(/[\[\]]/g, '')
             .replace(/\bDOGEai\b/gi, '');
 
-          const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
-          const { text: finalAnswer } = await generateText({
-            model: openai('gpt-4o'),
+          const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT({
+            topic: responseLong,
+          });
+          const { text: _finalAnswer } = await generateText({
+            model: anthropic('claude-3-opus-20240229'),
             temperature: 0,
             messages: [
               {
                 role: 'user',
-                content: `${refinePrompt} \n\n Response to modify: \n\n ${responseLong}`,
+                content: refinePrompt,
               },
             ],
           });
+
+          const finalAnswer = _finalAnswer
+            .trim()
+            .replace(/<\/?response_format>|<\/?mimicked_text>/g, '')
+            .replace(/\[\d+\]/g, '')
+            .replace(/^(\n)+/, '')
+            .replace(/[\[\]]/g, '')
+            .replace(/\bDOGEai\b/gi, '');
 
           /**
            * 50% time we want to send the long output
            * 50% time we want to send the refined output
            */
-          const response = Math.random() > 0.5 ? responseLong : finalAnswer;
+          const response = (() => {
+            // some times claude safety kicks in and we get a NO
+            if (finalAnswer.toLowerCase().startsWith('no')) {
+              return responseLong;
+            }
+
+            return Math.random() > 0.5 ? responseLong : finalAnswer;
+          })();
 
           return {
             longOutput: responseLong,
