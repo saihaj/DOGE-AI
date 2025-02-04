@@ -422,8 +422,8 @@ export const executeInteractionTweets = inngest.createFunction(
             .replace(/\bDOGEai\b/gi, '');
 
           /**
-           * 50% time we want to send the long output
-           * 50% time we want to send the refined output
+           * 30% time we want to send the long output
+           * 70% time we want to send the refined output
            */
           const response = (() => {
             // some times claude safety kicks in and we get a NO
@@ -431,7 +431,7 @@ export const executeInteractionTweets = inngest.createFunction(
               return responseLong;
             }
 
-            return Math.random() > 0.5 ? responseLong : finalAnswer;
+            return Math.random() > 0.3 ? finalAnswer : responseLong;
           })();
 
           return {
