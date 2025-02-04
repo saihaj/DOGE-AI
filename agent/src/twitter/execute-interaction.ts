@@ -35,6 +35,7 @@ import {
 import { twitterClient } from './client.ts';
 import { z } from 'zod';
 import { perplexity } from '@ai-sdk/perplexity';
+import { anthropic } from '@ai-sdk/anthropic';
 import { bento } from '../cache.ts';
 
 /**
@@ -65,45 +66,54 @@ export async function getTweetMessages({
     }
   } while (searchId);
 
-  return await Promise.all(tweets.map(async (tweet) => {
-    const isAssistant = tweet.author.userName === TWITTER_USERNAME;
-    const role = isAssistant ? 'assistant' : 'user';
+  return await Promise.all(
+    tweets.map(async tweet => {
+      const isAssistant = tweet.author.userName === TWITTER_USERNAME;
+      const role = isAssistant ? 'assistant' : 'user';
 
-    let content = `@${tweet.author.userName}: ${tweet.text}`;
-    if (tweet.quoted_tweet) {
-      const quote = `@${tweet.quoted_tweet.author.userName}: ${tweet.quoted_tweet.text}`;
-      content = `Quote: ${quote}\n\n${content}`;
-    }
-    if (tweet.extendedEntities?.media) {
-      for (const media of tweet.extendedEntities.media) {
-        if (media?.type === 'photo') {
-          const mediaPrompt = 'Analyze the following image and describe it in great detail. If the image has text, give me the full text.';
-          const mediaItem: ImagePart = { type: 'image', image: media.media_url_https };
-
-          console.log('Media content found. Proceeding in media mode...');
-
-          const result = await bento.getOrSet(`image-analysis-${media.media_url_https}`, async () => {
-            return generateText({
-              temperature: 0,
-              model: openai('gpt-4o', {
-                downloadImages: true,
-              }),
-              messages: [
-                {
-                  role: 'user',
-                  content: [{type: 'text', text: mediaPrompt}, mediaItem],
-                },
-              ],
-            });
-          });
-
-          content += `\n\n${result.text}`;
-        } 
+      let content = `@${tweet.author.userName}: ${tweet.text}`;
+      if (tweet.quoted_tweet) {
+        const quote = `@${tweet.quoted_tweet.author.userName}: ${tweet.quoted_tweet.text}`;
+        content = `Quote: ${quote}\n\n${content}`;
       }
-    }
+      if (tweet.extendedEntities?.media) {
+        for (const media of tweet.extendedEntities.media) {
+          if (media?.type === 'photo') {
+            const mediaPrompt =
+              'Analyze the following image and describe it in great detail. If the image has text, give me the full text.';
+            const mediaItem: ImagePart = {
+              type: 'image',
+              image: media.media_url_https,
+            };
 
-    return { role, content };
-  }));
+            console.log('Media content found. Proceeding in media mode...');
+
+            const result = await bento.getOrSet(
+              `image-analysis-${media.media_url_https}`,
+              async () => {
+                return generateText({
+                  temperature: 0,
+                  model: openai('gpt-4o', {
+                    downloadImages: true,
+                  }),
+                  messages: [
+                    {
+                      role: 'user',
+                      content: [{ type: 'text', text: mediaPrompt }, mediaItem],
+                    },
+                  ],
+                });
+              },
+            );
+
+            content += `\n\n${result.text}`;
+          }
+        }
+      }
+
+      return { role, content };
+    }),
+  );
 }
 
 /**
@@ -340,10 +350,9 @@ export const executeInteractionTweets = inngest.createFunction(
       });
     },
     throttle: {
-      limit: 2,
-      period: '5m',
+      limit: 1,
+      period: '1m',
     },
-    concurrency: 4,
   },
   { event: 'tweet.execute.interaction' },
   async ({ event, step }) => {
@@ -428,23 +437,40 @@ export const executeInteractionTweets = inngest.createFunction(
             .replace(/[\[\]]/g, '')
             .replace(/\bDOGEai\b/gi, '');
 
-          const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
-          const { text: finalAnswer } = await generateText({
-            model: openai('gpt-4o'),
+          const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT({
+            topic: responseLong,
+          });
+          const { text: _finalAnswer } = await generateText({
+            model: anthropic('claude-3-opus-20240229'),
             temperature: 0,
             messages: [
               {
                 role: 'user',
-                content: `${refinePrompt} \n\n Response to modify: \n\n ${responseLong}`,
+                content: refinePrompt,
               },
             ],
           });
 
+          const finalAnswer = _finalAnswer
+            .trim()
+            .replace(/<\/?response_format>|<\/?mimicked_text>/g, '')
+            .replace(/\[\d+\]/g, '')
+            .replace(/^(\n)+/, '')
+            .replace(/[\[\]]/g, '')
+            .replace(/\bDOGEai\b/gi, '');
+
           /**
-           * 50% time we want to send the long output
-           * 50% time we want to send the refined output
+           * 30% time we want to send the long output
+           * 70% time we want to send the refined output
            */
-          const response = Math.random() > 0.5 ? responseLong : finalAnswer;
+          const response = (() => {
+            // some times claude safety kicks in and we get a NO
+            if (finalAnswer.toLowerCase().startsWith('no')) {
+              return responseLong;
+            }
+
+            return Math.random() > 0.3 ? finalAnswer : responseLong;
+          })();
 
           return {
             longOutput: responseLong,

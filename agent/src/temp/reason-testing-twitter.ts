@@ -1,11 +1,5 @@
-import {
-  CoreMessage,
-  generateText,
-  ImagePart,
-  TextPart,
-  UserContent,
-} from 'ai';
-import { openai } from '@ai-sdk/openai';
+import { CoreMessage, generateText, ImagePart } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
 import { bill as billDbSchema } from 'database';
 import { writeFile } from 'node:fs/promises';
 import * as readline from 'node:readline/promises';
@@ -16,6 +10,7 @@ import {
   getReasonBillContext,
   getTweetMessages,
 } from '../twitter/execute-interaction';
+
 function mergeConsecutiveSameRole(messages: CoreMessage[]): CoreMessage[] {
   if (messages.length === 0) {
     return [];
@@ -85,8 +80,14 @@ async function getAnswer(
 
   console.log(result.experimental_providerMetadata);
 
-  let firstLayer = result.text.replace(/<think>[\s\S]*?<\/think>/g, '');
-  firstLayer = firstLayer.replace(/\[\d+\]/g, '');
+  const firstLayer = result.text
+    .trim()
+    .replace(/<think>[\s\S]*?<\/think>/g, '')
+    .replace(/\[\d+\]/g, '')
+    .replace(/^(\n)+/, '')
+    .replace(/[\[\]]/g, '')
+    .replace(/\bDOGEai\b/gi, '');
+
   await writeFile(`dev-test/firstLayer.txt`, firstLayer);
 
   if (firstLayer.length <= 240) {
@@ -97,20 +98,33 @@ async function getAnswer(
     `BEFORE REFINEMENT: ${result.text} \n\n-------------------------`,
   );
 
-  const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT();
+  const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT({
+    topic: firstLayer,
+  });
+  await writeFile(`dev-test/refineprompt.txt`, refinePrompt);
 
   const finalAnswer = await generateText({
-    model: openai('gpt-4o'),
+    model: anthropic('claude-3-opus-20240229'),
     temperature: 0,
     messages: [
       {
         role: 'user',
-        content: `${refinePrompt} \n\n Response to modify: \n\n ${firstLayer}`,
+        content: refinePrompt,
       },
     ],
   });
 
-  return finalAnswer.text;
+  await writeFile(`dev-test/finalAnswer.txt`, finalAnswer.text);
+
+  const finalAnswerText = finalAnswer.text
+    .trim()
+    .replace(/<\/?response_format>|<\/?mimicked_text>/g, '')
+    .replace(/\[\d+\]/g, '')
+    .replace(/^(\n)+/, '')
+    .replace(/[\[\]]/g, '')
+    .replace(/\bDOGEai\b/gi, '');
+
+  return finalAnswerText;
 }
 
 async function main() {

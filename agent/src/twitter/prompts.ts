@@ -1,5 +1,6 @@
 import { botConfig, db, eq } from 'database';
 import { bento } from '../cache';
+import Handlebars from 'handlebars';
 
 export const QUESTION_EXTRACTOR_SYSTEM_PROMPT = `You are an advanced text analysis assistant. Your task is to extract the question from a given piece of text. If the text contains a direct question, return it verbatim. If the text is a statement implying a question, rephrase it into a clear and concise question. If no question is present, respond with "NO_QUESTION_DETECTED" Ensure that your output is only the extracted or rephrased question, without additional commentary.`;
 
@@ -65,8 +66,8 @@ export const PROMPTS = {
       { ttl: '1d' },
     );
   },
-  INTERACTION_REFINE_OUTPUT_PROMPT: async () => {
-    return bento.getOrSet(
+  INTERACTION_REFINE_OUTPUT_PROMPT: async ({ topic }: { topic: string }) => {
+    const prompt = await bento.getOrSet(
       'BOT_CONFIG_INTERACTION_REFINE_OUTPUT_PROMPT',
       async () => {
         const prompt = await db.query.botConfig.findFirst({
@@ -84,6 +85,8 @@ export const PROMPTS = {
       },
       { ttl: '1d' },
     );
+    const templatedPrompt = Handlebars.compile(prompt);
+    return templatedPrompt({ topic });
   },
   TWITTER_REPLY_TEMPLATE: async () => {
     return bento.getOrSet(
