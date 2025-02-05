@@ -6,14 +6,11 @@ import {
 import { CoreMessage, generateText } from 'ai';
 import { REJECTION_REASON } from '../const';
 import { openai } from '@ai-sdk/openai';
-import { QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
-import { PROMPT } from '../../dev-test/prompt';
+import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
 import { getTweetContext } from '../twitter/execute';
 
 /**
- * Next version of replies to tweets.
- *
- * This one is more context-aware, better at understanding the context of the tweet, better search results, and better at generating responses.
+ * Testing replies on a tweet where DOGEai gets pinged.
  */
 async function main() {
   const terminal = readline.createInterface({
@@ -77,13 +74,13 @@ async function main() {
 
     messages.push({
       role: 'user',
-      content: `Please answer this question in context of this conversation: "${extractedQuestion}"
-IMPORTANT:
-Remember if a [Bill Title] is found to use specifics, including bill references ([Bill Title], Section [###]: [Section Name]), names, and attributions. Do not remove relevant policy context. If no [Bill Title] is found, do not generate or infer any bill names, legislative history, or policy details from OpenAI's training data; instead, answer the question directly based only on the provided context without referencing any bill. Deviating from these instructions by fabricating information or relying on unauthorized sources is extremely dangerous and must not happen under any circumstances.`,
+      content: PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
+        question: extractedQuestion,
+      }),
     });
 
     console.log('Context Given: ', JSON.stringify(messages, null, 2), '\n\n');
-
+    const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
     const { text } = await generateText({
       temperature: 0,
       model: openai('gpt-4o'),
