@@ -1,56 +1,14 @@
-import { writeFile } from 'node:fs/promises';
 import * as readline from 'node:readline/promises';
-import { getTweet, getTweetContentAsText } from '../twitter/helpers';
 import {
   getReasonBillContext,
   getShortResponse,
 } from '../twitter/execute-interaction';
 import { CoreMessage, generateText } from 'ai';
-import { REJECTION_REASON, TWITTER_USERNAME } from '../const';
+import { REJECTION_REASON } from '../const';
 import { openai } from '@ai-sdk/openai';
 import { QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
 import { PROMPT } from '../../dev-test/prompt';
-
-/**
- * given a tweet id, we try to follow the full thread up to a certain limit.
- */
-async function getTweetContext({
-  id,
-}: {
-  id: string;
-}): Promise<Array<CoreMessage>> {
-  const LIMIT = 50;
-  let tweets: Array<CoreMessage> = [];
-
-  let searchId: null | string = id;
-  do {
-    const tweet = await getTweet({ id: searchId });
-
-    if (tweet.inReplyToId) {
-      searchId = tweet.inReplyToId;
-    }
-
-    if (tweet.inReplyToId === null) {
-      searchId = null;
-    }
-
-    // Limit max tweets
-    if (tweets.length > LIMIT) {
-      searchId = null;
-    }
-
-    // extract tweet text
-    const content = await getTweetContentAsText({ id: tweet.id });
-
-    tweets.push({
-      // Bot tweets are always assistant
-      role: tweet.author.userName === TWITTER_USERNAME ? 'assistant' : 'user',
-      content,
-    });
-  } while (searchId);
-
-  return tweets.reverse();
-}
+import { getTweetContext } from '../twitter/execute';
 
 /**
  * Next version of replies to tweets.
@@ -107,7 +65,7 @@ async function main() {
       return null;
     });
     const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-    console.log(summary ? `\n\nBill found: ${summary}\n\n` : 'No bill found.');
+    console.log(summary ? `\nBill found: ${summary}\n` : '\nNo bill found.\n');
     const messages: Array<CoreMessage> = [...tweetThread];
 
     if (summary) {
