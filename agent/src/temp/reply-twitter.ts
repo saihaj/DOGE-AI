@@ -2,7 +2,6 @@ import { writeFile } from 'node:fs/promises';
 import * as readline from 'node:readline/promises';
 import { getTweet, getTweetContentAsText } from '../twitter/helpers';
 import {
-  getLongResponse,
   getReasonBillContext,
   getShortResponse,
 } from '../twitter/execute-interaction';
@@ -10,6 +9,7 @@ import { CoreMessage, generateText } from 'ai';
 import { REJECTION_REASON, TWITTER_USERNAME } from '../const';
 import { openai } from '@ai-sdk/openai';
 import { QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
+import { PROMPT } from '../../dev-test/prompt';
 
 /**
  * given a tweet id, we try to follow the full thread up to a certain limit.
@@ -108,20 +108,39 @@ async function main() {
     });
     const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
     console.log(summary ? `\n\nBill found: ${summary}\n\n` : 'No bill found.');
+    const messages: Array<CoreMessage> = [...tweetThread];
 
-    const messages: Array<CoreMessage> = [
-      {
-        role: 'system',
-        content: `You are given context of a twitter thread. Analyze the context and then generate a response to user's question.`,
-      },
-      ...tweetThread,
-      {
+    if (summary) {
+      messages.push({
         role: 'user',
-        content: `Can you answer this question in context of this conversation: ${extractedQuestion}`,
-      },
-    ];
+        content: `Context from database: ${summary}\n\n`,
+      });
+    }
 
-    console.log(JSON.stringify(tweetThread, null, 2));
+    messages.push({
+      role: 'user',
+      content: `Please answer this question in context of this conversation: "${extractedQuestion}"
+IMPORTANT:
+Remember if a [Bill Title] is found to use specifics, including bill references ([Bill Title], Section [###]: [Section Name]), names, and attributions. Do not remove relevant policy context.`,
+    });
+
+    console.log('Context Given: ', JSON.stringify(messages, null, 2), '\n\n');
+
+    const { text } = await generateText({
+      temperature: 0,
+      model: openai('gpt-4o'),
+      messages: [
+        {
+          role: 'system',
+          content: PROMPT,
+        },
+        ...messages,
+      ],
+    });
+    console.log('\n\nLong: ', text, '\n\n');
+
+    const refinedOutput = await getShortResponse({ topic: text });
+    console.log('\n\nShort: ', refinedOutput, '\n\n');
   } catch (error) {
     console.error('An error occurred:', error);
   }
