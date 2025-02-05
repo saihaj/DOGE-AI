@@ -358,6 +358,9 @@ export const executeInteractionTweets = inngest.createFunction(
         message: `[execute-interaction-tweets]:${id} ${errorMessage}`,
       });
     },
+    timeouts: {
+      start: '30m',
+    },
     throttle: {
       limit: 1,
       period: '1m',
@@ -469,7 +472,8 @@ export const executeInteractionTweets = inngest.createFunction(
           if (!IS_PROD) return;
 
           await approvedTweetEngagement({
-            tweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
+            sentTweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
+            replyTweetUrl: tweetToActionOn.url,
             sent: reply.response,
             refinedOutput: reply.refinedOutput,
             longOutput: reply.longOutput,

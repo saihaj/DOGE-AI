@@ -7,6 +7,11 @@ import {
   getShortResponse,
 } from '../twitter/execute-interaction';
 
+/**
+ * This is a CLI version of `twitter/execute-interaction.ts`
+ *
+ * You give it a tweet you want to interact with and it will give you response.
+ */
 async function main() {
   const terminal = readline.createInterface({
     input: process.stdin,

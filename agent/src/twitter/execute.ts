@@ -1,54 +1,52 @@
-import { IS_PROD, REJECTION_REASON } from '../const';
+import { IS_PROD, REJECTION_REASON, TWITTER_USERNAME } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import {
-  generateEmbedding,
   generateEmbeddings,
   getTweet,
+  getTweetContentAsText,
   textSplitter,
   upsertChat,
   upsertUser,
 } from './helpers.ts';
-import { generateText } from 'ai';
+import { CoreMessage, generateText } from 'ai';
 import * as crypto from 'node:crypto';
 import { openai } from '@ai-sdk/openai';
+import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from './prompts';
 import {
-  EXTRACT_BILL_TITLE_PROMPT,
-  PROMPTS,
-  QUESTION_EXTRACTOR_SYSTEM_PROMPT,
-} from './prompts';
-import {
-  bill,
-  billVector,
   db,
   eq,
-  inArray,
-  like,
   message as messageDbSchema,
   chat as chatDbSchema,
   messageVector,
   sql,
-  and,
-  isNotNull,
 } from 'database';
 import {
-  approvedTweetReply,
+  approvedTweetEngagement,
   reportFailureToDiscord,
   sendDevTweet,
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
+import {
+  getReasonBillContext,
+  getShortResponse,
+} from './execute-interaction.ts';
 
 /**
- * given a tweet id, we try to follow the thread get more context about the tweet
+ * given a tweet id, we try to follow the full thread up to a certain limit.
  */
-export async function getTweetContext({ id }: { id: string }) {
+export async function getTweetContext({
+  id,
+}: {
+  id: string;
+}): Promise<Array<CoreMessage>> {
   const LIMIT = 50;
-  let tweets: Awaited<ReturnType<typeof getTweet>>[] = [];
+  let tweets: Array<CoreMessage> = [];
 
   let searchId: null | string = id;
   do {
     const tweet = await getTweet({ id: searchId });
-    tweets.push(tweet);
+
     if (tweet.inReplyToId) {
       searchId = tweet.inReplyToId;
     }
@@ -61,105 +59,18 @@ export async function getTweetContext({ id }: { id: string }) {
     if (tweets.length > LIMIT) {
       searchId = null;
     }
+
+    // extract tweet text
+    const content = await getTweetContentAsText({ id: tweet.id });
+
+    tweets.push({
+      // Bot tweets are always assistant
+      role: tweet.author.userName === TWITTER_USERNAME ? 'assistant' : 'user',
+      content,
+    });
   } while (searchId);
 
-  return tweets
-    .reverse()
-    .map(tweet => tweet.text)
-    .join('\n---\n');
-}
-
-/**
- * Given some text try to narrow down the bill to focus on.
- *
- * If you get a bill title.
- * then we can filter the embeddings to that title
- * and then try to search for user question for embeddings
- *
- * If you do not get a bill title
- * we are out of luck and we just use the user question to search all the embeddings
- */
-export async function getBillContext({
-  text,
-  question,
-}: {
-  text: string;
-  question: string;
-}) {
-  const LIMIT = 10;
-  const billTitleResult = await generateText({
-    model: openai('gpt-4o'),
-    temperature: 0,
-    messages: [
-      {
-        role: 'system',
-        content: EXTRACT_BILL_TITLE_PROMPT,
-      },
-
-      {
-        role: 'user',
-        content: text,
-      },
-    ],
-  });
-
-  const questionEmbedding = await generateEmbedding(question);
-  const embeddingArrayString = JSON.stringify(questionEmbedding);
-
-  const billTitle = billTitleResult.text;
-
-  if (billTitle.startsWith('NO_TITLE_FOUND')) {
-    const vectorSearch = await db
-      .select({
-        text: billVector.text,
-        bill: billVector.bill,
-        distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
-      })
-      .from(billVector)
-      .where(
-        and(
-          sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < 0.4`,
-          isNotNull(billVector.bill),
-        ),
-      )
-      .orderBy(
-        // ascending order
-        sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
-      )
-      .limit(LIMIT);
-
-    return vectorSearch.map(row => row.text).join('\n---\n');
-  }
-
-  const billSearch = await db
-    .select({ id: bill.id })
-    .from(bill)
-    .where(like(bill.title, billTitle))
-    .limit(LIMIT);
-
-  const vectorSearch = await db
-    .select({
-      text: billVector.text,
-      bill: billVector.bill,
-      distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
-    })
-    .from(billVector)
-    .where(
-      and(
-        inArray(
-          billVector.bill,
-          billSearch.map(row => row.id),
-        ),
-        isNotNull(billVector.bill),
-      ),
-    )
-    .orderBy(
-      // ascending order
-      sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
-    )
-    .limit(10);
-
-  return vectorSearch.map(row => row.text).join('\n---\n');
+  return tweets.reverse();
 }
 
 /**
@@ -197,6 +108,9 @@ export const executeTweets = inngest.createFunction(
           throw new NonRetriableError(REJECTION_REASON.ALREADY_REPLIED);
         }
 
+        // Yes you can get the full context here but
+        // this is optimization to avoid fetching too much
+        // in case we just reject it
         const tweetToActionOn = await getTweet({
           id: event.data.tweetId,
         }).catch(e => {
@@ -204,8 +118,9 @@ export const executeTweets = inngest.createFunction(
         });
 
         const question = await step.run('extract-question', async () => {
-          const text = tweetToActionOn.text;
-          const result = await generateText({
+          const tweetText = tweetToActionOn.text;
+
+          const { text: extractedQuestion } = await generateText({
             model: openai('gpt-4o'),
             temperature: 0,
             messages: [
@@ -215,62 +130,77 @@ export const executeTweets = inngest.createFunction(
               },
               {
                 role: 'user',
-                content: text,
+                content: tweetText,
               },
             ],
           });
 
-          if (result.text.startsWith('NO_QUESTION_DETECTED')) {
-            throw new NonRetriableError(REJECTION_REASON.NO_QUESTION_DETECTED);
+          if (
+            extractedQuestion.startsWith(REJECTION_REASON.NO_QUESTION_DETECTED)
+          ) {
+            throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
           }
 
-          return result.text;
+          return extractedQuestion;
         });
 
         const reply = await step.run('generate-reply', async () => {
-          const threadContext = tweetToActionOn.inReplyToId
-            ? await getTweetContext({
-                id: tweetToActionOn.inReplyToId,
-              }).catch(e => {
-                throw new NonRetriableError(e);
-              })
-            : tweetToActionOn.text;
+          const tweetThread = await getTweetContext({ id: tweetToActionOn.id });
+          const tweetWeRespondingTo = tweetThread.pop();
 
-          const relevantContext = await getBillContext({
-            text: threadContext,
-            question,
+          if (!tweetWeRespondingTo) {
+            throw new NonRetriableError(
+              REJECTION_REASON.NO_TWEET_FOUND_TO_REPLY_TO,
+            );
+          }
+
+          const bill = await getReasonBillContext({
+            messages: tweetThread,
+          }).catch(_ => {
+            return null;
           });
 
-          const systemPrompt = await PROMPTS.SYSTEM_PROMPT();
-          const botUserPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
-          const response = await generateText({
-            model: openai('gpt-4o'),
+          const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
+          console.log(
+            summary ? `\nBill found: ${summary}\n` : '\nNo bill found.\n',
+          );
+
+          const messages: Array<CoreMessage> = [...tweetThread];
+
+          if (summary) {
+            messages.push({
+              role: 'user',
+              content: `Context from database: ${summary}\n\n`,
+            });
+          }
+
+          messages.push({
+            role: 'user',
+            content: PROMPTS.REPLY_TWEET_QUESTION_PROMPT({ question }),
+          });
+
+          const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
+          const { text } = await generateText({
             temperature: 0,
+            model: openai('gpt-4o'),
             messages: [
               {
                 role: 'system',
-                content: systemPrompt,
+                content: PROMPT,
               },
-              {
-                role: 'user',
-                content: `Context from X: ${threadContext}`,
-              },
-              {
-                role: 'user',
-                content: `Context from database: ${relevantContext}`,
-              },
-              {
-                role: 'user',
-                content: botUserPrompt,
-              },
-              {
-                role: 'user',
-                content: question,
-              },
+              ...messages,
             ],
           });
 
-          return response.text;
+          const refinedOutput = await getShortResponse({ topic: text });
+
+          const reply = Math.random() > 0.5 ? refinedOutput : text;
+
+          return {
+            long: text,
+            short: refinedOutput,
+            text: reply,
+          };
         });
 
         const repliedTweet = await step.run('send-tweet', async () => {
@@ -279,14 +209,16 @@ export const executeTweets = inngest.createFunction(
             await sendDevTweet({
               tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
               question,
-              response: reply,
+              response: reply.text,
+              longOutput: reply.long,
+              refinedOutput: reply.short,
             });
             return {
               id: 'local_id',
             };
           }
 
-          const resp = await twitterClient.v2.tweet(reply, {
+          const resp = await twitterClient.v2.tweet(reply.text, {
             reply: {
               in_reply_to_tweet_id: tweetToActionOn.id,
             },
@@ -301,13 +233,19 @@ export const executeTweets = inngest.createFunction(
           // No need to send to discord in local mode since we are already spamming dev test channel
           if (!IS_PROD) return;
 
-          await approvedTweetReply({
-            tweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
+          await approvedTweetEngagement({
+            sentTweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
+            replyTweetUrl: tweetToActionOn.url,
+            longOutput: reply.long,
+            sent: reply.text,
+            refinedOutput: reply.short,
           });
         });
 
         // embed and store reply
         await step.run('persist-chat', async () => {
+          if (!IS_PROD) return;
+
           const user = await upsertUser({
             twitterId: tweetToActionOn.author.id,
           });
@@ -329,7 +267,7 @@ export const executeTweets = inngest.createFunction(
               },
               {
                 id: crypto.randomUUID(),
-                text: reply,
+                text: reply.text,
                 chat: chat.id,
                 role: 'assistant',
                 tweetId: repliedTweet.id,
@@ -342,7 +280,7 @@ export const executeTweets = inngest.createFunction(
 
           const [chunkActionTweet, chunkReply] = await Promise.all([
             textSplitter.splitText(tweetToActionOn.text),
-            textSplitter.splitText(reply),
+            textSplitter.splitText(reply.text),
           ]);
 
           const actionTweetEmbeddings =
