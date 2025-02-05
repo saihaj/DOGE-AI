@@ -346,6 +346,9 @@ export const executeInteractionTweets = inngest.createFunction(
         message: `[execute-interaction-tweets]:${id} ${errorMessage}`,
       });
     },
+    timeouts: {
+      start: '30m',
+    },
     throttle: {
       limit: 1,
       period: '1m',
