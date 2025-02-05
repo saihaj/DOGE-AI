@@ -110,6 +110,13 @@ export const PROMPTS = {
       { ttl: '1d' },
     );
   },
+  REPLY_TWEET_QUESTION_PROMPT: ({
+    question,
+  }: {
+    question: string;
+  }) => `Please answer this question in context of this conversation: "${question}"
+  IMPORTANT:
+  Remember if a [Bill Title] is found to use specifics, including bill references ([Bill Title], Section [###]: [Section Name]), names, and attributions. Do not remove relevant policy context. If no [Bill Title] is found, do not generate or infer any bill names, legislative history, or policy details from OpenAI's training data; instead, answer the question directly based only on the provided context without referencing any bill. Deviating from these instructions by fabricating information or relying on unauthorized sources is extremely dangerous and must not happen under any circumstances.`,
   INTERACTION_ENGAGEMENT_DECISION_PROMPT: async () => {
     return bento.getOrSet(
       'BOT_CONFIG_INTERACTION_ENGAGEMENT_DECISION_PROMPT',

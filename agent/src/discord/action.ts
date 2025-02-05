@@ -69,20 +69,6 @@ export async function approvedTweetEngagement({
   });
 }
 
-export async function approvedTweetReply({ tweetUrl }: { tweetUrl: string }) {
-  const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
-  const channel = await guild.channels.fetch(DISCORD_APPROVED_CHANNEL_ID);
-
-  if (!channel || !(channel instanceof TextChannel)) {
-    throw Error('Approved channel not found or not a text channel');
-  }
-
-  await channel.send({
-    content: `**Accepted**: ${tweetUrl}`,
-    allowedMentions: { parse: [] },
-  });
-}
-
 export async function rejectedTweet({
   tweetUrl,
   tweetId,
