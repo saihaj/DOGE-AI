@@ -182,8 +182,7 @@ export async function getReasonBillContext({
 
   // 1) Ask LLM to extract the Bill Title from the text.
   const finalBill = await generateText({
-    model: openai('gpt-4o'),
-    temperature: 0,
+    model: openai('o3-mini'),
     tools: {
       searchEmbeddings: tool({
         description:
@@ -234,7 +233,7 @@ export async function getReasonBillContext({
       },
       {
         role: 'user',
-        content: `startingPoint: ${baseText}\n\nText: ${billTitleResult.names.join('\n')} ${billTitleResult.keywords.join('\n')}`,
+        content: `First Result: ${baseText}\n\nText: ${billTitleResult.names.join('\n')} ${billTitleResult.keywords.join('\n')}`,
       },
     ],
     maxSteps: 10,
@@ -265,11 +264,15 @@ export async function getReasonBillContext({
 export async function getLongResponse({
   summary,
   text,
+  systemPrompt,
 }: {
   summary: string;
   text: string;
+  systemPrompt?: string;
 }) {
-  const systemPrompt = await PROMPTS.INTERACTION_SYSTEM_PROMPT();
+  if (!systemPrompt) {
+    systemPrompt = await PROMPTS.INTERACTION_SYSTEM_PROMPT();
+  }
   const { text: _responseLong, experimental_providerMetadata } =
     await generateText({
       temperature: 0,
@@ -309,10 +312,19 @@ export async function getLongResponse({
 /**
  * Using `getLongResponse` output generate a refined short response for more engaging output
  */
-export async function getShortResponse({ topic }: { topic: string }) {
-  const refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT({
-    topic,
-  });
+export async function getShortResponse({
+  topic,
+  refinePrompt,
+}: {
+  topic: string;
+  refinePrompt?: string;
+}) {
+  if (!refinePrompt) {
+    refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT({
+      topic,
+    });
+  }
+
   const { text: _finalAnswer } = await generateText({
     model: anthropic('claude-3-opus-20240229'),
     temperature: 0,
