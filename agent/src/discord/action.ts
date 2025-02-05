@@ -13,13 +13,19 @@ import {
   DISCORD_SERVER_ID,
 } from '../const';
 
+const DISCORD_MESSAGE_LENGTH_LIMIT = 2000;
+
 export async function approvedTweetEngagement({
-  tweetUrl,
+  replyTweetUrl,
+  sentTweetUrl,
   longOutput,
   refinedOutput,
   sent,
 }: {
-  tweetUrl: string;
+  /** Tweet we are replying to */
+  replyTweetUrl: string;
+  /** Tweet we sent */
+  sentTweetUrl: string;
   longOutput: string;
   refinedOutput: string;
   sent: string;
@@ -32,13 +38,30 @@ export async function approvedTweetEngagement({
   }
 
   const content = [
-    `**Tweet**: ${tweetUrl}`,
+    `**Replied To**: ${replyTweetUrl}`,
+    `**Sent Tweet**: ${sentTweetUrl}`,
     `**Long output**: ${longOutput}`,
     `**Refined output**: ${refinedOutput}`,
     `**DOGEai**: ${sent}`,
   ]
     .filter(Boolean)
     .join('\n\n');
+
+  if (content.length > DISCORD_MESSAGE_LENGTH_LIMIT) {
+    const contentShortened = [
+      `**Replied To**: ${replyTweetUrl}`,
+      `**Sent Tweet**: ${sentTweetUrl}`,
+      `**DOGEai**: ${sent}`,
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+
+    await channel.send({
+      content: contentShortened,
+      allowedMentions: { parse: [] },
+    });
+    return;
+  }
 
   await channel.send({
     content: content,
@@ -137,6 +160,23 @@ export async function sendDevTweet({
   ]
     .filter(Boolean)
     .join('\n\n');
+
+  if (content.length > DISCORD_MESSAGE_LENGTH_LIMIT) {
+    const contentShortened = [
+      `**Tweet**: ${tweetUrl}`,
+      longOutput ? `**Long output**: ${longOutput}` : '',
+      refinedOutput ? `**Refined output**: ${refinedOutput}` : '',
+      `**DOGEai**: ${response}`,
+    ]
+      .filter(Boolean)
+      .join('\n\n');
+
+    await channel.send({
+      content: contentShortened,
+      allowedMentions: { parse: [] },
+    });
+    return;
+  }
 
   await channel.send({
     content: content,
