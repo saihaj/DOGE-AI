@@ -121,7 +121,7 @@ async function main() {
       role: 'user',
       content: `Please answer this question in context of this conversation: "${extractedQuestion}"
 IMPORTANT:
-Remember if a [Bill Title] is found to use specifics, including bill references ([Bill Title], Section [###]: [Section Name]), names, and attributions. Do not remove relevant policy context.`,
+Remember if a [Bill Title] is found to use specifics, including bill references ([Bill Title], Section [###]: [Section Name]), names, and attributions. Do not remove relevant policy context. If no [Bill Title] is found, do not generate or infer any bill names, legislative history, or policy details from OpenAI's training data; instead, answer the question directly based only on the provided context without referencing any bill. Deviating from these instructions by fabricating information or relying on unauthorized sources is extremely dangerous and must not happen under any circumstances.`,
     });
 
     console.log('Context Given: ', JSON.stringify(messages, null, 2), '\n\n');
