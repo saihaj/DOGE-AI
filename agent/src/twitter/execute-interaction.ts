@@ -181,7 +181,8 @@ export async function getReasonBillContext({
 
   // 1) Ask LLM to extract the Bill Title from the text.
   const finalBill = await generateText({
-    model: openai('o3-mini'),
+    model: openai('gpt-4o'),
+    temperature: 0,
     tools: {
       searchEmbeddings: tool({
         description:
@@ -232,7 +233,7 @@ export async function getReasonBillContext({
       },
       {
         role: 'user',
-        content: `First Result: ${baseText}\n\nText: ${billTitleResult.names.join('\n')} ${billTitleResult.keywords.join('\n')}`,
+        content: `startingPoint: ${baseText}\n\nText: ${billTitleResult.names.join('\n')} ${billTitleResult.keywords.join('\n')}`,
       },
     ],
     maxSteps: 10,
