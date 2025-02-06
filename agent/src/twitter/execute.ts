@@ -196,14 +196,14 @@ export const executeTweets = inngest.createFunction(
             ],
           });
 
-          const refinedOutput = await getShortResponse({ topic: text });
+          // const refinedOutput = await getShortResponse({ topic: text });
 
-          const reply = Math.random() > 0.5 ? refinedOutput : text;
+          // const reply = Math.random() > 0.5 ? refinedOutput : text;
 
           return {
-            long: text,
-            short: refinedOutput,
-            text: reply,
+            // long: text,
+            // short: refinedOutput,
+            text,
           };
         });
 
@@ -214,8 +214,8 @@ export const executeTweets = inngest.createFunction(
               tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
               question,
               response: reply.text,
-              longOutput: reply.long,
-              refinedOutput: reply.short,
+              // longOutput: reply.long,
+              // refinedOutput: reply.short,
             });
             return {
               id: 'local_id',
@@ -240,9 +240,9 @@ export const executeTweets = inngest.createFunction(
           await approvedTweetEngagement({
             sentTweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
             replyTweetUrl: tweetToActionOn.url,
-            longOutput: reply.long,
+            // longOutput: reply.long,
             sent: reply.text,
-            refinedOutput: reply.short,
+            // refinedOutput: reply.short,
           });
         });
 

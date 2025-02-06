@@ -406,26 +406,26 @@ export const executeInteractionTweets = inngest.createFunction(
             text,
           });
 
-          const finalAnswer = await getShortResponse({ topic: responseLong });
+          // const finalAnswer = await getShortResponse({ topic: responseLong });
 
-          /**
-           * 30% time we want to send the long output
-           * 70% time we want to send the refined output
-           */
-          const response = (() => {
-            // some times claude safety kicks in and we get a NO
-            if (finalAnswer.toLowerCase().startsWith('no')) {
-              return responseLong;
-            }
+          // /**
+          //  * 30% time we want to send the long output
+          //  * 70% time we want to send the refined output
+          //  */
+          // const response = (() => {
+          //   // some times claude safety kicks in and we get a NO
+          //   if (finalAnswer.toLowerCase().startsWith('no')) {
+          //     return responseLong;
+          //   }
 
-            return Math.random() > 0.3 ? finalAnswer : responseLong;
-          })();
+          //   return Math.random() > 0.3 ? finalAnswer : responseLong;
+          // })();
 
           return {
             longOutput: responseLong,
-            refinedOutput: finalAnswer,
+            // refinedOutput: finalAnswer,
             metadata,
-            response,
+            response: responseLong,
           };
         });
 
@@ -436,8 +436,8 @@ export const executeInteractionTweets = inngest.createFunction(
               tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
               question: text,
               response: reply.response,
-              refinedOutput: reply.refinedOutput,
-              longOutput: reply.longOutput,
+              // refinedOutput: reply.refinedOutput,
+              // longOutput: reply.longOutput,
             });
             return {
               id: 'local_id',
@@ -463,8 +463,8 @@ export const executeInteractionTweets = inngest.createFunction(
             sentTweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
             replyTweetUrl: tweetToActionOn.url,
             sent: reply.response,
-            refinedOutput: reply.refinedOutput,
-            longOutput: reply.longOutput,
+            // refinedOutput: reply.refinedOutput,
+            // longOutput: reply.longOutput,
           });
         });
 
