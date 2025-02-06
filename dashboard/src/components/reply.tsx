@@ -16,18 +16,9 @@ export function ReplyTweet() {
     const mainPrompt = localStorage.getItem('mainPrompt');
     const refinePrompt = localStorage.getItem('refinePrompt');
 
-    if (!mainPrompt) {
-      alert('Please set a main prompt in the settings');
-      return;
-    }
-
-    if (!refinePrompt) {
-      alert('Please set a refine prompt in the settings');
-      return;
-    }
-
     if (!tweetUrl) {
       alert('Please enter a valid Tweet URL');
+      setLoading(false);
       return;
     }
 
@@ -35,6 +26,7 @@ export function ReplyTweet() {
 
     if (!tweetId) {
       alert('Please enter a valid Tweet URL');
+      setLoading(false);
       return;
     }
 
@@ -52,6 +44,7 @@ export function ReplyTweet() {
 
     if (!response.ok) {
       alert('Failed to submit request');
+      setLoading(false);
       return;
     }
 
@@ -62,6 +55,7 @@ export function ReplyTweet() {
       setLoading(false);
     } catch (e) {
       alert(`Error: ${e}`);
+      setLoading(false);
     }
   }
 
@@ -88,7 +82,7 @@ export function ReplyTweet() {
             </label>
 
             <div className="mt-2 flex w-[22rem] sm:w-96">
-              <div className="relative w-full input-shadow-glow inset-px rounded-[9987px] shadow-white/5 transition focus-within:shadow-stone-100/20 dark:base-white/5 dark:focus-within:shadow-stone-500/30">
+              <div className="relative w-full input-shadow-glow inset-px rounded-[9987px] shadow-white/5 transition focus-within:shadow-stone-100/20 base-white/5 focus-within:shadow-stone-500/30">
                 <input
                   autoComplete="off"
                   className="w-full text-lg py-4 pl-12 pr-7 font-semibold shadow-2xl border border-stone-600/40 bg-stone-700/60 text-stone-100 shadow-stone-100/45 placeholder:text-stone-100 focus:placeholder-stone-400 focus:bg-stone-600/60 focus:ring-2 focus:ring-stone-700/50  disabled:cursor-not-allowed disabled:opacity-50 sm:leading-6 input-shadow  rounded-full  !outline-none relative"

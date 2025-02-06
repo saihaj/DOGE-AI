@@ -11,8 +11,8 @@ import { REJECTION_REASON } from '../const';
 
 export const ProcessTestReplyRequestInput = Type.Object({
   tweetId: Type.String(),
-  mainPrompt: Type.String(),
-  refinePrompt: Type.String(),
+  mainPrompt: Type.Optional(Type.String()),
+  refinePrompt: Type.Optional(Type.String()),
 });
 export type ProcessTestReplyRequestInput = Static<
   typeof ProcessTestReplyRequestInput
@@ -81,13 +81,17 @@ export async function processTestReplyRequest({
   });
 
   console.log('Context Given: ', JSON.stringify(messages, null, 2), '\n\n');
+
+  const systemPrompt = mainPrompt
+    ? mainPrompt
+    : await PROMPTS.TWITTER_REPLY_TEMPLATE();
   const { text: responseLong } = await generateText({
     temperature: 0,
     model: openai('gpt-4o'),
     messages: [
       {
         role: 'system',
-        content: mainPrompt,
+        content: systemPrompt,
       },
       ...messages,
     ],

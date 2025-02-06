@@ -8,8 +8,8 @@ import { Static, Type } from '@sinclair/typebox';
 
 export const ProcessTestEngageRequestInput = Type.Object({
   tweetId: Type.String(),
-  mainPrompt: Type.String(),
-  refinePrompt: Type.String(),
+  mainPrompt: Type.Optional(Type.String()),
+  refinePrompt: Type.Optional(Type.String()),
 });
 export type ProcessTestEngageRequestInput = Static<
   typeof ProcessTestEngageRequestInput
