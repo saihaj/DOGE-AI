@@ -32,6 +32,9 @@ importers:
       '@ai-sdk/xai':
         specifier: ^1.1.6
         version: 1.1.6(zod@3.24.1)
+      '@fastify/cors':
+        specifier: ^10.0.2
+        version: 10.0.2
       '@langchain/textsplitters':
         specifier: ^0.1.0
         version: 0.1.0(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)))
@@ -208,9 +211,6 @@ importers:
       daisyui:
         specifier: ^4.12.23
         version: 4.12.23(postcss@8.5.1)
-      dotenv:
-        specifier: ^16.4.7
-        version: 16.4.7
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -1208,6 +1208,9 @@ packages:
 
   '@fastify/ajv-compiler@4.0.2':
     resolution: {integrity: sha512-Rkiu/8wIjpsf46Rr+Fitd3HRP+VsxUFDDeag0hs9L0ksfnwx2g7SPQQTFL0E8Qv+rfXzQOxBJnjUB9ITUDjfWQ==}
+
+  '@fastify/cors@10.0.2':
+    resolution: {integrity: sha512-DGdxOG36sS/tZv1NFiCJGi7wGuXOSPL2CmNX5PbOVKx0C6LuIALRMrqLByHTCcX1Rbl8NJ9IWlJex32bzydvlw==}
 
   '@fastify/error@4.0.0':
     resolution: {integrity: sha512-OO/SA8As24JtT1usTUTKgGH7uLvhfwZPwlptRi2Dp5P4KKmJI3gvsZ8MIHnNwDs4sLf/aai5LzTyl66xr7qMxA==}
@@ -3439,6 +3442,9 @@ packages:
   fast-uri@3.0.5:
     resolution: {integrity: sha512-5JnBCWpFlMo0a3ciDy/JckMzzv1U9coZrIhedq+HXxxUfDTAiS0LA8OKVao4G9BxmCVck/jtA5r3KAtRWEyD8Q==}
 
+  fastify-plugin@5.0.1:
+    resolution: {integrity: sha512-HCxs+YnRaWzCl+cWRYFnHmeRFyR5GVnJTAaCJQiYzQSDwK9MgJdyAsuL3nh0EWRCYMgQ5MeziymvmAhUHYHDUQ==}
+
   fastify@5.2.1:
     resolution: {integrity: sha512-rslrNBF67eg8/Gyn7P2URV8/6pz8kSAscFL4EThZJ8JBMaXacVdVE4hmUcnPNKERl5o/xTiBSLfdowBRhVF1WA==}
 
@@ -4585,6 +4591,9 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
+  mnemonist@0.39.8:
+    resolution: {integrity: sha512-vyWo2K3fjrUw8YeeZ1zF0fy6Mu59RHokURlld8ymdUPjMlD9EC9ov1/YPqTgqRvUN9nTr3Gqfz29LYAmu0PHPQ==}
+
   mrmime@2.0.0:
     resolution: {integrity: sha512-eu38+hdgojoyq63s+yTpN4XMBdt5l8HhMhc4VKLO9KM5caLIBvUm4thi7fFaxyTmCKeNnXZ5pAlBwCUnhA09uw==}
     engines: {node: '>=10'}
@@ -4766,6 +4775,9 @@ packages:
   object.values@1.2.1:
     resolution: {integrity: sha512-gXah6aZrcUxjWg2zR2MwouP2eHlCBzdV4pygudehaKXSGW4v2AsRQUK+lwwXhii6KFZcunEnmSUoYp5CXibxtA==}
     engines: {node: '>= 0.4'}
+
+  obliterator@2.0.5:
+    resolution: {integrity: sha512-42CPE9AhahZRsMNslczq0ctAEtqk8Eka26QofnqC346BZdHDySk3LWka23LI7ULIw11NmltpiLagIq8gBozxTw==}
 
   ofetch@1.4.1:
     resolution: {integrity: sha512-QZj2DfGplQAr2oj9KzceK9Hwz6Whxazmn85yYeVuS3u9XTMOGMRx0kO95MQ+vLsj/S/NwBDMMLU5hpxvI6Tklw==}
@@ -7013,6 +7025,11 @@ snapshots:
       ajv-formats: 3.0.1(ajv@8.17.1)
       fast-uri: 3.0.5
 
+  '@fastify/cors@10.0.2':
+    dependencies:
+      fastify-plugin: 5.0.1
+      mnemonist: 0.39.8
+
   '@fastify/error@4.0.0': {}
 
   '@fastify/fast-json-stringify-compiler@5.0.2':
@@ -9195,6 +9212,8 @@ snapshots:
 
   fast-uri@3.0.5: {}
 
+  fastify-plugin@5.0.1: {}
+
   fastify@5.2.1:
     dependencies:
       '@fastify/ajv-compiler': 4.0.2
@@ -9652,7 +9671,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9)
+      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.0))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -10622,6 +10641,10 @@ snapshots:
 
   mkdirp@1.0.4: {}
 
+  mnemonist@0.39.8:
+    dependencies:
+      obliterator: 2.0.5
+
   mrmime@2.0.0: {}
 
   ms@2.0.0:
@@ -10808,6 +10831,8 @@ snapshots:
       call-bound: 1.0.3
       define-properties: 1.2.1
       es-object-atoms: 1.1.1
+
+  obliterator@2.0.5: {}
 
   ofetch@1.4.1:
     dependencies:
@@ -11383,7 +11408,7 @@ snapshots:
       retext-stringify: 4.0.0
       unified: 11.0.5
 
-  retry-axios@2.6.0(axios@1.7.9):
+  retry-axios@2.6.0(axios@1.7.9(debug@4.4.0)):
     dependencies:
       axios: 1.7.9(debug@4.4.0)
 

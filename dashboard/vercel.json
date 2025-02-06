@@ -1,8 +1,0 @@
-{
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": "${VITE_API_URL}/api/$1"
-    }
-  ]
-}

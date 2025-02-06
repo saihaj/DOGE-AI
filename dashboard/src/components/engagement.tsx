@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { API_URL } from 'src/const';
 
 export function EngagementTweet() {
   const [tweetUrl, setTweetUrl] = useState('');
@@ -37,7 +38,7 @@ export function EngagementTweet() {
       return;
     }
 
-    const response = await fetch('/api/test/engage', {
+    const response = await fetch(`${API_URL}/api/test/engage`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

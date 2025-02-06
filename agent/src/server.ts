@@ -1,6 +1,7 @@
 import { serve } from 'inngest/fastify';
 import Fastify from 'fastify';
 import { inngest } from './inngest';
+import cors from '@fastify/cors';
 import { ingestTweets } from './twitter/ingest';
 import { processTweets } from './twitter/process';
 import { executeTweets } from './twitter/execute';
@@ -20,6 +21,12 @@ import {
 } from './api/test-reply';
 
 const fastify = Fastify();
+
+fastify.register(cors, {
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'OPTIONS'],
+  origin: ['http://localhost:4321', 'https://manage.dogeai.info'],
+});
 
 fastify.route({
   method: ['GET', 'POST', 'PUT'],
