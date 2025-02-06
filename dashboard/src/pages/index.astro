@@ -6,193 +6,215 @@ const { PUBLIC_API_URL } = import.meta.env;
 ---
 
 <Layout>
-    <Settings id="ai_hud_modal" open={false}/>
-    <div>
-      <div class="flex h-full w-full flex-col items-center justify-center">
-        <div class="flex h-screen w-full flex-col items-center justify-center overflow-hidden">
-          <div
-            class="my-24 flex h-full w-full flex-col items-center justify-center rounded-t-[50px] md:rounded-b-[102px] md:rounded-t-[102px]"
+  <Settings id="ai_hud_modal" open={false} />
+  <div>
+    <div class="flex h-full w-full flex-col items-center justify-center">
+      <div
+        class="flex h-screen w-full flex-col items-center justify-center overflow-hidden"
+      >
+        <div
+          class="my-24 flex h-full w-full flex-col items-center justify-center rounded-t-[50px] md:rounded-b-[102px] md:rounded-t-[102px]"
+          style="transform: none"
+        >
+          <form
+            class="ai_hud_form animate-in fade-in slide-in-from-bottom duration-1000 flex flex-col items-center px-2"
+            id="ai_hud_form"
             style="transform: none"
           >
-            <form
-              class="ai_hud_form animate-in fade-in slide-in-from-bottom duration-1000 flex flex-col items-center px-2"
-              id="ai_hud_form"
-              style="transform: none"
-            >
-              <div class="w-full px-2 pb-4">
-                <label
-                  class="text-sm text-base-300 text-stone-400 font-medium leading-none"
-                  for="tweetUrl"
+            <div class="w-full px-2 pb-4">
+              <label
+                class="text-sm text-base-300 text-stone-400 font-medium leading-none"
+                for="tweetUrl"
+              >
+                Enter Tweet URL
+              </label>
+
+              <div class="mt-2 flex w-[22rem] sm:w-96">
+                <div
+                  class="relative w-full input-shadow-glow inset-px rounded-[9987px] shadow-white/5 transition focus-within:shadow-stone-100/20 dark:base-white/5 dark:focus-within:shadow-stone-500/30"
                 >
-                  Enter Tweet URL
-                </label>
-  
-                <div class="mt-2 flex w-[22rem] sm:w-96">
-                  <div
-                    class="relative w-full input-shadow-glow inset-px rounded-[9987px] shadow-white/5 transition focus-within:shadow-stone-100/20 dark:base-white/5 dark:focus-within:shadow-stone-500/30"
-                  >
-                    <input
-                      autocomplete="off"
-                      class="
-                        w-full 
-                        text-lg 
-                        py-4 pl-12 pr-7 
-                        font-semibold 
+                  <input
+                    autocomplete="off"
+                    class="w-full
+                        text-lg
+                        py-4 pl-12 pr-7
+                        font-semibold
                         shadow-2xl
-                        border 
-                        border-stone-600/40 
+                        border
+                        border-stone-600/40
                         bg-stone-700/60
-                        text-stone-100 
+                        text-stone-100
                         shadow-stone-100/45
                         placeholder:text-stone-100
                         focus:placeholder-stone-400
                         focus:bg-stone-600/60
                         focus:ring-2
-                        focus:ring-stone-700/50 
-                        disabled:cursor-not-allowed 
-                        disabled:opacity-50 
+                        focus:ring-stone-700/50
+                        disabled:cursor-not-allowed
+                        disabled:opacity-50
                         sm:leading-6
                         input-shadow
                         rounded-[9988px]
-                        !outline-none 
-                        relative
-                      "
-                      id="tweetUrl"
-                      placeholder="https://x.com/..."
-                      type="text"
-                    />
-                    <div
-                      class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5"
+                        !outline-none
+                        relative"
+                    id="tweetUrl"
+                    placeholder="https://x.com/..."
+                    type="text"
+                  />
+                  <div
+                    class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="stroke-stone-500/70"
                     >
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        stroke-width="2"
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        class="stroke-stone-500/70"
-                      >
-                        <circle cx="11" cy="11" r="8"></circle>
-                        <path d="m21 21-4.3-4.3"></path>
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-  
-                <div class="mt-6 flex w-full flex-col items-center">
-                  <div class="flex justify-center w-full">
-                    <button
-                      type="button"
-                      class="ai_test_btn btn btn-primary"
-                      id="ai_test_btn"
-                      style="display: none;"
-                    >                     
-                        Submit Request
-                    </button>
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="m21 21-4.3-4.3"></path>
+                    </svg>
                   </div>
                 </div>
               </div>
-            </form>
-  
-            <div
-              id="resultBlock"
-              class="animate-in fade-in slide-in-from-bottom duration-1000 p-4 rounded-lg bg-stone-800 text-stone-100 w-[22rem] sm:w-96"
-              style="display: none;"
-            >
+
+              <div class="mt-6 flex w-full flex-col items-center">
+                <div class="flex justify-center w-full">
+                  <button
+                    type="button"
+                    class="ai_test_btn btn btn-primary"
+                    id="ai_test_btn"
+                    style="display: none;"
+                  >
+                    Submit Request
+                  </button>
+                </div>
+              </div>
             </div>
+          </form>
+
+          <div
+            id="resultBlock"
+            class="animate-in fade-in slide-in-from-bottom duration-1000 p-4 rounded-lg bg-stone-800 text-stone-100 w-[22rem] sm:w-96"
+            style="display: none;"
+          >
           </div>
         </div>
-  
-        <div class="absolute inset-0 -z-10 h-full w-full overflow-hidden bg-black">
-          <div
-            class="absolute animate-transform-in inset-0 -z-10 h-full w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_20%,#0A0A0A_35%,#2979FF_50%,#FF80AB_60%,#FF6D00_70%,#FFD600_80%,#00E676_90%,#3D5AFE_100%)]"
-            id="ai_overlay"
-          ></div>
+      </div>
+
+      <div
+        class="absolute inset-0 -z-10 h-full w-full overflow-hidden bg-black"
+      >
+        <div
+          class="absolute animate-transform-in inset-0 -z-10 h-full w-full items-center px-5 py-24 [background:radial-gradient(125%_125%_at_50%_20%,#0A0A0A_35%,#2979FF_50%,#FF80AB_60%,#FF6D00_70%,#FFD600_80%,#00E676_90%,#3D5AFE_100%)]"
+          id="ai_overlay"
+        >
         </div>
       </div>
     </div>
   </div>
-  
+</Layout>
 
-  <script define:vars={{ PUBLIC_API_URL }}>
-    function isValidTweetUrl(url) {
-      return url.startsWith('https://');
+<script define:vars={{ PUBLIC_API_URL }}>
+  function isValidTweetUrl(url) {
+    return url.startsWith('https://');
+  }
+
+  const tweetUrlInput = document.getElementById('tweetUrl');
+  const testBtn = document.getElementById('ai_test_btn');
+  const resultBlock = document.getElementById('resultBlock');
+  const form = document.getElementById('ai_hud_form');
+  const overlay = document.getElementById('ai_overlay');
+
+  tweetUrlInput.addEventListener('input', function () {
+    testBtn.style.display = isValidTweetUrl(tweetUrlInput.value.trim())
+      ? 'block'
+      : 'none';
+  });
+  form.addEventListener('submit', function (event) {
+    event.preventDefault();
+    handleSubmit();
+  });
+
+  async function handleSubmit() {
+    const mainPrompt = localStorage.getItem('mainPrompt');
+    const refinePrompt = localStorage.getItem('refinePrompt');
+
+    if (!mainPrompt) {
+      alert('Please set a main prompt in the settings');
+      return;
     }
-  
-    const tweetUrlInput = document.getElementById('tweetUrl');
-    const testBtn = document.getElementById('ai_test_btn');
-    const resultBlock = document.getElementById('resultBlock');
-    const form = document.getElementById('ai_hud_form');
-    const overlay = document.getElementById('ai_overlay');
-  
-    tweetUrlInput.addEventListener('input', function() {
-      testBtn.style.display = isValidTweetUrl(tweetUrlInput.value.trim()) ? 'block' : 'none';
-    });
-    form.addEventListener('submit', function(event) {
-      event.preventDefault();
-      handleSubmit();
-    });
-  
-    async function handleSubmit() {
-      const tweetUrl = tweetUrlInput.value.trim();
-      if (!isValidTweetUrl(tweetUrl)) {
-        alert('Please enter a valid Tweet URL');
-        return;
-      }
-  
-      const mainPrompt = localStorage.getItem('mainPrompt');
-      const refinePrompt = localStorage.getItem('refinePrompt');
-  
-      const payload = { tweetUrl };
-  
-      if (mainPrompt && mainPrompt.trim() !== '') {
-        payload.mainPrompt = mainPrompt;
-      }
-      if (refinePrompt && refinePrompt.trim() !== '') {
-        payload.refinePrompt = refinePrompt;
-      }
-  
-      try {
-        testBtn.disabled = true;
-        overlay.classList.replace('animate-transform-in', 'animate-loading-pulse');
-  
-        const response = await fetch(`${PUBLIC_API_URL}/api/test-bot`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-  
-        const data = await response.json();
-  
-        if (data.success) {
-          const { answer, short } = data;
-          resultBlock.innerHTML = `
+
+    if (!refinePrompt) {
+      alert('Please set a refine prompt in the settings');
+      return;
+    }
+
+    const tweetUrl = tweetUrlInput.value.trim();
+    if (!isValidTweetUrl(tweetUrl)) {
+      alert('Please enter a valid Tweet URL');
+      return;
+    }
+
+    const tweetId = tweetUrl.split('/').pop();
+
+    if (!tweetId) {
+      alert('Please enter a valid Tweet URL');
+      return;
+    }
+
+    const payload = { tweetId };
+
+    if (mainPrompt && mainPrompt.trim() !== '') {
+      payload.mainPrompt = mainPrompt;
+    }
+    if (refinePrompt && refinePrompt.trim() !== '') {
+      payload.refinePrompt = refinePrompt;
+    }
+
+    try {
+      testBtn.disabled = true;
+      overlay.classList.replace(
+        'animate-transform-in',
+        'animate-loading-pulse',
+      );
+
+      const response = await fetch(`${PUBLIC_API_URL}/api/test/engage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const { answer, short } = data;
+        resultBlock.innerHTML = `
             <h2 class="text-xl font-bold mb-2">Answer:</h2>
             <p class="mb-4">${answer}</p>
             <h3 class="text-lg font-semibold">Short:</h3>
             <p>${short}</p>
           `;
-        } else {
-          resultBlock.innerHTML = `<p>Error: ${data.error || 'Unknown error'}</p>`;
-        }
-  
-        form.style.display = 'none';
-        resultBlock.style.display = 'block';
-      } catch (error) {
-        resultBlock.innerHTML = `<p>Network error: ${error.message}</p>`;
-        form.style.display = 'none';
-        resultBlock.style.display = 'block';
-      } finally {
-        testBtn.disabled = false;
-        overlay.classList.remove('animate-loading-pulse');
+      } else {
+        resultBlock.innerHTML = `<p>Error: ${data.error || 'Unknown error'}</p>`;
       }
+
+      form.style.display = 'none';
+      resultBlock.style.display = 'block';
+    } catch (error) {
+      resultBlock.innerHTML = `<p>Network error: ${error.message}</p>`;
+      form.style.display = 'none';
+      resultBlock.style.display = 'block';
+    } finally {
+      testBtn.disabled = false;
+      overlay.classList.remove('animate-loading-pulse');
     }
-  
-    testBtn.addEventListener('click', handleSubmit);
-  </script>
-  
-</Layout>
+  }
+
+  testBtn.addEventListener('click', handleSubmit);
+</script>
