@@ -58,8 +58,12 @@ const { id, open } = Astro.props;
     <slot name="main" />
 
     <Tabs>
-      <Fragment slot="tab-1"> Main Prompt </Fragment>
-      <Fragment slot="tab-2"> Refine Prompt </Fragment>
+      <Fragment slot="tab-1">
+        <span class="text-white">Main Prompt</span></Fragment
+      >
+      <Fragment slot="tab-2">
+        <span class="text-white"> Refine Prompt</span>
+      </Fragment>
 
       <Fragment slot="panel-1">
         <h2 class="mb-2 text-xl font-semibold">Main Prompt</h2>

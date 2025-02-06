@@ -7,6 +7,7 @@ import {
 import { Static, Type } from '@sinclair/typebox';
 import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
 import { openai } from '@ai-sdk/openai';
+import Handlebars from 'handlebars';
 import { REJECTION_REASON } from '../const';
 
 export const ProcessTestReplyRequestInput = Type.Object({
@@ -97,6 +98,12 @@ export async function processTestReplyRequest({
     ],
   });
   console.log('\n\nLong: ', responseLong, '\n\n');
+
+  if (refinePrompt) {
+    refinePrompt = Handlebars.compile(refinePrompt)({
+      topic: responseLong,
+    });
+  }
 
   const refinedOutput = await getShortResponse({
     topic: responseLong,

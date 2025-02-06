@@ -67,7 +67,7 @@ export function EngagementTweet() {
       }}
       className="ai_hud_form animate-in fade-in slide-in-from-bottom duration-1000 flex flex-col items-center px-2"
     >
-      <div className="w-full px-2 pb-4">
+      <div className="w-full px-2 pb-4 text-white">
         {result.answer ? (
           <div className="bg-stone-800 p-4 rounded-lg max-w-2xl">
             <h2 className="text-xl font-bold mb-2">Answer:</h2>
