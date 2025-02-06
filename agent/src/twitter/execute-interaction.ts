@@ -362,7 +362,7 @@ export const executeInteractionTweets = inngest.createFunction(
       start: '30m',
     },
     throttle: {
-      limit: 1,
+      limit: 2,
       period: '1m',
     },
   },
