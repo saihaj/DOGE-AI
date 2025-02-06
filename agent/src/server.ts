@@ -40,7 +40,11 @@ fastify.route({
     try {
       // @ts-ignore
       const { tweetUrl, mainPrompt, refinePrompt } = request.body;
-      const { answer, short } = await processTestRequest(tweetUrl, mainPrompt, refinePrompt);
+      const { answer, short } = await processTestRequest(
+        tweetUrl,
+        mainPrompt,
+        refinePrompt,
+      );
       reply.send({ success: true, answer, short });
     } catch (error) {
       console.error('Test error:', error);

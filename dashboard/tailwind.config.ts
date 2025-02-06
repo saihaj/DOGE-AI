@@ -29,12 +29,24 @@ const config: Config = {
     extend: {
       keyframes: {
         'transform-in': {
-          '0%': { transform: 'translateY(60px) scale(1.5) translateZ(0)', opacity: '0' },
-          '100%': { transform: 'translateY(0) scale(1) translateZ(0)', opacity: '1' },
+          '0%': {
+            transform: 'translateY(60px) scale(1.5) translateZ(0)',
+            opacity: '0',
+          },
+          '100%': {
+            transform: 'translateY(0) scale(1) translateZ(0)',
+            opacity: '1',
+          },
         },
         'loading-pulse': {
-          '0%, 100%': { transform: 'translateY(0) scale(1) translateZ(0)', opacity: '1' },
-          '50%': { transform: 'translateY(60px) scale(1.3) translateZ(0)', opacity: '0.5' },
+          '0%, 100%': {
+            transform: 'translateY(0) scale(1) translateZ(0)',
+            opacity: '1',
+          },
+          '50%': {
+            transform: 'translateY(60px) scale(1.3) translateZ(0)',
+            opacity: '0.5',
+          },
         },
       },
       animation: {
@@ -43,10 +55,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [
-    require('daisyui'),
-    require('tailwindcss-animate'),
-  ],
+  plugins: [require('daisyui'), require('tailwindcss-animate')],
 };
 
 export default config;
