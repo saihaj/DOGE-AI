@@ -35,7 +35,6 @@ import {
 import { twitterClient } from './client.ts';
 import { z } from 'zod';
 import { perplexity } from '@ai-sdk/perplexity';
-import { anthropic } from '@ai-sdk/anthropic';
 
 /**
  * Given some text try to find the specific bill.
@@ -326,7 +325,7 @@ export async function getShortResponse({
   }
 
   const { text: _finalAnswer } = await generateText({
-    model: anthropic('claude-3-opus-20240229'),
+    model: openai('gpt-4o'),
     temperature: 0,
     messages: [
       {

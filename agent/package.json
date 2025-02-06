@@ -19,7 +19,6 @@
     "dev:agent": "pnpm run dev:server & pnpm run dev:inngest"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^1.1.6",
     "@ai-sdk/deepseek": "^0.1.6",
     "@ai-sdk/google": "^1.1.6",
     "@ai-sdk/openai": "^1.1.9",
