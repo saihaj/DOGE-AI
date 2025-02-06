@@ -8,11 +8,18 @@
   "bracketSpacing": true,
   "arrowParens": "avoid",
   "proseWrap": "always",
+  "plugins": ["prettier-plugin-astro"],
   "overrides": [
     {
       "files": ".github/**/*.yml",
       "options": {
         "printWidth": 120
+      }
+    },
+    {
+      "files": "*.astro",
+      "options": {
+        "parser": "astro"
       }
     }
   ]
