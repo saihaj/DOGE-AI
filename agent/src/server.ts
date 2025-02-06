@@ -14,7 +14,10 @@ import {
   processTestEngageRequest,
   ProcessTestEngageRequestInput,
 } from './api/test-engage';
-import { ProcessTestReplyRequestInput } from './api/test-reply';
+import {
+  processTestReplyRequest,
+  ProcessTestReplyRequestInput,
+} from './api/test-reply';
 
 const fastify = Fastify();
 
@@ -89,7 +92,7 @@ fastify.route<{ Body: ProcessTestReplyRequestInput }>({
   handler: async (request, reply) => {
     try {
       const { tweetId, mainPrompt, refinePrompt } = request.body;
-      const result = await processTestEngageRequest({
+      const result = await processTestReplyRequest({
         tweetId,
         mainPrompt,
         refinePrompt,
