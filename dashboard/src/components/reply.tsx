@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-export function EngagementTweet() {
+export function ReplyTweet() {
   const [tweetUrl, setTweetUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState({
@@ -37,7 +37,7 @@ export function EngagementTweet() {
       return;
     }
 
-    const response = await fetch('/api/test/engage', {
+    const response = await fetch('/api/test/reply', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -83,7 +83,7 @@ export function EngagementTweet() {
         ) : (
           <>
             <label className="text-sm text-base-30 0 text-stone-400 font-medium leading-none">
-              Enter Tweet URL to Engage with
+              Enter Tweet URL to Reply to
             </label>
 
             <div className="mt-2 flex w-[22rem] sm:w-96">

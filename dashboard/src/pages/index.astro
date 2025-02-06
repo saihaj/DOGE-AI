@@ -1,5 +1,4 @@
 ---
-import { EngagementTweet } from '@components/engagement';
 import Layout from '../layouts/Layout.astro';
 import Settings from '@components/Settings.astro';
 ---
@@ -15,7 +14,44 @@ import Settings from '@components/Settings.astro';
           class="my-24 flex h-full w-full flex-col items-center justify-center rounded-t-[50px] md:rounded-b-[102px] md:rounded-t-[102px]"
           style="transform: none"
         >
-            <EngagementTweet client:only />
+          <div class="w-full max-w-2xl">
+            <div class="flex flex-col items-center justify-center p-4">
+              <h1 class="text-2xl text-white font-bold text-center mb-6">
+                Choose an Option
+              </h1>
+              <div
+                class="grid md:grid-cols-2 gap-6 justify-center items-center"
+              >
+                <div
+                  class="bg-white rounded-lg shadow-md p-6 transition-all flex flex-col justify-start items-center"
+                >
+                  <h2 class="text-xl text-black font-semibold mb-2">
+                    Engage with Tweet
+                  </h2>
+                  <a
+                    href="/engage"
+                    class="w-full text-center py-2 px-4 rounded-md transition-colors bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  >
+                    Engage
+                  </a>
+                </div>
+
+                <div
+                  class="bg-white rounded-lg shadow-md p-6 transition-all flex flex-col justify-start items-center"
+                >
+                  <h2 class="text-xl text-black font-semibold mb-2">
+                    Reply Tweet
+                  </h2>
+                  <a
+                    href="/reply"
+                    class="w-full text-center py-2 px-4 rounded-md transition-colors bg-gray-200 text-gray-800 hover:bg-gray-300"
+                  >
+                    Reply
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
           <div
             id="resultBlock"
             class="animate-in fade-in slide-in-from-bottom duration-1000 p-4 rounded-lg bg-stone-800 text-stone-100 w-[22rem] sm:w-96"
