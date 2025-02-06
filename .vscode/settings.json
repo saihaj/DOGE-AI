@@ -12,6 +12,5 @@
   "prettier.documentSelectors": ["**/*.astro"],
   "[astro]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "typescript.inlayHints.parameterNames.enabled": "all"
+  }
 }
