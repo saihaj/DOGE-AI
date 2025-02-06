@@ -23,7 +23,6 @@ export async function processTestEngageRequest({
   answer: string;
   short: string;
   bill: string;
-  metadata: string | null;
 }> {
   const content = await getTweetContentAsText({ id: tweetId });
 
@@ -63,6 +62,5 @@ export async function processTestEngageRequest({
     answer: responseLong,
     short: refinedOutput,
     bill: summary,
-    metadata,
   };
 }

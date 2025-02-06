@@ -14,6 +14,7 @@ import {
   processTestEngageRequest,
   ProcessTestEngageRequestInput,
 } from './api/test-engage';
+import { ProcessTestReplyRequestInput } from './api/test-reply';
 
 const fastify = Fastify();
 
@@ -68,6 +69,42 @@ fastify.route<{ Body: ProcessTestEngageRequestInput }>({
     }
   },
   url: '/api/test/engage',
+});
+
+fastify.route<{ Body: ProcessTestReplyRequestInput }>({
+  method: 'POST',
+  schema: {
+    body: ProcessTestReplyRequestInput,
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          answer: { type: 'string' },
+          short: { type: 'string' },
+          bill: { type: 'string' },
+        },
+      },
+    },
+  },
+  handler: async (request, reply) => {
+    try {
+      const { tweetId, mainPrompt, refinePrompt } = request.body;
+      const result = await processTestEngageRequest({
+        tweetId,
+        mainPrompt,
+        refinePrompt,
+      });
+
+      return reply.send(result);
+    } catch (error) {
+      console.error('Test error:', error);
+      return reply.code(500).send({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+  url: '/api/test/reply',
 });
 
 // So in fly.io, health should do both the health check and the readiness check
