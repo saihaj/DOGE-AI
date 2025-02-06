@@ -22,7 +22,7 @@ export function EngagementTweet() {
       return;
     }
 
-    const tweetId = tweetUrl.split('/').pop();
+    const tweetId = new URL(tweetUrl).pathname.split('/').pop();
 
     if (!tweetId) {
       alert('Please enter a valid Tweet URL');
