@@ -117,9 +117,26 @@ export function ReplyTweet() {
                 <button
                   disabled={loading}
                   type="submit"
-                  className="btn btn-primary"
+                  className="disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:bg-blue-700 bg-blue-700 px-4 py-2 rounded-md min-w-64 min-h-11 flex items-center justify-center text-white font-semibold text-lg shadow-2xl transition duration-200 ease-in-out hover:bg-blue-800"
                 >
-                  {loading ? 'Processing...' : 'Submit Request'}
+                  {loading ? (
+                    <svg
+                      className="animate-spin h-7 w-7 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                  ) : (
+                    'Submit Request'
+                  )}
                 </button>
               </div>
             </div>
