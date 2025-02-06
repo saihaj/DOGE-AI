@@ -25,6 +25,7 @@
     "@ai-sdk/perplexity": "^0.0.4",
     "@ai-sdk/xai": "^1.1.6",
     "@langchain/textsplitters": "^0.1.0",
+    "@sinclair/typebox": "^0.34.16",
     "ai": "^4.1.10",
     "bentocache": "1.0.0-beta.9",
     "database": "workspace:^",

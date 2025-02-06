@@ -10,7 +10,10 @@ import { reportFailureToDiscord } from './discord/action';
 import { ingestInteractionTweets } from './twitter/ingest-interaction';
 import { processInteractionTweets } from './twitter/process-interactions';
 import { executeInteractionTweets } from './twitter/execute-interaction';
-import { processTestRequest } from './web/test-handler';
+import {
+  processTestEngageRequest,
+  ProcessTestEngageRequestInput,
+} from './api/test-engage';
 
 const fastify = Fastify();
 
@@ -30,42 +33,45 @@ fastify.route({
   url: '/api/inngest',
 });
 
-fastify.route({
+fastify.route<{ Body: ProcessTestEngageRequestInput }>({
   method: 'POST',
+  schema: {
+    body: ProcessTestEngageRequestInput,
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          answer: { type: 'string' },
+          short: { type: 'string' },
+          bill: { type: 'string' },
+          metadata: { type: ['string', 'null'] },
+        },
+      },
+    },
+  },
   handler: async (request, reply) => {
     reply.header('Access-Control-Allow-Origin', '*');
     reply.header('Access-Control-Allow-Methods', 'POST');
     reply.header('Access-Control-Allow-Headers', 'Content-Type');
 
     try {
-      // @ts-ignore
-      const { tweetUrl, mainPrompt, refinePrompt } = request.body;
-      const { answer, short } = await processTestRequest(
-        tweetUrl,
+      const { tweetId, mainPrompt, refinePrompt } = request.body;
+      const result = await processTestEngageRequest({
+        tweetId,
         mainPrompt,
         refinePrompt,
-      );
-      reply.send({ success: true, answer, short });
+      });
+
+      return reply.send(result);
     } catch (error) {
       console.error('Test error:', error);
-      reply.code(500).send({
+      return reply.code(500).send({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   },
-  url: '/api/test-bot',
-});
-
-fastify.route({
-  method: 'OPTIONS',
-  url: '/api/test-bot',
-  handler: (request, reply) => {
-    reply.header('Access-Control-Allow-Origin', '*');
-    reply.header('Access-Control-Allow-Methods', 'POST');
-    reply.header('Access-Control-Allow-Headers', 'Content-Type');
-    reply.send();
-  },
+  url: '/api/test/engage',
 });
 
 // So in fly.io, health should do both the health check and the readiness check

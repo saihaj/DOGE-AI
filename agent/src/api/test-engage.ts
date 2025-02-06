@@ -4,17 +4,27 @@ import {
   getShortResponse,
 } from '../twitter/execute-interaction';
 import { getTweetContentAsText } from '../twitter/helpers';
+import { Static, Type } from '@sinclair/typebox';
 
-export async function processTestRequest(
-  tweetUrl: string,
-  mainPrompt: string,
-  refinePrompt: string,
-): Promise<{ answer: string; short: string }> {
-  const tweetId = tweetUrl.split('/').pop();
-  if (!tweetId) {
-    throw new Error('No tweet ID found in the provided URL.');
-  }
+export const ProcessTestEngageRequestInput = Type.Object({
+  tweetId: Type.String(),
+  mainPrompt: Type.String(),
+  refinePrompt: Type.String(),
+});
+export type ProcessTestEngageRequestInput = Static<
+  typeof ProcessTestEngageRequestInput
+>;
 
+export async function processTestEngageRequest({
+  tweetId,
+  mainPrompt,
+  refinePrompt,
+}: ProcessTestEngageRequestInput): Promise<{
+  answer: string;
+  short: string;
+  bill: string;
+  metadata: string | null;
+}> {
   const content = await getTweetContentAsText({ id: tweetId });
 
   const bill = await getReasonBillContext({
@@ -49,5 +59,10 @@ export async function processTestRequest(
   });
 
   console.log('\n\nShort Response: ', refinedOutput, '\n\n');
-  return { answer: responseLong, short: refinedOutput };
+  return {
+    answer: responseLong,
+    short: refinedOutput,
+    bill: summary,
+    metadata,
+  };
 }
