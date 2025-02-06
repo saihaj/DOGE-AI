@@ -87,6 +87,10 @@ export const executeTweets = inngest.createFunction(
         message: `[execute-tweets]:${id} ${errorMessage}`,
       });
     },
+    throttle: {
+      limit: 1,
+      period: '1m',
+    },
   },
   { event: 'tweet.execute' },
   async ({ event, step }) => {
