@@ -50,10 +50,6 @@ fastify.route<{ Body: ProcessTestEngageRequestInput }>({
     },
   },
   handler: async (request, reply) => {
-    reply.header('Access-Control-Allow-Origin', '*');
-    reply.header('Access-Control-Allow-Methods', 'POST');
-    reply.header('Access-Control-Allow-Headers', 'Content-Type');
-
     try {
       const { tweetId, mainPrompt, refinePrompt } = request.body;
       const result = await processTestEngageRequest({

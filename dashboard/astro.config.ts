@@ -1,23 +1,24 @@
-// @ts-check
-import { defineConfig, envField } from 'astro/config';
+import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
-
-import { loadEnv } from 'vite';
+import { config } from 'dotenv';
+config();
 
 // https://astro.build/config
 export default defineConfig({
+  vite: {
+    server: {
+      proxy: {
+        '/api': {
+          target: process.env.VITE_API_URL,
+          changeOrigin: true,
+          secure: false,
+        },
+      },
+    },
+  },
   integrations: [
     tailwind({
       applyBaseStyles: false,
     }),
   ],
-  env: {
-    schema: {
-      PUBLIC_API_URL: envField.string({
-        context: 'client',
-        access: 'public',
-        optional: false,
-      }),
-    },
-  },
 });

@@ -1,8 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Settings from '@components/Settings.astro';
-
-const { PUBLIC_API_URL } = import.meta.env;
 ---
 
 <Layout>
@@ -120,8 +118,8 @@ const { PUBLIC_API_URL } = import.meta.env;
   </div>
 </Layout>
 
-<script define:vars={{ PUBLIC_API_URL }}>
-  function isValidTweetUrl(url) {
+<script>
+  function isValidTweetUrl(url: string) {
     return url.startsWith('https://');
   }
 
@@ -184,7 +182,7 @@ const { PUBLIC_API_URL } = import.meta.env;
         'animate-loading-pulse',
       );
 
-      const response = await fetch(`${PUBLIC_API_URL}/api/test/engage`, {
+      const response = await fetch("/api/test/engage", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
