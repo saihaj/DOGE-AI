@@ -4,12 +4,13 @@ import {
   getShortResponse,
 } from '../twitter/execute-interaction';
 import { getTweetContentAsText } from '../twitter/helpers';
+import Handlebars from 'handlebars';
 import { Static, Type } from '@sinclair/typebox';
 
 export const ProcessTestEngageRequestInput = Type.Object({
   tweetId: Type.String(),
-  mainPrompt: Type.String(),
-  refinePrompt: Type.String(),
+  mainPrompt: Type.Optional(Type.String()),
+  refinePrompt: Type.Optional(Type.String()),
 });
 export type ProcessTestEngageRequestInput = Static<
   typeof ProcessTestEngageRequestInput
@@ -51,6 +52,12 @@ export async function processTestEngageRequest({
   }
 
   console.log('\n\nLong Response: ', responseLong, '\n\n');
+
+  if (refinePrompt) {
+    refinePrompt = Handlebars.compile(refinePrompt)({
+      topic: responseLong,
+    });
+  }
 
   const refinedOutput = await getShortResponse({
     topic: responseLong,
