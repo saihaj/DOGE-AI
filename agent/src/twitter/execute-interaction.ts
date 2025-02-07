@@ -35,6 +35,9 @@ import {
 import { twitterClient } from './client.ts';
 import { z } from 'zod';
 import { perplexity } from '@ai-sdk/perplexity';
+import { logger } from '../logger.ts';
+
+const log = logger.child({ module: 'execute-interaction-tweets' });
 
 /**
  * Given some text try to find the specific bill.
@@ -76,7 +79,7 @@ export async function getReasonBillContext({
     }),
   });
 
-  console.log(billTitleResult);
+  log.debug(billTitleResult);
 
   if (
     billTitleResult.names.length === 0 &&
@@ -90,7 +93,7 @@ export async function getReasonBillContext({
       const loweredTitles = billTitleResult.names.map(title =>
         title.toLowerCase(),
       );
-      console.log(loweredTitles);
+      log.debug(loweredTitles);
       const billSearch = await db
         .select({ id: billDbSchema.id })
         .from(billDbSchema)
@@ -101,7 +104,8 @@ export async function getReasonBillContext({
     }
     return [];
   })();
-  console.log(`Found ${billIds.length} bill IDs.`);
+
+  log.info({}, `Found ${billIds.length} bill IDs.`);
 
   // we got bills from the title, we can just return the first one
   if (billIds.length > 0) {
@@ -120,7 +124,7 @@ export async function getReasonBillContext({
       return JSON.stringify(termEmbedding);
     }),
   );
-  console.log(`Found ${embeddingsForKeywords.length} embeddings.`);
+  log.info({}, `Found ${embeddingsForKeywords.length} embeddings.`);
 
   const searchPromises = embeddingsForKeywords.map(
     async termEmbeddingString => {
@@ -149,7 +153,7 @@ export async function getReasonBillContext({
   );
 
   const searchResults = (await Promise.all(searchPromises)).flat();
-  console.log(`Found ${searchResults.length} vector search results.`);
+  log.info({}, `Found ${searchResults.length} vector search results.`);
 
   const baseText = searchResults
     .map(({ title, text }) => {
@@ -172,10 +176,10 @@ export async function getReasonBillContext({
     ],
   });
 
-  console.log(`Is bill related to tweet?: ${text}`);
+  log.info({}, `Is bill related to tweet?: ${text}`);
 
   if (text.toLowerCase().startsWith('no')) {
-    console.log(messages);
+    log.warn(messages, 'No bill related to tweet.');
     throw new Error(REJECTION_REASON.UNRELATED_BILL);
   }
 
@@ -354,6 +358,10 @@ export const executeInteractionTweets = inngest.createFunction(
       const id = event?.data?.event?.data?.tweetId;
       const errorMessage = error.message;
 
+      log.error(
+        { error: errorMessage },
+        'Failed to execute interaction tweets',
+      );
       await reportFailureToDiscord({
         message: `[execute-interaction-tweets]:${id} ${errorMessage}`,
       });
@@ -433,6 +441,10 @@ export const executeInteractionTweets = inngest.createFunction(
             return Math.random() > 0.3 ? finalAnswer : responseLong;
           })();
 
+          log.info(
+            { long: responseLong, short: finalAnswer, metadata, response },
+            'Generated response',
+          );
           return {
             longOutput: responseLong,
             refinedOutput: finalAnswer,

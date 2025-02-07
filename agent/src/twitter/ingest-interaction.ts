@@ -5,9 +5,12 @@ import { chunk } from 'lodash-es';
 import { reportFailureToDiscord } from '../discord/action';
 import { ListResultResponseSchema } from './helpers';
 import { getUnixTime, subMinutes } from 'date-fns';
+import { logger } from '../logger';
 
 const API = new URL(TWITTER_API_BASE_URL);
 API.pathname = '/twitter/list/tweets';
+
+const log = logger.child({ module: 'ingest-interaction-tweets' });
 
 async function fetchTweetsFromList({
   id,
@@ -67,6 +70,7 @@ export const ingestInteractionTweets = inngest.createFunction(
     id: 'ingest-interaction-tweets',
     onFailure: async ({ error }) => {
       const errorMessage = error.message;
+      log.error({ error: errorMessage }, 'Failed to ingest interaction tweets');
       await reportFailureToDiscord({
         message: `[ingest-interaction-tweets]: ${errorMessage}`,
       });
@@ -109,7 +113,8 @@ export const ingestInteractionTweets = inngest.createFunction(
      * https://www.inngest.com/docs/events#sending-multiple-events-at-once
      */
     const chunkTweets = chunk(tweets, 5);
-    console.log(
+    log.info(
+      {},
       `Chunked ${tweets.length} tweets into ${chunkTweets.length} chunks`,
     );
 
@@ -122,7 +127,7 @@ export const ingestInteractionTweets = inngest.createFunction(
         })),
       );
 
-      console.log(`Sent ${inngestSent.ids.length} tweets to inngest`);
+      log.info({}, `Sent ${inngestSent.ids.length} tweets to inngest`);
     });
 
     return {

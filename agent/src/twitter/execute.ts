@@ -31,6 +31,7 @@ import {
   getReasonBillContext,
   getShortResponse,
 } from './execute-interaction.ts';
+import { logger } from '../logger.ts';
 
 /**
  * given a tweet id, we try to follow the full thread up to a certain limit.
@@ -81,8 +82,14 @@ export const executeTweets = inngest.createFunction(
     id: 'execute-tweets',
     onFailure: async ({ event, error }) => {
       const id = event?.data?.event?.data?.tweetId;
+      const log = logger.child({
+        module: 'execute-tweets',
+        tweetId: id,
+        eventId: event.data.event.id,
+      });
       const errorMessage = error.message;
 
+      log.error({ error: errorMessage }, 'Failed to execute tweets');
       await reportFailureToDiscord({
         message: `[execute-tweets]:${id} ${errorMessage}`,
       });
@@ -94,6 +101,12 @@ export const executeTweets = inngest.createFunction(
   },
   { event: 'tweet.execute' },
   async ({ event, step }) => {
+    const log = logger.child({
+      module: 'execute-tweets',
+      tweetId: event.data.tweetId,
+      eventId: event.id,
+    });
+
     switch (event.data.action) {
       case 'reply': {
         // TODO: make sure we are not replying to a tweet we already replied to
@@ -165,9 +178,11 @@ export const executeTweets = inngest.createFunction(
           });
 
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-          console.log(
-            summary ? `\nBill found: ${summary}\n` : '\nNo bill found.\n',
-          );
+          if (summary) {
+            log.info({ summary, bill }, 'Bill found');
+          } else {
+            log.info({}, 'No bill found');
+          }
 
           const messages: Array<CoreMessage> = [...tweetThread];
 
@@ -199,6 +214,11 @@ export const executeTweets = inngest.createFunction(
           const refinedOutput = await getShortResponse({ topic: text });
 
           const reply = Math.random() > 0.5 ? refinedOutput : text;
+
+          log.info(
+            { long: text, short: refinedOutput, response: text },
+            'Reply generated',
+          );
 
           return {
             long: text,

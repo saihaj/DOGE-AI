@@ -19,6 +19,7 @@ import {
   processTestReplyRequest,
   ProcessTestReplyRequestInput,
 } from './api/test-reply';
+import { logger } from './logger';
 
 const fastify = Fastify();
 
@@ -131,18 +132,23 @@ fastify.route({
 });
 
 fastify.listen({ host: '0.0.0.0', port: 3000 }, async function (err, address) {
-  console.log(`Server listening on ${address}`);
+  logger.info({}, `Server listening on ${address}`);
 
   try {
     await discordClient.login(DISCORD_TOKEN);
-    console.log(`Logged into Discord as ${discordClient.user?.tag}`);
+    logger.info({ user: discordClient.user }, 'Logged into Discord');
   } catch (e) {
     console.error('Failed to login to Discord:', e);
   }
 
   if (err) {
     await reportFailureToDiscord({ message: 'Agent server crashes: ' + err });
-    console.error(err);
+    logger.error(
+      {
+        error: err,
+      },
+      'Agent server crashed',
+    );
     process.exit(1);
   }
 });
