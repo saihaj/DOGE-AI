@@ -9,6 +9,7 @@ import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
 import { openai } from '@ai-sdk/openai';
 import Handlebars from 'handlebars';
 import { REJECTION_REASON } from '../const';
+import { logger } from '../logger';
 
 export const ProcessTestReplyRequestInput = Type.Object({
   tweetId: Type.String(),
@@ -29,7 +30,8 @@ export async function processTestReplyRequest({
   bill: string;
   metadata: string | null;
 }> {
-  const tweetThread = await getTweetContext({ id: tweetId });
+  const log = logger.child({ module: 'processTestReplyRequest', tweetId });
+  const tweetThread = await getTweetContext({ id: tweetId }, log);
   const tweetWeRespondingTo = tweetThread.pop();
 
   if (!tweetWeRespondingTo) {
@@ -58,13 +60,18 @@ export async function processTestReplyRequest({
     throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
   }
 
-  const bill = await getReasonBillContext({
-    messages: tweetThread,
-  }).catch(_ => {
+  const bill = await getReasonBillContext(
+    {
+      messages: tweetThread,
+    },
+    log,
+  ).catch(_ => {
     return null;
   });
   const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-  console.log(summary ? `\nBill found: ${summary}\n` : '\nNo bill found.\n');
+  if (bill) {
+    log.info(bill, 'found bill');
+  }
   const messages: Array<CoreMessage> = [...tweetThread];
 
   if (summary) {
@@ -81,7 +88,7 @@ export async function processTestReplyRequest({
     }),
   });
 
-  console.log('Context Given: ', JSON.stringify(messages, null, 2), '\n\n');
+  log.info(messages, 'context given');
 
   const systemPrompt = mainPrompt
     ? mainPrompt
@@ -97,7 +104,6 @@ export async function processTestReplyRequest({
       ...messages,
     ],
   });
-  console.log('\n\nLong: ', responseLong, '\n\n');
 
   if (refinePrompt) {
     refinePrompt = Handlebars.compile(refinePrompt)({
@@ -110,6 +116,10 @@ export async function processTestReplyRequest({
     refinePrompt,
   });
 
+  log.info({
+    long: responseLong,
+    short: refinedOutput,
+  });
   return {
     answer: responseLong,
     short: refinedOutput,

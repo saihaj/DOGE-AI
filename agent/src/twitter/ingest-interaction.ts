@@ -127,7 +127,7 @@ export const ingestInteractionTweets = inngest.createFunction(
         })),
       );
 
-      log.info({}, `Sent ${inngestSent.ids.length} tweets to inngest`);
+      log.info({ size: inngestSent.ids.length }, 'sent to inngest');
     });
 
     return {

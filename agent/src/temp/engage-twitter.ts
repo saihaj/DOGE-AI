@@ -6,6 +6,9 @@ import {
   getReasonBillContext,
   getShortResponse,
 } from '../twitter/execute-interaction';
+import { logger } from '../logger';
+
+const log = logger.child({ module: 'cli-engage-twitter' });
 
 /**
  * This is a CLI version of `twitter/execute-interaction.ts`
@@ -27,24 +30,28 @@ async function main() {
       throw new Error('No tweet ID found in the provided URL.');
     }
 
-    const content = await getTweetContentAsText({ id: tweetId });
+    const content = await getTweetContentAsText({ id: tweetId }, log);
 
     await writeFile(`dev-test/apitweet.txt`, JSON.stringify(content));
 
-    const bill = await getReasonBillContext({
-      messages: [
-        {
-          role: 'user',
-          content,
-        },
-      ],
-    }).catch(_ => {
+    const bill = await getReasonBillContext(
+      {
+        messages: [
+          {
+            role: 'user',
+            content,
+          },
+        ],
+      },
+      log,
+    ).catch(_ => {
       return null;
     });
 
     const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-    console.log(summary ? `\n\nBill found: ${summary}\n\n` : 'No bill found.');
-
+    if (bill) {
+      log.info(bill, 'found bill');
+    }
     const { responseLong, metadata } = await getLongResponse({
       summary,
       text: content,

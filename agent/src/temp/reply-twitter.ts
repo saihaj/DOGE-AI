@@ -8,6 +8,9 @@ import { REJECTION_REASON } from '../const';
 import { openai } from '@ai-sdk/openai';
 import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
 import { getTweetContext } from '../twitter/execute';
+import { logger } from '../logger';
+
+const log = logger.child({ module: 'cli-reply-twitter' });
 
 /**
  * Testing replies on a tweet where DOGEai gets pinged.
@@ -27,7 +30,7 @@ async function main() {
       throw new Error('No tweet ID found in the provided URL.');
     }
 
-    const tweetThread = await getTweetContext({ id: tweetId });
+    const tweetThread = await getTweetContext({ id: tweetId }, log);
     const tweetWeRespondingTo = tweetThread.pop();
 
     if (!tweetWeRespondingTo) {
@@ -56,13 +59,18 @@ async function main() {
       throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
     }
 
-    const bill = await getReasonBillContext({
-      messages: tweetThread,
-    }).catch(_ => {
+    const bill = await getReasonBillContext(
+      {
+        messages: tweetThread,
+      },
+      log,
+    ).catch(_ => {
       return null;
     });
     const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-    console.log(summary ? `\nBill found: ${summary}\n` : '\nNo bill found.\n');
+    if (bill) {
+      log.info(bill, 'found bill');
+    }
     const messages: Array<CoreMessage> = [...tweetThread];
 
     if (summary) {
@@ -79,7 +87,8 @@ async function main() {
       }),
     });
 
-    console.log('Context Given: ', JSON.stringify(messages, null, 2), '\n\n');
+    log.info(messages, 'context given');
+
     const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
     const { text } = await generateText({
       temperature: 0,
@@ -92,6 +101,7 @@ async function main() {
         ...messages,
       ],
     });
+    console.log({}, text);
     console.log('\n\nLong: ', text, '\n\n');
 
     const refinedOutput = await getShortResponse({ topic: text });

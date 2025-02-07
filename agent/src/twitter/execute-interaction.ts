@@ -35,9 +35,7 @@ import {
 import { twitterClient } from './client.ts';
 import { z } from 'zod';
 import { perplexity } from '@ai-sdk/perplexity';
-import { logger } from '../logger.ts';
-
-const log = logger.child({ module: 'execute-interaction-tweets' });
+import { logger, WithLogger } from '../logger.ts';
 
 /**
  * Given some text try to find the specific bill.
@@ -45,11 +43,17 @@ const log = logger.child({ module: 'execute-interaction-tweets' });
  * If you do not get a bill title
  * we are out of luck and safely error
  */
-export async function getReasonBillContext({
-  messages,
-}: {
-  messages: CoreMessage[];
-}) {
+export async function getReasonBillContext(
+  {
+    messages,
+  }: {
+    messages: CoreMessage[];
+  },
+  logger: WithLogger,
+) {
+  const log = logger.child({
+    method: 'getReasonBillContext',
+  });
   const LIMIT = 5;
   const THRESHOLD = 0.6;
 
@@ -248,6 +252,7 @@ export async function getReasonBillContext({
     billTitle.startsWith('NO_TITLE_FOUND') ||
     billTitle.startsWith('NO_EXACT_MATCH')
   ) {
+    log.warn({}, 'no bill titled matched');
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
@@ -256,6 +261,7 @@ export async function getReasonBillContext({
   });
 
   if (!bill) {
+    log.error({}, 'bill not found');
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
@@ -355,6 +361,11 @@ export const executeInteractionTweets = inngest.createFunction(
   {
     id: 'execute-interaction-tweets',
     onFailure: async ({ event, error }) => {
+      const log = logger.child({
+        module: 'execute-interaction-tweets',
+        tweetId: event.data.event.data.tweetId,
+        eventId: event.data.event.id,
+      });
       const id = event?.data?.event?.data?.tweetId;
       const errorMessage = error.message;
 
@@ -376,6 +387,12 @@ export const executeInteractionTweets = inngest.createFunction(
   },
   { event: 'tweet.execute.interaction' },
   async ({ event, step }) => {
+    const log = logger.child({
+      module: 'execute-interaction-tweets',
+      tweetId: event.data.tweetId,
+      eventId: event.id,
+    });
+
     switch (event.data.action) {
       case 'reply': {
         const dbChat = await step.run('check-db', async () => {
@@ -392,34 +409,47 @@ export const executeInteractionTweets = inngest.createFunction(
         });
 
         if (dbChat?.id) {
+          log.warn({}, 'already replied');
           throw new NonRetriableError(REJECTION_REASON.ALREADY_REPLIED);
         }
 
         const tweetToActionOn = await getTweet({
           id: event.data.tweetId,
         }).catch(e => {
+          log.error({ error: e }, 'Unable to get tweet');
           throw new NonRetriableError(e);
         });
 
-        const text = await getTweetContentAsText({
-          id: event.data.tweetId,
-        }).catch(e => {
+        const text = await getTweetContentAsText(
+          {
+            id: event.data.tweetId,
+          },
+          log,
+        ).catch(e => {
+          log.error({ error: e }, 'Unable to get tweet as text');
           throw new NonRetriableError(e);
         });
 
         const reply = await step.run('generate-reply', async () => {
-          const bill = await getReasonBillContext({
-            messages: [
-              {
-                role: 'user',
-                content: text,
-              },
-            ],
-          }).catch(_ => {
+          const bill = await getReasonBillContext(
+            {
+              messages: [
+                {
+                  role: 'user',
+                  content: text,
+                },
+              ],
+            },
+            log,
+          ).catch(_ => {
             return null;
           });
 
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
+
+          if (bill) {
+            log.info(bill, 'found bill');
+          }
 
           const { responseLong, metadata } = await getLongResponse({
             summary,
@@ -435,6 +465,7 @@ export const executeInteractionTweets = inngest.createFunction(
           const response = (() => {
             // some times claude safety kicks in and we get a NO
             if (finalAnswer.toLowerCase().startsWith('no')) {
+              log.warn({}, 'unable to create short reply');
               return responseLong;
             }
 

@@ -88,7 +88,7 @@ export const ingestTweets = inngest.createFunction(
         })),
       );
 
-      logger.info({}, `Sent ${inngestSent.ids.length} tweets to inngest`);
+      log.info({ size: inngestSent.ids.length }, 'sent to inngest');
     });
 
     return {

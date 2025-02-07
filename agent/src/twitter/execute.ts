@@ -31,16 +31,19 @@ import {
   getReasonBillContext,
   getShortResponse,
 } from './execute-interaction.ts';
-import { logger } from '../logger.ts';
+import { logger, WithLogger } from '../logger.ts';
 
 /**
  * given a tweet id, we try to follow the full thread up to a certain limit.
  */
-export async function getTweetContext({
-  id,
-}: {
-  id: string;
-}): Promise<Array<CoreMessage>> {
+export async function getTweetContext(
+  {
+    id,
+  }: {
+    id: string;
+  },
+  logger: WithLogger,
+): Promise<Array<CoreMessage>> {
   const LIMIT = 50;
   let tweets: Array<CoreMessage> = [];
 
@@ -62,7 +65,7 @@ export async function getTweetContext({
     }
 
     // extract tweet text
-    const content = await getTweetContentAsText({ id: tweet.id });
+    const content = await getTweetContentAsText({ id: tweet.id }, logger);
 
     tweets.push({
       // Bot tweets are always assistant
@@ -122,6 +125,7 @@ export const executeTweets = inngest.createFunction(
         });
 
         if (dbChat?.id) {
+          log.warn({}, 'already replied');
           throw new NonRetriableError(REJECTION_REASON.ALREADY_REPLIED);
         }
 
@@ -131,6 +135,7 @@ export const executeTweets = inngest.createFunction(
         const tweetToActionOn = await getTweet({
           id: event.data.tweetId,
         }).catch(e => {
+          log.error({ error: e }, 'Unable to get tweet to action on');
           throw new NonRetriableError(e);
         });
 
@@ -155,6 +160,7 @@ export const executeTweets = inngest.createFunction(
           if (
             extractedQuestion.startsWith(REJECTION_REASON.NO_QUESTION_DETECTED)
           ) {
+            log.error({}, 'no question found');
             throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
           }
 
@@ -162,26 +168,31 @@ export const executeTweets = inngest.createFunction(
         });
 
         const reply = await step.run('generate-reply', async () => {
-          const tweetThread = await getTweetContext({ id: tweetToActionOn.id });
+          const tweetThread = await getTweetContext(
+            { id: tweetToActionOn.id },
+            log,
+          );
           const tweetWeRespondingTo = tweetThread.pop();
 
           if (!tweetWeRespondingTo) {
+            log.error({}, 'no tweet found to reply');
             throw new NonRetriableError(
               REJECTION_REASON.NO_TWEET_FOUND_TO_REPLY_TO,
             );
           }
 
-          const bill = await getReasonBillContext({
-            messages: tweetThread,
-          }).catch(_ => {
+          const bill = await getReasonBillContext(
+            {
+              messages: tweetThread,
+            },
+            log,
+          ).catch(_ => {
             return null;
           });
 
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-          if (summary) {
-            log.info({ summary, bill }, 'Bill found');
-          } else {
-            log.info({}, 'No bill found');
+          if (bill) {
+            log.info(bill, 'bill found');
           }
 
           const messages: Array<CoreMessage> = [...tweetThread];
