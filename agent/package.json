@@ -11,9 +11,9 @@
     "deploy": "fly deploy",
     "prompt:update": "tsx --watch ./src/temp/update-prompt-db.ts",
     "twitter:thread": "tsx src/temp/generate-thread.ts",
-    "twitter:replies": "tsx --watch --env-file=.env ./src/temp/reply-testing.ts",
-    "twitter:replynext": "tsx --watch --env-file=.env ./src/temp/reply-twitter.ts",
-    "twitter:engage": "tsx --watch --env-file=.env ./src/temp/engage-twitter.ts",
+    "twitter:replies": "tsx --watch --env-file=.env ./src/temp/reply-testing.ts | pino-pretty",
+    "twitter:replynext": "tsx --watch --env-file=.env ./src/temp/reply-twitter.ts | pino-pretty",
+    "twitter:engage": "tsx --watch --env-file=.env ./src/temp/engage-twitter.ts | pino-pretty",
     "dev:server": "tsx --watch --env-file=.env ./src/server.ts | pino-pretty",
     "dev:inngest": "inngest dev -u http://localhost:3000/api/inngest",
     "dev:agent": "pnpm run dev:server & pnpm run dev:inngest"
