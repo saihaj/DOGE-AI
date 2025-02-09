@@ -114,7 +114,11 @@ export async function getReasonBillContext(
   // we got bills from the title, we can just return the first one
   if (billIds.length > 0) {
     const bill = await db
-      .select()
+      .select({
+        id: billDbSchema.id,
+        title: billDbSchema.title,
+        content: billDbSchema.content,
+      })
       .from(billDbSchema)
       .where(inArray(billDbSchema.id, billIds))
       .limit(1);
@@ -257,6 +261,7 @@ export async function getReasonBillContext(
   }
 
   const bill = await db.query.bill.findFirst({
+    columns: { id: true, title: true, content: true },
     where: eq(sql`lower(${billDbSchema.title})`, billTitle.toLowerCase()),
   });
 
