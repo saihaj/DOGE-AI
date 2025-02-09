@@ -4,8 +4,6 @@ import Handlebars from 'handlebars';
 
 export const QUESTION_EXTRACTOR_SYSTEM_PROMPT = `You are an advanced text analysis assistant. Your task is to extract the question from a given piece of text. If the text contains a direct question, return it verbatim. If the text is a statement implying a question, rephrase it into a clear and concise question. If no question is present, respond with "NO_QUESTION_DETECTED" Ensure that your output is only the extracted or rephrased question, without additional commentary.`;
 
-export const EXTRACT_BILL_TITLE_PROMPT = `You are an AI specialized in analyzing tweets related to U.S. Congressional bills. Given a tweet, extract the official title of the bill mentioned. If multiple bills are referenced, list all their titles. If no bill is mentioned, respond with 'NO_TITLE_FOUND.' Return only the title(s) without additional commentary.`;
-
 export const BILL_RELATED_TO_TWEET_PROMPT = `You are an AI assistant tasked with analyzing the relationship between a given tweet and a provided U.S. Congressional bill. Your goal is to determine whether the content of the tweet is related to the bill based on substantive connections, such as shared topics, key policy areas, legislative impact, or direct mentions.  
 
 ## Instructions: 
