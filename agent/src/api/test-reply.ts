@@ -70,7 +70,13 @@ export async function processTestReplyRequest({
   });
   const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
   if (bill) {
-    log.info(bill, 'found bill');
+    log.info(
+      {
+        billId: bill.id,
+        billTitle: bill.title,
+      },
+      'found bill',
+    );
   }
   const messages: Array<CoreMessage> = [...tweetThread];
 
