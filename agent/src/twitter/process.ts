@@ -6,6 +6,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { PROMPTS } from './prompts.ts';
 import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
+import { logger } from '../logger.ts';
 
 const openai = createOpenAI({
   compatibility: 'strict',
@@ -56,15 +57,31 @@ export const processTweets = inngest.createFunction(
     onFailure: async ({ event, error }) => {
       const id = event?.data?.event?.data?.id;
       const url = event?.data?.event?.data?.url;
+      const log = logger.child({
+        module: 'process-tweets',
+        tweetId: id,
+        eventId: event.data.event.id,
+      });
 
       if (!id || !url) {
-        console.error('Failed to extract tweet ID or URL from event data');
+        log.error(
+          {
+            event: event.data.event,
+          },
+          'failed to extract tweet id or url from event data',
+        );
         await reportFailureToDiscord({
           message: `[process-tweets]: unable to extract tweet ID or URL from event data. Run id: ${event.data.run_id}`,
         });
         return;
       }
 
+      log.error(
+        {
+          reason: error.message,
+        },
+        'do no engage',
+      );
       await rejectedTweet({
         tweetId: id,
         tweetUrl: url,

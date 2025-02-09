@@ -8,9 +8,12 @@ import { z } from 'zod';
 import { chunk } from 'lodash-es';
 import { reportFailureToDiscord } from '../discord/action';
 import { SearchResultResponseSchema } from './helpers';
+import { logger } from '../logger';
 
 const API = new URL(TWITTER_API_BASE_URL);
 API.pathname = '/twitter/tweet/advanced_search';
+
+const log = logger.child({ module: 'ingest-tweets' });
 
 /**
  * Fetches tweets from the Twitter API and queues them for processing.
@@ -20,6 +23,7 @@ export const ingestTweets = inngest.createFunction(
     id: 'ingest-tweets',
     onFailure: async ({ error }) => {
       const errorMessage = error.message;
+      log.error({ error: errorMessage }, 'Failed to ingest tweets');
       await reportFailureToDiscord({
         message: `[ingest-tweets]: ${errorMessage}`,
       });
@@ -84,7 +88,7 @@ export const ingestTweets = inngest.createFunction(
         })),
       );
 
-      console.log(`Sent ${inngestSent.ids.length} tweets to inngest`);
+      log.info({ size: inngestSent.ids.length }, 'sent to inngest');
     });
 
     return {

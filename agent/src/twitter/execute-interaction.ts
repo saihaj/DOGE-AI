@@ -35,6 +35,7 @@ import {
 import { twitterClient } from './client.ts';
 import { z } from 'zod';
 import { perplexity } from '@ai-sdk/perplexity';
+import { logger, WithLogger } from '../logger.ts';
 
 /**
  * Given some text try to find the specific bill.
@@ -42,11 +43,17 @@ import { perplexity } from '@ai-sdk/perplexity';
  * If you do not get a bill title
  * we are out of luck and safely error
  */
-export async function getReasonBillContext({
-  messages,
-}: {
-  messages: CoreMessage[];
-}) {
+export async function getReasonBillContext(
+  {
+    messages,
+  }: {
+    messages: CoreMessage[];
+  },
+  logger: WithLogger,
+) {
+  const log = logger.child({
+    method: 'getReasonBillContext',
+  });
   const LIMIT = 5;
   const THRESHOLD = 0.6;
 
@@ -76,7 +83,7 @@ export async function getReasonBillContext({
     }),
   });
 
-  console.log(billTitleResult);
+  log.debug(billTitleResult);
 
   if (
     billTitleResult.names.length === 0 &&
@@ -90,7 +97,7 @@ export async function getReasonBillContext({
       const loweredTitles = billTitleResult.names.map(title =>
         title.toLowerCase(),
       );
-      console.log(loweredTitles);
+      log.debug(loweredTitles);
       const billSearch = await db
         .select({ id: billDbSchema.id })
         .from(billDbSchema)
@@ -101,12 +108,17 @@ export async function getReasonBillContext({
     }
     return [];
   })();
-  console.log(`Found ${billIds.length} bill IDs.`);
+
+  log.info({}, `Found ${billIds.length} bill IDs.`);
 
   // we got bills from the title, we can just return the first one
   if (billIds.length > 0) {
     const bill = await db
-      .select()
+      .select({
+        id: billDbSchema.id,
+        title: billDbSchema.title,
+        content: billDbSchema.content,
+      })
       .from(billDbSchema)
       .where(inArray(billDbSchema.id, billIds))
       .limit(1);
@@ -120,7 +132,7 @@ export async function getReasonBillContext({
       return JSON.stringify(termEmbedding);
     }),
   );
-  console.log(`Found ${embeddingsForKeywords.length} embeddings.`);
+  log.info({}, `Found ${embeddingsForKeywords.length} embeddings.`);
 
   const searchPromises = embeddingsForKeywords.map(
     async termEmbeddingString => {
@@ -149,7 +161,7 @@ export async function getReasonBillContext({
   );
 
   const searchResults = (await Promise.all(searchPromises)).flat();
-  console.log(`Found ${searchResults.length} vector search results.`);
+  log.info({}, `Found ${searchResults.length} vector search results.`);
 
   const baseText = searchResults
     .map(({ title, text }) => {
@@ -172,10 +184,10 @@ export async function getReasonBillContext({
     ],
   });
 
-  console.log(`Is bill related to tweet?: ${text}`);
+  log.info({}, `Is bill related to tweet?: ${text}`);
 
   if (text.toLowerCase().startsWith('no')) {
-    console.log(messages);
+    log.warn(messages, 'No bill related to tweet.');
     throw new Error(REJECTION_REASON.UNRELATED_BILL);
   }
 
@@ -244,14 +256,17 @@ export async function getReasonBillContext({
     billTitle.startsWith('NO_TITLE_FOUND') ||
     billTitle.startsWith('NO_EXACT_MATCH')
   ) {
+    log.warn({}, 'no bill titled matched');
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
   const bill = await db.query.bill.findFirst({
+    columns: { id: true, title: true, content: true },
     where: eq(sql`lower(${billDbSchema.title})`, billTitle.toLowerCase()),
   });
 
   if (!bill) {
+    log.error({}, 'bill not found');
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
@@ -351,9 +366,18 @@ export const executeInteractionTweets = inngest.createFunction(
   {
     id: 'execute-interaction-tweets',
     onFailure: async ({ event, error }) => {
+      const log = logger.child({
+        module: 'execute-interaction-tweets',
+        tweetId: event.data.event.data.tweetId,
+        eventId: event.data.event.id,
+      });
       const id = event?.data?.event?.data?.tweetId;
       const errorMessage = error.message;
 
+      log.error(
+        { error: errorMessage },
+        'Failed to execute interaction tweets',
+      );
       await reportFailureToDiscord({
         message: `[execute-interaction-tweets]:${id} ${errorMessage}`,
       });
@@ -368,6 +392,12 @@ export const executeInteractionTweets = inngest.createFunction(
   },
   { event: 'tweet.execute.interaction' },
   async ({ event, step }) => {
+    const log = logger.child({
+      module: 'execute-interaction-tweets',
+      tweetId: event.data.tweetId,
+      eventId: event.id,
+    });
+
     switch (event.data.action) {
       case 'reply': {
         const dbChat = await step.run('check-db', async () => {
@@ -384,34 +414,53 @@ export const executeInteractionTweets = inngest.createFunction(
         });
 
         if (dbChat?.id) {
+          log.warn({}, 'already replied');
           throw new NonRetriableError(REJECTION_REASON.ALREADY_REPLIED);
         }
 
         const tweetToActionOn = await getTweet({
           id: event.data.tweetId,
         }).catch(e => {
+          log.error({ error: e }, 'Unable to get tweet');
           throw new NonRetriableError(e);
         });
 
-        const text = await getTweetContentAsText({
-          id: event.data.tweetId,
-        }).catch(e => {
+        const text = await getTweetContentAsText(
+          {
+            id: event.data.tweetId,
+          },
+          log,
+        ).catch(e => {
+          log.error({ error: e }, 'Unable to get tweet as text');
           throw new NonRetriableError(e);
         });
 
         const reply = await step.run('generate-reply', async () => {
-          const bill = await getReasonBillContext({
-            messages: [
-              {
-                role: 'user',
-                content: text,
-              },
-            ],
-          }).catch(_ => {
+          const bill = await getReasonBillContext(
+            {
+              messages: [
+                {
+                  role: 'user',
+                  content: text,
+                },
+              ],
+            },
+            log,
+          ).catch(_ => {
             return null;
           });
 
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
+
+          if (bill) {
+            log.info(
+              {
+                billId: bill.id,
+                billTitle: bill.title,
+              },
+              'found bill',
+            );
+          }
 
           const { responseLong, metadata } = await getLongResponse({
             summary,
@@ -427,12 +476,17 @@ export const executeInteractionTweets = inngest.createFunction(
           const response = (() => {
             // some times claude safety kicks in and we get a NO
             if (finalAnswer.toLowerCase().startsWith('no')) {
+              log.warn({}, 'unable to create short reply');
               return responseLong;
             }
 
             return Math.random() > 0.3 ? finalAnswer : responseLong;
           })();
 
+          log.info(
+            { long: responseLong, short: finalAnswer, metadata, response },
+            'Generated response',
+          );
           return {
             longOutput: responseLong,
             refinedOutput: finalAnswer,

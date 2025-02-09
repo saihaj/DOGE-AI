@@ -6,6 +6,7 @@ import {
 import { getTweetContentAsText } from '../twitter/helpers';
 import Handlebars from 'handlebars';
 import { Static, Type } from '@sinclair/typebox';
+import { logger } from '../logger';
 
 export const ProcessTestEngageRequestInput = Type.Object({
   tweetId: Type.String(),
@@ -25,33 +26,39 @@ export async function processTestEngageRequest({
   short: string;
   bill: string;
 }> {
-  const content = await getTweetContentAsText({ id: tweetId });
+  const log = logger.child({ module: 'processTestEngageRequest', tweetId });
+  const content = await getTweetContentAsText({ id: tweetId }, log);
 
-  const bill = await getReasonBillContext({
-    messages: [
-      {
-        role: 'user',
-        content,
-      },
-    ],
-  }).catch(_ => {
+  const bill = await getReasonBillContext(
+    {
+      messages: [
+        {
+          role: 'user',
+          content,
+        },
+      ],
+    },
+    log,
+  ).catch(_ => {
     return null;
   });
 
   const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-  console.log(summary ? `\n\nBill found: ${summary}\n\n` : 'No bill found.');
+  if (bill) {
+    log.info(
+      {
+        billId: bill.id,
+        billTitle: bill.title,
+      },
+      'found bill',
+    );
+  }
 
   const { responseLong, metadata } = await getLongResponse({
     summary,
     text: content,
     systemPrompt: mainPrompt,
   });
-
-  if (metadata) {
-    console.log('\n\nMetadata: ', metadata, '\n\n');
-  }
-
-  console.log('\n\nLong Response: ', responseLong, '\n\n');
 
   if (refinePrompt) {
     refinePrompt = Handlebars.compile(refinePrompt)({
@@ -64,7 +71,7 @@ export async function processTestEngageRequest({
     refinePrompt,
   });
 
-  console.log('\n\nShort Response: ', refinedOutput, '\n\n');
+  log.info({ long: responseLong, short: refinedOutput, metadata });
   return {
     answer: responseLong,
     short: refinedOutput,

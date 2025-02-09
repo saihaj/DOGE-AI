@@ -18,6 +18,7 @@ import {
 } from 'database';
 import * as crypto from 'node:crypto';
 import { ANALYZE_TEXT_FROM_IMAGE } from './prompts';
+import { WithLogger } from '../logger';
 
 // Ada V2 31.4% vs 54.9% large
 const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
@@ -65,11 +66,12 @@ export async function getTweet({ id }: { id: string }) {
  */
 export async function getTweetContentAsText(
   { id }: { id: string },
+  log: WithLogger,
   depth = 0,
   maxDepth = 2,
 ) {
   if (depth >= maxDepth) {
-    console.warn(`Max depth reached for tweet ID: ${id}`);
+    log.warn({ id }, 'max depth reached for tweet');
     return REJECTION_REASON.MAX_RECURSION_DEPTH_REACHED;
   }
 
@@ -84,6 +86,7 @@ export async function getTweetContentAsText(
   if (tweet.quoted_tweet) {
     const text = await getTweetContentAsText(
       { id: tweet.quoted_tweet.id },
+      log,
       depth + 1,
       maxDepth,
     );
@@ -102,7 +105,13 @@ export async function getTweetContentAsText(
         continue;
       }
 
-      console.log('Media content found. Proceeding in media mode...');
+      log.info(
+        {
+          mediaUrl: media.media_url_https,
+        },
+        'processing media',
+      );
+
       const { text } = await bento.getOrSet(
         `image-analysis-${media.media_url_https}`,
         async () => {
@@ -124,7 +133,7 @@ export async function getTweetContentAsText(
       );
 
       if (text.toLowerCase().startsWith('no_text_found')) {
-        console.warn('No text found in image');
+        log.warn({}, 'no text found in image');
         continue;
       }
       result.push(`Image: ${text}`);

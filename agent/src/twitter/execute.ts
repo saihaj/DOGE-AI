@@ -31,15 +31,19 @@ import {
   getReasonBillContext,
   getShortResponse,
 } from './execute-interaction.ts';
+import { logger, WithLogger } from '../logger.ts';
 
 /**
  * given a tweet id, we try to follow the full thread up to a certain limit.
  */
-export async function getTweetContext({
-  id,
-}: {
-  id: string;
-}): Promise<Array<CoreMessage>> {
+export async function getTweetContext(
+  {
+    id,
+  }: {
+    id: string;
+  },
+  logger: WithLogger,
+): Promise<Array<CoreMessage>> {
   const LIMIT = 50;
   let tweets: Array<CoreMessage> = [];
 
@@ -61,7 +65,7 @@ export async function getTweetContext({
     }
 
     // extract tweet text
-    const content = await getTweetContentAsText({ id: tweet.id });
+    const content = await getTweetContentAsText({ id: tweet.id }, logger);
 
     tweets.push({
       // Bot tweets are always assistant
@@ -81,8 +85,14 @@ export const executeTweets = inngest.createFunction(
     id: 'execute-tweets',
     onFailure: async ({ event, error }) => {
       const id = event?.data?.event?.data?.tweetId;
+      const log = logger.child({
+        module: 'execute-tweets',
+        tweetId: id,
+        eventId: event.data.event.id,
+      });
       const errorMessage = error.message;
 
+      log.error({ error: errorMessage }, 'Failed to execute tweets');
       await reportFailureToDiscord({
         message: `[execute-tweets]:${id} ${errorMessage}`,
       });
@@ -94,6 +104,12 @@ export const executeTweets = inngest.createFunction(
   },
   { event: 'tweet.execute' },
   async ({ event, step }) => {
+    const log = logger.child({
+      module: 'execute-tweets',
+      tweetId: event.data.tweetId,
+      eventId: event.id,
+    });
+
     switch (event.data.action) {
       case 'reply': {
         // TODO: make sure we are not replying to a tweet we already replied to
@@ -109,6 +125,7 @@ export const executeTweets = inngest.createFunction(
         });
 
         if (dbChat?.id) {
+          log.warn({}, 'already replied');
           throw new NonRetriableError(REJECTION_REASON.ALREADY_REPLIED);
         }
 
@@ -118,6 +135,7 @@ export const executeTweets = inngest.createFunction(
         const tweetToActionOn = await getTweet({
           id: event.data.tweetId,
         }).catch(e => {
+          log.error({ error: e }, 'Unable to get tweet to action on');
           throw new NonRetriableError(e);
         });
 
@@ -142,6 +160,7 @@ export const executeTweets = inngest.createFunction(
           if (
             extractedQuestion.startsWith(REJECTION_REASON.NO_QUESTION_DETECTED)
           ) {
+            log.error({}, 'no question found');
             throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
           }
 
@@ -149,25 +168,32 @@ export const executeTweets = inngest.createFunction(
         });
 
         const reply = await step.run('generate-reply', async () => {
-          const tweetThread = await getTweetContext({ id: tweetToActionOn.id });
+          const tweetThread = await getTweetContext(
+            { id: tweetToActionOn.id },
+            log,
+          );
           const tweetWeRespondingTo = tweetThread.pop();
 
           if (!tweetWeRespondingTo) {
+            log.error({}, 'no tweet found to reply');
             throw new NonRetriableError(
               REJECTION_REASON.NO_TWEET_FOUND_TO_REPLY_TO,
             );
           }
 
-          const bill = await getReasonBillContext({
-            messages: tweetThread,
-          }).catch(_ => {
+          const bill = await getReasonBillContext(
+            {
+              messages: tweetThread,
+            },
+            log,
+          ).catch(_ => {
             return null;
           });
 
           const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-          console.log(
-            summary ? `\nBill found: ${summary}\n` : '\nNo bill found.\n',
-          );
+          if (bill) {
+            log.info(bill, 'bill found');
+          }
 
           const messages: Array<CoreMessage> = [...tweetThread];
 
@@ -199,6 +225,11 @@ export const executeTweets = inngest.createFunction(
           const refinedOutput = await getShortResponse({ topic: text });
 
           const reply = Math.random() > 0.5 ? refinedOutput : text;
+
+          log.info(
+            { long: text, short: refinedOutput, response: text },
+            'Reply generated',
+          );
 
           return {
             long: text,
