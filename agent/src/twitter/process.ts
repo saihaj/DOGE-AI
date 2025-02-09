@@ -1,4 +1,9 @@
-import { TWITTER_USERNAME, REJECTION_REASON } from '../const';
+import {
+  TWITTER_USERNAME,
+  REJECTION_REASON,
+  TEMPERATURE,
+  SEED,
+} from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import { getTweet } from './helpers.ts';
@@ -112,7 +117,8 @@ export const processTweets = inngest.createFunction(
           const systemPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
           const result = await generateText({
             model: openai('gpt-4o'),
-            temperature: 0,
+            seed: SEED,
+            temperature: TEMPERATURE,
             messages: [
               { role: 'system', content: systemPrompt },
               {

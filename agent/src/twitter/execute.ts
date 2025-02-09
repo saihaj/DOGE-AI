@@ -1,4 +1,10 @@
-import { IS_PROD, REJECTION_REASON, TWITTER_USERNAME } from '../const';
+import {
+  IS_PROD,
+  REJECTION_REASON,
+  SEED,
+  TEMPERATURE,
+  TWITTER_USERNAME,
+} from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import {
@@ -144,7 +150,8 @@ export const executeTweets = inngest.createFunction(
 
           const { text: extractedQuestion } = await generateText({
             model: openai('gpt-4o'),
-            temperature: 0,
+            temperature: TEMPERATURE,
+            seed: SEED,
             messages: [
               {
                 role: 'system',
@@ -211,7 +218,7 @@ export const executeTweets = inngest.createFunction(
 
           const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
           const { text } = await generateText({
-            temperature: 0,
+            temperature: TEMPERATURE,
             model: openai('gpt-4o'),
             messages: [
               {

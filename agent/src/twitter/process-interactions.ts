@@ -5,6 +5,7 @@ import { generateText } from 'ai';
 import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
 import { PROMPTS } from './prompts.ts';
 import { logger } from '../logger.ts';
+import { SEED, TEMPERATURE } from '../const.ts';
 
 export const processInteractionTweets = inngest.createFunction(
   {
@@ -55,7 +56,8 @@ export const processInteractionTweets = inngest.createFunction(
         await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
       const result = await generateText({
         model: openai('gpt-4o'),
-        temperature: 0,
+        temperature: TEMPERATURE,
+        seed: SEED,
         messages: [
           { role: 'system', content: systemPrompt },
           {

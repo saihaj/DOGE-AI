@@ -4,7 +4,7 @@ import {
   getShortResponse,
 } from '../twitter/execute-interaction';
 import { CoreMessage, generateText } from 'ai';
-import { REJECTION_REASON } from '../const';
+import { REJECTION_REASON, SEED, TEMPERATURE } from '../const';
 import { openai } from '@ai-sdk/openai';
 import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
 import { getTweetContext } from '../twitter/execute';
@@ -39,7 +39,8 @@ async function main() {
 
     const { text: extractedQuestion } = await generateText({
       model: openai('gpt-4o'),
-      temperature: 0,
+      temperature: TEMPERATURE,
+      seed: SEED,
       messages: [
         {
           role: 'system',
@@ -97,7 +98,7 @@ async function main() {
 
     const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
     const { text } = await generateText({
-      temperature: 0,
+      temperature: TEMPERATURE,
       model: openai('gpt-4o'),
       messages: [
         {

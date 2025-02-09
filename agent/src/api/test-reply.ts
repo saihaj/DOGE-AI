@@ -8,7 +8,7 @@ import { Static, Type } from '@sinclair/typebox';
 import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
 import { openai } from '@ai-sdk/openai';
 import Handlebars from 'handlebars';
-import { REJECTION_REASON } from '../const';
+import { REJECTION_REASON, SEED, TEMPERATURE } from '../const';
 import { logger } from '../logger';
 
 export const ProcessTestReplyRequestInput = Type.Object({
@@ -40,7 +40,8 @@ export async function processTestReplyRequest({
 
   const { text: extractedQuestion } = await generateText({
     model: openai('gpt-4o'),
-    temperature: 0,
+    temperature: TEMPERATURE,
+    seed: SEED,
     messages: [
       {
         role: 'system',
@@ -100,7 +101,7 @@ export async function processTestReplyRequest({
     ? mainPrompt
     : await PROMPTS.TWITTER_REPLY_TEMPLATE();
   const { text: responseLong } = await generateText({
-    temperature: 0,
+    temperature: TEMPERATURE,
     model: openai('gpt-4o'),
     messages: [
       {

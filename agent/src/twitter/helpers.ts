@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   REJECTION_REASON,
+  TEMPERATURE,
   TWITTER_API_BASE_URL,
   TWITTER_API_KEY,
 } from '../const';
@@ -116,7 +117,7 @@ export async function getTweetContentAsText(
         `image-analysis-${media.media_url_https}`,
         async () => {
           return generateText({
-            temperature: 0,
+            temperature: TEMPERATURE,
             model: openai('gpt-4o', { downloadImages: true }),
             messages: [
               {

@@ -1,4 +1,4 @@
-import { IS_PROD, REJECTION_REASON } from '../const';
+import { IS_PROD, REJECTION_REASON, SEED, TEMPERATURE } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
@@ -61,7 +61,8 @@ export async function getReasonBillContext(
     model: openai('gpt-4o', {
       structuredOutputs: true,
     }),
-    temperature: 0,
+    seed: SEED,
+    temperature: TEMPERATURE,
     messages: [
       {
         role: 'system',
@@ -171,7 +172,8 @@ export async function getReasonBillContext(
 
   const { text } = await generateText({
     model: openai('gpt-4o'),
-    temperature: 0,
+    seed: SEED,
+    temperature: TEMPERATURE,
     messages: [
       {
         role: 'system',
@@ -194,7 +196,8 @@ export async function getReasonBillContext(
   // 1) Ask LLM to extract the Bill Title from the text.
   const finalBill = await generateText({
     model: openai('gpt-4o'),
-    temperature: 0,
+    seed: SEED,
+    temperature: TEMPERATURE,
     tools: {
       searchEmbeddings: tool({
         description:
@@ -290,7 +293,7 @@ export async function getLongResponse({
   }
   const { text: _responseLong, experimental_providerMetadata } =
     await generateText({
-      temperature: 0,
+      temperature: TEMPERATURE,
       model: perplexity('sonar-reasoning'),
       messages: [
         {
@@ -342,7 +345,7 @@ export async function getShortResponse({
 
   const { text: _finalAnswer } = await generateText({
     model: openai('gpt-4o'),
-    temperature: 0,
+    temperature: TEMPERATURE,
     messages: [
       {
         role: 'user',
