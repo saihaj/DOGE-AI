@@ -7,7 +7,13 @@ import {
 } from '../const';
 import { TweetForListResponse, TweetResponse } from '../inngest';
 import { bento } from '../cache';
-import { embed, embedMany, generateText, type Embedding } from 'ai';
+import {
+  CoreMessage,
+  embed,
+  embedMany,
+  generateText,
+  type Embedding,
+} from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import {
@@ -237,4 +243,31 @@ export async function upsertChat({
     .returning({ id: chatDbSchema.id });
 
   return chat[0];
+}
+
+export function mergeConsecutiveSameRole(
+  messages: CoreMessage[],
+): CoreMessage[] {
+  if (messages.length === 0) {
+    return [];
+  }
+
+  const merged: CoreMessage[] = [];
+
+  for (const current of messages) {
+    if (merged.length === 0) {
+      merged.push(current);
+    } else {
+      const last = merged[merged.length - 1];
+
+      if (last.role === current.role) {
+        // Merge the string content
+        last.content += '\n\n' + current.content;
+      } else {
+        merged.push(current);
+      }
+    }
+  }
+
+  return merged;
 }

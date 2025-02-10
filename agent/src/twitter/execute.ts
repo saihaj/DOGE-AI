@@ -1,16 +1,11 @@
-import {
-  IS_PROD,
-  REJECTION_REASON,
-  SEED,
-  TEMPERATURE,
-  TWITTER_USERNAME,
-} from '../const';
+import { IS_PROD, REJECTION_REASON, SEED, TEMPERATURE } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import {
   generateEmbeddings,
   getTweet,
   getTweetContentAsText,
+  mergeConsecutiveSameRole,
   textSplitter,
   upsertChat,
   upsertUser,
@@ -33,11 +28,44 @@ import {
   sendDevTweet,
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
-import {
-  getReasonBillContext,
-  getShortResponse,
-} from './execute-interaction.ts';
+import { getReasonBillContext } from './execute-interaction.ts';
 import { logger, WithLogger } from '../logger.ts';
+import { perplexity } from '@ai-sdk/perplexity';
+
+export async function generateReply({ messages }: { messages: CoreMessage[] }) {
+  const mergedMessages = mergeConsecutiveSameRole(messages);
+  const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
+  const { text: _text, experimental_providerMetadata } = await generateText({
+    temperature: TEMPERATURE,
+    model: perplexity('sonar-reasoning'),
+    messages: [
+      {
+        role: 'system',
+        content: PROMPT,
+      },
+      ...mergedMessages,
+    ],
+  });
+
+  const metadata = experimental_providerMetadata
+    ? JSON.stringify(experimental_providerMetadata)
+    : null;
+
+  const text = _text
+    .trim()
+    .replace(/<think>[\s\S]*?<\/think>/g, '')
+    .replace(/\[\d+\]/g, '')
+    .replace(/^(\n)+/, '')
+    .replace(/[\[\]]/g, '')
+    .replace(/(\*\*|__)(.*?)\1/g, '$2') // Bold (**text** or __text__)
+    .replace(/(\*|_)(.*?)\1/g, '$2') // Italics (*text* or _text_)
+    .replace(/\bDOGEai\b/gi, '');
+
+  return {
+    text,
+    metadata,
+  };
+}
 
 /**
  * given a tweet id, we try to follow the full thread up to a certain limit.
@@ -74,8 +102,9 @@ export async function getTweetContext(
     const content = await getTweetContentAsText({ id: tweet.id }, logger);
 
     tweets.push({
-      // Bot tweets are always assistant
-      role: tweet.author.userName === TWITTER_USERNAME ? 'assistant' : 'user',
+      // Bot tweets are always assistant but
+      // we use `user` because pplx is very strict and doesn't work with `assistant` nicely
+      role: 'user',
       content,
     });
   } while (searchId);
@@ -118,9 +147,10 @@ export const executeTweets = inngest.createFunction(
 
     switch (event.data.action) {
       case 'reply': {
-        // TODO: make sure we are not replying to a tweet we already replied to
-
         const dbChat = await step.run('check-db', async () => {
+          // skip for local testing
+          if (!IS_PROD) return;
+
           return db.query.chat.findFirst({
             columns: {
               id: true,
@@ -216,32 +246,13 @@ export const executeTweets = inngest.createFunction(
             content: PROMPTS.REPLY_TWEET_QUESTION_PROMPT({ question }),
           });
 
-          const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
-          const { text } = await generateText({
-            temperature: TEMPERATURE,
-            model: openai('gpt-4o'),
-            messages: [
-              {
-                role: 'system',
-                content: PROMPT,
-              },
-              ...messages,
-            ],
-          });
-
-          const refinedOutput = await getShortResponse({ topic: text });
-
-          const reply = Math.random() > 0.5 ? refinedOutput : text;
-
-          log.info(
-            { long: text, short: refinedOutput, response: text },
-            'Reply generated',
-          );
+          log.info(messages, 'context given');
+          const { text, metadata } = await generateReply({ messages });
+          log.info({ response: text }, 'Reply generated');
 
           return {
-            long: text,
-            short: refinedOutput,
-            text: reply,
+            text,
+            metadata,
           };
         });
 
@@ -252,8 +263,6 @@ export const executeTweets = inngest.createFunction(
               tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
               question,
               response: reply.text,
-              longOutput: reply.long,
-              refinedOutput: reply.short,
             });
             return {
               id: 'local_id',
@@ -278,9 +287,7 @@ export const executeTweets = inngest.createFunction(
           await approvedTweetEngagement({
             sentTweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
             replyTweetUrl: tweetToActionOn.url,
-            longOutput: reply.long,
             sent: reply.text,
-            refinedOutput: reply.short,
           });
         });
 
@@ -313,6 +320,7 @@ export const executeTweets = inngest.createFunction(
                 chat: chat.id,
                 role: 'assistant',
                 tweetId: repliedTweet.id,
+                meta: reply.metadata ? Buffer.from(reply.metadata) : null,
               },
             ])
             .returning({

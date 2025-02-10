@@ -1,14 +1,12 @@
 import * as readline from 'node:readline/promises';
-import {
-  getReasonBillContext,
-  getShortResponse,
-} from '../twitter/execute-interaction';
+import { getReasonBillContext } from '../twitter/execute-interaction';
 import { CoreMessage, generateText } from 'ai';
 import { REJECTION_REASON, SEED, TEMPERATURE } from '../const';
 import { openai } from '@ai-sdk/openai';
 import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
-import { getTweetContext } from '../twitter/execute';
+import { generateReply, getTweetContext } from '../twitter/execute';
 import { logger } from '../logger';
+import { mergeConsecutiveSameRole } from '../twitter/helpers';
 
 const log = logger.child({ module: 'cli-reply-twitter' });
 
@@ -94,25 +92,12 @@ async function main() {
       }),
     });
 
-    log.info(messages, 'context given');
+    const mergedMessages = mergeConsecutiveSameRole(messages);
+    log.info(mergedMessages, 'context given');
 
-    const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
-    const { text } = await generateText({
-      temperature: TEMPERATURE,
-      model: openai('gpt-4o'),
-      messages: [
-        {
-          role: 'system',
-          content: PROMPT,
-        },
-        ...messages,
-      ],
-    });
-    console.log({}, text);
-    console.log('\n\nLong: ', text, '\n\n');
+    const { text } = await generateReply({ messages });
 
-    const refinedOutput = await getShortResponse({ topic: text });
-    console.log('\n\nShort: ', refinedOutput, '\n\n');
+    console.log('\n\nResponse: ', text, '\n\n');
   } catch (error) {
     console.error('An error occurred:', error);
   }
