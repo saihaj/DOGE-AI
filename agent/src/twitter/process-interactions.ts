@@ -57,7 +57,6 @@ export const processInteractionTweets = inngest.createFunction(
       const result = await generateText({
         model: openai('gpt-4o'),
         temperature: TEMPERATURE,
-        seed: SEED,
         messages: [
           { role: 'system', content: systemPrompt },
           {
