@@ -26,8 +26,8 @@ export async function approvedTweetEngagement({
   replyTweetUrl: string;
   /** Tweet we sent */
   sentTweetUrl: string;
-  longOutput: string;
-  refinedOutput: string;
+  longOutput?: string;
+  refinedOutput?: string;
   sent: string;
 }) {
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
@@ -40,8 +40,8 @@ export async function approvedTweetEngagement({
   const content = [
     `**Replied To**: ${replyTweetUrl}`,
     `**Sent Tweet**: ${sentTweetUrl}`,
-    `**Long output**: ${longOutput}`,
-    `**Refined output**: ${refinedOutput}`,
+    longOutput ? `**Long output**: ${longOutput}` : '',
+    refinedOutput ? `**Refined output**: ${refinedOutput}` : '',
     `**DOGEai**: ${sent}`,
   ]
     .filter(Boolean)
