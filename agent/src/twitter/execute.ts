@@ -145,8 +145,6 @@ export const executeTweets = inngest.createFunction(
 
     switch (event.data.action) {
       case 'reply': {
-        // TODO: make sure we are not replying to a tweet we already replied to
-
         const dbChat = await step.run('check-db', async () => {
           // skip for local testing
           if (!IS_PROD) return;
