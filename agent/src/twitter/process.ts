@@ -18,42 +18,6 @@ const openai = createOpenAI({
 });
 
 /**
- * Finds the parent tweet in a thread. If we hit the limit just give error.
- */
-async function findParentTweet({ id }: { id: string }) {
-  // Just to limit the number of tweets we fetch
-  // if we go to this time to ignore that tweet for sure LOL
-  const LIMIT = 20;
-  let tweets: Awaited<ReturnType<typeof getTweet>>[] = [];
-
-  let searchId: null | string = id;
-  do {
-    const tweet = await getTweet({ id: searchId });
-    tweets.push(tweet);
-    if (tweet.inReplyToId) {
-      searchId = tweet.inReplyToId;
-    }
-
-    if (tweet.inReplyToId === null) {
-      searchId = null;
-    }
-
-    // Limit max tweets
-    if (tweets.length > LIMIT) {
-      searchId = null;
-    }
-  } while (searchId);
-
-  if (tweets.length > LIMIT) {
-    throw new NonRetriableError(REJECTION_REASON.TOO_DEEP_OF_A_THREAD);
-  }
-
-  const parentTweet = tweets[tweets.length - 1];
-
-  return parentTweet;
-}
-
-/**
  * Fetches tweets from the Twitter API and queues them for processing.
  */
 export const processTweets = inngest.createFunction(
