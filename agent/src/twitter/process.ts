@@ -102,7 +102,7 @@ export const processTweets = inngest.createFunction(
   async ({ event, step }) => {
     // This is where we can try to filter out any unwanted tweets
 
-    // For stage one rollout we want to focus on processing replies in a thread it gets
+    // focus on replies bot gets anywhere to his tweet
     if (event.data?.inReplyToUsername === TWITTER_USERNAME) {
       const mainTweet = await getTweet({ id: event.data.inReplyToId! }).catch(
         e => {
@@ -110,73 +110,45 @@ export const processTweets = inngest.createFunction(
         },
       );
 
-      // basically we are narrowing down to 1 level replies so if a bot tweet got a reply or not
-      if (mainTweet.author.id === event.data.inReplyToUserId) {
-        // deter scammers
-        const shouldEngage = await step.run('should-engage', async () => {
-          const systemPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
-          const result = await generateText({
-            model: openai('gpt-4o'),
-            seed: SEED,
-            temperature: TEMPERATURE,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              {
-                role: 'assistant',
-                content: mainTweet.text,
-              },
-              {
-                role: 'user',
-                content: `Now give me a determination for this tweet: ${event.data.text}`,
-              },
-            ],
-          });
-
-          const decision = result.text.toLowerCase().trim();
-          return decision === 'engage';
+      // deter scammers
+      const shouldEngage = await step.run('should-engage', async () => {
+        const systemPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
+        const result = await generateText({
+          model: openai('gpt-4o'),
+          seed: SEED,
+          temperature: TEMPERATURE,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            {
+              role: 'assistant',
+              content: mainTweet.text,
+            },
+            {
+              role: 'user',
+              content: `Now give me a determination for this tweet: ${event.data.text}`,
+            },
+          ],
         });
 
-        if (!shouldEngage) {
-          throw new NonRetriableError(
-            REJECTION_REASON.SPAM_DETECTED_DO_NOT_ENGAGE,
-          );
-        }
+        const decision = result.text.toLowerCase().trim();
+        return decision === 'engage';
+      });
 
-        // Ensure that it only replies to his own tweet threads
-        // For any interactions outside his own threads we will ignore
-        const letItReply = await step.run('let-it-reply', async () => {
-          const parentTweet = await findParentTweet({
-            id: event.data.inReplyToId!,
-          });
-
-          // He himself is the author of the thread
-          if (parentTweet.author.id === event.data.inReplyToUserId) {
-            return true;
-          }
-
-          return false;
-        });
-
-        if (!letItReply) {
-          throw new NonRetriableError(
-            REJECTION_REASON.NO_REPLY_FOR_INTERACTION_THREADS,
-          );
-        }
-
-        // now we can send to execution job
-        await step.sendEvent('fire-off-tweet', {
-          name: 'tweet.execute',
-          data: {
-            tweetId: event.data.id,
-            action: 'reply',
-            tweetUrl: event.data.url,
-          },
-        });
-      } else {
+      if (!shouldEngage) {
         throw new NonRetriableError(
-          REJECTION_REASON.NESTED_REPLY_NOT_SUPPORTED,
+          REJECTION_REASON.SPAM_DETECTED_DO_NOT_ENGAGE,
         );
       }
+
+      // now we can send to execution job
+      await step.sendEvent('fire-off-tweet', {
+        name: 'tweet.execute',
+        data: {
+          tweetId: event.data.id,
+          action: 'reply',
+          tweetUrl: event.data.url,
+        },
+      });
     } else {
       throw new NonRetriableError(REJECTION_REASON.REPLY_SCOPE_LIMITED);
     }
