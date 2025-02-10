@@ -5,7 +5,7 @@ import { generateText } from 'ai';
 import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
 import { PROMPTS } from './prompts.ts';
 import { logger } from '../logger.ts';
-import { REJECTION_REASON, SEED, TEMPERATURE } from '../const.ts';
+import { TEMPERATURE } from '../const.ts';
 
 export const processInteractionTweets = inngest.createFunction(
   {
