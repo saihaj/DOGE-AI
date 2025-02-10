@@ -34,6 +34,7 @@ async function main() {
     ).catch(_ => {
       return null;
     });
+
     const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
     if (bill) {
       log.info(
@@ -63,7 +64,11 @@ async function main() {
     const mergedMessages = mergeConsecutiveSameRole(messages);
     log.info(mergedMessages, 'context given');
 
-    const { text } = await generateReply({ messages });
+    const { text, metadata } = await generateReply({ messages });
+
+    if (metadata) {
+      console.log('\n\nMetadata: ', metadata, '\n\n');
+    }
 
     console.log('\n\nResponse: ', text, '\n\n');
   } catch (error) {
