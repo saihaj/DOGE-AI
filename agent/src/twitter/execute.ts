@@ -220,7 +220,7 @@ export const executeTweets = inngest.createFunction(
             extractedQuestion.startsWith(REJECTION_REASON.NO_QUESTION_DETECTED)
           ) {
             log.error({}, 'no question found');
-            throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
+            throw new NonRetriableError(REJECTION_REASON.NO_QUESTION_DETECTED);
           }
 
           return extractedQuestion;
