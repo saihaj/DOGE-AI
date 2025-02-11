@@ -271,18 +271,10 @@ export const executeTweets = inngest.createFunction(
             log.info(messages, 'context given');
             const { text: long, metadata } = await generateReply({ messages });
             log.info({ response: long }, 'reply generated');
-            const { text: shortened } = await generateShortenedReply({
-              message: long,
-            });
-
-            // 20% times send short response
-            const text = Math.random() < 0.2 ? shortened : long;
 
             return {
-              text,
+              text: long,
               metadata,
-              long,
-              shortened,
             };
           });
 
@@ -311,17 +303,9 @@ export const executeTweets = inngest.createFunction(
               ],
             });
 
-            const { text: shortened } = await generateShortenedReply({
-              message: long,
-            });
-
-            // 20% times send short response
-            const text = Math.random() < 0.2 ? shortened : long;
-
             return {
-              text,
+              text: long,
               long,
-              shortened,
               metadata: null,
             };
           });
@@ -341,8 +325,6 @@ export const executeTweets = inngest.createFunction(
           tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
           question,
           response: reply.text,
-          longOutput: reply.long,
-          refinedOutput: reply.shortened,
         });
         return {
           id: 'local_id',
@@ -368,8 +350,6 @@ export const executeTweets = inngest.createFunction(
         sentTweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
         replyTweetUrl: tweetToActionOn.url,
         sent: reply.text,
-        longOutput: reply.long,
-        refinedOutput: reply.shortened,
       });
     });
 
