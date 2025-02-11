@@ -67,6 +67,28 @@ export async function generateReply({ messages }: { messages: CoreMessage[] }) {
   };
 }
 
+export async function generateShortenedReply({ message }: { message: string }) {
+  const PROMPT = await PROMPTS.REPLY_SHORTENER_PROMPT();
+  const { text } = await generateText({
+    temperature: TEMPERATURE,
+    model: perplexity('sonar-reasoning'),
+    messages: [
+      {
+        role: 'system',
+        content: PROMPT,
+      },
+      {
+        role: 'user',
+        content: `now shorten this one: ${message}`,
+      },
+    ],
+  });
+
+  return {
+    text,
+  };
+}
+
 /**
  * given a tweet id, we try to follow the full thread up to a certain limit.
  */
@@ -247,12 +269,20 @@ export const executeTweets = inngest.createFunction(
           });
 
           log.info(messages, 'context given');
-          const { text, metadata } = await generateReply({ messages });
-          log.info({ response: text }, 'Reply generated');
+          const { text: long, metadata } = await generateReply({ messages });
+          log.info({ response: long }, 'reply generated');
+          const { text: shortened } = await generateShortenedReply({
+            message: long,
+          });
+
+          // 20% times send short response
+          const text = Math.random() < 0.2 ? shortened : long;
 
           return {
             text,
             metadata,
+            long,
+            shortened,
           };
         });
 
@@ -263,6 +293,8 @@ export const executeTweets = inngest.createFunction(
               tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
               question,
               response: reply.text,
+              longOutput: reply.long,
+              refinedOutput: reply.shortened,
             });
             return {
               id: 'local_id',
@@ -288,6 +320,8 @@ export const executeTweets = inngest.createFunction(
             sentTweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
             replyTweetUrl: tweetToActionOn.url,
             sent: reply.text,
+            longOutput: reply.long,
+            refinedOutput: reply.shortened,
           });
         });
 
