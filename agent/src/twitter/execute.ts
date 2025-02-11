@@ -100,7 +100,7 @@ export async function getTweetContext(
   },
   logger: WithLogger,
 ): Promise<Array<CoreMessage>> {
-  const LIMIT = 50;
+  const LIMIT = 10;
   let tweets: Array<CoreMessage> = [];
 
   let searchId: null | string = id;
@@ -118,6 +118,7 @@ export async function getTweetContext(
     // Limit max tweets
     if (tweets.length > LIMIT) {
       searchId = null;
+      throw new NonRetriableError(REJECTION_REASON.MAX_RECURSION_DEPTH_REACHED);
     }
 
     // extract tweet text
