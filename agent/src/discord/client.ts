@@ -42,14 +42,6 @@ discordClient.on(Events.InteractionCreate, async (interaction: Interaction) => {
           },
         ]);
 
-        const originalMessage = interaction.message;
-        if (originalMessage) {
-          await originalMessage.edit({
-            content: `${originalMessage.content}\n\n**Answering Tag**: ${itemUrl}`,
-            components: originalMessage.components,
-          });
-        }
-
         const embed = new EmbedBuilder()
           .setTitle('Answering Tag!')
           .setDescription(`Sending to queue: **${itemUrl}**`)
@@ -70,16 +62,28 @@ discordClient.on(Events.InteractionCreate, async (interaction: Interaction) => {
           },
         ]);
 
-        const originalMessage = interaction.message;
-        if (originalMessage) {
-          await originalMessage.edit({
-            content: `${originalMessage.content}\n\n**Replying**: ${itemUrl}`,
-            components: originalMessage.components,
-          });
-        }
-
         const embed = new EmbedBuilder()
           .setTitle('Replying!')
+          .setDescription(`Sending to queue: **${itemUrl}**`)
+          .setColor(0x00ae86);
+
+        await interaction.reply({
+          embeds: [embed],
+        });
+      } else if (action === 'engage') {
+        await inngest.send([
+          {
+            name: 'tweet.execute.interaction',
+            data: {
+              tweetId: itemId,
+              tweetUrl: itemUrl,
+              action: 'reply',
+            },
+          },
+        ]);
+
+        const embed = new EmbedBuilder()
+          .setTitle('Engaging!')
           .setDescription(`Sending to queue: **${itemUrl}**`)
           .setColor(0x00ae86);
 
