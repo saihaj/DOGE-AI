@@ -88,11 +88,12 @@ export async function processTestReplyRequest({
     });
   }
 
+  const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
+    question: extractedQuestion,
+  });
   messages.push({
     role: 'user',
-    content: PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
-      question: extractedQuestion,
-    }),
+    content,
   });
 
   log.info(messages, 'context given');

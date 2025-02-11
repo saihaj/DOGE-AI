@@ -69,6 +69,37 @@ export async function approvedTweetEngagement({
   });
 }
 
+export async function rejectedInteractionTweet({
+  tweetUrl,
+  tweetId,
+  reason,
+}: {
+  tweetId: string;
+  tweetUrl: string;
+  reason: string;
+}) {
+  const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
+  const channel = await guild.channels.fetch(DISCORD_REJECTED_CHANNEL_ID);
+
+  if (!channel || !(channel instanceof TextChannel)) {
+    throw Error('Rejection channel not found or not a text channel');
+  }
+
+  // EXAMPLE FORMAT: quote_{tweetId}_{url} or retweet_{tweetId}_{url}
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId(`engage_${tweetId}_${tweetUrl}`)
+      .setLabel('Engage')
+      .setStyle(ButtonStyle.Primary),
+  );
+
+  await channel.send({
+    content: `**Rejected**: ${tweetUrl}\n**Reason**: ${reason}`,
+    components: [row],
+    allowedMentions: { parse: [] },
+  });
+}
+
 export async function rejectedTweet({
   tweetUrl,
   tweetId,
@@ -88,12 +119,12 @@ export async function rejectedTweet({
   // EXAMPLE FORMAT: quote_{tweetId}_{url} or retweet_{tweetId}_{url}
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setCustomId(`quote_${tweetId}_${tweetUrl}`)
-      .setLabel('Quote')
+      .setCustomId(`tag_${tweetId}_${tweetUrl}`)
+      .setLabel('Tag')
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
-      .setCustomId(`retweet_${tweetId}_${tweetUrl}`)
-      .setLabel('Retweet')
+      .setCustomId(`reply_${tweetId}_${tweetUrl}`)
+      .setLabel('Reply')
       .setStyle(ButtonStyle.Secondary),
   );
 

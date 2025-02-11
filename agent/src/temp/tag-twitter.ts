@@ -54,11 +54,12 @@ async function main() {
       });
     }
 
+    const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
+      question: question,
+    });
     messages.push({
       role: 'user',
-      content: PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
-        question: question,
-      }),
+      content,
     });
 
     const mergedMessages = mergeConsecutiveSameRole(messages);
