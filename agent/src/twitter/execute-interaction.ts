@@ -69,7 +69,17 @@ export async function getReasonBillContext(
         content: `You are an AI specialized in extracting bill names, relevant keywords, and bill numbers from text. Given a list of tweets, your task is to return a structured output with the following fields:
 - names: An array of bill names mentioned in the text.
 - keywords: An array of relevant keywords related to the bill or topic discussed.
-- billNumber (optional): If a bill is mentioned in the format "H.R. 8127" (or similar), extract and return only the numeric part (e.g., for "H.R. 8127", return "8127").
+- billNumber (optional): If a bill is mentioned in any of the following formats, extract and return only the numeric part:
+  - "H.R. 8127" → "8127"
+  - "HR 8127" → "8127"
+  - "H.R 8127" → "8127"
+  - "S. 8127" → "8127"
+  - "S 8127" → "8127"
+  - "s 8127" → "8127"
+  - "hr 8127" → "8127"
+  - "h.r. 8127" → "8127"
+  - "h.r 8127" → "8127"
+ The bill number should always be extracted as a numeric string without prefixes or extra characters.
 
 If no bill number is found, omit this field.
 Ensure accuracy in extracting bill names and keywords while maintaining the expected structured output.`,
