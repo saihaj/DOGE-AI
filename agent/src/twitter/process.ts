@@ -64,7 +64,50 @@ export const processTweets = inngest.createFunction(
   },
   { event: 'tweet.process' },
   async ({ event, step }) => {
+    const tweetText = event.data.text;
     // This is where we can try to filter out any unwanted tweets
+
+    /**
+     * grab any tags to the bot
+     *  we only want a tag no nested tags inside threads for now
+     */
+    if (event.data.inReplyToId == null) {
+      // deter scammers
+      const shouldEngage = await step.run('should-engage', async () => {
+        const systemPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
+        const result = await generateText({
+          model: openai('gpt-4o'),
+          seed: SEED,
+          temperature: TEMPERATURE,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            {
+              role: 'user',
+              content: `Now give me a determination for this tweet: ${tweetText}`,
+            },
+          ],
+        });
+
+        const decision = result.text.toLowerCase().trim();
+        return decision === 'engage';
+      });
+
+      if (!shouldEngage) {
+        throw new NonRetriableError(
+          REJECTION_REASON.SPAM_DETECTED_DO_NOT_ENGAGE,
+        );
+      }
+
+      // now we can send to execution job
+      await step.sendEvent('fire-off-tweet', {
+        name: 'tweet.execute',
+        data: {
+          tweetId: event.data.id,
+          action: 'tag',
+          tweetUrl: event.data.url,
+        },
+      });
+    }
 
     // focus on replies bot gets anywhere to his tweet
     if (event.data?.inReplyToUsername === TWITTER_USERNAME) {
@@ -89,7 +132,7 @@ export const processTweets = inngest.createFunction(
             },
             {
               role: 'user',
-              content: `Now give me a determination for this tweet: ${event.data.text}`,
+              content: `Now give me a determination for this tweet: ${tweetText}`,
             },
           ],
         });
