@@ -71,7 +71,7 @@ export async function generateShortenedReply({ message }: { message: string }) {
   const PROMPT = await PROMPTS.REPLY_SHORTENER_PROMPT();
   const { text } = await generateText({
     temperature: TEMPERATURE,
-    model: perplexity('sonar-reasoning'),
+    model: openai('gpt-4o'),
     messages: [
       {
         role: 'system',

@@ -2,7 +2,7 @@ import * as readline from 'node:readline/promises';
 import { getReasonBillContext } from '../twitter/execute-interaction';
 import { CoreMessage } from 'ai';
 import { PROMPTS } from '../twitter/prompts';
-import { generateReply } from '../twitter/execute';
+import { generateReply, generateShortenedReply } from '../twitter/execute';
 import { logger } from '../logger';
 import { mergeConsecutiveSameRole } from '../twitter/helpers';
 
@@ -70,7 +70,9 @@ async function main() {
       console.log('\n\nMetadata: ', metadata, '\n\n');
     }
 
-    console.log('\n\nResponse: ', text, '\n\n');
+    console.log('\n\nLong: ', text, '\n\n');
+    const { text: short } = await generateShortenedReply({ message: text });
+    console.log('\n\nShort: ', short, '\n\n');
   } catch (error) {
     console.error('An error occurred:', error);
   }
