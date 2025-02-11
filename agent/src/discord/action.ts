@@ -88,12 +88,12 @@ export async function rejectedTweet({
   // EXAMPLE FORMAT: quote_{tweetId}_{url} or retweet_{tweetId}_{url}
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setCustomId(`quote_${tweetId}_${tweetUrl}`)
-      .setLabel('Quote')
+      .setCustomId(`tag_${tweetId}_${tweetUrl}`)
+      .setLabel('Tag')
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
-      .setCustomId(`retweet_${tweetId}_${tweetUrl}`)
-      .setLabel('Retweet')
+      .setCustomId(`reply_${tweetId}_${tweetUrl}`)
+      .setLabel('Reply')
       .setStyle(ButtonStyle.Secondary),
   );
 

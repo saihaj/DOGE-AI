@@ -4,15 +4,10 @@ import {
   Partials,
   Events,
   Interaction,
-  ModalBuilder,
-  ActionRowBuilder,
-  TextInputBuilder,
-  TextInputStyle,
   ModalSubmitInteraction,
   EmbedBuilder,
 } from 'discord.js';
 import { inngest } from '../inngest';
-import { MAX_TWEET_LENGTH } from '../const';
 
 export const discordClient: Client = new Client({
   intents: [
@@ -35,31 +30,14 @@ discordClient.on(Events.InteractionCreate, async (interaction: Interaction) => {
 
       if (!itemId || !itemUrl) return;
 
-      if (action === 'quote') {
-        const encodedUrl = encodeURIComponent(itemUrl);
-        const modal = new ModalBuilder()
-          .setCustomId(`quote_modal_${itemId}_${encodedUrl}`)
-          .setTitle('Quote Tweet')
-          .addComponents(
-            new ActionRowBuilder<TextInputBuilder>().addComponents(
-              new TextInputBuilder()
-                .setCustomId('quote_text')
-                .setLabel('Quote topic')
-                .setStyle(TextInputStyle.Paragraph)
-                .setRequired(true)
-                .setMaxLength(MAX_TWEET_LENGTH),
-            ),
-          );
-
-        await interaction.showModal(modal);
-      } else if (action === 'retweet') {
+      if (action === 'tag') {
         await inngest.send([
           {
             name: 'tweet.execute',
             data: {
               tweetId: itemId,
               tweetUrl: itemUrl,
-              action: 'retweet',
+              action: 'tag',
             },
           },
         ]);
@@ -67,18 +45,46 @@ discordClient.on(Events.InteractionCreate, async (interaction: Interaction) => {
         const originalMessage = interaction.message;
         if (originalMessage) {
           await originalMessage.edit({
-            content: `${originalMessage.content}\n\n**Retweeted**: ${itemUrl}`,
+            content: `${originalMessage.content}\n\n**Answering Tag**: ${itemUrl}`,
             components: originalMessage.components,
           });
         }
 
-        const retweetEmbed = new EmbedBuilder()
-          .setTitle('Retweet Sent!')
-          .setDescription(`Sending retweet for queue: **${itemUrl}**`)
+        const embed = new EmbedBuilder()
+          .setTitle('Answering Tag!')
+          .setDescription(`Sending to queue: **${itemUrl}**`)
           .setColor(0x00ae86);
 
         await interaction.reply({
-          embeds: [retweetEmbed],
+          embeds: [embed],
+        });
+      } else if (action === 'reply') {
+        await inngest.send([
+          {
+            name: 'tweet.execute',
+            data: {
+              tweetId: itemId,
+              tweetUrl: itemUrl,
+              action: 'reply',
+            },
+          },
+        ]);
+
+        const originalMessage = interaction.message;
+        if (originalMessage) {
+          await originalMessage.edit({
+            content: `${originalMessage.content}\n\n**Replying**: ${itemUrl}`,
+            components: originalMessage.components,
+          });
+        }
+
+        const embed = new EmbedBuilder()
+          .setTitle('Replying!')
+          .setDescription(`Sending to queue: **${itemUrl}**`)
+          .setColor(0x00ae86);
+
+        await interaction.reply({
+          embeds: [embed],
         });
       }
     } catch (error) {
@@ -141,11 +147,11 @@ discordClient.on(Events.InteractionCreate, async (interaction: Interaction) => {
         });
       }
     } catch (error) {
-      console.error('Error handling modal submission:', error);
+      console.error('Error handling discord action:', error);
       if (!modalInteraction.replied) {
         const errorEmbed = new EmbedBuilder()
           .setTitle('Error')
-          .setDescription('An error occurred while submitting your quote.')
+          .setDescription('An error occurred.')
           .setColor(0xff0000);
 
         await modalInteraction.reply({
