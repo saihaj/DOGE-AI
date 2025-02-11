@@ -100,7 +100,7 @@ export async function getTweetContext(
   },
   logger: WithLogger,
 ): Promise<Array<CoreMessage>> {
-  const LIMIT = 10;
+  const LIMIT = 25;
   let tweets: Array<CoreMessage> = [];
 
   let searchId: null | string = id;
@@ -263,9 +263,12 @@ export const executeTweets = inngest.createFunction(
               });
             }
 
+            const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
+              question,
+            });
             messages.push({
               role: 'user',
-              content: PROMPTS.REPLY_TWEET_QUESTION_PROMPT({ question }),
+              content,
             });
 
             log.info(messages, 'context given');
@@ -288,6 +291,9 @@ export const executeTweets = inngest.createFunction(
               logger,
             );
 
+            const input = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
+              question: tweetText,
+            });
             const { text: long } = await generateText({
               temperature: TEMPERATURE,
               model: openai('gpt-4o'),
@@ -298,7 +304,7 @@ export const executeTweets = inngest.createFunction(
                 },
                 {
                   role: 'user',
-                  content: tweetText,
+                  content: input,
                 },
               ],
             });
