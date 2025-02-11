@@ -2,7 +2,10 @@ import { inngest } from '../inngest.ts';
 import { NonRetriableError } from 'inngest';
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
-import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
+import {
+  rejectedInteractionTweet,
+  reportFailureToDiscord,
+} from '../discord/action.ts';
 import { PROMPTS } from './prompts.ts';
 import { logger } from '../logger.ts';
 import { TEMPERATURE } from '../const.ts';
@@ -38,7 +41,7 @@ export const processInteractionTweets = inngest.createFunction(
         },
         'do no engage',
       );
-      await rejectedTweet({
+      await rejectedInteractionTweet({
         tweetId: id,
         tweetUrl: url,
         reason: error.message,
