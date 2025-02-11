@@ -74,6 +74,10 @@ export const processInteractionTweets = inngest.createFunction(
         throw Error('Need reason to ignore the tweet');
       }
 
+      if (decision === 'no_question_detected') {
+        throw Error('weird no question detected. re-run');
+      }
+
       return decision === 'engage' ? true : result.text;
     });
 
