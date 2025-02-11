@@ -82,6 +82,7 @@ export const processTweets = inngest.createFunction(
         const systemPrompt =
           await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
         const text = await getTweetContentAsText({ id: event.data.id }, log);
+
         const result = await generateText({
           model: openai('gpt-4o'),
           seed: SEED,
@@ -114,6 +115,7 @@ export const processTweets = inngest.createFunction(
           tweetUrl: event.data.url,
         },
       });
+      return;
     }
 
     // focus on replies bot gets anywhere to his tweet
