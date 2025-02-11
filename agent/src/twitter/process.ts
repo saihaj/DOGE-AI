@@ -6,7 +6,7 @@ import {
 } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
-import { getTweet } from './helpers.ts';
+import { getTweet, getTweetContentAsText } from './helpers.ts';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { PROMPTS } from './prompts.ts';
@@ -64,7 +64,59 @@ export const processTweets = inngest.createFunction(
   },
   { event: 'tweet.process' },
   async ({ event, step }) => {
+    const log = logger.child({
+      module: 'process-tweets',
+      tweetId: event.data.id,
+      eventId: event.id,
+    });
+    const tweetText = event.data.text;
     // This is where we can try to filter out any unwanted tweets
+
+    /**
+     * grab any tags to the bot
+     *  we only want a tag no nested tags inside threads for now
+     */
+    if (event.data.inReplyToId == null) {
+      // deter scammers
+      const shouldEngage = await step.run('should-engage', async () => {
+        const systemPrompt =
+          await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
+        const text = await getTweetContentAsText({ id: event.data.id }, log);
+
+        const result = await generateText({
+          model: openai('gpt-4o'),
+          seed: SEED,
+          temperature: TEMPERATURE,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            {
+              role: 'user',
+              content: `Now give me a determination for this tweet: ${text}`,
+            },
+          ],
+        });
+
+        const decision = result.text.toLowerCase().trim();
+        return decision === 'engage';
+      });
+
+      if (!shouldEngage) {
+        throw new NonRetriableError(
+          REJECTION_REASON.SPAM_DETECTED_DO_NOT_ENGAGE,
+        );
+      }
+
+      // now we can send to execution job
+      await step.sendEvent('fire-off-tweet', {
+        name: 'tweet.execute',
+        data: {
+          tweetId: event.data.id,
+          action: 'tag',
+          tweetUrl: event.data.url,
+        },
+      });
+      return;
+    }
 
     // focus on replies bot gets anywhere to his tweet
     if (event.data?.inReplyToUsername === TWITTER_USERNAME) {
@@ -89,7 +141,7 @@ export const processTweets = inngest.createFunction(
             },
             {
               role: 'user',
-              content: `Now give me a determination for this tweet: ${event.data.text}`,
+              content: `Now give me a determination for this tweet: ${tweetText}`,
             },
           ],
         });

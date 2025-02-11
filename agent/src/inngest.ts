@@ -84,6 +84,9 @@ const executeTweetEvent = z.object({
       action: z.literal('quote'),
       text: z.string().nullish(),
     }),
+    baseExecuteTweetEvent.extend({
+      action: z.literal('tag'),
+    }),
     baseExecuteTweetEvent.extend({ action: z.literal('reply') }),
   ]),
 }) satisfies LiteralZodEventSchema;

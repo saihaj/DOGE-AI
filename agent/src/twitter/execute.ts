@@ -67,6 +67,28 @@ export async function generateReply({ messages }: { messages: CoreMessage[] }) {
   };
 }
 
+export async function generateShortenedReply({ message }: { message: string }) {
+  const PROMPT = await PROMPTS.REPLY_SHORTENER_PROMPT();
+  const { text } = await generateText({
+    temperature: TEMPERATURE,
+    model: openai('gpt-4o'),
+    messages: [
+      {
+        role: 'system',
+        content: PROMPT,
+      },
+      {
+        role: 'user',
+        content: `now shorten this one: ${message}`,
+      },
+    ],
+  });
+
+  return {
+    text,
+  };
+}
+
 /**
  * given a tweet id, we try to follow the full thread up to a certain limit.
  */
@@ -145,235 +167,286 @@ export const executeTweets = inngest.createFunction(
       eventId: event.id,
     });
 
-    switch (event.data.action) {
-      case 'reply': {
-        const dbChat = await step.run('check-db', async () => {
-          // skip for local testing
-          if (!IS_PROD) return;
+    const dbChat = await step.run('check-db', async () => {
+      // skip for local testing
+      if (!IS_PROD) return;
 
-          return db.query.chat.findFirst({
-            columns: {
-              id: true,
-              tweetId: true,
-            },
-            where: eq(chatDbSchema.tweetId, event.data.tweetId),
-          });
-        });
+      return db.query.chat.findFirst({
+        columns: {
+          id: true,
+          tweetId: true,
+        },
+        where: eq(chatDbSchema.tweetId, event.data.tweetId),
+      });
+    });
 
-        if (dbChat?.id) {
-          log.warn({}, 'already replied');
-          throw new NonRetriableError(REJECTION_REASON.ALREADY_REPLIED);
-        }
+    if (dbChat?.id) {
+      log.warn({}, 'already replied');
+      throw new NonRetriableError(REJECTION_REASON.ALREADY_REPLIED);
+    }
 
-        // Yes you can get the full context here but
-        // this is optimization to avoid fetching too much
-        // in case we just reject it
-        const tweetToActionOn = await getTweet({
-          id: event.data.tweetId,
-        }).catch(e => {
-          log.error({ error: e }, 'Unable to get tweet to action on');
-          throw new NonRetriableError(e);
-        });
+    // Yes you can get the full context here but
+    // this is optimization to avoid fetching too much
+    // in case we just reject it
+    const tweetToActionOn = await getTweet({
+      id: event.data.tweetId,
+    }).catch(e => {
+      log.error({ error: e }, 'Unable to get tweet to action on');
+      throw new NonRetriableError(e);
+    });
 
-        const question = await step.run('extract-question', async () => {
-          const tweetText = tweetToActionOn.text;
+    const question = await step.run('extract-question', async () => {
+      const tweetText = tweetToActionOn.text;
 
-          const { text: extractedQuestion } = await generateText({
-            model: openai('gpt-4o'),
-            temperature: TEMPERATURE,
-            seed: SEED,
-            messages: [
-              {
-                role: 'system',
-                content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
-              },
-              {
-                role: 'user',
-                content: tweetText,
-              },
-            ],
-          });
+      const { text: extractedQuestion } = await generateText({
+        model: openai('gpt-4o'),
+        temperature: TEMPERATURE,
+        seed: SEED,
+        messages: [
+          {
+            role: 'system',
+            content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
+          },
+          {
+            role: 'user',
+            content: tweetText,
+          },
+        ],
+      });
 
-          if (
-            extractedQuestion.startsWith(REJECTION_REASON.NO_QUESTION_DETECTED)
-          ) {
-            log.error({}, 'no question found');
-            throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
-          }
+      if (extractedQuestion.startsWith(REJECTION_REASON.NO_QUESTION_DETECTED)) {
+        log.error({}, 'no question found');
+        throw new NonRetriableError(REJECTION_REASON.NO_QUESTION_DETECTED);
+      }
 
-          return extractedQuestion;
-        });
+      return extractedQuestion;
+    });
 
-        const reply = await step.run('generate-reply', async () => {
-          const tweetThread = await getTweetContext(
-            { id: tweetToActionOn.id },
-            log,
-          );
-          const tweetWeRespondingTo = tweetThread.pop();
-
-          if (!tweetWeRespondingTo) {
-            log.error({}, 'no tweet found to reply');
-            throw new NonRetriableError(
-              REJECTION_REASON.NO_TWEET_FOUND_TO_REPLY_TO,
+    const reply = await (async () => {
+      switch (event.data.action) {
+        case 'reply': {
+          const reply = await step.run('generate-reply', async () => {
+            const tweetThread = await getTweetContext(
+              { id: tweetToActionOn.id },
+              log,
             );
-          }
+            const tweetWeRespondingTo = tweetThread.pop();
 
-          const bill = await getReasonBillContext(
-            {
-              messages: tweetThread,
-            },
-            log,
-          ).catch(_ => {
-            return null;
-          });
+            if (!tweetWeRespondingTo) {
+              log.error({}, 'no tweet found to reply');
+              throw new NonRetriableError(
+                REJECTION_REASON.NO_TWEET_FOUND_TO_REPLY_TO,
+              );
+            }
 
-          const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-          if (bill) {
-            log.info(bill, 'bill found');
-          }
+            const bill = await getReasonBillContext(
+              {
+                messages: tweetThread,
+              },
+              log,
+            ).catch(_ => {
+              return null;
+            });
 
-          const messages: Array<CoreMessage> = [...tweetThread];
+            const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
+            if (bill) {
+              log.info(bill, 'bill found');
+            }
 
-          if (summary) {
+            const messages: Array<CoreMessage> = [...tweetThread];
+
+            if (summary) {
+              messages.push({
+                role: 'user',
+                content: `Context from database: ${summary}\n\n`,
+              });
+            }
+
             messages.push({
               role: 'user',
-              content: `Context from database: ${summary}\n\n`,
+              content: PROMPTS.REPLY_TWEET_QUESTION_PROMPT({ question }),
             });
-          }
 
-          messages.push({
-            role: 'user',
-            content: PROMPTS.REPLY_TWEET_QUESTION_PROMPT({ question }),
-          });
-
-          log.info(messages, 'context given');
-          const { text, metadata } = await generateReply({ messages });
-          log.info({ response: text }, 'Reply generated');
-
-          return {
-            text,
-            metadata,
-          };
-        });
-
-        const repliedTweet = await step.run('send-tweet', async () => {
-          // Locally we don't want to send anything to Twitter
-          if (!IS_PROD) {
-            await sendDevTweet({
-              tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
-              question,
-              response: reply.text,
+            log.info(messages, 'context given');
+            const { text: long, metadata } = await generateReply({ messages });
+            log.info({ response: long }, 'reply generated');
+            const { text: shortened } = await generateShortenedReply({
+              message: long,
             });
+
+            // 20% times send short response
+            const text = Math.random() < 0.2 ? shortened : long;
+
             return {
-              id: 'local_id',
+              text,
+              metadata,
+              long,
+              shortened,
             };
-          }
-
-          const resp = await twitterClient.v2.tweet(reply.text, {
-            reply: {
-              in_reply_to_tweet_id: tweetToActionOn.id,
-            },
           });
 
-          return {
-            id: resp.data.id,
-          };
-        });
+          return reply;
+        }
+        case 'tag': {
+          const reply = await step.run('generate-reply', async () => {
+            const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
+            const tweetText = await getTweetContentAsText(
+              { id: tweetToActionOn.id },
+              logger,
+            );
 
-        await step.run('notify-discord', async () => {
-          // No need to send to discord in local mode since we are already spamming dev test channel
-          if (!IS_PROD) return;
-
-          await approvedTweetEngagement({
-            sentTweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
-            replyTweetUrl: tweetToActionOn.url,
-            sent: reply.text,
-          });
-        });
-
-        // embed and store reply
-        await step.run('persist-chat', async () => {
-          if (!IS_PROD) return;
-
-          const user = await upsertUser({
-            twitterId: tweetToActionOn.author.id,
-          });
-
-          const chat = await upsertChat({
-            user: user.id,
-            tweetId: tweetToActionOn.id,
-          });
-
-          const message = await db
-            .insert(messageDbSchema)
-            .values([
-              {
-                id: crypto.randomUUID(),
-                text: tweetToActionOn.text,
-                chat: chat.id,
-                role: 'user',
-                tweetId: tweetToActionOn.id,
-              },
-              {
-                id: crypto.randomUUID(),
-                text: reply.text,
-                chat: chat.id,
-                role: 'assistant',
-                tweetId: repliedTweet.id,
-                meta: reply.metadata ? Buffer.from(reply.metadata) : null,
-              },
-            ])
-            .returning({
-              id: messageDbSchema.id,
-              tweetId: messageDbSchema.tweetId,
+            const { text: long } = await generateText({
+              temperature: TEMPERATURE,
+              model: openai('gpt-4o'),
+              messages: [
+                {
+                  role: 'system',
+                  content: PROMPT,
+                },
+                {
+                  role: 'user',
+                  content: tweetText,
+                },
+              ],
             });
 
-          const [chunkActionTweet, chunkReply] = await Promise.all([
-            textSplitter.splitText(tweetToActionOn.text),
-            textSplitter.splitText(reply.text),
-          ]);
+            const { text: shortened } = await generateShortenedReply({
+              message: long,
+            });
 
-          const actionTweetEmbeddings =
-            await generateEmbeddings(chunkActionTweet);
+            // 20% times send short response
+            const text = Math.random() < 0.2 ? shortened : long;
 
-          await db.insert(messageVector).values(
-            chunkActionTweet
-              .map((value, index) => ({
-                id: crypto.randomUUID(),
-                value,
-                embedding: actionTweetEmbeddings[index],
-              }))
-              .map(({ value, embedding }) => ({
-                id: crypto.randomUUID(),
-                message: message[0].id,
-                text: value,
-                vector: sql`vector32(${JSON.stringify(embedding)})`,
-              })),
-          );
+            return {
+              text,
+              long,
+              shortened,
+              metadata: null,
+            };
+          });
 
-          const replyEmbeddings = await generateEmbeddings(chunkReply);
+          return reply;
+        }
+        default: {
+          throw new NonRetriableError(REJECTION_REASON.ACTION_NOT_SUPPORTED);
+        }
+      }
+    })();
 
-          await db.insert(messageVector).values(
-            chunkReply
-              .map((value, index) => ({
-                id: crypto.randomUUID(),
-                value,
-                embedding: replyEmbeddings[index],
-              }))
-              .map(({ value, embedding }) => ({
-                id: crypto.randomUUID(),
-                message: message[1].id,
-                text: value,
-                vector: sql`vector32(${JSON.stringify(embedding)})`,
-              })),
-          );
+    const repliedTweet = await step.run('send-tweet', async () => {
+      // Locally we don't want to send anything to Twitter
+      if (!IS_PROD) {
+        await sendDevTweet({
+          tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
+          question,
+          response: reply.text,
+          longOutput: reply.long,
+          refinedOutput: reply.shortened,
+        });
+        return {
+          id: 'local_id',
+        };
+      }
+
+      const resp = await twitterClient.v2.tweet(reply.text, {
+        reply: {
+          in_reply_to_tweet_id: tweetToActionOn.id,
+        },
+      });
+
+      return {
+        id: resp.data.id,
+      };
+    });
+
+    await step.run('notify-discord', async () => {
+      // No need to send to discord in local mode since we are already spamming dev test channel
+      if (!IS_PROD) return;
+
+      await approvedTweetEngagement({
+        sentTweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
+        replyTweetUrl: tweetToActionOn.url,
+        sent: reply.text,
+        longOutput: reply.long,
+        refinedOutput: reply.shortened,
+      });
+    });
+
+    // embed and store reply
+    await step.run('persist-chat', async () => {
+      if (!IS_PROD) return;
+
+      const user = await upsertUser({
+        twitterId: tweetToActionOn.author.id,
+      });
+
+      const chat = await upsertChat({
+        user: user.id,
+        tweetId: tweetToActionOn.id,
+      });
+
+      const message = await db
+        .insert(messageDbSchema)
+        .values([
+          {
+            id: crypto.randomUUID(),
+            text: tweetToActionOn.text,
+            chat: chat.id,
+            role: 'user',
+            tweetId: tweetToActionOn.id,
+          },
+          {
+            id: crypto.randomUUID(),
+            text: reply.text,
+            chat: chat.id,
+            role: 'assistant',
+            tweetId: repliedTweet.id,
+            meta: reply.metadata ? Buffer.from(reply.metadata) : null,
+          },
+        ])
+        .returning({
+          id: messageDbSchema.id,
+          tweetId: messageDbSchema.tweetId,
         });
 
-        break;
-      }
-      default: {
-        throw new NonRetriableError(REJECTION_REASON.ACTION_NOT_SUPPORTED);
-      }
-    }
+      const [chunkActionTweet, chunkReply] = await Promise.all([
+        textSplitter.splitText(tweetToActionOn.text),
+        textSplitter.splitText(reply.text),
+      ]);
+
+      const actionTweetEmbeddings = await generateEmbeddings(chunkActionTweet);
+
+      await db.insert(messageVector).values(
+        chunkActionTweet
+          .map((value, index) => ({
+            id: crypto.randomUUID(),
+            value,
+            embedding: actionTweetEmbeddings[index],
+          }))
+          .map(({ value, embedding }) => ({
+            id: crypto.randomUUID(),
+            message: message[0].id,
+            text: value,
+            vector: sql`vector32(${JSON.stringify(embedding)})`,
+          })),
+      );
+
+      const replyEmbeddings = await generateEmbeddings(chunkReply);
+
+      await db.insert(messageVector).values(
+        chunkReply
+          .map((value, index) => ({
+            id: crypto.randomUUID(),
+            value,
+            embedding: replyEmbeddings[index],
+          }))
+          .map(({ value, embedding }) => ({
+            id: crypto.randomUUID(),
+            message: message[1].id,
+            text: value,
+            vector: sql`vector32(${JSON.stringify(embedding)})`,
+          })),
+      );
+    });
   },
 );
