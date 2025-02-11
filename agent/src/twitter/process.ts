@@ -79,8 +79,7 @@ export const processTweets = inngest.createFunction(
     if (event.data.inReplyToId == null) {
       // deter scammers
       const shouldEngage = await step.run('should-engage', async () => {
-        const systemPrompt =
-          await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
+        const systemPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
         const text = await getTweetContentAsText({ id: event.data.id }, log);
 
         const result = await generateText({
