@@ -66,31 +66,119 @@ export async function getReasonBillContext(
     messages: [
       {
         role: 'system',
-        content:
-          'As a AI specialized in retrieving bill names and relevant keywords, you will be given a list of tweets and asked to extract the bill name and relevant keywords.',
+        content: `You are an AI specialized in extracting bill names, relevant keywords, and bill numbers from text. Given a list of tweets, your task is to return a structured output with the following fields:
+- names: An array of bill names mentioned in the text.
+- keywords: An array of relevant keywords related to the bill or topic discussed.
+- billNumber (optional): If a bill is mentioned in the format "H.R. 8127" (or similar), extract and return only the numeric part (e.g., for "H.R. 8127", return "8127").
+
+If no bill number is found, omit this field.
+Ensure accuracy in extracting bill names and keywords while maintaining the expected structured output.`,
       },
       ...messages,
       {
         role: 'user',
         content:
-          'Based on the above tweets, extract the bill names and relevant bill keywords. If multiple bills are referenced, list all their titles.',
+          'Based on the above tweets, extract the bill names, relevant bill keywords and billNumber. If multiple bills are referenced, list all their titles.',
       },
     ],
     schemaName: 'bill',
-    schemaDescription: 'A bill name and relevant keywords.',
+    schemaDescription: 'A bill name, relevant keywords and bill number.',
     schema: z.object({
       names: z.array(z.string()),
       keywords: z.array(z.string()),
+      billNumber: z.nullable(z.number()),
     }),
   });
-
-  log.debug(billTitleResult);
+  log.info(billTitleResult, 'extracted bill information');
 
   if (
     billTitleResult.names.length === 0 &&
-    billTitleResult.keywords.length === 0
+    billTitleResult.keywords.length === 0 &&
+    billTitleResult?.billNumber === null
   ) {
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
+  }
+
+  // having a bill number makes searching easier
+  if (billTitleResult.billNumber) {
+    log.info({}, 'Searching for bill from number');
+    const billFromNumbers = await db
+      .select({
+        text: billDbSchema.summary,
+        billId: billDbSchema.id,
+        title: billDbSchema.title,
+        introducedDate: billDbSchema.introducedDate,
+      })
+      .from(billDbSchema)
+      .where(eq(billDbSchema.number, billTitleResult.billNumber));
+    log.info(
+      { size: billFromNumbers.length },
+      `Found ${billFromNumbers.length} bills from number`,
+    );
+
+    const billsText = billFromNumbers
+      .map(
+        ({ title, text, introducedDate, billId }) =>
+          `"billId": ${billId} "title": ${title} "introducedDate": ${introducedDate} "summary": ${text}`,
+      )
+      .join('\n\n');
+
+    // now we need to narrow down what bill person is asking about
+    const { object: relevantBill } = await generateObject({
+      model: openai('gpt-4o', {
+        structuredOutputs: true,
+      }),
+      seed: SEED,
+      temperature: TEMPERATURE,
+      messages: [
+        {
+          role: 'system',
+          content: `You are an AI that selects the most relevant bill from a given list based on conversation context.  
+Input:
+- A list of bills, each with a "billId", title, summary introduced date.  
+- The extracted bill number.  
+- Relevant keywords and conversation context.  
+
+Task:  
+- Analyze the provided bills and determine which "billId" best matches the **conversation context and user intent.  
+- Prioritize relevance based on keywords, topic alignment, and recency.  
+- If a clear contextual match exists, return the corresponding "billId".
+- If no strong match is found, return the most recently introduced bill instead.
+
+Expected Output:
+{ "billId": "best_matching_bill_id" }
+Always return a "billId", selecting the most recent bill if no contextual match is available.
+`,
+        },
+        {
+          role: 'user',
+          content: `Conversation Context: ${messages.map(m => m.content).join('\n')}\n\n\nBills: ${billsText}`,
+        },
+      ],
+      schemaName: 'relevantBill',
+      schemaDescription: 'Relevant bill ID based on conversation context.',
+      schema: z.object({
+        billId: z.nullable(z.string()),
+      }),
+    });
+    console.log(relevantBill);
+
+    if (!relevantBill.billId) {
+      log.warn({}, 'no relevant bill found');
+      throw new Error(REJECTION_REASON.NO_BILL_ID_FOUND);
+    }
+
+    const bill = await db.query.bill.findFirst({
+      columns: { id: true, title: true, content: true },
+      where: eq(billDbSchema.id, relevantBill.billId),
+    });
+
+    if (!bill) {
+      log.error({ billId: relevantBill.billId }, 'bill not found');
+      throw new Error(REJECTION_REASON.NO_BILL_FOUND);
+    }
+
+    return bill;
   }
 
   const billIds = await (async () => {
@@ -110,7 +198,12 @@ export async function getReasonBillContext(
     return [];
   })();
 
-  log.info({}, `Found ${billIds.length} bill IDs.`);
+  log.info(
+    {
+      size: billIds.length,
+    },
+    `Found ${billIds.length} bill IDs.`,
+  );
 
   // we got bills from the title, we can just return the first one
   if (billIds.length > 0) {
@@ -162,7 +255,10 @@ export async function getReasonBillContext(
   );
 
   const searchResults = (await Promise.all(searchPromises)).flat();
-  log.info({}, `Found ${searchResults.length} vector search results.`);
+  log.info(
+    { size: searchResults.length },
+    `Found ${searchResults.length} vector search results.`,
+  );
 
   const baseText = searchResults
     .map(({ title, text }) => {
@@ -193,7 +289,6 @@ export async function getReasonBillContext(
     throw new Error(REJECTION_REASON.UNRELATED_BILL);
   }
 
-  // 1) Ask LLM to extract the Bill Title from the text.
   const finalBill = await generateText({
     model: openai('gpt-4o'),
     seed: SEED,
