@@ -3,9 +3,9 @@ import { NonRetriableError } from 'inngest';
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
-import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from './prompts.ts';
+import { PROMPTS } from './prompts.ts';
 import { logger } from '../logger.ts';
-import { REJECTION_REASON, SEED, TEMPERATURE } from '../const.ts';
+import { TEMPERATURE } from '../const.ts';
 
 export const processInteractionTweets = inngest.createFunction(
   {
@@ -51,12 +51,6 @@ export const processInteractionTweets = inngest.createFunction(
   },
   { event: 'tweet.process.interaction' },
   async ({ event, step }) => {
-    const log = logger.child({
-      module: 'process-interaction-tweets',
-      tweetId: event.data.id,
-      eventId: event.id,
-    });
-
     const tweetText = event.data.text;
 
     const shouldEngage = await step.run('should-engage', async () => {
@@ -84,32 +78,6 @@ export const processInteractionTweets = inngest.createFunction(
     });
 
     if (shouldEngage === true) {
-      // we only need to engage further if there's a question. So let's bail out early
-      await step.run('extract-question', async () => {
-        const { text: extractedQuestion } = await generateText({
-          model: openai('gpt-4o'),
-          temperature: TEMPERATURE,
-          seed: SEED,
-          messages: [
-            {
-              role: 'system',
-              content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
-            },
-            {
-              role: 'user',
-              content: tweetText,
-            },
-          ],
-        });
-
-        if (
-          extractedQuestion.startsWith(REJECTION_REASON.NO_QUESTION_DETECTED)
-        ) {
-          log.error({}, 'no question found');
-          throw new NonRetriableError(REJECTION_REASON.NO_QUESTION_DETECTED);
-        }
-      });
-
       await step.sendEvent('fire-off-tweet', {
         name: 'tweet.execute.interaction',
         data: {
