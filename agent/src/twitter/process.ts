@@ -221,7 +221,7 @@ export const processTweets = inngest.createFunction(
         name: 'tweet.execute',
         data: {
           tweetId: event.data.id,
-          action: 'tag',
+          action: 'tag-summon',
           tweetUrl: event.data.url,
         },
       });

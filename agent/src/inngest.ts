@@ -78,14 +78,11 @@ const processInteractionTweetEvent = z.object({
 const executeTweetEvent = z.object({
   name: z.literal('tweet.execute'),
   data: z.union([
-    baseExecuteTweetEvent.extend({ action: z.literal('like') }),
-    baseExecuteTweetEvent.extend({ action: z.literal('retweet') }),
-    baseExecuteTweetEvent.extend({
-      action: z.literal('quote'),
-      text: z.string().nullish(),
-    }),
     baseExecuteTweetEvent.extend({
       action: z.literal('tag'),
+    }),
+    baseExecuteTweetEvent.extend({
+      action: z.literal('tag-summon'),
     }),
     baseExecuteTweetEvent.extend({ action: z.literal('reply') }),
   ]),

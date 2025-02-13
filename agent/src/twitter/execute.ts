@@ -299,6 +299,7 @@ export const executeTweets = inngest.createFunction(
 
           return reply;
         }
+        case 'tag-summon':
         case 'tag': {
           const reply = await step.run('generate-reply', async () => {
             const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
@@ -405,6 +406,9 @@ export const executeTweets = inngest.createFunction(
             chat: chat.id,
             role: 'user',
             tweetId: tweetToActionOn.id,
+            meta: Buffer.from(
+              JSON.stringify({ eventAction: event.data.action }),
+            ),
           },
           {
             id: crypto.randomUUID(),
