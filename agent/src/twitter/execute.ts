@@ -352,7 +352,7 @@ export const executeTweets = inngest.createFunction(
       // Locally we don't want to send anything to Twitter
       if (!IS_PROD) {
         await sendDevTweet({
-          tweetUrl: `https://x.com/i/web/status/${tweetToActionOn.id}`,
+          tweetUrl: `https://x.com/i/status/${tweetToActionOn.id}`,
           question,
           response: reply.text,
         });
@@ -377,7 +377,7 @@ export const executeTweets = inngest.createFunction(
       if (!IS_PROD) return;
 
       await approvedTweetEngagement({
-        sentTweetUrl: `https://x.com/i/web/status/${repliedTweet.id}`,
+        sentTweetUrl: `https://x.com/i/status/${repliedTweet.id}`,
         replyTweetUrl: tweetToActionOn.url,
         sent: reply.text,
       });
