@@ -24,6 +24,7 @@ import {
 } from 'database';
 import {
   approvedTweetEngagement,
+  rejectedTweet,
   reportFailureToDiscord,
   sendDevTweet,
 } from '../discord/action.ts';
@@ -143,6 +144,7 @@ export const executeTweets = inngest.createFunction(
     id: 'execute-tweets',
     onFailure: async ({ event, error }) => {
       const id = event?.data?.event?.data?.tweetId;
+      const url = event?.data?.event?.data?.tweetUrl;
       const log = logger.child({
         module: 'execute-tweets',
         tweetId: id,
@@ -151,6 +153,20 @@ export const executeTweets = inngest.createFunction(
       const errorMessage = error.message;
 
       log.error({ error: errorMessage }, 'Failed to execute tweets');
+
+      if (
+        errorMessage
+          .toLowerCase()
+          .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase())
+      ) {
+        await rejectedTweet({
+          tweetId: id,
+          tweetUrl: url,
+          reason: errorMessage,
+        });
+        return;
+      }
+
       await reportFailureToDiscord({
         message: `[execute-tweets]:${id} ${errorMessage}`,
       });
