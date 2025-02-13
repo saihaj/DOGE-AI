@@ -72,7 +72,7 @@ const baseExecuteTweetEvent = z.object({
 
 const processInteractionTweetEvent = z.object({
   name: z.literal('tweet.process.interaction'),
-  data: TweetResponse,
+  data: TweetForListResponse,
 }) satisfies LiteralZodEventSchema;
 
 const executeTweetEvent = z.object({
