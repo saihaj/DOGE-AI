@@ -190,10 +190,12 @@ export const processTweets = inngest.createFunction(
 
       // deter scammers
       const shouldEngage = await step.run('should-engage', async () => {
-        const systemPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
+        const systemPrompt =
+          await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
         const tweetThread = await getTweetContext({ id: event.data.id }, log);
         const _tweetReplyingTo = tweetThread.pop();
         const text = await getTweetContentAsText({ id: event.data.id }, log);
+        const conversationContext = tweetThread.map(t => t.content).join('\n');
 
         const result = await generateText({
           model: openai('gpt-4o'),
@@ -201,10 +203,9 @@ export const processTweets = inngest.createFunction(
           temperature: TEMPERATURE,
           messages: [
             { role: 'system', content: systemPrompt },
-            ...tweetThread,
             {
               role: 'user',
-              content: `Given the conversation context give me a determination for this tweet: ${text}`,
+              content: `Given this "${conversationContext}" conversation give me a determination for the tweet: "${text}"`,
             },
           ],
         });
