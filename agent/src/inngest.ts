@@ -57,7 +57,7 @@ export const TweetForListResponse = TweetBaseResponse.extend({
 });
 
 export const TweetResponse = TweetBaseResponse.extend({
-  quoted_tweet: z.lazy(() => TweetResponse.nullable()).nullable(),
+  quoted_tweet: z.lazy(() => TweetBaseResponse.nullable()).nullable(),
 });
 
 const processTweetEvent = z.object({
@@ -72,7 +72,7 @@ const baseExecuteTweetEvent = z.object({
 
 const processInteractionTweetEvent = z.object({
   name: z.literal('tweet.process.interaction'),
-  data: TweetResponse,
+  data: TweetForListResponse,
 }) satisfies LiteralZodEventSchema;
 
 const executeTweetEvent = z.object({

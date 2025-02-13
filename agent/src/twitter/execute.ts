@@ -286,6 +286,13 @@ export const executeTweets = inngest.createFunction(
         case 'tag': {
           const reply = await step.run('generate-reply', async () => {
             const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
+            const tweetThread = await getTweetContext(
+              { id: tweetToActionOn.id },
+              log,
+            );
+            // we remove that so we can focus on the question
+            const _tweetWeRespondingTo = tweetThread.pop();
+
             const tweetText = await getTweetContentAsText(
               { id: tweetToActionOn.id },
               logger,
@@ -302,6 +309,7 @@ export const executeTweets = inngest.createFunction(
                   role: 'system',
                   content: PROMPT,
                 },
+                ...tweetThread,
                 {
                   role: 'user',
                   content: input,
