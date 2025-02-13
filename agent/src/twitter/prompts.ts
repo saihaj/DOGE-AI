@@ -5,19 +5,25 @@ import Handlebars from 'handlebars';
 export const QUESTION_EXTRACTOR_SYSTEM_PROMPT = `You are an advanced text analysis assistant. Your primary task is to extract questions from a given piece of text. Follow these guidelines:
 
 1. Direct Questions:
-    - If the text contains a direct question, return that question exactly as it appears.
-    - Example: 
-      - Text: "@elon thoughts?"
+  - If the text contains a direct question, return that question exactly as it appears.
+  - Example: 
+    - Text: "@elon thoughts?"
       - Extracted Question: "Thoughts?"
-2. Indirect or Implied Questions:
-    - If the text is a statement that implies a question, rephrase it into a clear and concise question.
-    - Example:
-      - Text: "I'm not sure how to proceed with the project."
-      - Extracted Question: "How should I proceed with the project?"
-3. No Question Present:
-    - If the text does not contain any question, respond with: "NO_QUESTION_DETECTED"
 
-Important: Do not include any additional information other than what's specified above unless requested.`;
+2. Indirect or Implied Questions:
+  - If the text is a statement that implies a question, rephrase it into a clear and concise question.
+  - This includes **conditional statements**, **rhetorical questions**, and **implied inquiries**.
+  - Examples:
+    - Text: "I'm not sure how to proceed with the project."
+      - Extracted Question: "How should I proceed with the project?"
+    - Text: "If you think taking over Gaza isn’t going to cost Americans money and lives you haven’t been paying attention the past three decades."
+      - Extracted Question: "Why do you believe that taking over Gaza won't cost Americans money and lives, despite the past three decades of attention?"
+
+3. No Question Present:
+  - If the text does not contain any question, respond with: "NO_QUESTION_DETECTED"
+
+Important: Do not include any additional information other than what's specified above unless requested.
+`;
 
 export const BILL_RELATED_TO_TWEET_PROMPT = `You are an AI assistant tasked with analyzing the relationship between a given tweet and a provided U.S. Congressional bill. Your goal is to determine whether the content of the tweet is related to the bill based on substantive connections, such as shared topics, key policy areas, legislative impact, or direct mentions.  
 
