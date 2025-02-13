@@ -172,8 +172,8 @@ export const executeTweets = inngest.createFunction(
       });
     },
     throttle: {
-      limit: 1,
-      period: '1m',
+      limit: 25,
+      period: '15m',
     },
   },
   { event: 'tweet.execute' },
