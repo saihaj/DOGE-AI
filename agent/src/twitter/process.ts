@@ -101,9 +101,7 @@ export const processTweets = inngest.createFunction(
       });
 
       if (!shouldEngage) {
-        throw new NonRetriableError(
-          REJECTION_REASON.SPAM_DETECTED_DO_NOT_ENGAGE,
-        );
+        throw new NonRetriableError(REJECTION_REASON.SPAM_DETECTED_ON_TAG);
       }
 
       // now we can send to execution job
@@ -151,9 +149,7 @@ export const processTweets = inngest.createFunction(
       });
 
       if (!shouldEngage) {
-        throw new NonRetriableError(
-          REJECTION_REASON.SPAM_DETECTED_DO_NOT_ENGAGE,
-        );
+        throw new NonRetriableError(REJECTION_REASON.SPAM_DETECTED_ON_REPLY);
       }
 
       // now we can send to execution job
@@ -216,7 +212,7 @@ export const processTweets = inngest.createFunction(
 
       if (!shouldEngage) {
         throw new NonRetriableError(
-          REJECTION_REASON.SPAM_DETECTED_DO_NOT_ENGAGE,
+          REJECTION_REASON.SPAM_DETECTED_ON_TWEET_SUMMON,
         );
       }
 
@@ -225,7 +221,7 @@ export const processTweets = inngest.createFunction(
         name: 'tweet.execute',
         data: {
           tweetId: event.data.id,
-          action: 'tag',
+          action: 'tag-summon',
           tweetUrl: event.data.url,
         },
       });

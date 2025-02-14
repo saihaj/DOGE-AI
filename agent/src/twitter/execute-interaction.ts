@@ -420,12 +420,13 @@ export async function getLongResponse({
     : null;
 
   const responseLong = _responseLong
-    .trim()
     .replace(/<think>[\s\S]*?<\/think>/g, '')
     .replace(/\[\d+\]/g, '')
     .replace(/^(\n)+/, '')
     .replace(/[\[\]]/g, '')
-    .replace(/\bDOGEai\b/gi, '');
+    .replace(/\bDOGEai\b/gi, '')
+    .replace(/^\s*source(s)?:\s*$/gim, '')
+    .trim();
 
   return {
     responseLong,
@@ -510,8 +511,8 @@ export const executeInteractionTweets = inngest.createFunction(
       start: '30m',
     },
     throttle: {
-      limit: 5,
-      period: '1m',
+      limit: 65,
+      period: '15m',
     },
   },
   { event: 'tweet.execute.interaction' },
