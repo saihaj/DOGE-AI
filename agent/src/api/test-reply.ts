@@ -79,8 +79,7 @@ export async function processTestReplyRequest({
       'found bill',
     );
   }
-  const messages: Array<CoreMessage> = [...tweetThread];
-
+  const messages: Array<CoreMessage> = [];
   if (summary) {
     messages.push({
       role: 'user',
@@ -88,9 +87,15 @@ export async function processTestReplyRequest({
     });
   }
 
+  const fullContext = tweetThread.map(({ content }) => content).join('\n\n');
+  const previousTweet =
+    tweetThread?.[tweetThread.length - 1]?.content.toString() || '';
   const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
     question: extractedQuestion,
+    lastDogeReply: previousTweet,
+    fullContext,
   });
+
   messages.push({
     role: 'user',
     content,

@@ -149,7 +149,15 @@ export const PROMPTS = {
       { ttl: '1d' },
     );
   },
-  REPLY_TWEET_QUESTION_PROMPT: async ({ question }: { question: string }) => {
+  REPLY_TWEET_QUESTION_PROMPT: async ({
+    question,
+    lastDogeReply,
+    fullContext,
+  }: {
+    question: string;
+    lastDogeReply: string;
+    fullContext: string;
+  }) => {
     const prompt = await bento.getOrSet(
       'BOT_CONFIG_REPLY_TWEET_QUESTION_PROMPT',
       async () => {
@@ -169,7 +177,7 @@ export const PROMPTS = {
       { ttl: '1d' },
     );
     const templatedPrompt = Handlebars.compile(prompt);
-    return templatedPrompt({ question });
+    return templatedPrompt({ question, lastDogeReply, fullContext });
   },
   INTERACTION_ENGAGEMENT_DECISION_PROMPT: async () => {
     return bento.getOrSet(

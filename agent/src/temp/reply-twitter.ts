@@ -76,7 +76,7 @@ async function main() {
         'found bill',
       );
     }
-    const messages: Array<CoreMessage> = [...tweetThread];
+    const messages: Array<CoreMessage> = [];
 
     if (summary) {
       messages.push({
@@ -85,18 +85,30 @@ async function main() {
       });
     }
 
+    const fullContext = tweetThread.map(({ content }) => content).join('\n\n');
+    const previousTweet =
+      tweetThread?.[tweetThread.length - 1]?.content.toString() || '';
     const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
       question: extractedQuestion,
+      lastDogeReply: previousTweet,
+      fullContext,
     });
     messages.push({
       role: 'user',
       content,
     });
 
-    const mergedMessages = mergeConsecutiveSameRole(messages);
-    log.info(mergedMessages, 'context given');
+    log.info(
+      {
+        messages,
+      },
+      'context given',
+    );
 
-    const { text, metadata } = await generateReply({ messages });
+    const { text, metadata } = await generateReply({
+      messages,
+    });
+
     if (metadata) {
       console.log('\n\nMetadata: ', metadata, '\n\n');
     }

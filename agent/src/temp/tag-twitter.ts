@@ -56,6 +56,8 @@ async function main() {
 
     const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
       question: question,
+      lastDogeReply: '',
+      fullContext: '',
     });
     messages.push({
       role: 'user',

@@ -243,6 +243,7 @@ export const executeTweets = inngest.createFunction(
       switch (event.data.action) {
         case 'reply': {
           const reply = await step.run('generate-reply', async () => {
+            const messages: Array<CoreMessage> = [];
             const tweetThread = await getTweetContext(
               { id: tweetToActionOn.id },
               log,
@@ -270,8 +271,6 @@ export const executeTweets = inngest.createFunction(
               log.info(bill, 'bill found');
             }
 
-            const messages: Array<CoreMessage> = [...tweetThread];
-
             if (summary) {
               messages.push({
                 role: 'user',
@@ -279,8 +278,15 @@ export const executeTweets = inngest.createFunction(
               });
             }
 
+            const fullContext = tweetThread
+              .map(({ content }) => content)
+              .join('\n\n');
+            const previousTweet =
+              tweetThread?.[tweetThread.length - 1]?.content.toString() || '';
             const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
               question,
+              lastDogeReply: previousTweet,
+              fullContext,
             });
             messages.push({
               role: 'user',
@@ -289,7 +295,7 @@ export const executeTweets = inngest.createFunction(
 
             log.info(messages, 'context given');
             const { text: long, metadata } = await generateReply({ messages });
-            log.info({ response: long }, 'reply generated');
+            log.info({ response: long, metadata }, 'reply generated');
 
             return {
               text: long,
@@ -303,6 +309,13 @@ export const executeTweets = inngest.createFunction(
         case 'tag': {
           const reply = await step.run('generate-reply', async () => {
             const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
+            const messages: Array<CoreMessage> = [
+              {
+                role: 'system',
+                content: PROMPT,
+              },
+            ];
+
             const tweetThread = await getTweetContext(
               { id: tweetToActionOn.id },
               log,
@@ -315,23 +328,46 @@ export const executeTweets = inngest.createFunction(
               logger,
             );
 
+            const bill = await getReasonBillContext(
+              {
+                messages: tweetThread,
+              },
+              log,
+            ).catch(_ => {
+              return null;
+            });
+
+            const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
+            if (bill) {
+              log.info(bill, 'bill found');
+            }
+
+            if (summary) {
+              messages.push({
+                role: 'user',
+                content: `Context from database: ${summary}\n\n`,
+              });
+            }
+
+            const fullContext = tweetThread
+              .map(({ content }) => content)
+              .join('\n\n');
+            const previousTweet =
+              tweetThread?.[tweetThread.length - 1]?.content.toString() || '';
             const input = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
               question: tweetText,
+              lastDogeReply: previousTweet,
+              fullContext,
             });
+            messages.push({
+              role: 'user',
+              content: input,
+            });
+
             const { text: long } = await generateText({
               temperature: TEMPERATURE,
               model: openai('gpt-4o'),
-              messages: [
-                {
-                  role: 'system',
-                  content: PROMPT,
-                },
-                ...tweetThread,
-                {
-                  role: 'user',
-                  content: input,
-                },
-              ],
+              messages,
             });
 
             return {
