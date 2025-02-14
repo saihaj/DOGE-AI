@@ -420,12 +420,14 @@ export async function getLongResponse({
     : null;
 
   const responseLong = _responseLong
+    .trim()
     .replace(/<think>[\s\S]*?<\/think>/g, '')
     .replace(/\[\d+\]/g, '')
     .replace(/^(\n)+/, '')
     .replace(/[\[\]]/g, '')
     .replace(/\bDOGEai\b/gi, '')
     .replace(/^\s*source(s)?:\s*$/gim, '')
+    .replace(/^\[Final Response:\]\s*/i, '')
     .trim();
 
   return {
