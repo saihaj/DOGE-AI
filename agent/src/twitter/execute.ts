@@ -268,11 +268,11 @@ export const executeTweets = inngest.createFunction(
             ).catch(_ => {
               return null;
             });
-
-            const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
             if (bill) {
               log.info(bill, 'bill found');
             }
+
+            const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
 
             if (summary) {
               messages.push({
@@ -340,10 +340,11 @@ export const executeTweets = inngest.createFunction(
               return null;
             });
 
-            const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
             if (bill) {
               log.info(bill, 'bill found');
             }
+
+            const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
 
             if (summary) {
               messages.push({
