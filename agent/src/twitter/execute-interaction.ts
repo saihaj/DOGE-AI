@@ -12,6 +12,7 @@ import {
   upsertUser,
 } from './helpers.ts';
 import { CoreMessage, generateObject, generateText, tool } from 'ai';
+import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
 import { BILL_RELATED_TO_TWEET_PROMPT, PROMPTS } from './prompts';
 import {
@@ -447,18 +448,20 @@ export async function getShortResponse({
   refinePrompt?: string;
 }) {
   if (!refinePrompt) {
-    refinePrompt = await PROMPTS.INTERACTION_REFINE_OUTPUT_PROMPT({
-      topic,
-    });
+    refinePrompt = await PROMPTS.REPLY_SHORTENER_PROMPT();
   }
 
   const { text: _finalAnswer } = await generateText({
-    model: openai('gpt-4o'),
+    model: anthropic('claude-3-5-sonnet-latest'),
     temperature: TEMPERATURE,
     messages: [
       {
-        role: 'user',
+        role: 'system',
         content: refinePrompt,
+      },
+      {
+        role: 'user',
+        content: topic,
       },
     ],
   });
@@ -597,8 +600,8 @@ export const executeInteractionTweets = inngest.createFunction(
           const finalAnswer = await getShortResponse({ topic: responseLong });
 
           /**
-           * 30% time we want to send the long output
-           * 70% time we want to send the refined output
+           * 70% time we want to send the long output
+           * 30% time we want to send the refined output
            */
           const response = (() => {
             // some times claude safety kicks in and we get a NO
@@ -607,7 +610,7 @@ export const executeInteractionTweets = inngest.createFunction(
               return responseLong;
             }
 
-            return Math.random() > 0.3 ? finalAnswer : responseLong;
+            return Math.random() > 0.3 ? responseLong : finalAnswer;
           })();
 
           log.info(
