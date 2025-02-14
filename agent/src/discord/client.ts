@@ -34,6 +34,7 @@ discordClient.on(Events.InteractionCreate, async (interaction: Interaction) => {
         await inngest.send([
           {
             name: 'tweet.execute',
+            id: `tag-${itemId}`,
             data: {
               tweetId: itemId,
               tweetUrl: itemUrl,
@@ -50,10 +51,12 @@ discordClient.on(Events.InteractionCreate, async (interaction: Interaction) => {
         await interaction.reply({
           embeds: [embed],
         });
+        return;
       } else if (action === 'reply') {
         await inngest.send([
           {
             name: 'tweet.execute',
+            id: `reply-${itemId}`,
             data: {
               tweetId: itemId,
               tweetUrl: itemUrl,
@@ -70,10 +73,12 @@ discordClient.on(Events.InteractionCreate, async (interaction: Interaction) => {
         await interaction.reply({
           embeds: [embed],
         });
+        return;
       } else if (action === 'engage') {
         await inngest.send([
           {
             name: 'tweet.execute.interaction',
+            id: `engage-${itemId}`,
             data: {
               tweetId: itemId,
               tweetUrl: itemUrl,
@@ -90,6 +95,7 @@ discordClient.on(Events.InteractionCreate, async (interaction: Interaction) => {
         await interaction.reply({
           embeds: [embed],
         });
+        return;
       }
     } catch (error) {
       console.error('Error handling button interaction:', error);
