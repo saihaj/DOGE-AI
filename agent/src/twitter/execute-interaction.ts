@@ -426,7 +426,7 @@ export async function getLongResponse({
     .replace(/\[\d+\]/g, '')
     .replace(/^(\n)+/, '')
     .replace(/[\[\]]/g, '')
-    .replace(/\bDOGEai\b/gi, '')
+    .replace(/\bDOGEai(:)\b/gi, '')
     .replace(/^\s*source(s)?:\s*$/gim, '')
     .replace(/^\[Final Response:\]\s*/i, '')
     .trim();
@@ -472,7 +472,7 @@ export async function getShortResponse({
     .replace(/\[\d+\]/g, '')
     .replace(/^(\n)+/, '')
     .replace(/[\[\]]/g, '')
-    .replace(/\bDOGEai\b/gi, '');
+    .replace(/\bDOGEai(:)\b/gi, '');
 
   return finalAnswer;
 }
