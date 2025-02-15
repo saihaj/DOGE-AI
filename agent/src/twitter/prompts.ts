@@ -25,23 +25,70 @@ export const QUESTION_EXTRACTOR_SYSTEM_PROMPT = `You are an advanced text analys
 Important: Do not include any additional information other than what's specified above unless requested.
 `;
 
-export const BILL_RELATED_TO_TWEET_PROMPT = `You are an AI assistant tasked with analyzing the relationship between a given tweet and a provided U.S. Congressional bill. Your goal is to determine whether the content of the tweet is related to the bill based on substantive connections, such as shared topics, key policy areas, legislative impact, or direct mentions.  
+export const BILL_RELATED_TO_TWEET_PROMPT = `System Prompt:
 
-## Instructions: 
-1. Extract Key Information
-- Identify the main topic, claims, or concerns expressed in the tweet.  
-- Analyze the bill's title, summary, and key provisions.  
+You are an AI assistant specialized in analyzing the relationship between a given tweet and a set of U.S. Congressional bills. Your objective is to identify which bills are related to the content of the tweet based on substantive connections such as shared topics, key policy areas, legislative impact, or direct mentions.
 
-2. Determine Relevance
-- If the tweet discusses or directly references the bill, its contents, or its impact, they are related.  
-- If the tweet aligns with the bill's topic but does not specifically reference it or its provisions, check for strong thematic connections.  
-- If the tweet is unrelated to the bill's subject matter, they are NOT RELATED.  
+## Instructions:
 
-3. Response Format:
-- If the tweet and bill are related, return: "YES".
-- If they are not related, return: "NO".
+### 1. Input Structure:
+- Tweet: A single tweet provided by the user.
+- Bills: Multiple bills provided in the following format:
+  billId: "c32d8b45-92fe-44f6-8b61-42c2107dfe87" Bill Title: "Climate Action and Environmental Protection Act"  Text: "Full text of the first bill."
+  billId: "a56d8b45-92fe-44f6-8b91-42c2107dfe87" Bill Title: "Healthcare Improvement Act"  Text: "Full text of the second bill."
+  ... (and so on for additional bills)
 
-Your decision should be based purely on textual and contextual analysis, avoiding assumptions beyond the provided content.  
+
+### 2. Analyze the Content:
+- Extract Key Information from the Tweet:
+  - Identify the main topic, claims, or concerns expressed.
+  
+- Extract Key Information from Each Bill:
+  - Analyze the bill's title and full text to understand its main objectives and provisions.
+
+### 3. Determine Relevance:
+- Direct Relation:
+  - If the tweet discusses, references, or mentions a bill by its title, content, or impact, consider it related.
+  
+- Thematic Connection:
+  - If the tweet aligns with the general topic or key policy areas of a bill without direct references, evaluate the strength of the thematic connection.
+  
+- No Relation:
+  - If the tweet does not share topics, policy areas, or impacts with a bill, it is NOT RELATED to that bill.
+
+### 4. Response Format:
+- Output: Return a JSON object containing an array of "billId"s that are related to the tweet.
+- Format: Provide the output in the following JSON structure:
+  {
+    "billIds": ["BILL_ID_1", "BILL_ID_3", "BILL_ID_5"]
+  }
+- If No Related Bills: Return an empty array.
+  {
+    "billIds": []
+  }
+
+### 5. Guidelines:
+- Base your decisions solely on the textual and contextual information provided in the tweet and the bills.
+- Avoid making assumptions or inferring connections beyond the given content.
+- Ensure accuracy in matching topics and policy areas to determine relevance.
+- Maintain valid JSON syntax in your response.
+
+---
+
+Example Workflow:
+
+Input:
+  Tweet: "Excited about the new climate action bill introduced today! #Environment #PolicyChange"
+
+  Bills:
+    billId: "c8c8b45-92fe-44f6-8b61-42c2107dfe87" Bill Title: "Climate Action and Environmental Protection Act" Text: "This bill aims to reduce carbon emissions and promote renewable energy sources..."
+    billId: "a8c7b45-92fe-44f6-8b61-42c2107dfe87" Bill Title: "Healthcare Improvement Act" Text: "This legislation focuses on expanding healthcare coverage and reducing costs..."
+    billId: "b1c7b15-92fe-22e1-8b61-42c2107dfe87" Bill Title: "Education Reform Act" Text: "Proposes significant changes to the public education system, including curriculum updates..."
+
+Expected Output:
+{
+  "billIds": ["c8c8b45-92fe-44f6-8b61-42c2107dfe87"]
+}
 `;
 
 export const ANALYZE_TEXT_FROM_IMAGE = `Analyze the provided image and extract all visible text exactly as it appears. Do not add any commentary or descriptions. If no text is found, return only 'NO_TEXT_FOUND'.`;

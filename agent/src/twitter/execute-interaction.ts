@@ -273,15 +273,20 @@ Always return a "billId", selecting the most recent bill if no contextual match 
   );
 
   const baseText = searchResults
-    .map(({ title, text }) => {
-      return `Bill: ${title}\nText:\n\n${text}`;
+    .map(({ title, text, billId }) => {
+      return `billId: "${billId}" Bill Title: "${title}"\nText:\n"${text}"`;
     })
     .join('\n\n');
 
-  const { text } = await generateText({
+  const { object: relatedBills } = await generateObject({
     model: openai('gpt-4o'),
     seed: SEED,
     temperature: TEMPERATURE,
+    schemaName: 'billRelatedToTweet',
+    schema: z.object({
+      billIds: z.array(z.string()).nullish(),
+    }),
+    schemaDescription: 'List of billIds related to the tweet.',
     messages: [
       {
         role: 'system',
@@ -289,17 +294,20 @@ Always return a "billId", selecting the most recent bill if no contextual match 
       },
       {
         role: 'user',
-        content: `Tweet: ${messages.map(m => m.content).join('\n')}\n\nBill: ${baseText}`,
+        content: `Tweet: ${messages.map(m => m.content).join('\n')}\n\nBills: ${baseText}`,
       },
     ],
   });
 
-  log.info({}, `Is bill related to tweet?: ${text}`);
-
-  if (text.toLowerCase().startsWith('no')) {
+  if (!relatedBills.billIds?.length) {
     log.warn(messages, 'No bill related to tweet.');
     throw new Error(REJECTION_REASON.UNRELATED_BILL);
   }
+
+  log.info(
+    { size: relatedBills.billIds.length },
+    `related bills found: ${relatedBills.billIds.length}`,
+  );
 
   const finalBill = await generateText({
     model: openai('gpt-4o'),
@@ -315,21 +323,21 @@ Always return a "billId", selecting the most recent bill if no contextual match 
         execute: async ({ text }) => {
           const embedding = await generateEmbedding(text);
           const embeddingArrayString = JSON.stringify(embedding);
+          const filters = [
+            sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < ${THRESHOLD}`,
+            isNotNull(billVector.bill),
+          ];
+
+          if (relatedBills?.billIds) {
+            filters.push(inArray(billVector.bill, relatedBills.billIds));
+          }
 
           const vectorSearch = await db
             .select({
-              text: billVector.text,
               billId: billVector.bill,
-              distance: sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString}))`,
-              title: billDbSchema.title,
             })
             .from(billVector)
-            .where(
-              and(
-                sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < ${THRESHOLD}`,
-                isNotNull(billVector.bill),
-              ),
-            )
+            .where(and(...filters))
             .orderBy(
               sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
             )
@@ -338,8 +346,7 @@ Always return a "billId", selecting the most recent bill if no contextual match 
 
           const results = vectorSearch.map(row => {
             return {
-              title: row.title,
-              text: row.text,
+              billId: row.billId,
             };
           });
 
@@ -350,8 +357,7 @@ Always return a "billId", selecting the most recent bill if no contextual match 
     messages: [
       {
         role: 'system',
-        content:
-          "Analyze the text and identify the exact bill mentioned. Return ONLY the single corresponding bill title from the database. If uncertain or no exact match is found, respond with 'NO_EXACT_MATCH'. Do not provide any additional commentary.",
+        content: `Analyze the text and identify the exact bill mentioned. Return ONLY the single corresponding "billId" from the database. If uncertain or no exact match is found, respond with 'NO_EXACT_MATCH'. Do not provide any additional commentary.`,
       },
       {
         role: 'user',
@@ -361,10 +367,10 @@ Always return a "billId", selecting the most recent bill if no contextual match 
     maxSteps: 10,
   });
 
-  const billTitle = finalBill.text;
+  const finalBillId = finalBill.text;
   if (
-    billTitle.startsWith('NO_TITLE_FOUND') ||
-    billTitle.startsWith('NO_EXACT_MATCH')
+    finalBillId.startsWith('NO_TITLE_FOUND') ||
+    finalBillId.startsWith('NO_EXACT_MATCH')
   ) {
     log.warn({}, 'no bill titled matched');
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
@@ -372,7 +378,7 @@ Always return a "billId", selecting the most recent bill if no contextual match 
 
   const bill = await db.query.bill.findFirst({
     columns: { id: true, title: true, content: true },
-    where: eq(sql`lower(${billDbSchema.title})`, billTitle.toLowerCase()),
+    where: eq(billDbSchema.id, finalBillId),
   });
 
   if (!bill) {
