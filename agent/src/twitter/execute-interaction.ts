@@ -309,6 +309,21 @@ Always return a "billId", selecting the most recent bill if no contextual match 
     `related bills found: ${relatedBills.billIds.length}`,
   );
 
+  // just got one bill return that
+  if (relatedBills.billIds.length === 1) {
+    const bill = await db.query.bill.findFirst({
+      columns: { id: true, title: true, content: true },
+      where: eq(billDbSchema.id, relatedBills.billIds[0]),
+    });
+
+    if (!bill) {
+      log.error({}, 'bill not found');
+      throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
+    }
+
+    return bill;
+  }
+
   const finalBill = await generateText({
     model: openai('gpt-4o'),
     seed: SEED,
@@ -335,18 +350,19 @@ Always return a "billId", selecting the most recent bill if no contextual match 
           const vectorSearch = await db
             .select({
               billId: billVector.bill,
+              text: billVector.text,
             })
             .from(billVector)
             .where(and(...filters))
             .orderBy(
               sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) ASC`,
             )
-            .leftJoin(billDbSchema, eq(billDbSchema.id, billVector.bill))
             .limit(LIMIT);
 
           const results = vectorSearch.map(row => {
             return {
               billId: row.billId,
+              text: row.text,
             };
           });
 
