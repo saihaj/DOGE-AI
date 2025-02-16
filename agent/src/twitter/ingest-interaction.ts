@@ -63,7 +63,7 @@ async function fetchTweetsFromList({
   };
 }
 
-const WINDOW = 12;
+const WINDOW = 6;
 
 export const ingestInteractionTweets = inngest.createFunction(
   {
@@ -76,8 +76,8 @@ export const ingestInteractionTweets = inngest.createFunction(
       });
     },
   },
-  // Runs every 10 minutes between 8am and midnight
-  { cron: 'TZ=America/New_York */10 8-23 * * *' },
+  // Runs every 5 minutes between 8am and midnight
+  { cron: 'TZ=America/New_York */5 8-23 * * *' },
   async () => {
     const [congress119Senators, dogeAiEngager, houseMembers] =
       await Promise.all([
