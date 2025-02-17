@@ -16,15 +16,9 @@ import {
 } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import {
-  db,
-  eq,
-  user as userDbSchema,
-  chat as chatDbSchema,
-  between,
-} from 'database';
+import { db, eq, user as userDbSchema, chat as chatDbSchema } from 'database';
 import * as crypto from 'node:crypto';
-import { ANALYZE_TEXT_FROM_IMAGE } from './prompts';
+import { ANALYZE_TEXT_FROM_IMAGE, PROMPTS } from './prompts';
 import { WithLogger } from '../logger';
 
 // Ada V2 31.4% vs 54.9% large
@@ -270,4 +264,19 @@ export function mergeConsecutiveSameRole(
   }
 
   return merged;
+}
+
+export async function longResponseFormatter(text: string) {
+  const prompt = await PROMPTS.LONG_RESPONSE_FORMATTER_PROMPT();
+
+  const { text: responseLong } = await generateText({
+    model: openai('gpt-4o'),
+    temperature: TEMPERATURE,
+    messages: [
+      { role: 'system', content: prompt },
+      { role: 'user', content: text },
+    ],
+  });
+
+  return responseLong;
 }

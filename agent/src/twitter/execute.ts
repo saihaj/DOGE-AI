@@ -5,6 +5,7 @@ import {
   generateEmbeddings,
   getTweet,
   getTweetContentAsText,
+  longResponseFormatter,
   mergeConsecutiveSameRole,
   textSplitter,
   upsertChat,
@@ -65,9 +66,12 @@ export async function generateReply({ messages }: { messages: CoreMessage[] }) {
     .replace(/^\s*source(s)?:\s*$/gim, '')
     .trim();
 
+  const formatted = await longResponseFormatter(text);
+
   return {
     text,
     metadata,
+    formatted,
   };
 }
 
@@ -297,11 +301,15 @@ export const executeTweets = inngest.createFunction(
             });
 
             log.info(messages, 'context given');
-            const { text: long, metadata } = await generateReply({ messages });
+            const {
+              text: long,
+              metadata,
+              formatted,
+            } = await generateReply({ messages });
             log.info({ response: long, metadata }, 'reply generated');
 
             return {
-              text: long,
+              text: formatted,
               metadata,
             };
           });
@@ -374,9 +382,11 @@ export const executeTweets = inngest.createFunction(
               messages,
             });
 
+            const formatted = await longResponseFormatter(long);
+
             return {
-              text: long,
-              long,
+              text: formatted,
+              long: formatted,
               metadata: null,
             };
           });

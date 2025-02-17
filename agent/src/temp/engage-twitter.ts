@@ -58,7 +58,7 @@ async function main() {
         'found bill',
       );
     }
-    const { responseLong, metadata } = await getLongResponse({
+    const { responseLong, metadata, formatted } = await getLongResponse({
       summary,
       text: content,
     });
@@ -68,6 +68,7 @@ async function main() {
     }
 
     console.log('\n\nLong Response: ', responseLong, '\n\n');
+    console.log('\n\nLong formatted gpt-4o: ', formatted, '\n\n');
 
     const refinedOutput = await getShortResponse({ topic: responseLong });
 
