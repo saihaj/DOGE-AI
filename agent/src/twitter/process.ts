@@ -73,6 +73,8 @@ export const processTweets = inngest.createFunction(
     const tweetText = event.data.text;
     // This is where we can try to filter out any unwanted tweets
 
+    const engagementSysPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
+
     /**
      * grab any tags to the bot
      * we only want a tag no nested tags inside threads for now
@@ -80,15 +82,14 @@ export const processTweets = inngest.createFunction(
     if (event.data.inReplyToId == null) {
       // deter scammers
       const shouldEngage = await step.run('should-engage', async () => {
-        const systemPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
         const text = await getTweetContentAsText({ id: event.data.id }, log);
 
         const result = await generateText({
-          model: openai('gpt-4o'),
+          model: openai('o3-mini'),
           seed: SEED,
           temperature: TEMPERATURE,
           messages: [
-            { role: 'system', content: systemPrompt },
+            { role: 'system', content: engagementSysPrompt },
             {
               role: 'user',
               content: `Now give me a determination for this tweet: ${text}`,
@@ -126,13 +127,12 @@ export const processTweets = inngest.createFunction(
 
       // deter scammers
       const shouldEngage = await step.run('should-engage', async () => {
-        const systemPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
         const result = await generateText({
-          model: openai('gpt-4o'),
+          model: openai('o3-mini'),
           seed: SEED,
           temperature: TEMPERATURE,
           messages: [
-            { role: 'system', content: systemPrompt },
+            { role: 'system', content: engagementSysPrompt },
             {
               role: 'assistant',
               content: mainTweet.text,
@@ -186,19 +186,17 @@ export const processTweets = inngest.createFunction(
 
       // deter scammers
       const shouldEngage = await step.run('should-engage', async () => {
-        const systemPrompt =
-          await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
         const tweetThread = await getTweetContext({ id: event.data.id }, log);
         const _tweetReplyingTo = tweetThread.pop();
         const text = await getTweetContentAsText({ id: event.data.id }, log);
         const conversationContext = tweetThread.map(t => t.content).join('\n');
 
         const result = await generateText({
-          model: openai('gpt-4o'),
+          model: openai('o3-mini'),
           seed: SEED,
           temperature: TEMPERATURE,
           messages: [
-            { role: 'system', content: systemPrompt },
+            { role: 'system', content: engagementSysPrompt },
             {
               role: 'user',
               content: `Given this "${conversationContext}" conversation give me a determination for the tweet: "${text}"`,
