@@ -105,7 +105,7 @@ async function main() {
       'context given',
     );
 
-    const { text, metadata } = await generateReply({
+    const { text, metadata, formatted } = await generateReply({
       messages,
     });
 
@@ -113,6 +113,7 @@ async function main() {
       console.log('\n\nMetadata: ', metadata, '\n\n');
     }
     console.log('\n\nResponse: ', text, '\n\n');
+    console.log('\n\nFormatted: ', formatted, '\n\n');
   } catch (error) {
     console.error('An error occurred:', error);
   }

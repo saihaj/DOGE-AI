@@ -266,4 +266,24 @@ export const PROMPTS = {
       { ttl: '1d' },
     );
   },
+  LONG_RESPONSE_FORMATTER_PROMPT: async () => {
+    return bento.getOrSet(
+      'BOT_CONFIG_LONG_RESPONSE_FORMATTER_PROMPT',
+      async () => {
+        const prompt = await db.query.botConfig.findFirst({
+          where: eq(botConfig.key, 'LONG_RESPONSE_FORMATTER_PROMPT'),
+          columns: {
+            value: true,
+          },
+        });
+
+        if (!prompt) {
+          throw new Error('LONG_RESPONSE_FORMATTER_PROMPT not found');
+        }
+
+        return prompt.value;
+      },
+      { ttl: '1d' },
+    );
+  },
 };

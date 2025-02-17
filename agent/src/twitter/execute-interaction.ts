@@ -7,6 +7,7 @@ import {
   generateEmbeddings,
   getTweet,
   getTweetContentAsText,
+  longResponseFormatter,
   textSplitter,
   upsertChat,
   upsertUser,
@@ -453,8 +454,11 @@ export async function getLongResponse({
     .replace(/^\[Final Response:\]\s*/i, '')
     .trim();
 
+  const formatted = await longResponseFormatter(responseLong);
+
   return {
     responseLong,
+    formatted,
     metadata,
   };
 }
@@ -614,7 +618,11 @@ export const executeInteractionTweets = inngest.createFunction(
             );
           }
 
-          const { responseLong, metadata } = await getLongResponse({
+          const {
+            responseLong,
+            metadata,
+            formatted: responseLongFormatted,
+          } = await getLongResponse({
             summary,
             text,
           });
@@ -632,15 +640,20 @@ export const executeInteractionTweets = inngest.createFunction(
               return responseLong;
             }
 
-            return Math.random() > 0.2 ? responseLong : finalAnswer;
+            return Math.random() > 0.2 ? responseLongFormatted : finalAnswer;
           })();
 
           log.info(
-            { long: responseLong, short: finalAnswer, metadata, response },
+            {
+              long: responseLongFormatted,
+              short: finalAnswer,
+              metadata,
+              response,
+            },
             'Generated response',
           );
           return {
-            longOutput: responseLong,
+            longOutput: responseLongFormatted,
             refinedOutput: finalAnswer,
             metadata,
             response,
