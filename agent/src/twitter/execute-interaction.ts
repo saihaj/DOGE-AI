@@ -622,8 +622,8 @@ export const executeInteractionTweets = inngest.createFunction(
           const finalAnswer = await getShortResponse({ topic: responseLong });
 
           /**
-           * 70% time we want to send the long output
-           * 30% time we want to send the refined output
+           * 80% time we want to send the long output
+           * 20% time we want to send the refined output
            */
           const response = (() => {
             // some times claude safety kicks in and we get a NO
@@ -632,7 +632,7 @@ export const executeInteractionTweets = inngest.createFunction(
               return responseLong;
             }
 
-            return Math.random() > 0.3 ? responseLong : finalAnswer;
+            return Math.random() > 0.2 ? responseLong : finalAnswer;
           })();
 
           log.info(
