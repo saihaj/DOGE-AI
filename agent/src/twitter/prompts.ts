@@ -248,7 +248,7 @@ export const PROMPTS = {
   },
   ENGAGEMENT_DECISION_PROMPT: async () => {
     return bento.getOrSet(
-      'BOT_CONFIG_INTERACTION_ENGAGEMENT_DECISION_PROMPT',
+      'BOT_CONFIG_ENGAGEMENT_DECISION_PROMPT',
       async () => {
         const prompt = await db.query.botConfig.findFirst({
           where: eq(botConfig.key, 'ENGAGEMENT_DECISION_PROMPT'),
