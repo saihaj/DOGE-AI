@@ -8,6 +8,7 @@ import {
   getTweet,
   getTweetContentAsText,
   longResponseFormatter,
+  sanitizeLlmOutput,
   textSplitter,
   upsertChat,
   upsertUser,
@@ -443,16 +444,7 @@ export async function getLongResponse({
     ? JSON.stringify(experimental_providerMetadata)
     : null;
 
-  const responseLong = _responseLong
-    .trim()
-    .replace(/<think>[\s\S]*?<\/think>/g, '')
-    .replace(/\[\d+\]/g, '')
-    .replace(/^(\n)+/, '')
-    .replace(/[\[\]]/g, '')
-    .replace(/\bDOGEai\b(:)?/gi, '')
-    .replace(/^\s*source(s)?:\s*$/gim, '')
-    .replace(/^\[Final Response:\]\s*/i, '')
-    .trim();
+  const responseLong = sanitizeLlmOutput(_responseLong);
 
   const formatted = await longResponseFormatter(responseLong);
 

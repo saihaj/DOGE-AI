@@ -7,6 +7,7 @@ import {
   getTweetContentAsText,
   longResponseFormatter,
   mergeConsecutiveSameRole,
+  sanitizeLlmOutput,
   textSplitter,
   upsertChat,
   upsertUser,
@@ -53,18 +54,7 @@ export async function generateReply({ messages }: { messages: CoreMessage[] }) {
     ? JSON.stringify(experimental_providerMetadata)
     : null;
 
-  const text = _text
-    .trim()
-    .replace(/<think>[\s\S]*?<\/think>/g, '')
-    .replace(/\[\d+\]/g, '')
-    .replace(/^(\n)+/, '')
-    .replace(/[\[\]]/g, '')
-    .replace(/(\*\*|__)(.*?)\1/g, '$2') // Bold (**text** or __text__)
-    .replace(/(\*|_)(.*?)\1/g, '$2') // Italics (*text* or _text_)
-    .replace(/\bDOGEai\b(:)?/gi, '')
-    .replace(/^\[Final Response:\]\s*/i, '')
-    .replace(/^\s*source(s)?:\s*$/gim, '')
-    .trim();
+  const text = sanitizeLlmOutput(_text);
 
   const formatted = await longResponseFormatter(text);
 
