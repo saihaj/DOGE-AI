@@ -100,6 +100,10 @@ export async function processTestReplyRequest({
     role: 'user',
     content,
   });
+  messages.push({
+    role: 'user',
+    content: `now answer this question: "${extractedQuestion}"`,
+  });
 
   log.info(messages, 'context given');
 
