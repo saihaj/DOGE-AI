@@ -18,6 +18,11 @@ const openai = createOpenAI({
   compatibility: 'strict',
 });
 
+const DO_NOT_ENGAGE_USERNAMES = [
+  // Do not engage with any of my tweets
+  'singh_saihaj',
+];
+
 /**
  * Fetches tweets from the Twitter API and queues them for processing.
  */
@@ -74,6 +79,22 @@ export const processTweets = inngest.createFunction(
     // This is where we can try to filter out any unwanted tweets
 
     const engagementSysPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
+
+    if (event.data.inReplyToUsername) {
+      if (DO_NOT_ENGAGE_USERNAMES.includes(event.data.inReplyToUsername)) {
+        throw new NonRetriableError(
+          REJECTION_REASON.ENGAGEMENT_RESTRICTED_ACCOUNT,
+        );
+      }
+    }
+
+    if (event.data.author.userName) {
+      if (DO_NOT_ENGAGE_USERNAMES.includes(event.data.author.userName)) {
+        throw new NonRetriableError(
+          REJECTION_REASON.ENGAGEMENT_RESTRICTED_ACCOUNT,
+        );
+      }
+    }
 
     /**
      * grab any tags to the bot

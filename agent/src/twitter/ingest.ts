@@ -39,6 +39,8 @@ export const ingestTweets = inngest.createFunction(
      * Idempotency is relied on inngest based on tweet id.
      *
      * Learn more about syntax here: https://github.com/igorbrigadir/twitter-advanced-search
+     *
+     * I tag bot a lot in updates and most of these are useless interactions for him to process so ignoring as much.
      */
     const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} -from:singh_saihaj within_time:7m`;
     API.searchParams.set('query', searchQuery);
