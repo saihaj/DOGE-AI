@@ -1,5 +1,5 @@
 import { CoreMessage, generateText } from 'ai';
-import { getTweetContext } from '../twitter/execute';
+import { generateReply, getTweetContext } from '../twitter/execute';
 import {
   getReasonBillContext,
   getShortResponse,
@@ -106,17 +106,12 @@ export async function processTestReplyRequest({
   const systemPrompt = mainPrompt
     ? mainPrompt
     : await PROMPTS.TWITTER_REPLY_TEMPLATE();
-  const { text: responseLong } = await generateText({
-    temperature: TEMPERATURE,
-    model: openai('gpt-4o'),
-    messages: [
-      {
-        role: 'system',
-        content: systemPrompt,
-      },
-      ...messages,
-    ],
-  });
+
+  const {
+    text: responseLong,
+    metadata,
+    formatted,
+  } = await generateReply({ messages, systemPrompt });
 
   if (refinePrompt) {
     refinePrompt = Handlebars.compile(refinePrompt)({
@@ -134,9 +129,9 @@ export async function processTestReplyRequest({
     short: refinedOutput,
   });
   return {
-    answer: responseLong,
+    answer: formatted,
     short: refinedOutput,
     bill: summary,
-    metadata: null,
+    metadata,
   };
 }
