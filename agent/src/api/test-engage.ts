@@ -54,7 +54,7 @@ export async function processTestEngageRequest({
     );
   }
 
-  const { responseLong, metadata } = await getLongResponse({
+  const { responseLong, metadata, formatted } = await getLongResponse({
     summary,
     text: content,
     systemPrompt: mainPrompt,
@@ -73,7 +73,7 @@ export async function processTestEngageRequest({
 
   log.info({ long: responseLong, short: refinedOutput, metadata });
   return {
-    answer: responseLong,
+    answer: formatted,
     short: refinedOutput,
     bill: summary,
   };
