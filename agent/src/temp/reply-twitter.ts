@@ -97,6 +97,10 @@ async function main() {
       role: 'user',
       content,
     });
+    messages.push({
+      role: 'user',
+      content: `now answer this question: "${extractedQuestion}"`,
+    });
 
     log.info(
       {

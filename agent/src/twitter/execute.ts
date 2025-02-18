@@ -297,6 +297,10 @@ export const executeTweets = inngest.createFunction(
               role: 'user',
               content,
             });
+            messages.push({
+              role: 'user',
+              content: `now answer this question: "${question}"`,
+            });
 
             log.info(messages, 'context given');
             const {
@@ -372,6 +376,10 @@ export const executeTweets = inngest.createFunction(
             messages.push({
               role: 'user',
               content: input,
+            });
+            messages.push({
+              role: 'user',
+              content: `now answer this question: "${tweetText}"`,
             });
 
             const { text: long } = await generateText({

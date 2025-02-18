@@ -55,13 +55,17 @@ async function main() {
     }
 
     const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
-      question: question,
+      question,
       lastDogeReply: '',
       fullContext: '',
     });
     messages.push({
       role: 'user',
       content,
+    });
+    messages.push({
+      role: 'user',
+      content: `now answer this question: "${question}"`,
     });
 
     const mergedMessages = mergeConsecutiveSameRole(messages);
