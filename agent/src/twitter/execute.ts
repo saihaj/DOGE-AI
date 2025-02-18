@@ -35,16 +35,24 @@ import { getReasonBillContext } from './execute-interaction.ts';
 import { logger, WithLogger } from '../logger.ts';
 import { perplexity } from '@ai-sdk/perplexity';
 
-export async function generateReply({ messages }: { messages: CoreMessage[] }) {
+export async function generateReply({
+  messages,
+  systemPrompt,
+}: {
+  messages: CoreMessage[];
+  systemPrompt?: string;
+}) {
   const mergedMessages = mergeConsecutiveSameRole(messages);
-  const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
+  if (!systemPrompt) {
+    systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
+  }
   const { text: _text, experimental_providerMetadata } = await generateText({
     temperature: TEMPERATURE,
     model: perplexity('sonar-reasoning'),
     messages: [
       {
         role: 'system',
-        content: PROMPT,
+        content: systemPrompt,
       },
       ...mergedMessages,
     ],

@@ -71,9 +71,9 @@ export function EngagementTweet() {
         {result.answer ? (
           <div className="bg-stone-800 p-4 rounded-lg max-w-2xl">
             <h2 className="text-xl font-bold mb-2">Answer:</h2>
-            <p className="mb-4">{result.answer}</p>
+            <p className="mb-4 whitespace-pre-wrap">{result.answer}</p>
             <h3 className="text-lg font-semibold">Short:</h3>
-            <p>{result.short}</p>
+            <p className="whitespace-pre-wrap">{result.short}</p>
           </div>
         ) : (
           <>
