@@ -50,8 +50,12 @@ import { logger, WithLogger } from '../logger.ts';
 /**
  * Given some text try to find the specific bill.
  *
- * If you do not get a bill title
- * we are out of luck and safely error
+ * It works in the following precedence:
+ * 1. If a bill number is found we search that, narrow down to relevancy to the conversation and return most relevant.
+ *    We do not do active congress here because someone could be asking a question for past congress bill for some reference
+ *    So this approach allows us to make sure we don't rule those out.
+ * 2. If we have bill titles we search for those and return the first one.
+ * 3. If we have keywords we search we focus on the current congress and return the most relevant.
  */
 export async function getReasonBillContext(
   {
