@@ -1,4 +1,10 @@
-import { IS_PROD, REJECTION_REASON, SEED, TEMPERATURE } from '../const';
+import {
+  ACTIVE_CONGRESS,
+  IS_PROD,
+  REJECTION_REASON,
+  SEED,
+  TEMPERATURE,
+} from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
@@ -256,6 +262,7 @@ Always return a "billId", selecting the most recent bill if no contextual match 
           and(
             sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
             isNotNull(billVector.bill),
+            eq(billDbSchema.congress, ACTIVE_CONGRESS),
           ),
         )
         .orderBy(
@@ -343,6 +350,7 @@ Always return a "billId", selecting the most recent bill if no contextual match 
           const filters = [
             sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < ${THRESHOLD}`,
             isNotNull(billVector.bill),
+            eq(billDbSchema.congress, ACTIVE_CONGRESS),
           ];
 
           if (relatedBills?.billIds) {
