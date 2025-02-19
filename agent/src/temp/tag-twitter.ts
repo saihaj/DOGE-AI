@@ -1,10 +1,11 @@
 import * as readline from 'node:readline/promises';
 import { getReasonBillContext } from '../twitter/execute-interaction';
-import { CoreMessage } from 'ai';
+import { CoreMessage, generateText } from 'ai';
 import { PROMPTS } from '../twitter/prompts';
-import { generateReply, generateShortenedReply } from '../twitter/execute';
 import { logger } from '../logger';
 import { mergeConsecutiveSameRole } from '../twitter/helpers';
+import { TEMPERATURE } from '../const';
+import { openai } from '@ai-sdk/openai';
 
 const log = logger.child({ module: 'cli-tag-twitter' });
 
@@ -71,15 +72,13 @@ async function main() {
     const mergedMessages = mergeConsecutiveSameRole(messages);
     log.info(mergedMessages, 'context given');
 
-    const { text, metadata } = await generateReply({ messages });
-
-    if (metadata) {
-      console.log('\n\nMetadata: ', metadata, '\n\n');
-    }
+    const { text } = await generateText({
+      temperature: TEMPERATURE,
+      model: openai('gpt-4o'),
+      messages,
+    });
 
     console.log('\n\nLong: ', text, '\n\n');
-    const { text: short } = await generateShortenedReply({ message: text });
-    console.log('\n\nShort: ', short, '\n\n');
   } catch (error) {
     console.error('An error occurred:', error);
   }
