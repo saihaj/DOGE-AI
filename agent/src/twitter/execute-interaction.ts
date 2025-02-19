@@ -1,4 +1,10 @@
-import { IS_PROD, REJECTION_REASON, SEED, TEMPERATURE } from '../const';
+import {
+  ACTIVE_CONGRESS,
+  IS_PROD,
+  REJECTION_REASON,
+  SEED,
+  TEMPERATURE,
+} from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
@@ -44,8 +50,12 @@ import { logger, WithLogger } from '../logger.ts';
 /**
  * Given some text try to find the specific bill.
  *
- * If you do not get a bill title
- * we are out of luck and safely error
+ * It works in the following precedence:
+ * 1. If a bill number is found we search that, narrow down to relevancy to the conversation and return most relevant.
+ *    We do not do active congress here because someone could be asking a question for past congress bill for some reference
+ *    So this approach allows us to make sure we don't rule those out.
+ * 2. If we have bill titles we search for those and return the first one.
+ * 3. If we have keywords we search we focus on the current congress and return the most relevant.
  */
 export async function getReasonBillContext(
   {
@@ -256,6 +266,7 @@ Always return a "billId", selecting the most recent bill if no contextual match 
           and(
             sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
             isNotNull(billVector.bill),
+            eq(billDbSchema.congress, ACTIVE_CONGRESS),
           ),
         )
         .orderBy(
@@ -343,6 +354,7 @@ Always return a "billId", selecting the most recent bill if no contextual match 
           const filters = [
             sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < ${THRESHOLD}`,
             isNotNull(billVector.bill),
+            eq(billDbSchema.congress, ACTIVE_CONGRESS),
           ];
 
           if (relatedBills?.billIds) {
