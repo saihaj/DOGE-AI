@@ -34,9 +34,9 @@ fastify.route({
   handler: serve({
     client: inngest,
     functions: [
-      // ingestTweets,
-      // processTweets,
-      // executeTweets,
+      ingestTweets,
+      processTweets,
+      executeTweets,
       ingestInteractionTweets,
       processInteractionTweets,
       executeInteractionTweets,
