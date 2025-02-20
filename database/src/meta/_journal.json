@@ -57,6 +57,13 @@
       "when": 1738451065636,
       "tag": "0007_right_blink",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1740024133854,
+      "tag": "0008_lumpy_pixie",
+      "breakpoints": true
     }
   ]
 }
