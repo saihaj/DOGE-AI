@@ -6,7 +6,7 @@ import { openai } from '@ai-sdk/openai';
 import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
 import { generateReply, getTweetContext } from '../twitter/execute';
 import { logger } from '../logger';
-import { mergeConsecutiveSameRole } from '../twitter/helpers';
+import { getDocumentContext } from '../twitter/helpers';
 
 const log = logger.child({ module: 'cli-reply-twitter' });
 
@@ -54,13 +54,33 @@ async function main() {
       ],
     });
 
+    log.info({ extractedQuestion }, 'extracted question');
+
     if (extractedQuestion.startsWith(REJECTION_REASON.NO_QUESTION_DETECTED)) {
       throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
+    }
+    const messages: Array<CoreMessage> = [];
+    const fullThread = [...tweetThread, tweetWeRespondingTo!];
+    const documents = await getDocumentContext(
+      {
+        messages: fullThread,
+        text: extractedQuestion,
+      },
+      log,
+    ).catch(_ => {
+      return null;
+    });
+
+    if (documents) {
+      messages.push({
+        role: 'user',
+        content: `Documents Context: ${documents}\n\n`,
+      });
     }
 
     const bill = await getReasonBillContext(
       {
-        messages: tweetThread,
+        messages: fullThread,
       },
       log,
     ).catch(_ => {
@@ -76,7 +96,6 @@ async function main() {
         'found bill',
       );
     }
-    const messages: Array<CoreMessage> = [];
 
     if (summary) {
       messages.push({

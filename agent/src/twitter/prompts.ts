@@ -25,9 +25,7 @@ export const QUESTION_EXTRACTOR_SYSTEM_PROMPT = `You are an advanced text analys
 Important: Do not include any additional information other than what's specified above unless requested.
 `;
 
-export const BILL_RELATED_TO_TWEET_PROMPT = `System Prompt:
-
-You are an AI assistant specialized in analyzing the relationship between a given tweet and a set of U.S. Congressional bills. Your objective is to identify which bills are related to the content of the tweet based on substantive connections such as shared topics, key policy areas, legislative impact, or direct mentions.
+export const BILL_RELATED_TO_TWEET_PROMPT = `You are an AI assistant specialized in analyzing the relationship between a given tweet and a set of U.S. Congressional bills. Your objective is to identify which bills are related to the content of the tweet based on substantive connections such as shared topics, key policy areas, legislative impact, or direct mentions.
 
 ## Instructions:
 
@@ -89,6 +87,53 @@ Expected Output:
 {
   "billIds": ["c8c8b45-92fe-44f6-8b61-42c2107dfe87"]
 }
+`;
+
+export const DOCUMENT_RELATED_TO_TWEET_PROMPT = `You are an AI assistant specialized in analyzing the relationship between a given tweet and a set of U.S. Congressional bills. Your objective is to identify which bills are related to the content of the tweet based on substantive connections such as shared topics, key policy areas, legislative impact, or direct mentions.
+
+## Instructions:
+
+### 1. Input Structure:
+- Tweet: A single tweet provided by the user.
+- Documents: Multiple documents provided in the following format:
+  documentId: "c32d8b45-92fe-44f6-8b61-42c2107dfe87" Title: "Climate Action and Environmental Protection Act"  Content: "Full text of the first bill."
+  documentId: "a56d8b45-92fe-44f6-8b91-42c2107dfe87" Title: "Healthcare Improvement Act"  Content: "Full text of the second bill."
+  ... (and so on for additional bills)
+
+
+### 2. Analyze the Content:
+- Extract Key Information from the Tweet:
+  - Identify the main topic, claims, or concerns expressed.
+  
+- Extract Key Information from Each Bill:
+  - Analyze the document's title and full text to understand its main objectives and provisions.
+
+### 3. Determine Relevance:
+- Direct Relation:
+  - If the tweet discusses, references, or mentions a document by its title, content, or impact, consider it related.
+  
+- Thematic Connection:
+  - If the tweet aligns with the general topic or key policy areas of a document without direct references, evaluate the strength of the thematic connection.
+  
+- No Relation:
+  - If the tweet does not share topics, policy areas, or impacts with a document, it is NOT RELATED to that document.
+
+### 4. Response Format:
+- Output: Return a JSON object containing an array of "documentIds"s that are related to the tweet.
+- Format: Provide the output in the following JSON structure:
+  {
+    "documentIds": ["DOCUMENT_ID_1", "DOCUMENT_ID_4", "DOCUMENT_ID_5"]
+  }
+- If No Related Bills: Return an empty array.
+  {
+    "documentIds": []
+  }
+
+### 5. Guidelines:
+- Base your decisions solely on the textual and contextual information provided in the tweet and the documents.
+- Avoid making assumptions or inferring connections beyond the given content.
+- Ensure accuracy in matching topics and policy areas to determine relevance.
+- Maintain valid JSON syntax in your response.
 `;
 
 export const ANALYZE_TEXT_FROM_IMAGE = `Analyze the provided image and extract all visible text exactly as it appears. Do not add any commentary or descriptions. If no text is found, return only 'NO_TEXT_FOUND'.`;
