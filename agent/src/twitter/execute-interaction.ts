@@ -188,7 +188,7 @@ export const executeInteractionTweets = inngest.createFunction(
     });
 
     switch (event.data.action) {
-      case 'reply': {
+      case 'reply-engage': {
         const dbChat = await step.run('check-db', async () => {
           // skip for local testing
           if (!IS_PROD) return null;
@@ -360,6 +360,9 @@ export const executeInteractionTweets = inngest.createFunction(
                 chat: chat.id,
                 role: 'user',
                 tweetId: tweetToActionOn.id,
+                meta: Buffer.from(
+                  JSON.stringify({ eventAction: event.data.action }),
+                ),
               },
               {
                 id: crypto.randomUUID(),

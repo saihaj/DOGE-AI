@@ -89,7 +89,7 @@ export const processInteractionTweets = inngest.createFunction(
         name: 'tweet.execute.interaction',
         data: {
           tweetId: event.data.id,
-          action: 'reply',
+          action: 'reply-engage',
           tweetUrl: event.data.url,
         },
       });

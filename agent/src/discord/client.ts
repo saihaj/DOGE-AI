@@ -82,7 +82,7 @@ discordClient.on(Events.InteractionCreate, async (interaction: Interaction) => {
             data: {
               tweetId: itemId,
               tweetUrl: itemUrl,
-              action: 'reply',
+              action: 'reply-engage',
             },
           },
         ]);
