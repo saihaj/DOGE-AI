@@ -312,6 +312,9 @@ export function sanitizeLlmOutput(text: string) {
     .trim();
 }
 
+/**
+ * Given a thread and the extracted question, it will return documents that are related to the tweet.
+ */
 export async function getDocumentContext(
   {
     messages,
