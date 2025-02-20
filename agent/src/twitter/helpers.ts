@@ -290,7 +290,7 @@ export function sanitizeLlmOutput(text: string) {
     .replace(/[\[\]]/g, '')
     .replace(/\bDOGEai\b(:)?/gi, '')
     .replace(/^\s*source(s)?:\s*$/gim, '')
-    .replace(/^\[Final Response:\]\s*/i, '')
+    .replace(/^(\[)?Final Response:(\])?\s*/i, '')
     .replace(/(\*\*|__)(.*?)\1/g, '$2') // Bold (**text** or __text__)
     .replace(/(\*|_)(.*?)\1/g, '$2') // Italics (*text* or _text_)
     .trim();
