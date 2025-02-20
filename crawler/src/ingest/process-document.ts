@@ -4,7 +4,7 @@ import { NonRetriableError } from 'inngest';
 import contentTypeParser from 'fast-content-type-parse';
 import { PDFLoader } from '@langchain/community/document_loaders/fs/pdf';
 import sanitize from 'sanitize-html';
-import { embeddingModel, textSplitter } from './helpers';
+import { embeddingModel, textSplitter, upsertDocument } from './helpers';
 import { embedMany } from 'ai';
 import * as crypto from 'node:crypto';
 import { billVector, db, document as documentDbSchema } from 'database';
@@ -77,18 +77,13 @@ export const processDocument = inngest.createFunction(
       embedding: embeddings[index],
     }));
 
-    const docDB = await db
-      .insert(documentDbSchema)
-      .values({
-        id: crypto.randomUUID(),
-        title: document.title,
-        url: document.url,
-      })
-      .returning({
-        id: documentDbSchema.id,
-      });
-
-    const dbDocId = docDB[0].id;
+    const docDb = await upsertDocument({
+      title: document.title,
+      url: document.url,
+      source: 'pdf',
+      content: docContent,
+    });
+    const dbDocId = docDb.id;
 
     const insertEmbeddings = await db
       .insert(billVector)

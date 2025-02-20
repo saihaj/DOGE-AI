@@ -159,6 +159,9 @@ importers:
       inngest:
         specifier: ^3.28.0
         version: 3.30.0(encoding@0.1.13)(express@4.21.2)(fastify@5.2.1)(h3@1.14.0)(next@15.1.4(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(typescript@5.7.3)
+      langchain:
+        specifier: ^0.3.19
+        version: 0.3.19(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)))(axios@1.7.9)(encoding@0.1.13)(handlebars@4.7.8)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1))(ws@8.18.0)
       openai:
         specifier: ^4.80.0
         version: 4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)
@@ -4180,8 +4183,8 @@ packages:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
 
-  langchain@0.3.15:
-    resolution: {integrity: sha512-+DQ4I2iy4b5sErkxo6jAkgmumvhgqLwLB2fmiGl3yDt8+VVZdB1MUULZMzf+6ubarNc7Mwn/sxHUqK4GhEndhg==}
+  langchain@0.3.19:
+    resolution: {integrity: sha512-aGhoTvTBS5ulatA67RHbJ4bcV5zcYRYdm5IH+hpX99RYSFXG24XF3ghSjhYi6sxW+SUnEQ99fJhA5kroVpKNhw==}
     engines: {node: '>=18'}
     peerDependencies:
       '@langchain/anthropic': '*'
@@ -4196,6 +4199,7 @@ packages:
       '@langchain/groq': '*'
       '@langchain/mistralai': '*'
       '@langchain/ollama': '*'
+      '@langchain/xai': '*'
       axios: '*'
       cheerio: '*'
       handlebars: ^4.7.8
@@ -4223,6 +4227,8 @@ packages:
       '@langchain/mistralai':
         optional: true
       '@langchain/ollama':
+        optional: true
+      '@langchain/xai':
         optional: true
       axios:
         optional: true
@@ -7263,7 +7269,7 @@ snapshots:
       flat: 5.0.2
       ibm-cloud-sdk-core: 5.1.2
       js-yaml: 4.1.0
-      langchain: 0.3.15(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)))(axios@1.7.9)(encoding@0.1.13)(handlebars@4.7.8)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1))(ws@8.18.0)
+      langchain: 0.3.19(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)))(axios@1.7.9)(encoding@0.1.13)(handlebars@4.7.8)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1))(ws@8.18.0)
       langsmith: 0.3.4(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1))
       openai: 4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)
       uuid: 10.0.0
@@ -7293,6 +7299,7 @@ snapshots:
       - '@langchain/groq'
       - '@langchain/mistralai'
       - '@langchain/ollama'
+      - '@langchain/xai'
       - axios
       - encoding
       - handlebars
@@ -10122,7 +10129,7 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  langchain@0.3.15(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)))(axios@1.7.9)(encoding@0.1.13)(handlebars@4.7.8)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1))(ws@8.18.0):
+  langchain@0.3.19(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)))(axios@1.7.9)(encoding@0.1.13)(handlebars@4.7.8)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1))(ws@8.18.0):
     dependencies:
       '@langchain/core': 0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1))
       '@langchain/openai': 0.4.2(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.1)))(encoding@0.1.13)(ws@8.18.0)
