@@ -38,10 +38,14 @@ export const processWebpage = inngest.createFunction(
       throw new NonRetriableError('Invalid URL');
     }
 
-    const crawlResponse = await app.scrapeUrl(url, {
-      formats: ['markdown'],
-      actions: actions,
-    });
+    const crawlResponse = await app
+      .scrapeUrl(url, {
+        formats: ['markdown'],
+        actions: actions,
+      })
+      .catch(e => {
+        throw new NonRetriableError(e.message);
+      });
 
     if (!crawlResponse.success) {
       throw new NonRetriableError(`Failed to crawl: ${crawlResponse.error}`);
