@@ -1,3 +1,4 @@
+import { Action } from '@mendable/firecrawl-js';
 import { EventSchemas, Inngest } from 'inngest';
 
 // Create a client to send and receive events
@@ -26,6 +27,12 @@ export const inngest = new Inngest({
       data: {
         url: string;
         title: string;
+      };
+    };
+    'web.imported': {
+      data: {
+        url: string;
+        actions?: Action[];
       };
     };
   }>(),

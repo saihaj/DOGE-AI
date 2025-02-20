@@ -24,3 +24,9 @@ export const TURSO_DATABASE_URL = (() => {
   }
   return process.env.TURSO_DATABASE_URL;
 })();
+export const FC_API_KEY = (() => {
+  if (!process.env.FC_API_KEY) {
+    throw new Error('FC_API_KEY is not set');
+  }
+  return process.env.FC_API_KEY;
+})();
