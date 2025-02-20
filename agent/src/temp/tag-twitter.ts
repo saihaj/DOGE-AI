@@ -1,11 +1,11 @@
 import * as readline from 'node:readline/promises';
-import { getReasonBillContext } from '../twitter/execute-interaction';
 import { CoreMessage, generateText } from 'ai';
 import { PROMPTS } from '../twitter/prompts';
 import { logger } from '../logger';
 import { mergeConsecutiveSameRole } from '../twitter/helpers';
 import { TEMPERATURE } from '../const';
 import { openai } from '@ai-sdk/openai';
+import { getKbContext } from '../twitter/knowledge-base';
 
 const log = logger.child({ module: 'cli-tag-twitter' });
 
@@ -22,7 +22,7 @@ async function main() {
     const question = await terminal.question('Enter your question: ');
     terminal.close();
 
-    const bill = await getReasonBillContext(
+    const kb = await getKbContext(
       {
         messages: [
           {
@@ -30,28 +30,34 @@ async function main() {
             content: question,
           },
         ],
+        text: question,
       },
       log,
-    ).catch(_ => {
-      return null;
-    });
+    );
 
-    const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-    if (bill) {
+    const summary = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
+    if (kb?.bill) {
       log.info(
         {
-          billId: bill.id,
-          billTitle: bill.title,
+          billId: kb.bill.id,
+          billTitle: kb.bill.title,
         },
         'found bill',
       );
     }
     const messages: Array<CoreMessage> = [];
 
+    if (kb?.documents) {
+      messages.push({
+        role: 'user',
+        content: `Documents Context: ${kb.documents}\n\n`,
+      });
+    }
+
     if (summary) {
       messages.push({
         role: 'user',
-        content: `Context from database: ${summary}\n\n`,
+        content: `Bills Context: ${summary}\n\n`,
       });
     }
 

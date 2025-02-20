@@ -3,10 +3,10 @@ import * as readline from 'node:readline/promises';
 import { getTweetContentAsText } from '../twitter/helpers';
 import {
   getLongResponse,
-  getReasonBillContext,
   getShortResponse,
 } from '../twitter/execute-interaction';
 import { logger } from '../logger';
+import { getKbContext } from '../twitter/knowledge-base';
 
 const log = logger.child({ module: 'cli-engage-twitter' });
 
@@ -34,7 +34,7 @@ async function main() {
 
     await writeFile(`dev-test/apitweet.txt`, JSON.stringify(content));
 
-    const bill = await getReasonBillContext(
+    const kb = await getKbContext(
       {
         messages: [
           {
@@ -42,22 +42,24 @@ async function main() {
             content,
           },
         ],
+        text: content,
       },
       log,
-    ).catch(_ => {
-      return null;
-    });
+    );
 
-    const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-    if (bill) {
+    if (kb?.bill) {
       log.info(
         {
-          billId: bill.id,
-          billTitle: bill.title,
+          billId: kb.bill.id,
+          billTitle: kb.bill.title,
         },
         'found bill',
       );
     }
+
+    const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
+    const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
+
     const { responseLong, metadata, formatted } = await getLongResponse({
       summary,
       text: content,
