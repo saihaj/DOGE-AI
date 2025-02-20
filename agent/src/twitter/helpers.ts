@@ -292,6 +292,7 @@ export function sanitizeLlmOutput(text: string) {
     .replace(/^(\n)+/, '')
     .replace(/#\w+/g, '') // remove hashtags
     .replace(/[\[\]]/g, '')
+    .replace(/^\s*(new line|line break)\s/gm, '') // remove 'new line' and any extra whitespace/line break
     .replace(/\bDOGEai\b(:)?/gi, '') // DOGEai: prefix
     .replace(/^\s*source(s)?:\s*$/gim, '') // sources
     .replace(/^(\[)?Final Response:(\])?\s*/i, '') // final response prefix
