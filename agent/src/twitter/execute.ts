@@ -108,7 +108,7 @@ export async function getTweetContext(
   },
   logger: WithLogger,
 ): Promise<Array<CoreMessage>> {
-  const LIMIT = 7;
+  const LIMIT = 3;
   let tweets: Array<CoreMessage> = [];
 
   let searchId: null | string = id;
