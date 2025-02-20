@@ -1,40 +1,28 @@
-import {
-  ACTIVE_CONGRESS,
-  IS_PROD,
-  REJECTION_REASON,
-  SEED,
-  TEMPERATURE,
-} from '../const';
+import { IS_PROD, REJECTION_REASON, TEMPERATURE } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
-  generateEmbedding,
   generateEmbeddings,
   getTweet,
   getTweetContentAsText,
+  highPriorityUser,
   longResponseFormatter,
   sanitizeLlmOutput,
   textSplitter,
   upsertChat,
   upsertUser,
 } from './helpers.ts';
-import { CoreMessage, generateObject, generateText, tool } from 'ai';
+import { generateText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
-import { openai } from '@ai-sdk/openai';
-import { BILL_RELATED_TO_TWEET_PROMPT, PROMPTS } from './prompts';
+import { PROMPTS } from './prompts';
 import {
-  billVector,
   chat as chatDbSchema,
   db,
   eq,
-  inArray,
   message as messageDbSchema,
   messageVector,
   sql,
-  bill as billDbSchema,
-  and,
-  isNotNull,
 } from 'database';
 import {
   approvedTweetEngagement,
@@ -43,9 +31,8 @@ import {
   sendDevTweet,
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
-import { z } from 'zod';
 import { perplexity } from '@ai-sdk/perplexity';
-import { logger, WithLogger } from '../logger.ts';
+import { logger } from '../logger.ts';
 import { getKbContext } from './knowledge-base.ts';
 
 /**
@@ -299,6 +286,7 @@ export const executeInteractionTweets = inngest.createFunction(
               tweetUrl: `https://x.com/i/status/${tweetToActionOn.id}`,
               question: text,
               response: reply.response,
+              priority: highPriorityUser(tweetToActionOn.author.userName),
               refinedOutput: reply.refinedOutput,
               longOutput: reply.longOutput,
             });
@@ -326,6 +314,7 @@ export const executeInteractionTweets = inngest.createFunction(
             sentTweetUrl: `https://x.com/i/status/${repliedTweet.id}`,
             replyTweetUrl: tweetToActionOn.url,
             sent: reply.response,
+            priority: highPriorityUser(tweetToActionOn.author.userName),
             refinedOutput: reply.refinedOutput,
             longOutput: reply.longOutput,
           });
