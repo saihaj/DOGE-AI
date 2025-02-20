@@ -299,3 +299,7 @@ export function sanitizeLlmOutput(text: string) {
     .replace(/(\*|_)(.*?)\1/g, '$2') // Italics (*text* or _text_)
     .trim();
 }
+
+export function highPriorityUser(username: string) {
+  return ['elonmusk'].includes(username.toLowerCase());
+}
