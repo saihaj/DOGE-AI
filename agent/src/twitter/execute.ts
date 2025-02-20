@@ -31,9 +31,9 @@ import {
   sendDevTweet,
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
-import { getReasonBillContext } from './execute-interaction.ts';
 import { logger, WithLogger } from '../logger.ts';
 import { perplexity } from '@ai-sdk/perplexity';
+import { getKbContext } from './knowledge-base.ts';
 
 export async function generateReply({
   messages,
@@ -262,24 +262,33 @@ export const executeTweets = inngest.createFunction(
               );
             }
 
-            const bill = await getReasonBillContext(
+            const kb = await getKbContext(
               {
-                messages: tweetThread,
+                messages: [...tweetThread, tweetWeRespondingTo],
+                text: question,
               },
               log,
-            ).catch(_ => {
-              return null;
-            });
-            if (bill) {
-              log.info(bill, 'bill found');
+            );
+
+            if (kb?.bill) {
+              log.info(kb.bill, 'bill found');
             }
 
-            const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
+            const summary = kb?.bill
+              ? `${kb.bill.title}: \n\n${kb.bill.content}`
+              : '';
+
+            if (kb?.documents) {
+              messages.push({
+                role: 'user',
+                content: `Documents Context: ${kb.documents}\n\n`,
+              });
+            }
 
             if (summary) {
               messages.push({
                 role: 'user',
-                content: `Context from database: ${summary}\n\n`,
+                content: `Bills Context: ${summary}\n\n`,
               });
             }
 
@@ -341,25 +350,33 @@ export const executeTweets = inngest.createFunction(
               logger,
             );
 
-            const bill = await getReasonBillContext(
+            const kb = await getKbContext(
               {
                 messages: tweetThread,
+                text: tweetText,
               },
               log,
-            ).catch(_ => {
-              return null;
-            });
+            );
 
-            if (bill) {
-              log.info(bill, 'bill found');
+            if (kb?.bill) {
+              log.info(kb.bill, 'bill found');
             }
 
-            const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
+            const summary = kb?.bill
+              ? `${kb.bill.title}: \n\n${kb.bill.content}`
+              : '';
+
+            if (kb?.documents) {
+              messages.push({
+                role: 'user',
+                content: `Documents Context: ${kb.documents}\n\n`,
+              });
+            }
 
             if (summary) {
               messages.push({
                 role: 'user',
-                content: `Context from database: ${summary}\n\n`,
+                content: `Bills Context: ${summary}\n\n`,
               });
             }
 

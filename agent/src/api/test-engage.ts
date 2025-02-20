@@ -1,12 +1,12 @@
 import {
   getLongResponse,
-  getReasonBillContext,
   getShortResponse,
 } from '../twitter/execute-interaction';
 import { getTweetContentAsText } from '../twitter/helpers';
 import Handlebars from 'handlebars';
 import { Static, Type } from '@sinclair/typebox';
 import { logger } from '../logger';
+import { getKbContext } from '../twitter/knowledge-base';
 
 export const ProcessTestEngageRequestInput = Type.Object({
   tweetId: Type.String(),
@@ -29,7 +29,7 @@ export async function processTestEngageRequest({
   const log = logger.child({ module: 'processTestEngageRequest', tweetId });
   const content = await getTweetContentAsText({ id: tweetId }, log);
 
-  const bill = await getReasonBillContext(
+  const kb = await getKbContext(
     {
       messages: [
         {
@@ -37,22 +37,17 @@ export async function processTestEngageRequest({
           content,
         },
       ],
+      text: content,
     },
     log,
-  ).catch(_ => {
-    return null;
-  });
+  );
 
-  const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-  if (bill) {
-    log.info(
-      {
-        billId: bill.id,
-        billTitle: bill.title,
-      },
-      'found bill',
-    );
+  if (kb?.bill) {
+    log.info(kb.bill, 'bill found');
   }
+
+  const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
+  const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
 
   const { responseLong, metadata, formatted } = await getLongResponse({
     summary,

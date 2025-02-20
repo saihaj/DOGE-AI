@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import {
   REJECTION_REASON,
-  SEED,
   TEMPERATURE,
   TWITTER_API_BASE_URL,
   TWITTER_API_KEY,
@@ -12,29 +11,14 @@ import {
   CoreMessage,
   embed,
   embedMany,
-  generateObject,
   generateText,
   type Embedding,
 } from 'ai';
 import { openai } from '@ai-sdk/openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
-import {
-  db,
-  eq,
-  user as userDbSchema,
-  chat as chatDbSchema,
-  billVector,
-  document,
-  sql,
-  and,
-  isNotNull,
-} from 'database';
+import { db, eq, user as userDbSchema, chat as chatDbSchema } from 'database';
 import * as crypto from 'node:crypto';
-import {
-  ANALYZE_TEXT_FROM_IMAGE,
-  DOCUMENT_RELATED_TO_TWEET_PROMPT,
-  PROMPTS,
-} from './prompts';
+import { ANALYZE_TEXT_FROM_IMAGE, PROMPTS } from './prompts';
 import { WithLogger } from '../logger';
 
 // Ada V2 31.4% vs 54.9% large
@@ -310,102 +294,4 @@ export function sanitizeLlmOutput(text: string) {
     .replace(/(\*\*|__)(.*?)\1/g, '$2') // Bold (**text** or __text__)
     .replace(/(\*|_)(.*?)\1/g, '$2') // Italics (*text* or _text_)
     .trim();
-}
-
-/**
- * Given a thread and the extracted question, it will return documents that are related to the tweet.
- */
-export async function getDocumentContext(
-  {
-    messages,
-    text,
-  }: {
-    messages: CoreMessage[];
-    text: string;
-  },
-  logger: WithLogger,
-) {
-  const log = logger.child({
-    method: 'getDocumentContext',
-  });
-  const LIMIT = 5;
-  const THRESHOLD = 0.6;
-
-  const termEmbedding = await generateEmbedding(text);
-  const termEmbeddingString = JSON.stringify(termEmbedding);
-
-  const embeddingsQuery = await db
-    .select({
-      text: billVector.text,
-      documentId: billVector.document,
-      title: document.title,
-      source: document.source,
-      distance: sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString}))`,
-    })
-    .from(billVector)
-    .where(
-      and(
-        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
-        isNotNull(billVector.document),
-      ),
-    )
-    .orderBy(
-      sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
-    )
-    .leftJoin(document, eq(document.id, billVector.document))
-    .limit(LIMIT);
-
-  if (embeddingsQuery.length === 0) {
-    log.info({}, 'No document embeddings found.');
-    return null;
-  }
-  log.info({ size: embeddingsQuery.length }, 'found document embeddings');
-
-  const baseText = embeddingsQuery
-    .map(
-      ({ title, text, documentId }) =>
-        `documentId: ${documentId}, Title: ${title}, Content: ${text}`,
-    )
-    .join('\n\n');
-
-  const { object: relatedDocuments } = await generateObject({
-    model: openai('gpt-4o'),
-    seed: SEED,
-    temperature: TEMPERATURE,
-    schemaName: 'documentRelatedToTweet',
-    schema: z.object({
-      documentIds: z.array(z.string()).nullish(),
-    }),
-    schemaDescription: 'List of documentIds related to the tweet.',
-    messages: [
-      {
-        role: 'system',
-        content: DOCUMENT_RELATED_TO_TWEET_PROMPT,
-      },
-      {
-        role: 'user',
-        content: `Tweet: ${messages.map(m => m.content).join('\n')}\n\nDocuments: ${baseText}`,
-      },
-    ],
-  });
-
-  if (!relatedDocuments.documentIds) {
-    log.info({}, 'No related documents found.');
-    return null;
-  }
-
-  log.info({ documentIds: relatedDocuments.documentIds }, 'related documents');
-
-  return relatedDocuments.documentIds
-    .map(documentId => {
-      const found = embeddingsQuery.find(
-        ({ documentId: id }) => id === documentId,
-      );
-
-      if (!found) return null;
-
-      return `documentId: ${documentId}, Title: ${found.title}, Content: ${found.text}, Source: ${found.source}`;
-    })
-    .filter(Boolean)
-    .join('\n\n');
 }

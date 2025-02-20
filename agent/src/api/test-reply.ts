@@ -1,15 +1,13 @@
 import { CoreMessage, generateText } from 'ai';
 import { generateReply, getTweetContext } from '../twitter/execute';
-import {
-  getReasonBillContext,
-  getShortResponse,
-} from '../twitter/execute-interaction';
+import { getShortResponse } from '../twitter/execute-interaction';
 import { Static, Type } from '@sinclair/typebox';
 import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
 import { openai } from '@ai-sdk/openai';
 import Handlebars from 'handlebars';
 import { REJECTION_REASON, SEED, TEMPERATURE } from '../const';
 import { logger } from '../logger';
+import { getKbContext } from '../twitter/knowledge-base';
 
 export const ProcessTestReplyRequestInput = Type.Object({
   tweetId: Type.String(),
@@ -61,29 +59,31 @@ export async function processTestReplyRequest({
     throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
   }
 
-  const bill = await getReasonBillContext(
+  const kb = await getKbContext(
     {
-      messages: tweetThread,
+      messages: [...tweetThread, tweetWeRespondingTo],
+      text: extractedQuestion,
     },
     log,
-  ).catch(_ => {
-    return null;
-  });
-  const summary = bill ? `${bill.title}: \n\n${bill.content}` : '';
-  if (bill) {
-    log.info(
-      {
-        billId: bill.id,
-        billTitle: bill.title,
-      },
-      'found bill',
-    );
+  );
+
+  if (kb?.bill) {
+    log.info(kb.bill, 'bill found');
   }
   const messages: Array<CoreMessage> = [];
+
+  if (kb?.documents) {
+    messages.push({
+      role: 'user',
+      content: `Documents Context: ${kb.documents}\n\n`,
+    });
+  }
+
+  const summary = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
   if (summary) {
     messages.push({
       role: 'user',
-      content: `Context from database: ${summary}\n\n`,
+      content: `Bills Context: ${summary}\n\n`,
     });
   }
 
