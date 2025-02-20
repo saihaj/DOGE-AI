@@ -161,11 +161,15 @@ export const executeTweets = inngest.createFunction(
 
       log.error({ error: errorMessage }, 'Failed to execute tweets');
 
-      if (
+      const nonFatalError =
         errorMessage
           .toLowerCase()
-          .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase())
-      ) {
+          .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase()) ||
+        errorMessage
+          .toLowerCase()
+          .startsWith(REJECTION_REASON.MAX_THREAD_DEPTH_REACHED.toLowerCase());
+
+      if (nonFatalError) {
         await rejectedTweet({
           tweetId: id,
           tweetUrl: url,
