@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "23ae89f7-c433-45cf-bac0-3f04962932b6",
+  "id": "3fecc9a4-d5a9-4697-baea-21fdb4db78fa",
   "prevId": "6937dfe6-bd0e-47f4-9ed0-d5bbefd3906a",
   "tables": {
     "Bill": {
@@ -456,7 +456,7 @@
           "name": "source",
           "type": "text",
           "primaryKey": false,
-          "notNull": true,
+          "notNull": false,
           "autoincrement": false
         }
       },
