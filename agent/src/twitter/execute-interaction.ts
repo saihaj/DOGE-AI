@@ -125,13 +125,7 @@ export async function getShortResponse({
     ],
   });
 
-  const finalAnswer = _finalAnswer
-    .trim()
-    .replace(/<\/?response_format>|<\/?mimicked_text>/g, '')
-    .replace(/\[\d+\]/g, '')
-    .replace(/^(\n)+/, '')
-    .replace(/[\[\]]/g, '')
-    .replace(/\bDOGEai\b(:)?/gi, '');
+  const finalAnswer = sanitizeLlmOutput(_finalAnswer);
 
   return finalAnswer;
 }

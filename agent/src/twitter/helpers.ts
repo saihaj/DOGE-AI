@@ -269,7 +269,7 @@ export function mergeConsecutiveSameRole(
 export async function longResponseFormatter(text: string) {
   const prompt = await PROMPTS.LONG_RESPONSE_FORMATTER_PROMPT();
 
-  const { text: responseLong } = await generateText({
+  const { text: _responseLong } = await generateText({
     model: openai('gpt-4o'),
     temperature: TEMPERATURE,
     messages: [
@@ -277,6 +277,8 @@ export async function longResponseFormatter(text: string) {
       { role: 'user', content: text },
     ],
   });
+
+  const responseLong = sanitizeLlmOutput(_responseLong);
 
   return responseLong;
 }
@@ -286,6 +288,7 @@ export function sanitizeLlmOutput(text: string) {
     .trim()
     .replace(/<think>[\s\S]*?<\/think>/g, '')
     .replace(/\[\d+\]/g, '')
+    .replace(/<\/?response_format>|<\/?mimicked_text>/g, '')
     .replace(/^(\n)+/, '')
     .replace(/[\[\]]/g, '')
     .replace(/\bDOGEai\b(:)?/gi, '')

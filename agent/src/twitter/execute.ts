@@ -75,7 +75,7 @@ export async function generateReply({
 
 export async function generateShortenedReply({ message }: { message: string }) {
   const PROMPT = await PROMPTS.REPLY_SHORTENER_PROMPT();
-  const { text } = await generateText({
+  const { text: _text } = await generateText({
     temperature: TEMPERATURE,
     model: openai('gpt-4o'),
     messages: [
@@ -89,6 +89,8 @@ export async function generateShortenedReply({ message }: { message: string }) {
       },
     ],
   });
+
+  const text = sanitizeLlmOutput(_text);
 
   return {
     text,
@@ -400,12 +402,13 @@ export const executeTweets = inngest.createFunction(
               content: `now answer this question: "${tweetText}"`,
             });
 
-            const { text: long } = await generateText({
+            const { text: _long } = await generateText({
               temperature: TEMPERATURE,
               model: openai('gpt-4o'),
               messages,
             });
 
+            const long = sanitizeLlmOutput(_long);
             const formatted = await longResponseFormatter(long);
 
             return {
