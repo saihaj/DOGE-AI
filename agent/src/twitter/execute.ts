@@ -342,8 +342,6 @@ export const executeTweets = inngest.createFunction(
               { id: tweetToActionOn.id },
               log,
             );
-            // we remove that so we can focus on the question
-            const _tweetWeRespondingTo = tweetThread.pop();
 
             const tweetText = await getTweetContentAsText(
               { id: tweetToActionOn.id },
@@ -357,6 +355,9 @@ export const executeTweets = inngest.createFunction(
               },
               log,
             );
+
+            // we remove that so we can just focus on the question
+            const _tweetWeRespondingTo = tweetThread.pop();
 
             if (kb?.bill) {
               log.info(kb.bill, 'bill found');
