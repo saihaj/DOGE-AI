@@ -48,7 +48,7 @@ export async function generateReply({
   }
   const { text: _text, experimental_providerMetadata } = await generateText({
     temperature: TEMPERATURE,
-    model: perplexity('sonar-reasoning'),
+    model: perplexity('sonar-reasoning-pro'),
     messages: [
       {
         role: 'system',
