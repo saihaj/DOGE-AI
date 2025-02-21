@@ -156,11 +156,46 @@ to move the initial scrape to a CRON job.
 
 #### `agent`
 
-This is based on [Eliza framework](https://github.com/elizaOS/eliza). Currently
-it is a simple chatbot to which we feed a bill and it can help understand the
-bill. Given the early stage of the project and we are still tweaking our agent.
-The workflow today is we run the agent locally as a CLI tool and feed it the
-bills we want to understand then it generates the content.
+We initially built the agent using
+[ElizaOS Framework](https://github.com/elizaOS/eliza), but customizing each step
+proved challenging. During our POC phase, we realized that
+[ElizaOS](https://github.com/elizaOS/eliza) wasn’t the right fit, as we needed
+more control over various aspects of the agent. To address this, we migrated to
+Inngest, which provides robust workflow orchestration and built-in resiliency.
+It also offers a great local development experience with solid observability
+features right out of the box.
+
+At a high level, the agent follows this process:
+
+1. Cron jobs fetch tweets from X.
+2. The system processes them for decision-making.
+3. Replies are then posted accordingly.
+
+```mermaid
+graph LR
+   Agent["Agent"] --> IngestInteraction["X lists that act as feed"]
+   IngestInteraction --> ProcessInteraction["Decision Queue"]
+   ProcessInteraction --> ExecuteInteraction["Generate reply and post"]
+
+   subgraph ExecuteInteraction["Generate reply and post"]
+      Idempotency["Ignore if already replied"]
+      Context["Pull post context"]
+      Search["Search Knowledge Base"]
+      Generate["Generate Reply"]
+      Post["Post Reply"]
+    end
+
+   ExecuteInteraction --> Idempotency --> Context --> Search --> Generate --> Post
+
+   Agent["Agent"] --> Ingest["Tags to DOGEai"]
+   Ingest --> ProcessInteraction["Decision Queue"]
+   ProcessInteraction --> ExecuteInteraction["Generate reply and post"]
+```
+
+For a deeper dive into the architecture, check out these articles I wrote:
+
+- https://x.com/singh_saihaj/status/1888639845108535363
+- https://x.com/singh_saihaj/status/1892244082329518086
 
 #### `website`
 
