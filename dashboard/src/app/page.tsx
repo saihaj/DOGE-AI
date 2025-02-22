@@ -65,7 +65,7 @@ export default function ChatInterface() {
   return (
     <div className="flex flex-col w-full h-dvh overflow-hidden">
       <div className="flex-1 flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b border-gray-800">
+        <div className="flex justify-between items-center p-4 border-b border-secondary-foreground/30">
           <SidebarTrigger />
           <h1 className="text-xl font-semibold">DOGEai</h1>
           <div className="flex gap-2">
@@ -84,17 +84,17 @@ export default function ChatInterface() {
         {/* Expandable System Prompt Area */}
         <Accordion type="single" collapsible className="w-full sticky">
           <AccordionItem value="system-prompt" className="border-b-0">
-            <AccordionTrigger className="px-4 py-2 bg-gray-900 hover:bg-gray-800 hover:no-underline">
-              <span className="text-sm font-medium text-gray-400">
+            <AccordionTrigger className="px-4 py-2 border-secondary-foreground/30 bg-secondary hover:no-underline">
+              <span className="text-sm font-medium text-secondary-foreground">
                 System message
               </span>
             </AccordionTrigger>
-            <AccordionContent className="bg-gray-900 px-4 py-4">
+            <AccordionContent className="bg-secondary px-4 pt-1 pb-4">
               <Textarea
                 value={systemPrompt}
                 onChange={handleSystemPromptChange}
                 placeholder="Enter system message..."
-                className="min-h-[100px] bg-gray-800 border-gray-700 text-white resize-y max-h-[50vh]"
+                className="min-h-[100px] border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground resize-y max-h-[50vh]"
               />
             </AccordionContent>
           </AccordionItem>
@@ -117,10 +117,10 @@ export default function ChatInterface() {
                   <div
                     className={cn(
                       'max-w-[70%] mx-2 text-wrap', // Added margin
-                      'px-3 py-2 rounded-md shadow-sm', // Added shadow
+                      'px-3 py-2 rounded-md', // Added shadow
                       message.role === 'user'
-                        ? 'bg-gray-800 text-gray-300 rounded-br-none' // Different corner for user
-                        : 'bg-gray-900 text-gray-300 rounded-bl-none', // Different corner for assistant
+                        ? 'bg-secondary text-primary rounded-br-none' // Different corner for user
+                        : '', // Different corner for assistant
                     )}
                   >
                     <div>{message.content}</div>
@@ -135,14 +135,14 @@ export default function ChatInterface() {
         </ScrollArea>
 
         {/* Input Area */}
-        <div className="p-4 border-t border-gray-800 sticky bottom-0 z-10 bg-background">
+        <div className="p-4 border-t border-secondary-foreground/30 sticky bottom-0 z-10 bg-background">
           <div className="w-full md:max-w-4xl mx-auto">
             <form onSubmit={handleSubmit} className="flex gap-2">
               <Input
                 value={input}
                 onChange={handleInputChange}
                 placeholder="Enter user message..."
-                className="flex-1 bg-gray-800 border-gray-700 text-white"
+                className="flex-1  border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground"
               />
               <Button type="submit">Send</Button>
             </form>
