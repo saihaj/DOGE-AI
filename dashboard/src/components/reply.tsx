@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { API_URL } from 'src/const';
+import { API_URL } from '@/lib/const';
 
 export function ReplyTweet() {
   const [tweetUrl, setTweetUrl] = useState('');
