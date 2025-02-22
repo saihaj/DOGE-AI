@@ -16,16 +16,20 @@ import {
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
-import { Loader, Loader2, Trash2Icon } from 'lucide-react';
+import { Loader2, Trash2Icon } from 'lucide-react';
 import { ModelSelector, ModelValues } from '@/components/model-selector';
 import { Logo } from '@/components/logo';
 import { CopyButton } from '@/components/copy-button';
 import { Markdown } from '@/components/markdown';
+import { useLocalStorage } from '@uidotdev/usehooks';
+
+const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
 export default function ChatInterface() {
   const [model, setModel] = useState<ModelValues>('sonar-reasoning-pro');
-  const [systemPrompt, setSystemPrompt] = useState(
-    'You are a helpful AI assistant.',
+  const [systemPrompt, setSystemPrompt] = useLocalStorage(
+    'playgroundSystemPrompt',
+    PLACEHOLDER_PROMPT,
   );
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
