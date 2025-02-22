@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
-import { Trash2Icon } from 'lucide-react';
+import { Loader2, Trash2Icon } from 'lucide-react';
 import { ModelSelector, ModelValues } from '@/components/model-selector';
 import { Logo } from '@/components/logo';
 import { CopyButton } from '@/components/copy-button';
@@ -29,16 +29,27 @@ export default function ChatInterface() {
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
 
-  const { messages, input, handleInputChange, handleSubmit, setMessages } =
-    useChat({
-      initialMessages: [
-        {
-          id: 'system',
-          role: 'system',
-          content: systemPrompt,
-        },
-      ],
-    });
+  const {
+    messages,
+    input,
+    handleInputChange,
+    isLoading,
+    stop,
+    handleSubmit,
+    setMessages,
+  } = useChat({
+    api: 'http://localhost:3000/api/chat',
+    body: {
+      selectedChatModel: model,
+    },
+    initialMessages: [
+      {
+        id: 'system',
+        role: 'system',
+        content: systemPrompt,
+      },
+    ],
+  });
 
   const handleSystemPromptChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>,
@@ -155,12 +166,19 @@ export default function ChatInterface() {
           <div className="w-full md:max-w-4xl mx-auto">
             <form onSubmit={handleSubmit} className="flex gap-2">
               <Input
+                disabled={isLoading}
                 value={input}
                 onChange={handleInputChange}
                 placeholder="Enter user message..."
                 className="flex-1  border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground"
               />
-              <Button type="submit">Send</Button>
+              {isLoading ? (
+                <Button onClick={stop}>Stop</Button>
+              ) : (
+                <Button disabled={isLoading} type="submit">
+                  Send
+                </Button>
+              )}
             </form>
           </div>
         </div>

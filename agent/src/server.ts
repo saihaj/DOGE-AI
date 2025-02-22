@@ -1,6 +1,13 @@
 import { serve } from 'inngest/fastify';
 import Fastify from 'fastify';
+import {
+  createDataStreamResponse,
+  experimental_customProvider,
+  streamText,
+  type Message,
+} from 'ai';
 import { inngest } from './inngest';
+import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import { ingestTweets } from './twitter/ingest';
 import { processTweets } from './twitter/process';
@@ -20,6 +27,9 @@ import {
   ProcessTestReplyRequestInput,
 } from './api/test-reply';
 import { logger } from './logger';
+import { Static, Type } from '@sinclair/typebox';
+import { openai } from '@ai-sdk/openai';
+import { perplexity } from '@ai-sdk/perplexity';
 
 const fastify = Fastify();
 
@@ -116,6 +126,77 @@ fastify.route<{ Body: ProcessTestReplyRequestInput }>({
     }
   },
   url: '/api/test/reply',
+});
+
+const ChatStreamInput = Type.Object({
+  id: Type.String(),
+  messages: Type.Array(Type.Any()),
+  selectedChatModel: Type.String(),
+});
+type ChatStreamInput = Static<typeof ChatStreamInput>;
+
+const myProvider = experimental_customProvider({
+  languageModels: {
+    'sonar-reasoning-pro': perplexity('sonar-reasoning-pro'),
+    'sonar-reasoning': perplexity('sonar-reasoning'),
+    'o3-mini': openai('o3-mini'),
+    'gpt-4o': openai('gpt-4o'),
+  },
+});
+
+fastify.route<{ Body: ChatStreamInput }>({
+  method: 'post',
+  schema: {
+    body: ChatStreamInput,
+  },
+  handler: async (request, reply) => {
+    // Create an AbortController for the backend
+    const abortController = new AbortController();
+    const { id, messages, selectedChatModel } = request.body;
+
+    // Listen for the client disconnecting (abort)
+    request.raw.on('close', () => {
+      if (request.raw.aborted) {
+        abortController.abort();
+      }
+    });
+
+    // Mark the response as a v1 data stream:
+    reply.header('X-Vercel-AI-Data-Stream', 'v1');
+    reply.header('Content-Type', 'text/plain; charset=utf-8');
+    reply.header('Cache-Control', 'no-cache');
+    reply.header('Connection', 'keep-alive');
+    reply.type('text/event-stream');
+
+    try {
+      const result = streamText({
+        model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
+        abortSignal: abortController.signal,
+        messages,
+        maxSteps: 5,
+        experimental_generateMessageId: crypto.randomUUID,
+        experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
+      });
+
+      reply.type('text/event-stream');
+      reply.header('X-Vercel-AI-Data-Stream', 'v1');
+      reply.header('Cache-Control', 'no-cache');
+      reply.header('Connection', 'keep-alive');
+
+      // Use toDataStreamResponse for simplicity
+      const response = result.toDataStreamResponse();
+      return response;
+    } catch (error) {
+      if (abortController.signal.aborted) {
+        // Handle the abort gracefully
+        reply.status(204).send(); // No Content
+        return;
+      }
+
+      throw error; // Other errors should be handled as usual
+    }
+  },
+  url: '/api/chat',
 });
 
 // So in fly.io, health should do both the health check and the readiness check
