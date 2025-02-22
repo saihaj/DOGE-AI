@@ -18,6 +18,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import { Trash2Icon } from 'lucide-react';
 import { ModelSelector, ModelValues } from '@/components/model-selector';
+import { Logo } from '@/components/logo';
+import { CopyButton } from '@/components/copy-button';
 
 export default function ChatInterface() {
   const [model, setModel] = useState<ModelValues>('sonar-reasoning-pro');
@@ -123,7 +125,21 @@ export default function ChatInterface() {
                         : '', // Different corner for assistant
                     )}
                   >
-                    <div>{message.content}</div>
+                    <div>
+                      <div className="flex gap-2 items-start">
+                        {message.role === 'assistant' && (
+                          <span>
+                            <Logo className="h-[30px] w-[30px] rounded-full" />
+                          </span>
+                        )}
+                        {message.content}
+                      </div>
+                      {message.role === 'assistant' && (
+                        <div className="ml-[32px] flex items-center">
+                          <CopyButton value={message.content} />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
