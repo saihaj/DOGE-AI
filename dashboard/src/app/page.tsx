@@ -16,10 +16,11 @@ import {
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
-import { Loader2, Trash2Icon } from 'lucide-react';
+import { Loader, Loader2, Trash2Icon } from 'lucide-react';
 import { ModelSelector, ModelValues } from '@/components/model-selector';
 import { Logo } from '@/components/logo';
 import { CopyButton } from '@/components/copy-button';
+import { Markdown } from '@/components/markdown';
 
 export default function ChatInterface() {
   const [model, setModel] = useState<ModelValues>('sonar-reasoning-pro');
@@ -129,24 +130,24 @@ export default function ChatInterface() {
                 >
                   <div
                     className={cn(
-                      'max-w-[70%] mx-2 text-wrap', // Added margin
-                      'px-3 py-2 rounded-md', // Added shadow
+                      'max-w-[70%] mx-2 text-wrap whitespace-nowrap', // Added margin
+                      'px-3 py-2 rounded-md',
                       message.role === 'user'
                         ? 'bg-secondary text-primary rounded-br-none' // Different corner for user
                         : '', // Different corner for assistant
                     )}
                   >
                     <div>
-                      <div className="flex gap-2 items-start">
+                      <div className="flex gap-2 items-start flex-col">
                         {message.role === 'assistant' && (
                           <span>
                             <Logo className="h-[30px] w-[30px] rounded-full" />
                           </span>
                         )}
-                        {message.content}
+                        <Markdown>{message.content}</Markdown>
                       </div>
-                      {message.role === 'assistant' && (
-                        <div className="ml-[32px] flex items-center">
+                      {!isLoading && message.role === 'assistant' && (
+                        <div className="-ml-2 flex items-center">
                           <CopyButton value={message.content} />
                         </div>
                       )}
@@ -154,6 +155,21 @@ export default function ChatInterface() {
                   </div>
                 </div>
               ))}
+
+            {isLoading && messages[messages.length - 1]?.role === 'user' && (
+              <div
+                className={cn(
+                  'mx-2 px-3 py-2 rounded-md',
+                  'flex justify-start w-full',
+                  'gap-2 items-center',
+                )}
+              >
+                <span>
+                  <Logo className="h-[30px] w-[30px] rounded-full" />
+                </span>
+                <Loader2 className="animate-spin" size={20} />
+              </div>
+            )}
             <div
               ref={messagesEndRef}
               className="shrink-0 min-w-[24px] min-h-[24px]"
@@ -175,7 +191,7 @@ export default function ChatInterface() {
               {isLoading ? (
                 <Button onClick={stop}>Stop</Button>
               ) : (
-                <Button disabled={isLoading} type="submit">
+                <Button disabled={isLoading || input.length <= 0} type="submit">
                   Send
                 </Button>
               )}
