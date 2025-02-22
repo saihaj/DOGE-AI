@@ -75,8 +75,12 @@ export function ModelSelector({
                   key={model.value}
                   value={model.value}
                   onSelect={currentValue => {
-                    // @ts-expect-error need to think better way to type this
-                    setValue(currentValue === value ? '' : currentValue);
+                    const selectedValue =
+                      models.find(model => model.value === currentValue)
+                        ?.value || null;
+                    if (selectedValue) {
+                      setValue(selectedValue);
+                    }
                     setOpen(false);
                   }}
                 >
