@@ -17,8 +17,10 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import { Trash2Icon } from 'lucide-react';
+import { ModelSelector, ModelValues } from '@/components/model-selector';
 
 export default function ChatInterface() {
+  const [model, setModel] = useState<ModelValues>('sonar-reasoning-pro');
   const [systemPrompt, setSystemPrompt] = useState(
     'You are a helpful AI assistant.',
   );
@@ -67,6 +69,7 @@ export default function ChatInterface() {
           <SidebarTrigger />
           <h1 className="text-xl font-semibold">DOGEai</h1>
           <div className="flex gap-2">
+            <ModelSelector value={model} setValue={setModel} />
             <Button
               variant="outline"
               disabled={messages.length < 2}
