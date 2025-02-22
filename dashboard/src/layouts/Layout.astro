@@ -1,5 +1,9 @@
 ---
 import '../styles/global.css';
+import { ClientRouter } from 'astro:transitions';
+import { Page } from '@/components/page';
+
+const defaultSidebarOpen = Astro.cookies.get('sidebar_state')?.value === 'true';
 ---
 
 <script is:inline>
@@ -32,9 +36,17 @@ import '../styles/global.css';
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>DogeAI</title>
+    <ClientRouter />
   </head>
-  <body>
-    <slot />
+  <body class="flex flex-row">
+    <Page defaultOpen={defaultSidebarOpen} client:only transition:persist />
+    <main
+      class="relative flex min-h-svh flex-1 flex-col bg-background peer-data-[variant=inset]:min-h-[calc(100svh-theme(spacing.4))] md:peer-data-[variant=inset]:m-2 md:peer-data-[state=collapsed]:peer-data-[variant=inset]:ml-2 md:peer-data-[variant=inset]:ml-0 md:peer-data-[variant=inset]:rounded-xl md:peer-data-[variant=inset]:shadow"
+    >
+      <div class="flex flex-1 flex-col gap-4 p-4">
+        <slot />
+      </div>
+    </main>
   </body>
 </html>
 

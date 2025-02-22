@@ -1,7 +1,7 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from '@/layouts/Layout.astro';
 import Settings from '@/components/Settings.astro';
-import { ReplyTweet } from '@/components/reply';
+import { EngagementTweet } from '@/components/engagement';
 ---
 
 <Layout>
@@ -15,7 +15,7 @@ import { ReplyTweet } from '@/components/reply';
           class="my-24 flex h-full w-full flex-col items-center justify-center rounded-t-[50px] md:rounded-b-[102px] md:rounded-t-[102px]"
           style="transform: none"
         >
-          <ReplyTweet client:only />
+          <EngagementTweet client:only />
           <div
             id="resultBlock"
             class="animate-in fade-in slide-in-from-bottom duration-1000 p-4 rounded-lg bg-stone-800 text-stone-100 w-[22rem] sm:w-96"
