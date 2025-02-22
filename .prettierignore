@@ -5,3 +5,4 @@ crawler/data/**
 pnpm-lock.yaml
 database/src/meta/**
 dashboard/.astro/**
+dashboard/.next/**
