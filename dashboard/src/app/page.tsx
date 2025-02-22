@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
+import { Trash2Icon } from 'lucide-react';
 
 export default function ChatInterface() {
   const [systemPrompt, setSystemPrompt] = useState(
@@ -66,8 +67,13 @@ export default function ChatInterface() {
           <SidebarTrigger />
           <h1 className="text-xl font-semibold">DOGEai</h1>
           <div className="flex gap-2">
-            <Button variant="ghost" size="sm" onClick={handleClearChat}>
-              Clear
+            <Button
+              variant="outline"
+              disabled={messages.length < 2}
+              size="sm"
+              onClick={handleClearChat}
+            >
+              <Trash2Icon />
             </Button>
           </div>
         </div>
