@@ -26,7 +26,10 @@ import { useLocalStorage } from '@uidotdev/usehooks';
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
 export default function ChatInterface() {
-  const [model, setModel] = useState<ModelValues>('sonar-reasoning-pro');
+  const [model, setModel] = useLocalStorage<ModelValues>(
+    'playgroundSelectedChatModel',
+    'sonar-reasoning-pro',
+  );
   const [systemPrompt, setSystemPrompt] = useLocalStorage(
     'playgroundSystemPrompt',
     PLACEHOLDER_PROMPT,
