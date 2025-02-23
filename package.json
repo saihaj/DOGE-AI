@@ -11,10 +11,5 @@
   "engines": {
     "node": ">=22",
     "pnpm": ">=9"
-  },
-  "pnpm": {
-    "patchedDependencies": {
-      "@uidotdev/usehooks@2.4.1": "patches/@uidotdev__usehooks@2.4.1.patch"
-    }
   }
 }
