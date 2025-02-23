@@ -1,7 +1,18 @@
 import { useState } from 'react';
-import { API_URL } from 'src/const';
+import { API_URL } from '@/lib/const';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
+import { CopyButton } from './copy-button';
+import { Loader2 } from 'lucide-react';
 
-export function EngagementTweet() {
+export function EngagementTweet({
+  label,
+  apiPath,
+}: {
+  label: string;
+  apiPath: string;
+}) {
   const [tweetUrl, setTweetUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState({
@@ -30,7 +41,7 @@ export function EngagementTweet() {
       return;
     }
 
-    const response = await fetch(`${API_URL}/api/test/engage`, {
+    const response = await fetch(`${API_URL}${apiPath}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -65,79 +76,50 @@ export function EngagementTweet() {
         e.preventDefault();
         onSubmit();
       }}
-      className="ai_hud_form animate-in fade-in slide-in-from-bottom duration-1000 flex flex-col items-center px-2"
+      className="flex flex-col items-center px-2"
     >
-      <div className="w-full px-2 pb-4 text-white">
+      <div className="w-full px-2 pb-4">
         {result.answer ? (
-          <div className="bg-stone-800 p-4 rounded-lg max-w-2xl">
-            <h2 className="text-xl font-bold mb-2">Answer:</h2>
-            <p className="mb-4 whitespace-pre-wrap">{result.answer}</p>
-            <h3 className="text-lg font-semibold">Short:</h3>
-            <p className="whitespace-pre-wrap">{result.short}</p>
+          <div className="mt-32 flex flex-col mx-auto justify-center p-4 rounded-lg max-w-2xl">
+            <div>
+              <h2 className="text-xl font-bold mb-2">Answer:</h2>
+              <div className="flex flex-col mb-4">
+                <p className="whitespace-pre-wrap">{result.answer}</p>
+                <CopyButton value={result.answer} className="-ml-2" />
+              </div>
+              <h3 className="text-lg font-semibold">Short:</h3>
+              <div className="flex flex-col">
+                <p className="whitespace-pre-wrap">{result.short}</p>
+                <CopyButton value={result.short} className="-ml-2" />
+              </div>
+            </div>
           </div>
         ) : (
           <>
-            <label className="text-sm text-base-30 0 text-stone-400 font-medium leading-none">
-              Enter Tweet URL to Engage with
-            </label>
-
-            <div className="mt-2 flex w-[22rem] sm:w-96">
-              <div className="relative w-full input-shadow-glow inset-px rounded-[9987px] shadow-white/5 transition focus-within:shadow-stone-100/20base-white/5 focus-within:shadow-stone-500/30">
-                <input
-                  autoComplete="off"
-                  className="w-full text-lg py-4 pl-12 pr-7 font-semibold shadow-2xl border border-stone-600/40 bg-stone-700/60 text-stone-100 shadow-stone-100/45 placeholder:text-stone-100 focus:placeholder-stone-400 focus:bg-stone-600/60 focus:ring-2 focus:ring-stone-700/50  disabled:cursor-not-allowed disabled:opacity-50 sm:leading-6 input-shadow  rounded-full  !outline-none relative"
+            <div className="mt-60 flex w-full flex-col items-center">
+              <div className="grid w-full max-w-sm items-center gap-1.5">
+                <Label htmlFor="email">{label}</Label>
+                <Input
                   id="tweetUrl"
                   placeholder="https://x.com/..."
                   type="text"
                   value={tweetUrl}
                   onChange={e => setTweetUrl(e.target.value.trim())}
+                  autoComplete="off"
                 />
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-5">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="stroke-stone-500/70"
-                  >
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <path d="m21 21-4.3-4.3"></path>
-                  </svg>
-                </div>
               </div>
-            </div>
-
-            <div className="mt-6 flex w-full flex-col items-center">
-              <div className="flex justify-center w-full">
-                <button
-                  disabled={loading}
+              <div className="flex justify-center w-full mt-2">
+                <Button
+                  disabled={loading || tweetUrl.length <= 0}
                   type="submit"
-                  className="disabled:cursor-not-allowed disabled:opacity-80 disabled:hover:bg-blue-700 bg-blue-700 px-4 py-2 rounded-md min-w-64 min-h-11 flex items-center justify-center text-white font-semibold text-lg shadow-2xl transition duration-200 ease-in-out hover:bg-blue-800"
+                  className="w-48"
                 >
                   {loading ? (
-                    <svg
-                      className="animate-spin h-7 w-7 text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    >
-                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
-                    </svg>
+                    <Loader2 className="animate-spin" />
                   ) : (
                     'Submit Request'
                   )}
-                </button>
+                </Button>
               </div>
             </div>
           </>

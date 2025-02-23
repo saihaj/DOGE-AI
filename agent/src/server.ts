@@ -1,16 +1,19 @@
 import { serve } from 'inngest/fastify';
 import Fastify from 'fastify';
+import { CoreMessage, streamText } from 'ai';
 import { inngest } from './inngest';
+import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import { ingestTweets } from './twitter/ingest';
 import { processTweets } from './twitter/process';
 import { executeTweets } from './twitter/execute';
-import { DISCORD_TOKEN } from './const';
+import { DISCORD_TOKEN, SEED, TEMPERATURE } from './const';
 import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
 import { ingestInteractionTweets } from './twitter/ingest-interaction';
 import { processInteractionTweets } from './twitter/process-interactions';
 import { executeInteractionTweets } from './twitter/execute-interaction';
+import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import {
   processTestEngageRequest,
   ProcessTestEngageRequestInput,
@@ -19,8 +22,10 @@ import {
   processTestReplyRequest,
   ProcessTestReplyRequestInput,
 } from './api/test-reply';
+import { ChatStreamInput, myProvider } from './api/chat';
 import { logger } from './logger';
-import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
+import { getKbContext } from './twitter/knowledge-base';
+import { mergeConsecutiveSameRole } from './twitter/helpers';
 
 const fastify = Fastify();
 
@@ -118,6 +123,101 @@ fastify.route<{ Body: ProcessTestReplyRequestInput }>({
     }
   },
   url: '/api/test/reply',
+});
+
+fastify.route<{ Body: ChatStreamInput }>({
+  method: 'post',
+  schema: {
+    body: ChatStreamInput,
+  },
+  handler: async (request, reply) => {
+    const log = logger.child({ function: 'api-chat' });
+    // Create an AbortController for the backend
+    const abortController = new AbortController();
+    let { billSearch, messages, selectedChatModel } = request.body as {
+      billSearch: boolean;
+      messages: CoreMessage[];
+      selectedChatModel: string;
+    };
+
+    // Listen for the client disconnecting (abort)
+    request.raw.on('close', () => {
+      if (request.raw.aborted) {
+        abortController.abort();
+      }
+    });
+
+    // Mark the response as a v1 data stream:
+    reply.header('Content-Type', 'text/plain; charset=utf-8');
+    reply.type('text/event-stream');
+    reply.header('X-Vercel-AI-Data-Stream', 'v1');
+    reply.header('Cache-Control', 'no-cache');
+    reply.header('Connection', 'keep-alive');
+
+    try {
+      if (billSearch) {
+        const latestMessage = messages[messages.length - 1];
+        const kb = await getKbContext(
+          {
+            messages: messages,
+            text: latestMessage.content.toString(),
+          },
+          log,
+        );
+
+        if (kb?.bill) {
+          log.info(kb.bill, 'bill found');
+        }
+
+        const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
+        const summary = kb?.documents
+          ? `${kb.documents}\n\n${bill}`
+          : bill || '';
+
+        if (summary) {
+          // want to insert the DB summary as the second last message in the context of messages.
+          messages.splice(messages.length - 1, 0, {
+            role: 'user',
+            content: summary,
+          });
+
+          log.info({ messages }, 'messages with summary');
+        }
+      }
+
+      // if sonar models then need to merge
+      if (
+        selectedChatModel === 'sonar-reasoning-pro' ||
+        selectedChatModel === 'sonar-reasoning'
+      ) {
+        messages = mergeConsecutiveSameRole(messages);
+      }
+
+      const result = streamText({
+        model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
+        abortSignal: abortController.signal,
+        messages,
+        temperature: TEMPERATURE,
+        seed: SEED,
+        maxSteps: 5,
+        experimental_generateMessageId: crypto.randomUUID,
+        experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
+      });
+
+      // Use toDataStreamResponse for simplicity
+      const response = result.toDataStreamResponse();
+      return response;
+    } catch (error) {
+      if (abortController.signal.aborted) {
+        // Handle the abort gracefully
+        reply.status(204).send(); // No Content
+        return;
+      }
+
+      throw error; // Other errors should be handled as usual
+    }
+  },
+  url: '/api/chat',
 });
 
 // So in fly.io, health should do both the health check and the readiness check

@@ -6,9 +6,9 @@
     "check:types": "pnpm -r check:types"
   },
   "devDependencies": {
-    "prettier": "^3.4.2",
-    "prettier-plugin-astro": "^0.14.1"
+    "prettier": "^3.4.2"
   },
+  "packageManager": "pnpm@9.15.5",
   "engines": {
     "node": ">=22",
     "pnpm": ">=9"
