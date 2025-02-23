@@ -12,7 +12,7 @@ API.pathname = '/twitter/list/tweets';
 
 const log = logger.child({ module: 'ingest-interaction-tweets' });
 
-async function fetchTweetsFromList({
+export async function fetchTweetsFromList({
   id,
   window,
 }: {

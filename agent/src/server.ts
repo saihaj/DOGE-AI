@@ -18,6 +18,7 @@ import { reportFailureToDiscord } from './discord/action';
 import { ingestInteractionTweets } from './twitter/ingest-interaction';
 import { processInteractionTweets } from './twitter/process-interactions';
 import { executeInteractionTweets } from './twitter/execute-interaction';
+import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import {
   processTestEngageRequest,
   ProcessTestEngageRequestInput,
@@ -48,6 +49,7 @@ fastify.route({
       processTweets,
       executeTweets,
       ingestInteractionTweets,
+      ingestTemporaryInteractionTweets,
       processInteractionTweets,
       executeInteractionTweets,
     ],
