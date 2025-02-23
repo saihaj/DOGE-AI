@@ -30,7 +30,7 @@ const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 export function Chat() {
   const [model, setModel] = useLocalStorage<ModelValues>(
     'playgroundSelectedChatModel',
-    'sonar-reasoning-pro',
+    'o3-mini',
   );
   const [billSearch, setBillSearch] = useLocalStorage('billSearch', true);
   const [systemPrompt, setSystemPrompt] = useLocalStorage(
