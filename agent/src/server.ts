@@ -1,11 +1,6 @@
 import { serve } from 'inngest/fastify';
 import Fastify from 'fastify';
-import {
-  createDataStreamResponse,
-  experimental_customProvider,
-  streamText,
-  type Message,
-} from 'ai';
+import { streamText } from 'ai';
 import { inngest } from './inngest';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
@@ -27,10 +22,8 @@ import {
   processTestReplyRequest,
   ProcessTestReplyRequestInput,
 } from './api/test-reply';
+import { ChatStreamInput, myProvider } from './api/chat';
 import { logger } from './logger';
-import { Static, Type } from '@sinclair/typebox';
-import { openai } from '@ai-sdk/openai';
-import { perplexity } from '@ai-sdk/perplexity';
 
 const fastify = Fastify();
 
@@ -130,22 +123,6 @@ fastify.route<{ Body: ProcessTestReplyRequestInput }>({
   url: '/api/test/reply',
 });
 
-const ChatStreamInput = Type.Object({
-  id: Type.String(),
-  messages: Type.Array(Type.Any()),
-  selectedChatModel: Type.String(),
-});
-type ChatStreamInput = Static<typeof ChatStreamInput>;
-
-const myProvider = experimental_customProvider({
-  languageModels: {
-    'sonar-reasoning-pro': perplexity('sonar-reasoning-pro'),
-    'sonar-reasoning': perplexity('sonar-reasoning'),
-    'o3-mini': openai('o3-mini'),
-    'gpt-4o': openai('gpt-4o'),
-  },
-});
-
 fastify.route<{ Body: ChatStreamInput }>({
   method: 'post',
   schema: {
@@ -164,11 +141,11 @@ fastify.route<{ Body: ChatStreamInput }>({
     });
 
     // Mark the response as a v1 data stream:
-    reply.header('X-Vercel-AI-Data-Stream', 'v1');
     reply.header('Content-Type', 'text/plain; charset=utf-8');
+    reply.type('text/event-stream');
+    reply.header('X-Vercel-AI-Data-Stream', 'v1');
     reply.header('Cache-Control', 'no-cache');
     reply.header('Connection', 'keep-alive');
-    reply.type('text/event-stream');
 
     try {
       const result = streamText({
@@ -179,11 +156,6 @@ fastify.route<{ Body: ChatStreamInput }>({
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
       });
-
-      reply.type('text/event-stream');
-      reply.header('X-Vercel-AI-Data-Stream', 'v1');
-      reply.header('Cache-Control', 'no-cache');
-      reply.header('Connection', 'keep-alive');
 
       // Use toDataStreamResponse for simplicity
       const response = result.toDataStreamResponse();
