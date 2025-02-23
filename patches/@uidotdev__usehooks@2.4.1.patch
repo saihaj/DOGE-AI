@@ -1,0 +1,18 @@
+diff --git a/index.d.ts b/index.d.ts
+index db01dc2604f04d4436fa227af4dc85b36411b193..25bcef4aee7e17224c5031e663411ba83a3c350e 100644
+--- a/index.d.ts
++++ b/index.d.ts
+@@ -1,3 +1,4 @@
++"use client";
+ import * as React from "react";
+ 
+ export type BatteryManager = {
+diff --git a/index.js b/index.js
+index f6e4fe2588fd39cacb6338b7ba2340126c1b636f..387b7c92976ba3ee7a7e3fd9df7271ef34ae69b3 100644
+--- a/index.js
++++ b/index.js
+@@ -1,3 +1,4 @@
++"use client";
+ import * as React from "react";
+ 
+ function isShallowEqual(object1, object2) {

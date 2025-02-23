@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  '@uidotdev/usehooks@2.4.1':
+    hash: dfkpuyssa5h27xzy5yovqvhdny
+    path: patches/@uidotdev__usehooks@2.4.1.patch
+
 importers:
 
   .:
@@ -225,7 +230,7 @@ importers:
         version: 1.1.8(@types/react-dom@19.0.3(@types/react@19.0.8))(@types/react@19.0.8)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@uidotdev/usehooks':
         specifier: ^2.4.1
-        version: 2.4.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 2.4.1(patch_hash=dfkpuyssa5h27xzy5yovqvhdny)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       ai:
         specifier: ^4.1.10
         version: 4.1.10(react@19.0.0)(zod@3.24.1)
@@ -326,7 +331,7 @@ importers:
         version: 4.6.0(react@19.0.0)
       '@uidotdev/usehooks':
         specifier: ^2.4.1
-        version: 2.4.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 2.4.1(patch_hash=dfkpuyssa5h27xzy5yovqvhdny)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -4471,7 +4476,6 @@ packages:
 
   libsql@0.4.7:
     resolution: {integrity: sha512-T9eIRCs6b0J1SHKYIvD8+KCJMcWZ900iZyxdnSCdqxN12Z1ijzT+jY5nrk72Jw4B0HGzms2NgpryArlJqvc3Lw==}
-    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   light-my-request@6.5.1:
@@ -7908,7 +7912,7 @@ snapshots:
       '@typescript-eslint/types': 8.20.0
       eslint-visitor-keys: 4.2.0
 
-  '@uidotdev/usehooks@2.4.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+  '@uidotdev/usehooks@2.4.1(patch_hash=dfkpuyssa5h27xzy5yovqvhdny)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
