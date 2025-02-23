@@ -151,7 +151,7 @@ export function Chat() {
                     'px-3 py-2 rounded-md',
                     message.role === 'user'
                       ? 'bg-secondary text-primary rounded-br-none' // Different corner for user
-                      : '', // Different corner for assistant
+                      : 'max-w-full', // Different corner for assistant
                   )}
                 >
                   <div>
