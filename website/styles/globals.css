@@ -4,48 +4,31 @@
 
 @layer base {
   :root {
-    --background: 240 54% 95%;
-    --foreground: 240 5% 4%;
-    --card: 240 50% 90%;
-    --card-foreground: 240 5% 10%;
-    --popover: 240 54% 95%;
-    --popover-foreground: 240 95% 4%;
-    --primary: 240 26% 23%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 30% 70%;
-    --secondary-foreground: 0 0% 0%;
-    --muted: 202 30% 85%;
-    --muted-foreground: 240 5% 35%;
-    --accent: 202 30% 80%;
-    --accent-foreground: 240 5% 10%;
-    --destructive: 0 54% 30%;
-    --destructive-foreground: 240 5% 90%;
-    --border: 240 30% 50%;
-    --input: 240 30% 18%;
-    --ring: 240 26% 23%;
-    --radius: 0.5rem;
-  }
-  .dark {
-    --background: 240 50% 5%;
-    --foreground: 240 5% 90%;
-    --card: 240 50% 4%;
-    --card-foreground: 240 5% 90%;
-    --popover: 240 50% 5%;
-    --popover-foreground: 240 5% 90%;
-    --primary: 240 26% 23%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 240 30% 10%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 202 30% 15%;
-    --muted-foreground: 240 5% 60%;
-    --accent: 202 30% 15%;
-    --accent-foreground: 240 5% 90%;
-    --destructive: 0 54% 30%;
-    --destructive-foreground: 240 5% 90%;
-    --border: 240 30% 18%;
-    --input: 240 30% 18%;
-    --ring: 240 26% 23%;
-    --radius: 0.5rem;
+    --background: 226 29% 6%;
+    --foreground: 0 0% 98%;
+    --card: 226 32% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 5.9% 10%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+    --radius: 7px;
   }
 }
 
