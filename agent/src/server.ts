@@ -1,13 +1,13 @@
 import { serve } from 'inngest/fastify';
 import Fastify from 'fastify';
-import { streamText } from 'ai';
+import { CoreMessage, streamText } from 'ai';
 import { inngest } from './inngest';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import { ingestTweets } from './twitter/ingest';
 import { processTweets } from './twitter/process';
 import { executeTweets } from './twitter/execute';
-import { DISCORD_TOKEN } from './const';
+import { DISCORD_TOKEN, SEED, TEMPERATURE } from './const';
 import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
 import { ingestInteractionTweets } from './twitter/ingest-interaction';
@@ -24,6 +24,8 @@ import {
 } from './api/test-reply';
 import { ChatStreamInput, myProvider } from './api/chat';
 import { logger } from './logger';
+import { getKbContext } from './twitter/knowledge-base';
+import { mergeConsecutiveSameRole } from './twitter/helpers';
 
 const fastify = Fastify();
 
@@ -129,9 +131,14 @@ fastify.route<{ Body: ChatStreamInput }>({
     body: ChatStreamInput,
   },
   handler: async (request, reply) => {
+    const log = logger.child({ function: 'api-chat' });
     // Create an AbortController for the backend
     const abortController = new AbortController();
-    const { id, messages, selectedChatModel } = request.body;
+    let { billSearch, messages, selectedChatModel } = request.body as {
+      billSearch: boolean;
+      messages: CoreMessage[];
+      selectedChatModel: string;
+    };
 
     // Listen for the client disconnecting (abort)
     request.raw.on('close', () => {
@@ -148,10 +155,50 @@ fastify.route<{ Body: ChatStreamInput }>({
     reply.header('Connection', 'keep-alive');
 
     try {
+      if (billSearch) {
+        const latestMessage = messages[messages.length - 1];
+        const kb = await getKbContext(
+          {
+            messages: messages,
+            text: latestMessage.content.toString(),
+          },
+          log,
+        );
+
+        if (kb?.bill) {
+          log.info(kb.bill, 'bill found');
+        }
+
+        const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
+        const summary = kb?.documents
+          ? `${kb.documents}\n\n${bill}`
+          : bill || '';
+
+        if (summary) {
+          // want to insert the DB summary as the second last message in the context of messages.
+          messages.splice(messages.length - 1, 0, {
+            role: 'user',
+            content: summary,
+          });
+
+          log.info({ messages }, 'messages with summary');
+        }
+      }
+
+      // if sonar models then need to merge
+      if (
+        selectedChatModel === 'sonar-reasoning-pro' ||
+        selectedChatModel === 'sonar-reasoning'
+      ) {
+        messages = mergeConsecutiveSameRole(messages);
+      }
+
       const result = streamText({
         model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
         abortSignal: abortController.signal,
         messages,
+        temperature: TEMPERATURE,
+        seed: SEED,
         maxSteps: 5,
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },

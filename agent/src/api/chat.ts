@@ -7,6 +7,7 @@ export const ChatStreamInput = Type.Object({
   id: Type.String(),
   messages: Type.Array(Type.Any()),
   selectedChatModel: Type.String(),
+  billSearch: Type.Boolean(),
 });
 export type ChatStreamInput = Static<typeof ChatStreamInput>;
 

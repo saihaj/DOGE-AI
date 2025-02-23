@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
-import { Loader2, Trash2Icon } from 'lucide-react';
+import { Loader2, Search, Trash2Icon } from 'lucide-react';
 import { ModelSelector, ModelValues } from '@/components/model-selector';
 import { Logo } from '@/components/logo';
 import { CopyButton } from '@/components/copy-button';
@@ -23,6 +23,7 @@ import { useLocalStorage } from '@uidotdev/usehooks';
 import { API_URL } from '@/lib/const';
 import { Header } from '@/components/header';
 import { toast } from 'sonner';
+import { Toggle } from '@/components/ui/toggle';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -31,6 +32,7 @@ export function Chat() {
     'playgroundSelectedChatModel',
     'sonar-reasoning-pro',
   );
+  const [billSearch, setBillSearch] = useLocalStorage('billSearch', true);
   const [systemPrompt, setSystemPrompt] = useLocalStorage(
     'playgroundSystemPrompt',
     PLACEHOLDER_PROMPT,
@@ -51,6 +53,7 @@ export function Chat() {
     api: `${API_URL}/api/chat`,
     body: {
       selectedChatModel: model,
+      billSearch,
     },
     onError: error => {
       toast.error(error.message, {
@@ -198,6 +201,15 @@ export function Chat() {
       <div className="p-4 border-t border-secondary-foreground/30 sticky bottom-0 z-10 bg-background">
         <div className="w-full md:max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="flex gap-2">
+            <Toggle
+              pressed={billSearch}
+              onPressedChange={v => setBillSearch(v)}
+              variant="outline"
+              aria-label="Toggle bill search"
+            >
+              <Search />
+              Bill Search
+            </Toggle>
             <Input
               disabled={isLoading}
               value={input}
