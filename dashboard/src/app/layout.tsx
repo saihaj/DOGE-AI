@@ -4,6 +4,7 @@ import './global.css';
 import { ThemeProvider } from 'next-themes';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import { AppSidebar } from '@/components/app-sidebar';
+import { Toaster } from 'sonner';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -43,6 +44,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Toaster richColors />
           <SidebarProvider>
             <AppSidebar />
             <main className="w-full">{children}</main>

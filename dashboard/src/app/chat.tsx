@@ -22,6 +22,7 @@ import { Markdown } from '@/components/markdown';
 import { useLocalStorage } from '@uidotdev/usehooks';
 import { API_URL } from '@/lib/const';
 import { Header } from '@/components/header';
+import { toast } from 'sonner';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -45,10 +46,20 @@ export function Chat() {
     stop,
     handleSubmit,
     setMessages,
+    reload,
   } = useChat({
     api: `${API_URL}/api/chat`,
     body: {
       selectedChatModel: model,
+    },
+    onError: error => {
+      toast.error(error.message, {
+        dismissible: false,
+        action: {
+          label: 'Retry',
+          onClick: () => reload(),
+        },
+      });
     },
     initialMessages: [
       {
