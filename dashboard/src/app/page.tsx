@@ -21,6 +21,7 @@ import { Logo } from '@/components/logo';
 import { CopyButton } from '@/components/copy-button';
 import { Markdown } from '@/components/markdown';
 import { useLocalStorage } from '@uidotdev/usehooks';
+import { API_URL } from '@/lib/const';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -45,7 +46,7 @@ export default function ChatInterface() {
     handleSubmit,
     setMessages,
   } = useChat({
-    api: 'http://localhost:3000/api/chat',
+    api: `${API_URL}/api/chat`,
     body: {
       selectedChatModel: model,
     },
