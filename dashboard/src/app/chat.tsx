@@ -1,7 +1,7 @@
 'use client';
 import type React from 'react';
 
-import { useChat } from 'ai/react';
+import { useChat, type Message } from 'ai/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -36,6 +36,10 @@ export function Chat() {
   const [systemPrompt, setSystemPrompt] = useLocalStorage(
     'playgroundSystemPrompt',
     PLACEHOLDER_PROMPT,
+  );
+  const [userPrompt, setUserPrompt] = useLocalStorage(
+    'playgroundUserPrompt',
+    '',
   );
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
@@ -78,10 +82,39 @@ export function Chat() {
   ) => {
     setSystemPrompt(e.target.value);
     // Reset chat with new system prompt
+    const messages = [
+      {
+        id: 'system',
+        role: 'system',
+        content: e.target.value,
+      },
+    ] as Message[];
+
+    if (userPrompt) {
+      messages.push({
+        id: 'userPersistent',
+        role: 'user',
+        content: userPrompt,
+      });
+    }
+
+    setMessages(messages);
+  };
+
+  const handleUserPromptChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>,
+  ) => {
+    setUserPrompt(e.target.value);
+    // Reset chat with new system prompt
     setMessages([
       {
         id: 'system',
         role: 'system',
+        content: systemPrompt,
+      },
+      {
+        id: 'userPersistent',
+        role: 'user',
         content: e.target.value,
       },
     ]);
@@ -134,10 +167,30 @@ export function Chat() {
         </AccordionItem>
       </Accordion>
 
+      {/* Expandable User Prompt Area */}
+      <Accordion type="single" collapsible className="w-full sticky">
+        <AccordionItem value="system-prompt" className="border-b-0">
+          <AccordionTrigger className="px-4 py-2 border-secondary-foreground/30 bg-secondary hover:no-underline">
+            <span className="text-sm font-medium text-secondary-foreground">
+              User message
+            </span>
+          </AccordionTrigger>
+          <AccordionContent className="bg-secondary px-4 pt-1 pb-4">
+            <Textarea
+              value={userPrompt}
+              onChange={handleUserPromptChange}
+              placeholder="Enter user message..."
+              className="min-h-[100px] border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground resize-y max-h-[50vh]"
+            />
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+
       {/* Scrollable Messages Area */}
       <ScrollArea className="flex-1 w-full md:max-w-4xl mx-auto max-h-[calc(100vh-10rem)]">
         <div className="flex flex-col gap-4 p-4" ref={messagesContainerRef}>
           {messages
+            .filter(message => message.id !== 'userPersistent')
             .filter(message => message.role !== 'system')
             .map(message => (
               <div
