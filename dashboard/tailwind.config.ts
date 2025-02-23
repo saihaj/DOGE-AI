@@ -6,7 +6,7 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
-  darkMode: ['selector', '[data-theme="dark"]', 'class'],
+  darkMode: ['selector', '[data-theme="dark"]'],
   corePlugins: {
     preflight: true,
     boxShadow: true,
