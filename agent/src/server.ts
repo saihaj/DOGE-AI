@@ -20,6 +20,7 @@ import {
   ProcessTestReplyRequestInput,
 } from './api/test-reply';
 import { logger } from './logger';
+import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 
 const fastify = Fastify();
 
@@ -38,6 +39,7 @@ fastify.route({
       processTweets,
       executeTweets,
       ingestInteractionTweets,
+      ingestTemporaryInteractionTweets,
       processInteractionTweets,
       executeInteractionTweets,
     ],

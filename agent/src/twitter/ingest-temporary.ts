@@ -8,9 +8,9 @@ const log = logger.child({ module: 'ingest-temporary-interaction-tweets' });
 
 const WINDOW = 6;
 
-export const ingestInteractionTweets = inngest.createFunction(
+export const ingestTemporaryInteractionTweets = inngest.createFunction(
   {
-    id: 'ingest-interaction-tweets',
+    id: 'ingest-temporary-interaction-tweets',
     onFailure: async ({ error }) => {
       const errorMessage = error.message;
       log.error({ error: errorMessage }, 'Failed to ingest interaction tweets');
