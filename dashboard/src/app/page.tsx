@@ -22,6 +22,7 @@ import { CopyButton } from '@/components/copy-button';
 import { Markdown } from '@/components/markdown';
 import { useLocalStorage } from '@uidotdev/usehooks';
 import { API_URL } from '@/lib/const';
+import { Header } from '@/components/header';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -86,21 +87,21 @@ export default function ChatInterface() {
   return (
     <div className="flex flex-col w-full h-dvh overflow-hidden">
       <div className="flex-1 flex flex-col">
-        <div className="flex justify-between items-center p-4 border-b border-secondary-foreground/30">
-          <SidebarTrigger />
-          <h1 className="text-xl font-semibold">DOGEai</h1>
-          <div className="flex gap-2">
-            <ModelSelector value={model} setValue={setModel} />
-            <Button
-              variant="outline"
-              disabled={messages.length < 2}
-              size="sm"
-              onClick={handleClearChat}
-            >
-              <Trash2Icon />
-            </Button>
-          </div>
-        </div>
+        <Header
+          right={
+            <div className="flex gap-2">
+              <ModelSelector value={model} setValue={setModel} />
+              <Button
+                variant="outline"
+                disabled={messages.length < 2}
+                size="sm"
+                onClick={handleClearChat}
+              >
+                <Trash2Icon />
+              </Button>
+            </div>
+          }
+        />
 
         {/* Expandable System Prompt Area */}
         <Accordion type="single" collapsible className="w-full sticky">
