@@ -61,7 +61,7 @@ export async function getLongResponse({
   systemPrompt?: string;
 }) {
   if (!systemPrompt) {
-    systemPrompt = await PROMPTS.INTERACTION_SYSTEM_PROMPT();
+    systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
   }
   const { text: _responseLong, experimental_providerMetadata } =
     await generateText({
