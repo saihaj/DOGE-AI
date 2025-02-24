@@ -1,3 +1,4 @@
+import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
 import { perplexity } from '@ai-sdk/perplexity';
 import { Static, Type } from '@sinclair/typebox';
@@ -18,5 +19,7 @@ export const myProvider = experimental_customProvider({
     'sonar-pro': perplexity('sonar-pro'),
     'o3-mini': openai('o3-mini'),
     'gpt-4o': openai('gpt-4o'),
+    'claude-3-5-sonnet-latest': anthropic('claude-3-5-sonnet-latest'),
+    'claude-3-7-sonnet-latest': anthropic('claude-3-7-sonnet-latest'),
   },
 });

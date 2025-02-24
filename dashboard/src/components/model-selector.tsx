@@ -40,6 +40,14 @@ const models = [
     value: 'gpt-4o',
     label: 'OpenAI GPT 4o',
   },
+  {
+    value: 'claude-3-5-sonnet-latest',
+    label: 'Sonnet 3.5',
+  },
+  {
+    value: 'claude-3-7-sonnet-latest',
+    label: 'Sonnet 3.7',
+  },
 ] as const;
 
 export type ModelValues = (typeof models)[number]['value'];

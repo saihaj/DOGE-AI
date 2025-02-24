@@ -1,6 +1,12 @@
 import { serve } from 'inngest/fastify';
 import Fastify from 'fastify';
-import { CoreMessage, createDataStream, StreamData, streamText } from 'ai';
+import {
+  CoreMessage,
+  createDataStream,
+  generateText,
+  StreamData,
+  streamText,
+} from 'ai';
 import { inngest } from './inngest';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
