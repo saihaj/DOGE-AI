@@ -66,7 +66,7 @@ export async function getLongResponse({
   const { text: _responseLong, experimental_providerMetadata } =
     await generateText({
       temperature: TEMPERATURE,
-      model: perplexity('sonar-reasoning'),
+      model: perplexity('sonar-reasoning-pro'),
       messages: [
         {
           role: 'system',
