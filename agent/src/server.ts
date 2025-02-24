@@ -231,6 +231,7 @@ fastify.route<{ Body: ChatStreamInput }>({
 
       return response;
     } catch (error) {
+      log.error({ error }, 'Error in chat stream');
       if (abortController.signal.aborted) {
         // Handle the abort gracefully
         reply.status(204).send(); // No Content
