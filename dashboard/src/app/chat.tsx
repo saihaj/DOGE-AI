@@ -24,6 +24,7 @@ import { API_URL } from '@/lib/const';
 import { Header } from '@/components/header';
 import { toast } from 'sonner';
 import { Toggle } from '@/components/ui/toggle';
+import { useMemo } from 'react';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -92,47 +93,55 @@ export function Chat() {
     ],
   });
 
-  const assistantMessages = messages.filter(
-    message => message.role === 'assistant',
+  const assistantMessages = useMemo(
+    () => messages.filter(message => message.role === 'assistant'),
+    [messages],
   );
 
   // Process messages and attach sources from the data stream
-  const assistantMessagesWithSources = assistantMessages.map(
-    (message, index) => {
-      const relativeData = data?.[index];
+  const assistantMessagesWithSources = useMemo(
+    () =>
+      assistantMessages.map((message, index) => {
+        const relativeData = data?.[index];
 
-      const sources = (() => {
-        if (relativeData?.role === 'sources') {
-          return relativeData?.content || [];
-        }
-        return [];
-      })();
+        // TODO: how can we type these better?
+        const sources = (() => {
+          // @ts-expect-error we can ignore because BE adds these
+          if (relativeData?.role === 'sources') {
+            // @ts-expect-error we can ignore because BE adds these
+            return relativeData?.content || [];
+          }
+          return [];
+        })();
 
-      return {
-        ...message,
-        sources,
-      };
-    },
+        return {
+          ...message,
+          sources,
+        };
+      }),
+    [assistantMessages, data],
   );
 
-  const messagesWithSources = messages.map(message => {
-    if (message.role === 'assistant') {
-      const assistantMessage = assistantMessagesWithSources.find(
-        m => m.id === message.id,
-      );
+  const messagesWithSources = useMemo(
+    () =>
+      messages.map(message => {
+        if (message.role === 'assistant') {
+          const assistantMessage = assistantMessagesWithSources.find(
+            m => m.id === message.id,
+          );
 
-      if (assistantMessage) {
-        return assistantMessage;
-      }
-    }
+          if (assistantMessage) {
+            return assistantMessage;
+          }
+        }
 
-    return {
-      ...message,
-      sources: [],
-    };
-  });
-
-  console.log(messagesWithSources);
+        return {
+          ...message,
+          sources: [],
+        };
+      }),
+    [assistantMessagesWithSources, messages],
+  );
 
   const handleSystemPromptChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>,
