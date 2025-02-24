@@ -1,6 +1,12 @@
 import { serve } from 'inngest/fastify';
 import Fastify from 'fastify';
-import { CoreMessage, streamText } from 'ai';
+import {
+  CoreMessage,
+  createDataStream,
+  generateText,
+  StreamData,
+  streamText,
+} from 'ai';
 import { inngest } from './inngest';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
@@ -193,6 +199,8 @@ fastify.route<{ Body: ChatStreamInput }>({
         messages = mergeConsecutiveSameRole(messages);
       }
 
+      const stream = new StreamData();
+
       const result = streamText({
         model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
         abortSignal: abortController.signal,
@@ -202,12 +210,34 @@ fastify.route<{ Body: ChatStreamInput }>({
         maxSteps: 5,
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
+        async onFinish(event) {
+          if (!event.experimental_providerMetadata) {
+            log.info({}, 'no providerMetadata');
+            await stream.close();
+            return;
+          }
+          const providerMetadata = event.experimental_providerMetadata;
+          log.info({ providerMetadata }, 'providerMetadata');
+
+          const pplxSources = providerMetadata.perplexity?.citations;
+
+          if (pplxSources) {
+            stream.append({ role: 'sources', content: pplxSources });
+          }
+          await stream.close();
+        },
       });
 
       // Use toDataStreamResponse for simplicity
-      const response = result.toDataStreamResponse();
+      const response = result.toDataStreamResponse({
+        sendReasoning: true,
+        sendUsage: true,
+        data: stream,
+      });
+
       return response;
     } catch (error) {
+      log.error({ error }, 'Error in chat stream');
       if (abortController.signal.aborted) {
         // Handle the abort gracefully
         reply.status(204).send(); // No Content

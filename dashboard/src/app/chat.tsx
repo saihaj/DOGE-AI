@@ -24,8 +24,23 @@ import { API_URL } from '@/lib/const';
 import { Header } from '@/components/header';
 import { toast } from 'sonner';
 import { Toggle } from '@/components/ui/toggle';
+import { useMemo } from 'react';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
+
+function parseMessageWithSources(content: string, sources: string[]) {
+  if (!sources.length) return content; // No sources, return raw content
+
+  // Replace [1], [2], etc. with hyperlinks to the corresponding source
+  return content.replace(/\[(\d+)\]/g, (match, number) => {
+    const index = parseInt(number, 10) - 1; // Convert to 0-based index
+    if (index >= 0 && index < sources.length) {
+      const source = sources[index];
+      return `[${number}](${source})`;
+    }
+    return match; // If index is invalid, leave it unchanged
+  });
+}
 
 export function Chat() {
   const [model, setModel] = useLocalStorage<ModelValues>(
@@ -52,6 +67,7 @@ export function Chat() {
     stop,
     handleSubmit,
     setMessages,
+    data,
     reload,
   } = useChat({
     api: `${API_URL}/api/chat`,
@@ -76,6 +92,56 @@ export function Chat() {
       },
     ],
   });
+
+  const assistantMessages = useMemo(
+    () => messages.filter(message => message.role === 'assistant'),
+    [messages],
+  );
+
+  // Process messages and attach sources from the data stream
+  const assistantMessagesWithSources = useMemo(
+    () =>
+      assistantMessages.map((message, index) => {
+        const relativeData = data?.[index];
+
+        // TODO: how can we type these better?
+        const sources = (() => {
+          // @ts-expect-error we can ignore because BE adds these
+          if (relativeData?.role === 'sources') {
+            // @ts-expect-error we can ignore because BE adds these
+            return relativeData?.content || [];
+          }
+          return [];
+        })();
+
+        return {
+          ...message,
+          sources,
+        };
+      }),
+    [assistantMessages, data],
+  );
+
+  const messagesWithSources = useMemo(
+    () =>
+      messages.map(message => {
+        if (message.role === 'assistant') {
+          const assistantMessage = assistantMessagesWithSources.find(
+            m => m.id === message.id,
+          );
+
+          if (assistantMessage) {
+            return assistantMessage;
+          }
+        }
+
+        return {
+          ...message,
+          sources: [],
+        };
+      }),
+    [assistantMessagesWithSources, messages],
+  );
 
   const handleSystemPromptChange = (
     e: React.ChangeEvent<HTMLTextAreaElement>,
@@ -189,45 +255,51 @@ export function Chat() {
       {/* Scrollable Messages Area */}
       <ScrollArea className="flex-1 w-full md:max-w-4xl mx-auto max-h-[calc(100vh-10rem)]">
         <div className="flex flex-col gap-4 p-4" ref={messagesContainerRef}>
-          {messages
+          {messagesWithSources
             .filter(message => message.id !== 'userPersistent')
             .filter(message => message.role !== 'system')
-            .map(message => (
-              <div
-                key={message.id}
-                className={cn(
-                  'flex',
-                  message.role === 'user' ? 'justify-end' : 'justify-start',
-                  'w-full',
-                )}
-              >
+            .map(message => {
+              const content = parseMessageWithSources(
+                message.content,
+                message.sources,
+              );
+              return (
                 <div
+                  key={message.id}
                   className={cn(
-                    'max-w-[70%] mx-2 text-wrap whitespace-nowrap', // Added margin
-                    'px-3 py-2 rounded-md',
-                    message.role === 'user'
-                      ? 'bg-secondary text-primary rounded-br-none' // Different corner for user
-                      : 'max-w-full', // Different corner for assistant
+                    'flex',
+                    message.role === 'user' ? 'justify-end' : 'justify-start',
+                    'w-full',
                   )}
                 >
-                  <div>
-                    <div className="flex gap-2 items-start flex-col">
-                      {message.role === 'assistant' && (
-                        <span>
-                          <Logo className="h-[30px] w-[30px] rounded-full" />
-                        </span>
-                      )}
-                      <Markdown>{message.content}</Markdown>
-                    </div>
-                    {!isLoading && message.role === 'assistant' && (
-                      <div className="-ml-2 flex items-center">
-                        <CopyButton value={message.content} />
-                      </div>
+                  <div
+                    className={cn(
+                      'max-w-[70%] mx-2 text-wrap whitespace-nowrap', // Added margin
+                      'px-3 py-2 rounded-md',
+                      message.role === 'user'
+                        ? 'bg-secondary text-primary rounded-br-none' // Different corner for user
+                        : 'max-w-full', // Different corner for assistant
                     )}
+                  >
+                    <div>
+                      <div className="flex gap-2 items-start flex-col">
+                        {message.role === 'assistant' && (
+                          <span>
+                            <Logo className="h-[30px] w-[30px] rounded-full" />
+                          </span>
+                        )}
+                        <Markdown>{content}</Markdown>
+                      </div>
+                      {!isLoading && message.role === 'assistant' && (
+                        <div className="-ml-2 flex items-center">
+                          <CopyButton value={content} />
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
           {isLoading && messages[messages.length - 1]?.role === 'user' && (
             <div
