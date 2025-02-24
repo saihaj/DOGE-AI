@@ -21,6 +21,10 @@ import {
 
 const models = [
   {
+    value: 'sonar-pro',
+    label: 'Sonar Pro',
+  },
+  {
     value: 'sonar-reasoning-pro',
     label: 'Sonar Reasoning Pro',
   },

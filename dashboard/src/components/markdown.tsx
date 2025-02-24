@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { cn } from '@/lib/utils';
+import { ExternalLink } from 'lucide-react';
 import Link from 'next/link';
 import { memo } from 'react';
 import ReactMarkdown, { type Components } from 'react-markdown';
@@ -48,15 +49,18 @@ const components: Partial<Components> = {
   },
   a: ({ node, children, ...props }) => {
     return (
-      <Link
-        className="text-blue-500 hover:underline"
-        target="_blank"
-        rel="noreferrer"
-        href={props.href as string}
-        {...props}
-      >
-        {children}
-      </Link>
+      <span>
+        {' '}
+        <Link
+          className="text-blue-500 hover:underline"
+          target="_blank"
+          rel="noreferrer"
+          href={props.href as string}
+          {...props}
+        >
+          {children}
+        </Link>
+      </span>
     );
   },
   h1: ({ node, children, ...props }) => {

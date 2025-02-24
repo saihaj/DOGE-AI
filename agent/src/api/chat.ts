@@ -15,6 +15,7 @@ export const myProvider = experimental_customProvider({
   languageModels: {
     'sonar-reasoning-pro': perplexity('sonar-reasoning-pro'),
     'sonar-reasoning': perplexity('sonar-reasoning'),
+    'sonar-pro': perplexity('sonar-pro'),
     'o3-mini': openai('o3-mini'),
     'gpt-4o': openai('gpt-4o'),
   },
