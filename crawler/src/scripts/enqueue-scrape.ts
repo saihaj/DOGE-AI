@@ -8,7 +8,11 @@ async function main() {
         url: 'https://doge.gov/savings',
         actions: [
           {
-            selector: 'see more',
+            selector: "//*[text()='see more']",
+            type: 'click',
+          },
+          {
+            selector: "//*[text()='See more']",
             type: 'click',
           },
         ],
