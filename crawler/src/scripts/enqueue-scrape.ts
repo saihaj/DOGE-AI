@@ -1,21 +1,35 @@
 import { inngest } from '../ingest';
-import { Action } from '@mendable/firecrawl-js';
-
-const page = 'https://doge.gov/savings';
-const actions = [
-  {
-    selector: 'see more',
-    type: 'click',
-  },
-] satisfies Action[];
 
 async function main() {
   const ingestSent = await inngest.send([
     {
       name: 'web.imported',
       data: {
-        url: page,
-        actions,
+        url: 'https://doge.gov/savings',
+        actions: [
+          {
+            selector: 'see more',
+            type: 'click',
+          },
+        ],
+      },
+    },
+    {
+      name: 'web.imported',
+      data: {
+        url: 'https://doge.gov/regulations',
+        actions: [
+          {
+            selector: 'Load more agencies',
+            type: 'click',
+          },
+        ],
+      },
+    },
+    {
+      name: 'web.imported',
+      data: {
+        url: 'https://doge.gov/spend',
       },
     },
   ]);
