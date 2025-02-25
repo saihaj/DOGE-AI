@@ -145,6 +145,22 @@ fastify.route<{ Body: ChatStreamInput }>({
       messages: CoreMessage[];
       selectedChatModel: string;
     };
+    const userMessage = messages[messages.length - 1];
+
+    if (!userMessage) {
+      throw new Error('No user message');
+    }
+
+    const userMessageText = userMessage.content.toString();
+
+    log.info({ text: userMessageText }, 'User message');
+
+    const tweetUrl = userMessageText.match(
+      /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i,
+    );
+
+    log.info({ tweetUrl }, 'Tweet URL');
+    return;
 
     // Listen for the client disconnecting (abort)
     request.raw.on('close', () => {
