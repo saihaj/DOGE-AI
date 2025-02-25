@@ -60,10 +60,13 @@ async function main() {
     const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
     const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
 
-    const { responseLong, metadata, formatted } = await getLongResponse({
-      summary,
-      text: content,
-    });
+    const { responseLong, metadata, formatted } = await getLongResponse(
+      {
+        summary,
+        text: content,
+      },
+      log,
+    );
 
     if (metadata) {
       console.log('\n\nMetadata: ', metadata, '\n\n');

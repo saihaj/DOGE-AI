@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   REJECTION_REASON,
+  SEED,
   TEMPERATURE,
   TWITTER_API_BASE_URL,
   TWITTER_API_KEY,
@@ -281,6 +282,27 @@ export async function longResponseFormatter(text: string) {
   const responseLong = sanitizeLlmOutput(_responseLong);
 
   return responseLong;
+}
+
+export async function wokeTweetsRewriter(text: string, log: WithLogger) {
+  const prompt = await PROMPTS.TWITTER_REPLY_REWRITER({ text });
+  const { text: response } = await generateText({
+    model: openai('gpt-4o'),
+    temperature: TEMPERATURE,
+    seed: SEED,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  if (response.match(/\[woke\]/i)) {
+    log.info({}, 'Woke response detected');
+    return response
+      .replace(/\[woke\]\s*/i, '')
+      .trim()
+      .replace(/^\s+/, '') // Extra trim for any leading spaces
+      .trim();
+  }
+
+  return text;
 }
 
 export function sanitizeLlmOutput(text: string) {
