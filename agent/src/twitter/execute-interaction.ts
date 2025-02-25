@@ -244,10 +244,13 @@ export const executeInteractionTweets = inngest.createFunction(
             responseLong,
             metadata,
             formatted: responseLongFormatted,
-          } = await getLongResponse({
-            summary,
-            text,
-          });
+          } = await getLongResponse(
+            {
+              summary,
+              text,
+            },
+            log,
+          );
 
           const finalAnswer = await getShortResponse({ topic: responseLong });
 
