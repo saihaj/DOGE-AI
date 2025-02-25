@@ -3,7 +3,6 @@ import type React from 'react';
 
 import { useChat, type Message } from 'ai/react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import {
@@ -25,6 +24,7 @@ import { Header } from '@/components/header';
 import { toast } from 'sonner';
 import { Toggle } from '@/components/ui/toggle';
 import { useMemo } from 'react';
+import { AutosizeTextarea } from '@/components/ui/autosize-textarea';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -335,17 +335,28 @@ export function Chat() {
               <Search />
               Bill Search
             </Toggle>
-            <Input
+            <AutosizeTextarea
               disabled={isLoading}
               value={input}
+              maxHeight={200}
+              onSend={() => {
+                if (isLoading) return;
+                if (!input) return;
+                if (input.trim().length === 0) return;
+
+                handleSubmit();
+              }}
               onChange={handleInputChange}
               placeholder="Enter user message..."
-              className="flex-1  border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground"
+              className="flex-1 resize-none border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground"
             />
             {isLoading ? (
               <Button onClick={stop}>Stop</Button>
             ) : (
-              <Button disabled={isLoading || input.length <= 0} type="submit">
+              <Button
+                disabled={isLoading || !input || input.trim().length === 0}
+                type="submit"
+              >
                 Send
               </Button>
             )}
