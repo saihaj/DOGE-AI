@@ -19,10 +19,16 @@ async function main() {
       data: {
         url: 'https://doge.gov/regulations',
         actions: [
-          {
-            selector: 'Load more agencies',
-            type: 'click',
-          },
+          { type: 'click', selector: 'Load more agencies' },
+          { type: 'wait', milliseconds: 500 },
+          { type: 'click', selector: 'Load more agencies' },
+          { type: 'wait', milliseconds: 500 },
+          { type: 'click', selector: 'Load more agencies' },
+          { type: 'wait', milliseconds: 500 },
+          { type: 'click', selector: 'Load more agencies' },
+          { type: 'wait', milliseconds: 500 },
+          { type: 'click', selector: 'Load more agencies' },
+          { type: 'wait', milliseconds: 500 },
         ],
       },
     },
