@@ -25,6 +25,7 @@ import { toast } from 'sonner';
 import { Toggle } from '@/components/ui/toggle';
 import { useMemo } from 'react';
 import { AutosizeTextarea } from '@/components/ui/autosize-textarea';
+import { Drawer } from 'vaul';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -98,29 +99,48 @@ export function Chat() {
     [messages],
   );
 
-  // Process messages and attach sources from the data stream
-  const assistantMessagesWithSources = useMemo(
-    () =>
-      assistantMessages.map((message, index) => {
-        const relativeData = data?.[index];
-
-        // TODO: how can we type these better?
-        const sources = (() => {
-          // @ts-expect-error we can ignore because BE adds these
-          if (relativeData?.role === 'sources') {
-            // @ts-expect-error we can ignore because BE adds these
-            return relativeData?.content || [];
-          }
-          return [];
-        })();
-
-        return {
-          ...message,
-          sources,
-        };
-      }),
-    [assistantMessages, data],
+  const userMessages = useMemo(
+    () => messages.filter(message => message.role === 'user'),
+    [messages],
   );
+
+  // Process messages and attach tweets from the data stream
+  const userMessagesWithTweets = useMemo(() => {
+    // @ts-expect-error we can ignore because BE adds these
+    const extractedTweets = data?.filter(d => d?.role === 'tweet') || [];
+
+    return userMessages.map((message, index) => {
+      const relativeData = extractedTweets?.[index];
+
+      // TODO: how can we type these better?
+      // @ts-expect-error we can ignore because BE adds these
+      const tweet = relativeData?.content || null;
+
+      return {
+        ...message,
+        tweet,
+      };
+    });
+  }, [userMessages, data]);
+
+  // Process messages and attach sources from the data stream
+  const assistantMessagesWithSources = useMemo(() => {
+    // @ts-expect-error we can ignore because BE adds these
+    const sourcesData = data?.filter(d => d?.role === 'sources') || [];
+
+    return assistantMessages.map((message, index) => {
+      const relativeData = sourcesData?.[index];
+
+      // TODO: how can we type these better?
+      // @ts-expect-error we can ignore because BE adds these
+      const sources = relativeData?.content || [];
+
+      return {
+        ...message,
+        sources,
+      };
+    });
+  }, [assistantMessages, data]);
 
   const messagesWithSources = useMemo(
     () =>
@@ -131,16 +151,33 @@ export function Chat() {
           );
 
           if (assistantMessage) {
-            return assistantMessage;
+            return {
+              ...assistantMessage,
+              tweet: null,
+            };
+          }
+        }
+
+        if (message.role === 'user') {
+          const userMessage = userMessagesWithTweets.find(
+            m => m.id === message.id,
+          );
+
+          if (userMessage) {
+            return {
+              ...userMessage,
+              sources: [],
+            };
           }
         }
 
         return {
           ...message,
           sources: [],
+          tweet: null,
         };
       }),
-    [assistantMessagesWithSources, messages],
+    [assistantMessagesWithSources, messages, userMessagesWithTweets],
   );
 
   const handleSystemPromptChange = (
@@ -263,6 +300,7 @@ export function Chat() {
                 message.content,
                 message.sources,
               );
+
               return (
                 <div
                   key={message.id}
@@ -296,6 +334,42 @@ export function Chat() {
                         </div>
                       )}
                     </div>
+                    {message?.tweet && (
+                      <Drawer.Root direction="right">
+                        <Drawer.Trigger>
+                          <Button variant="outline" size="sm" className="mt-2">
+                            View Tweet Content
+                          </Button>
+                        </Drawer.Trigger>
+                        <Drawer.Portal>
+                          <Drawer.Overlay className="fixed inset-0 bg-black/60 z-10" />
+                          <Drawer.Content
+                            className="right-2 rounded-2xl top-2 bottom-2 fixed bg-primary-foreground z-10 outline-none max-w-lg flex overflow-y-auto"
+                            // The gap between the edge of the screen and the drawer is 8px in this case.
+                            style={
+                              {
+                                '--initial-transform': 'calc(100% + 8px)',
+                              } as React.CSSProperties
+                            }
+                          >
+                            <div className="bg-primary-foreground h-full w-full grow p-5 flex flex-col rounded-2xl">
+                              <div className="max-w-xl mx-auto">
+                                <Drawer.Title className="font-bold text-lg mb-2 text-primary">
+                                  Extracted Tweet content
+                                </Drawer.Title>
+                                <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
+                                  <Markdown>{message.tweet}</Markdown>
+                                </Drawer.Description>
+                                <CopyButton
+                                  className="-ml-1 mb-4"
+                                  value={message.tweet}
+                                />
+                              </div>
+                            </div>
+                          </Drawer.Content>
+                        </Drawer.Portal>
+                      </Drawer.Root>
+                    )}
                   </div>
                 </div>
               );
