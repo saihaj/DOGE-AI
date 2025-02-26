@@ -61,7 +61,7 @@ export const processTweets = inngest.createFunction(
 
       const reason = Object.values(REJECTION_REASON)
         .map(a => a.toLowerCase())
-        .includes(error.message)
+        .includes(error.message.toLowerCase())
         ? error.message
         : 'IGNORED';
       tweetsProcessingRejected.inc({
