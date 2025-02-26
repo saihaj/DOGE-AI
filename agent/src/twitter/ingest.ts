@@ -9,6 +9,7 @@ import { chunk } from 'lodash-es';
 import { reportFailureToDiscord } from '../discord/action';
 import { SearchResultResponseSchema } from './helpers';
 import { logger } from '../logger';
+import { tweetsIngested } from '../prom';
 
 const API = new URL(TWITTER_API_BASE_URL);
 API.pathname = '/twitter/tweet/advanced_search';
@@ -93,6 +94,13 @@ export const ingestTweets = inngest.createFunction(
 
       log.info({ size: inngestSent.ids.length }, 'sent to inngest');
     });
+
+    tweetsIngested.inc(
+      {
+        method: 'ingest-tweets',
+      },
+      tweets.length,
+    );
 
     return {
       message: `Sent ${tweets.length} tweets to inngest`,

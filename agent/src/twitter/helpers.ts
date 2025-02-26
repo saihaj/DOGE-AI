@@ -21,6 +21,7 @@ import { db, eq, user as userDbSchema, chat as chatDbSchema } from 'database';
 import * as crypto from 'node:crypto';
 import { ANALYZE_TEXT_FROM_IMAGE, PROMPTS } from './prompts';
 import { WithLogger } from '../logger';
+import { wokeTweetRewritten } from '../prom';
 
 // Ada V2 31.4% vs 54.9% large
 const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
@@ -284,7 +285,10 @@ export async function longResponseFormatter(text: string) {
   return responseLong;
 }
 
-export async function wokeTweetsRewriter(text: string, log: WithLogger) {
+export async function wokeTweetsRewriter(
+  text: string,
+  { log, method, action }: { log: WithLogger; method: string; action: string },
+) {
   const prompt = await PROMPTS.TWITTER_REPLY_REWRITER({ text });
   const { text: response } = await generateText({
     model: openai('gpt-4o'),
@@ -295,6 +299,10 @@ export async function wokeTweetsRewriter(text: string, log: WithLogger) {
 
   if (response.match(/\[woke\]/i)) {
     log.info({}, 'Woke response detected');
+    wokeTweetRewritten.inc({
+      method: method,
+      action: action,
+    });
     return response
       .replace(/\[woke\]\s*/i, '')
       .trim()

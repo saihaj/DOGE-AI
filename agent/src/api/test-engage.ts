@@ -55,7 +55,11 @@ export async function processTestEngageRequest({
       text: content,
       systemPrompt: mainPrompt,
     },
-    log,
+    {
+      log,
+      method: 'processTestEngageRequest',
+      action: 'api',
+    },
   );
 
   if (refinePrompt) {

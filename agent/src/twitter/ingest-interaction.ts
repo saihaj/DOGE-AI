@@ -6,6 +6,7 @@ import { reportFailureToDiscord } from '../discord/action';
 import { ListResultResponseSchema } from './helpers';
 import { getUnixTime, subMinutes } from 'date-fns';
 import { logger } from '../logger';
+import { tweetsIngested } from '../prom';
 
 const API = new URL(TWITTER_API_BASE_URL);
 API.pathname = '/twitter/list/tweets';
@@ -131,6 +132,13 @@ export const ingestInteractionTweets = inngest.createFunction(
 
       log.info({ size: inngestSent.ids.length }, 'sent to inngest');
     });
+
+    tweetsIngested.inc(
+      {
+        method: 'ingest-interaction-tweets',
+      },
+      totalTweets.length,
+    );
 
     return {
       message: `Scraped: ${totalTweets.length}. Sent ${tweets.length} tweets to inngest. Since time: ${congress119Senators.sinceTime}, Until time: ${congress119Senators.untilTime}`,

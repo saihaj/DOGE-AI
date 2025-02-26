@@ -3,6 +3,7 @@ import { chunk } from 'lodash-es';
 import { reportFailureToDiscord } from '../discord/action';
 import { logger } from '../logger';
 import { fetchTweetsFromList } from './ingest-interaction';
+import { tweetsIngested } from '../prom';
 
 const log = logger.child({ module: 'ingest-temporary-interaction-tweets' });
 
@@ -60,6 +61,13 @@ export const ingestTemporaryInteractionTweets = inngest.createFunction(
 
       log.info({ size: inngestSent.ids.length }, 'sent to inngest');
     });
+
+    tweetsIngested.inc(
+      {
+        method: 'ingest-temporary-interaction-tweets',
+      },
+      totalTweets.length,
+    );
 
     return {
       message: `Scraped: ${totalTweets.length}. Sent ${tweets.length} tweets to inngest. Since time: ${dogeAiEngager.sinceTime}, Until time: ${dogeAiEngager.untilTime}`,

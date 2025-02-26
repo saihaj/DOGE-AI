@@ -65,7 +65,11 @@ async function main() {
         summary,
         text: content,
       },
-      log,
+      {
+        log,
+        method: 'engage-twitter',
+        action: 'cli',
+      },
     );
 
     if (metadata) {
