@@ -21,6 +21,8 @@ const openai = createOpenAI({
 const DO_NOT_ENGAGE_USERNAMES = [
   // Do not engage with any of my tweets
   'singh_saihaj',
+  // no self engagement
+  'dogeai_gov',
 ];
 
 /**
