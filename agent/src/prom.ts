@@ -42,3 +42,9 @@ export const tweetsPublished = new promClient.Counter({
   help: 'Number of tweets published',
   labelNames: ['method', 'action'],
 });
+
+export const tweetPublishFailed = new promClient.Counter({
+  name: 'tweet_publish_failed',
+  help: 'Number of tweets failed to publish',
+  labelNames: ['method'],
+});

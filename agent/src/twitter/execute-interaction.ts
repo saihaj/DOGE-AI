@@ -34,7 +34,11 @@ import { twitterClient } from './client.ts';
 import { perplexity } from '@ai-sdk/perplexity';
 import { logger, WithLogger } from '../logger.ts';
 import { getKbContext } from './knowledge-base.ts';
-import { tweetsPublished } from '../prom.ts';
+import {
+  tweetPublishFailed,
+  tweetsProcessingRejected,
+  tweetsPublished,
+} from '../prom.ts';
 
 /**
  * Given summary of and text of tweet generate a long contextual response
@@ -148,6 +152,10 @@ export const executeInteractionTweets = inngest.createFunction(
           .toLowerCase()
           .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase())
       ) {
+        tweetsProcessingRejected.inc({
+          method: 'execute-interaction-tweets',
+          reason: REJECTION_REASON.NO_QUESTION_DETECTED,
+        });
         await rejectedTweet({
           tweetId: id,
           tweetUrl: url,
@@ -158,6 +166,10 @@ export const executeInteractionTweets = inngest.createFunction(
 
       await reportFailureToDiscord({
         message: `[execute-interaction-tweets]:${id} ${errorMessage}`,
+      });
+
+      tweetPublishFailed.inc({
+        method: 'execute-interaction-tweets',
       });
     },
     timeouts: {

@@ -35,7 +35,11 @@ import { twitterClient } from './client.ts';
 import { logger, WithLogger } from '../logger.ts';
 import { perplexity } from '@ai-sdk/perplexity';
 import { getKbContext } from './knowledge-base.ts';
-import { tweetsPublished } from '../prom.ts';
+import {
+  tweetPublishFailed,
+  tweetsProcessingRejected,
+  tweetsPublished,
+} from '../prom.ts';
 
 export async function generateReply(
   {
@@ -179,6 +183,10 @@ export const executeTweets = inngest.createFunction(
           .startsWith(REJECTION_REASON.MAX_THREAD_DEPTH_REACHED.toLowerCase());
 
       if (nonFatalError) {
+        tweetsProcessingRejected.inc({
+          reason: errorMessage,
+          method: 'execute-tweets',
+        });
         await rejectedTweet({
           tweetId: id,
           tweetUrl: url,
@@ -187,6 +195,9 @@ export const executeTweets = inngest.createFunction(
         return;
       }
 
+      tweetPublishFailed.inc({
+        method: 'execute-tweets',
+      });
       await reportFailureToDiscord({
         message: `[execute-tweets]:${id} ${errorMessage}`,
       });
