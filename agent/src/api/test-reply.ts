@@ -115,7 +115,14 @@ export async function processTestReplyRequest({
     text: responseLong,
     metadata,
     formatted,
-  } = await generateReply({ messages, systemPrompt });
+  } = await generateReply(
+    { messages, systemPrompt },
+    {
+      log,
+      method: 'processTestReplyRequest',
+      action: 'api',
+    },
+  );
 
   if (refinePrompt) {
     refinePrompt = Handlebars.compile(refinePrompt)({

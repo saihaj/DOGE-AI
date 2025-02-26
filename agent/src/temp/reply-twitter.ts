@@ -117,9 +117,16 @@ async function main() {
       'context given',
     );
 
-    const { text, metadata, formatted } = await generateReply({
-      messages,
-    });
+    const { text, metadata, formatted } = await generateReply(
+      {
+        messages,
+      },
+      {
+        log,
+        method: 'reply-twitter',
+        action: 'cli',
+      },
+    );
 
     if (metadata) {
       console.log('\n\nMetadata: ', metadata, '\n\n');

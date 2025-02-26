@@ -1,12 +1,6 @@
 import { serve } from 'inngest/fastify';
 import Fastify from 'fastify';
-import {
-  CoreMessage,
-  createDataStream,
-  generateText,
-  StreamData,
-  streamText,
-} from 'ai';
+import { CoreMessage, StreamData, streamText } from 'ai';
 import { inngest } from './inngest';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
@@ -35,6 +29,7 @@ import {
   getTweetContentAsText,
   mergeConsecutiveSameRole,
 } from './twitter/helpers';
+import { promClient, readiness } from './prom';
 
 const fastify = Fastify();
 
@@ -293,7 +288,9 @@ fastify.route<{ Body: ChatStreamInput }>({
 fastify.route({
   method: 'GET',
   handler: async (request, reply) => {
-    if (discordClient.isReady()) {
+    const status = discordClient.isReady();
+    readiness.set(status ? 1 : 0);
+    if (status) {
       return reply.send({ status: 'ready' }).code(200);
     } else {
       return reply.send({ status: 'not ready' }).code(503);
@@ -302,8 +299,22 @@ fastify.route({
   url: '/api/health',
 });
 
+fastify.route({
+  method: 'GET',
+  handler: async (_, reply) => {
+    reply.header('Content-Type', promClient.register.contentType);
+    reply.send(await promClient.register.metrics());
+  },
+  url: '/api/metrics',
+});
+
 fastify.listen({ host: '0.0.0.0', port: 3000 }, async function (err, address) {
   logger.info({}, `Server listening on ${address}`);
+  promClient.collectDefaultMetrics({
+    labels: {
+      app: 'agent',
+    },
+  });
 
   try {
     await discordClient.login(DISCORD_TOKEN);

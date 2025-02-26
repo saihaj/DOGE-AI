@@ -34,6 +34,7 @@ import { twitterClient } from './client.ts';
 import { perplexity } from '@ai-sdk/perplexity';
 import { logger, WithLogger } from '../logger.ts';
 import { getKbContext } from './knowledge-base.ts';
+import { tweetsPublished } from '../prom.ts';
 
 /**
  * Given summary of and text of tweet generate a long contextual response
@@ -48,7 +49,7 @@ export async function getLongResponse(
     text: string;
     systemPrompt?: string;
   },
-  log: WithLogger,
+  { method, log, action }: { log: WithLogger; method: string; action: string },
 ) {
   if (!systemPrompt) {
     systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
@@ -76,7 +77,11 @@ export async function getLongResponse(
     : null;
 
   const responseLong = sanitizeLlmOutput(_responseLong);
-  const rewriter = await wokeTweetsRewriter(responseLong, log);
+  const rewriter = await wokeTweetsRewriter(responseLong, {
+    log,
+    method,
+    action,
+  });
   const formatted = await longResponseFormatter(rewriter);
 
   return {
@@ -249,7 +254,11 @@ export const executeInteractionTweets = inngest.createFunction(
               summary,
               text,
             },
-            log,
+            {
+              log,
+              method: 'execute-interaction-tweets',
+              action: event.data.action,
+            },
           );
 
           const finalAnswer = await getShortResponse({ topic: responseLong });
@@ -304,6 +313,10 @@ export const executeInteractionTweets = inngest.createFunction(
             reply: {
               in_reply_to_tweet_id: tweetToActionOn.id,
             },
+          });
+          tweetsPublished.inc({
+            action: event.data.action,
+            method: 'execute-interaction-tweets',
           });
 
           return {

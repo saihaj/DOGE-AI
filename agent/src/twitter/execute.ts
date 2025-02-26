@@ -35,14 +35,18 @@ import { twitterClient } from './client.ts';
 import { logger, WithLogger } from '../logger.ts';
 import { perplexity } from '@ai-sdk/perplexity';
 import { getKbContext } from './knowledge-base.ts';
+import { tweetsPublished } from '../prom.ts';
 
-export async function generateReply({
-  messages,
-  systemPrompt,
-}: {
-  messages: CoreMessage[];
-  systemPrompt?: string;
-}) {
+export async function generateReply(
+  {
+    messages,
+    systemPrompt,
+  }: {
+    messages: CoreMessage[];
+    systemPrompt?: string;
+  },
+  { method, log, action }: { log: WithLogger; method: string; action: string },
+) {
   const mergedMessages = mergeConsecutiveSameRole(messages);
   if (!systemPrompt) {
     systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
@@ -64,7 +68,11 @@ export async function generateReply({
     : null;
 
   const text = sanitizeLlmOutput(_text);
-  const rewrite = await wokeTweetsRewriter(text, logger);
+  const rewrite = await wokeTweetsRewriter(text, {
+    log,
+    method,
+    action,
+  });
   const formatted = await longResponseFormatter(rewrite);
 
   return {
@@ -323,7 +331,14 @@ export const executeTweets = inngest.createFunction(
               text: long,
               metadata,
               formatted,
-            } = await generateReply({ messages });
+            } = await generateReply(
+              { messages },
+              {
+                log,
+                method: 'execute-tweets',
+                action: event.data.action,
+              },
+            );
             log.info({ response: long, metadata }, 'reply generated');
 
             return {
@@ -414,7 +429,11 @@ export const executeTweets = inngest.createFunction(
             });
 
             const long = sanitizeLlmOutput(_long);
-            const rewriter = await wokeTweetsRewriter(long, log);
+            const rewriter = await wokeTweetsRewriter(long, {
+              log,
+              method: 'execute-tweets',
+              action: event.data.action,
+            });
             const formatted = await longResponseFormatter(rewriter);
 
             return {
@@ -449,6 +468,10 @@ export const executeTweets = inngest.createFunction(
         reply: {
           in_reply_to_tweet_id: tweetToActionOn.id,
         },
+      });
+      tweetsPublished.inc({
+        action: event.data.action,
+        method: 'execute-tweets',
       });
 
       return {

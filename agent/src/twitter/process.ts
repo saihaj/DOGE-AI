@@ -13,6 +13,7 @@ import { PROMPTS } from './prompts.ts';
 import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
 import { logger } from '../logger.ts';
 import { getTweetContext } from './execute.ts';
+import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
 
 const openai = createOpenAI({
   compatibility: 'strict',
@@ -57,6 +58,16 @@ export const processTweets = inngest.createFunction(
         },
         'do no engage',
       );
+
+      const reason = Object.values(REJECTION_REASON)
+        .map(a => a.toLowerCase())
+        .includes(error.message)
+        ? error.message
+        : 'IGNORED';
+      tweetsProcessingRejected.inc({
+        method: 'process-tweets',
+        reason: reason,
+      });
       await rejectedTweet({
         tweetId: id,
         tweetUrl: url,
@@ -135,6 +146,10 @@ export const processTweets = inngest.createFunction(
           tweetUrl: event.data.url,
         },
       });
+      tweetsProcessed.inc({
+        method: 'process-tweets',
+        action: 'tag',
+      });
       return;
     }
 
@@ -181,6 +196,10 @@ export const processTweets = inngest.createFunction(
           action: 'reply',
           tweetUrl: event.data.url,
         },
+      });
+      tweetsProcessed.inc({
+        method: 'process-tweets',
+        action: 'reply',
       });
       return;
     }
@@ -243,6 +262,10 @@ export const processTweets = inngest.createFunction(
           action: 'tag-summon',
           tweetUrl: event.data.url,
         },
+      });
+      tweetsProcessed.inc({
+        method: 'process-tweets',
+        action: 'tag-summon',
       });
       return;
     }

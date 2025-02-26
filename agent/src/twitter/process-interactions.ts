@@ -8,7 +8,8 @@ import {
 } from '../discord/action.ts';
 import { PROMPTS } from './prompts.ts';
 import { logger } from '../logger.ts';
-import { TEMPERATURE } from '../const.ts';
+import { REJECTION_REASON, TEMPERATURE } from '../const.ts';
+import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
 
 export const processInteractionTweets = inngest.createFunction(
   {
@@ -41,6 +42,16 @@ export const processInteractionTweets = inngest.createFunction(
         },
         'do no engage',
       );
+
+      const reason = Object.values(REJECTION_REASON)
+        .map(a => a.toLowerCase())
+        .includes(error.message)
+        ? error.message
+        : 'IGNORED';
+      tweetsProcessingRejected.inc({
+        method: 'process-interaction-tweets',
+        reason,
+      });
       await rejectedInteractionTweet({
         tweetId: id,
         tweetUrl: url,
@@ -92,6 +103,10 @@ export const processInteractionTweets = inngest.createFunction(
           action: 'reply-engage',
           tweetUrl: event.data.url,
         },
+      });
+      tweetsProcessed.inc({
+        method: 'process-interaction-tweets',
+        action: 'reply-engage',
       });
       return;
     }
