@@ -9,6 +9,10 @@ primary_region = 'bos'
 [build]
  dockerfile = "./Dockerfile"
 
+[metrics]
+port = 3000
+path = "/api/metrics"
+
 [http_service]
   internal_port = 3000
   force_https = true
