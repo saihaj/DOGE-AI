@@ -31,7 +31,10 @@ import {
 import { ChatStreamInput, myProvider } from './api/chat';
 import { logger } from './logger';
 import { getKbContext } from './twitter/knowledge-base';
-import { mergeConsecutiveSameRole } from './twitter/helpers';
+import {
+  getTweetContentAsText,
+  mergeConsecutiveSameRole,
+} from './twitter/helpers';
 
 const fastify = Fastify();
 
@@ -137,6 +140,7 @@ fastify.route<{ Body: ChatStreamInput }>({
     body: ChatStreamInput,
   },
   handler: async (request, reply) => {
+    const tweetExtractRegex = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
     const log = logger.child({ function: 'api-chat' });
     // Create an AbortController for the backend
     const abortController = new AbortController();
@@ -145,6 +149,15 @@ fastify.route<{ Body: ChatStreamInput }>({
       messages: CoreMessage[];
       selectedChatModel: string;
     };
+    const userMessage = messages[messages.length - 1];
+
+    if (!userMessage) {
+      throw new Error('No user message');
+    }
+
+    const userMessageText = userMessage.content.toString();
+
+    log.info({ text: userMessageText }, 'User message');
 
     // Listen for the client disconnecting (abort)
     request.raw.on('close', () => {
@@ -161,6 +174,34 @@ fastify.route<{ Body: ChatStreamInput }>({
     reply.header('Connection', 'keep-alive');
 
     try {
+      const stream = new StreamData();
+
+      const extractedTweetUrl = userMessageText.match(tweetExtractRegex);
+
+      let tweetUrl: string | null = null;
+      if (extractedTweetUrl) {
+        tweetUrl = extractedTweetUrl[0];
+        log.info({ url: tweetUrl }, 'extracted tweet');
+        const url = new URL(tweetUrl);
+        const tweetId = url.pathname.split('/').pop();
+        log.info({ tweetId }, 'tweetId');
+
+        if (tweetId) {
+          const tweetText = await getTweetContentAsText({ id: tweetId }, log);
+          stream.append({
+            role: 'tweet',
+            content: tweetText,
+          });
+          const updatedMessage = userMessageText.replace(
+            tweetExtractRegex,
+            `"${tweetText}"`,
+          );
+          log.info({ updatedMessage }, 'swap tweet url with extracted text');
+          messages.pop();
+          messages.push({ role: 'user', content: updatedMessage });
+        }
+      }
+
       if (billSearch) {
         const latestMessage = messages[messages.length - 1];
         const kb = await getKbContext(
@@ -198,8 +239,6 @@ fastify.route<{ Body: ChatStreamInput }>({
       ) {
         messages = mergeConsecutiveSameRole(messages);
       }
-
-      const stream = new StreamData();
 
       const result = streamText({
         model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
