@@ -221,6 +221,28 @@ export const PROMPTS = {
       { ttl: '1d' },
     );
   },
+  TWITTER_REPLY_REWRITER: async ({ text }: { text: string }) => {
+    const prompt = await bento.getOrSet(
+      'BOT_CONFIG_TWITTER_REPLY_REWRITER',
+      async () => {
+        const prompt = await db.query.botConfig.findFirst({
+          where: eq(botConfig.key, 'TWITTER_REPLY_REWRITER'),
+          columns: {
+            value: true,
+          },
+        });
+
+        if (!prompt) {
+          throw new Error('TWITTER_REPLY_REWRITER not found');
+        }
+
+        return prompt.value;
+      },
+      { ttl: '1d' },
+    );
+    const templatePrompt = Handlebars.compile(prompt);
+    return templatePrompt({ text });
+  },
   REPLY_SHORTENER_PROMPT: async () => {
     return bento.getOrSet(
       'BOT_CONFIG_REPLY_SHORTENER_PROMPT',

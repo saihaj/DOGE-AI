@@ -1,15 +1,8 @@
-import {
-  ACTIVE_CONGRESS,
-  IS_PROD,
-  REJECTION_REASON,
-  SEED,
-  TEMPERATURE,
-} from '../const';
+import { IS_PROD, REJECTION_REASON, TEMPERATURE } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
-  generateEmbedding,
   generateEmbeddings,
   getTweet,
   getTweetContentAsText,
@@ -18,23 +11,18 @@ import {
   textSplitter,
   upsertChat,
   upsertUser,
+  wokeTweetsRewriter,
 } from './helpers.ts';
-import { CoreMessage, generateObject, generateText, tool } from 'ai';
+import { generateText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
-import { openai } from '@ai-sdk/openai';
-import { BILL_RELATED_TO_TWEET_PROMPT, PROMPTS } from './prompts';
+import { PROMPTS } from './prompts';
 import {
-  billVector,
   chat as chatDbSchema,
   db,
   eq,
-  inArray,
   message as messageDbSchema,
   messageVector,
   sql,
-  bill as billDbSchema,
-  and,
-  isNotNull,
 } from 'database';
 import {
   approvedTweetEngagement,
@@ -43,7 +31,6 @@ import {
   sendDevTweet,
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
-import { z } from 'zod';
 import { perplexity } from '@ai-sdk/perplexity';
 import { logger, WithLogger } from '../logger.ts';
 import { getKbContext } from './knowledge-base.ts';
@@ -51,15 +38,18 @@ import { getKbContext } from './knowledge-base.ts';
 /**
  * Given summary of and text of tweet generate a long contextual response
  */
-export async function getLongResponse({
-  summary,
-  text,
-  systemPrompt,
-}: {
-  summary: string;
-  text: string;
-  systemPrompt?: string;
-}) {
+export async function getLongResponse(
+  {
+    summary,
+    text,
+    systemPrompt,
+  }: {
+    summary: string;
+    text: string;
+    systemPrompt?: string;
+  },
+  log: WithLogger,
+) {
   if (!systemPrompt) {
     systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
   }
@@ -86,8 +76,8 @@ export async function getLongResponse({
     : null;
 
   const responseLong = sanitizeLlmOutput(_responseLong);
-
-  const formatted = await longResponseFormatter(responseLong);
+  const rewriter = await wokeTweetsRewriter(responseLong, log);
+  const formatted = await longResponseFormatter(rewriter);
 
   return {
     responseLong,
@@ -254,10 +244,13 @@ export const executeInteractionTweets = inngest.createFunction(
             responseLong,
             metadata,
             formatted: responseLongFormatted,
-          } = await getLongResponse({
-            summary,
-            text,
-          });
+          } = await getLongResponse(
+            {
+              summary,
+              text,
+            },
+            log,
+          );
 
           const finalAnswer = await getShortResponse({ topic: responseLong });
 

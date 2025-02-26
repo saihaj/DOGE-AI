@@ -49,11 +49,14 @@ export async function processTestEngageRequest({
   const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
   const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
 
-  const { responseLong, metadata, formatted } = await getLongResponse({
-    summary,
-    text: content,
-    systemPrompt: mainPrompt,
-  });
+  const { responseLong, metadata, formatted } = await getLongResponse(
+    {
+      summary,
+      text: content,
+      systemPrompt: mainPrompt,
+    },
+    log,
+  );
 
   if (refinePrompt) {
     refinePrompt = Handlebars.compile(refinePrompt)({
