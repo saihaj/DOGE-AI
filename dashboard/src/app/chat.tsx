@@ -23,9 +23,10 @@ import { API_URL } from '@/lib/const';
 import { Header } from '@/components/header';
 import { toast } from 'sonner';
 import { Toggle } from '@/components/ui/toggle';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AutosizeTextarea } from '@/components/ui/autosize-textarea';
 import { Drawer } from 'vaul';
+import { Label } from '@/components/ui/label';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -43,6 +44,154 @@ function parseMessageWithSources(content: string, sources: string[]) {
   });
 }
 
+/**
+ * given a string
+ * "I am helpful agent. Let me {{var}} help you"
+ * it extracts out {{var}} and returns as a JS object
+ * {var: ""}
+ */
+function extractTemplate(content: string) {
+  const template = content.match(/{{(.*?)}}/g);
+  const result: { [key: string]: string } = {};
+
+  if (template) {
+    template.forEach(t => {
+      const key = t.replace(/{{|}}/g, '');
+      result[key] = '';
+    });
+  }
+
+  return result;
+}
+
+/**
+ * Given a prompt template and variables, it fills the template with the variables
+ * and returns the filled text
+ */
+function fillTemplate({
+  prompt,
+  variables,
+}: {
+  prompt: string;
+  variables: Record<string, string>;
+}) {
+  let text = prompt;
+  Object.keys(variables).forEach(varName => {
+    const value = variables[varName] || `[${varName}]`;
+    text = text.replace(new RegExp(`\\{\\{${varName}\\}\\}`, 'g'), value);
+  });
+  return text;
+}
+
+function TemplatePromptWithVars({
+  initialText,
+  onChange,
+  label,
+}: {
+  initialText: string;
+  onChange: (text: string, variables: Record<string, string>) => void;
+  label: string;
+}) {
+  const [text, setText] = useState<string>(initialText);
+  // const [variables, setVariables] = useState<Record<string, string>>({});
+  const [variables, setVariables] = useLocalStorage<Record<string, string>>(
+    `playground${label.replace(' ', '').trim().toLowerCase()}PromptVars`,
+    {},
+  );
+  useEffect(() => {
+    const extracted = extractTemplate(text);
+    setVariables(prev => {
+      const newVars: Record<string, string> = {};
+      Object.keys(extracted).forEach(key => {
+        newVars[key] = prev[key] !== undefined ? prev[key] : '';
+      });
+      return newVars;
+    });
+  }, [setVariables, text]);
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newText = e.target.value;
+    setText(newText);
+    if (onChange) {
+      onChange(newText, variables);
+    }
+  };
+
+  const handleVarValueChange = (varName: string, value: string) => {
+    setVariables(prev => {
+      const updatedVars = { ...prev, [varName]: value };
+      if (onChange) {
+        onChange(text, updatedVars);
+      }
+      return updatedVars;
+    });
+  };
+
+  const detectedVars = Object.keys(variables);
+
+  return (
+    <Accordion type="single" collapsible className="w-full sticky">
+      <AccordionItem value="system-prompt" className="border-b-0">
+        <AccordionTrigger className="px-4 py-2 border-secondary-foreground/30 bg-secondary hover:no-underline">
+          <span className="text-sm font-medium text-secondary-foreground">
+            {label}
+          </span>
+        </AccordionTrigger>
+        <AccordionContent className="bg-secondary px-4 pt-1 pb-4">
+          <Textarea
+            value={text}
+            onChange={handleTextChange}
+            placeholder="Enter system message..."
+            className="min-h-[100px] border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground resize-y max-h-[50vh]"
+          />
+          {detectedVars.length > 0 && (
+            <Drawer.Root direction="right">
+              <Drawer.Trigger asChild>
+                <Button variant="outline" size="sm" className="mt-2">
+                  Configure {detectedVars.length} Variables
+                </Button>
+              </Drawer.Trigger>
+              <Drawer.Portal>
+                <Drawer.Overlay className="fixed inset-0 bg-black/60 z-10" />
+                <Drawer.Content
+                  className="right-2 rounded-2xl top-2 bottom-2 fixed bg-primary-foreground z-10 outline-none w-1/3 flex overflow-y-auto"
+                  // The gap between the edge of the screen and the drawer is 8px in this case.
+                  style={
+                    {
+                      '--initial-transform': 'calc(100% + 8px)',
+                    } as React.CSSProperties
+                  }
+                >
+                  <div className="bg-primary-foreground h-full w-full grow p-5 flex flex-col rounded-2xl">
+                    <Drawer.Title className="font-bold text-lg mb-2 text-primary">
+                      Variable Values
+                    </Drawer.Title>
+                    {detectedVars.map((varName, index) => (
+                      <div key={index} className="flex flex-col gap-2 mb-4">
+                        <Label className="font-mono" htmlFor={`var-${varName}`}>
+                          {varName}
+                        </Label>
+                        <Textarea
+                          id={`var-${varName}`}
+                          value={variables[varName] || ''}
+                          onChange={e =>
+                            handleVarValueChange(varName, e.target.value)
+                          }
+                          placeholder={`Enter value for ${varName}`}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </Drawer.Content>
+              </Drawer.Portal>
+            </Drawer.Root>
+          )}
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
+
 export function Chat() {
   const [model, setModel] = useLocalStorage<ModelValues>(
     'playgroundSelectedChatModel',
@@ -53,12 +202,41 @@ export function Chat() {
     'playgroundSystemPrompt',
     PLACEHOLDER_PROMPT,
   );
+  const [systemPromptTemplate, setSystemPromptTemplate] = useLocalStorage(
+    'playgroundSystemPromptTemplate',
+    PLACEHOLDER_PROMPT,
+  );
   const [userPrompt, setUserPrompt] = useLocalStorage(
     'playgroundUserPrompt',
     '',
   );
+  const [userPromptTemplate, setUserPromptTemplate] = useLocalStorage(
+    'playgroundUserPromptTemplate',
+    '',
+  );
+
   const [messagesContainerRef, messagesEndRef] =
     useScrollToBottom<HTMLDivElement>();
+
+  const initialMessages = useMemo(() => {
+    const messages = [
+      {
+        id: 'system',
+        role: 'system',
+        content: systemPrompt,
+      },
+    ] as Message[];
+
+    if (userPrompt) {
+      messages.push({
+        id: 'userPersistent',
+        role: 'user',
+        content: userPrompt,
+      });
+    }
+
+    return messages;
+  }, [systemPrompt, userPrompt]);
 
   const {
     messages,
@@ -85,13 +263,7 @@ export function Chat() {
         },
       });
     },
-    initialMessages: [
-      {
-        id: 'system',
-        role: 'system',
-        content: systemPrompt,
-      },
-    ],
+    initialMessages,
   });
 
   const assistantMessages = useMemo(
@@ -180,16 +352,26 @@ export function Chat() {
     [assistantMessagesWithSources, messages, userMessagesWithTweets],
   );
 
-  const handleSystemPromptChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>,
-  ) => {
-    setSystemPrompt(e.target.value);
+  const handleSystemPromptChange = ({
+    text,
+    variables,
+  }: {
+    text: string;
+    variables: Record<string, string>;
+  }) => {
+    const prompt = text ? text.trim() : PLACEHOLDER_PROMPT;
+    setSystemPromptTemplate(prompt);
+    const input = fillTemplate({
+      variables,
+      prompt,
+    });
+    setSystemPrompt(input);
     // Reset chat with new system prompt
     const messages = [
       {
         id: 'system',
         role: 'system',
-        content: e.target.value,
+        content: input,
       },
     ] as Message[];
 
@@ -204,10 +386,22 @@ export function Chat() {
     setMessages(messages);
   };
 
-  const handleUserPromptChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>,
-  ) => {
-    setUserPrompt(e.target.value);
+  const handleUserPromptChange = ({
+    text,
+    variables,
+  }: {
+    text: string;
+    variables: Record<string, string>;
+  }) => {
+    const prompt = text ? text.trim() : PLACEHOLDER_PROMPT;
+    setUserPromptTemplate(prompt);
+
+    const input = fillTemplate({
+      variables,
+      prompt,
+    });
+    setUserPrompt(input);
+
     // Reset chat with new system prompt
     setMessages([
       {
@@ -218,7 +412,7 @@ export function Chat() {
       {
         id: 'userPersistent',
         role: 'user',
-        content: e.target.value,
+        content: input,
       },
     ]);
   };
@@ -252,42 +446,22 @@ export function Chat() {
       />
 
       {/* Expandable System Prompt Area */}
-      <Accordion type="single" collapsible className="w-full sticky">
-        <AccordionItem value="system-prompt" className="border-b-0">
-          <AccordionTrigger className="px-4 py-2 border-secondary-foreground/30 bg-secondary hover:no-underline">
-            <span className="text-sm font-medium text-secondary-foreground">
-              System message
-            </span>
-          </AccordionTrigger>
-          <AccordionContent className="bg-secondary px-4 pt-1 pb-4">
-            <Textarea
-              value={systemPrompt}
-              onChange={handleSystemPromptChange}
-              placeholder="Enter system message..."
-              className="min-h-[100px] border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground resize-y max-h-[50vh]"
-            />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      <TemplatePromptWithVars
+        initialText={systemPromptTemplate}
+        onChange={(text, vars) => {
+          handleSystemPromptChange({ text, variables: vars });
+        }}
+        label="System message"
+      />
 
       {/* Expandable User Prompt Area */}
-      <Accordion type="single" collapsible className="w-full sticky">
-        <AccordionItem value="system-prompt" className="border-b-0">
-          <AccordionTrigger className="px-4 py-2 border-secondary-foreground/30 bg-secondary hover:no-underline">
-            <span className="text-sm font-medium text-secondary-foreground">
-              User message
-            </span>
-          </AccordionTrigger>
-          <AccordionContent className="bg-secondary px-4 pt-1 pb-4">
-            <Textarea
-              value={userPrompt}
-              onChange={handleUserPromptChange}
-              placeholder="Enter user message..."
-              className="min-h-[100px] border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground resize-y max-h-[50vh]"
-            />
-          </AccordionContent>
-        </AccordionItem>
-      </Accordion>
+      <TemplatePromptWithVars
+        initialText={userPromptTemplate}
+        onChange={(text, vars) => {
+          handleUserPromptChange({ text, variables: vars });
+        }}
+        label="User message"
+      />
 
       {/* Scrollable Messages Area */}
       <ScrollArea className="flex-1 w-full md:max-w-4xl mx-auto max-h-[calc(100vh-10rem)]">
