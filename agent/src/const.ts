@@ -112,3 +112,24 @@ export const DISCORD_LOCAL_TWEETS_CHANNEL_ID = (() => {
 export const TEMPERATURE = 0;
 export const SEED = 69;
 export const ACTIVE_CONGRESS = 119;
+export const LOKI_ENDPOINT = (() => {
+  if (!IS_PROD) return '';
+  if (!process.env.LOKI_ENDPOINT) {
+    throw new Error('LOKI_ENDPOINT is not set in your .env');
+  }
+  return process.env.LOKI_ENDPOINT;
+})();
+export const LOKI_USERNAME = (() => {
+  if (!IS_PROD) return '';
+  if (!process.env.LOKI_USERNAME) {
+    throw new Error('LOKI_USERNAME is not set in your .env');
+  }
+  return process.env.LOKI_USERNAME;
+})();
+export const LOKI_PASSWORD = (() => {
+  if (!IS_PROD) return '';
+  if (!process.env.LOKI_PASSWORD) {
+    throw new Error('LOKI_PASSWORD is not set in your .env');
+  }
+  return process.env.LOKI_PASSWORD;
+})();
