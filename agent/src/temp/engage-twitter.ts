@@ -47,16 +47,6 @@ async function main() {
       log,
     );
 
-    if (kb?.bill) {
-      log.info(
-        {
-          billId: kb.bill.id,
-          billTitle: kb.bill.title,
-        },
-        'found bill',
-      );
-    }
-
     const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
     const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
 

@@ -267,6 +267,8 @@ export const executeTweets = inngest.createFunction(
         throw new NonRetriableError(REJECTION_REASON.NO_QUESTION_DETECTED);
       }
 
+      log.info({ question: extractedQuestion }, 'question extracted');
+
       return extractedQuestion;
     });
 
@@ -305,6 +307,7 @@ export const executeTweets = inngest.createFunction(
               : '';
 
             if (kb?.documents) {
+              log.info({}, 'documents injected into context');
               messages.push({
                 role: 'user',
                 content: `Documents Context: ${kb.documents}\n\n`,
@@ -401,6 +404,7 @@ export const executeTweets = inngest.createFunction(
               : '';
 
             if (kb?.documents) {
+              log.info({}, 'documents injected into context');
               messages.push({
                 role: 'user',
                 content: `Documents Context: ${kb.documents}\n\n`,

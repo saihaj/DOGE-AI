@@ -36,15 +36,6 @@ async function main() {
     );
 
     const summary = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
-    if (kb?.bill) {
-      log.info(
-        {
-          billId: kb.bill.id,
-          billTitle: kb.bill.title,
-        },
-        'found bill',
-      );
-    }
     const messages: Array<CoreMessage> = [];
 
     if (kb?.documents) {

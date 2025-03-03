@@ -243,16 +243,6 @@ export const executeInteractionTweets = inngest.createFunction(
             ? `${kb.bill.title}: \n\n${kb.bill.content}`
             : '';
 
-          if (kb?.bill) {
-            log.info(
-              {
-                billId: kb.bill.id,
-                billTitle: kb.bill.title,
-              },
-              'found bill',
-            );
-          }
-
           const summary = kb?.documents
             ? `${kb.documents}\n\n${bill}`
             : bill || '';
