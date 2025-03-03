@@ -86,30 +86,6 @@ export async function generateReply(
   };
 }
 
-export async function generateShortenedReply({ message }: { message: string }) {
-  const PROMPT = await PROMPTS.REPLY_SHORTENER_PROMPT();
-  const { text: _text } = await generateText({
-    temperature: TEMPERATURE,
-    model: openai('gpt-4o'),
-    messages: [
-      {
-        role: 'system',
-        content: PROMPT,
-      },
-      {
-        role: 'user',
-        content: `now shorten this one: ${message}`,
-      },
-    ],
-  });
-
-  const text = sanitizeLlmOutput(_text);
-
-  return {
-    text,
-  };
-}
-
 /**
  * given a tweet id, we try to follow the full thread up to a certain limit.
  */

@@ -139,68 +139,6 @@ export const DOCUMENT_RELATED_TO_TWEET_PROMPT = `You are an AI assistant special
 export const ANALYZE_TEXT_FROM_IMAGE = `Analyze the provided image and extract all visible text exactly as it appears. Do not add any commentary or descriptions. If no text is found, return only 'NO_TEXT_FOUND'.`;
 
 export const PROMPTS = {
-  SYSTEM_PROMPT: async () => {
-    return bento.getOrSet(
-      'BOT_CONFIG_SYSTEM_PROMPT',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'SYSTEM_PROMPT'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('SYSTEM_PROMPT not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
-  },
-  INTERACTION_SYSTEM_PROMPT: async () => {
-    return bento.getOrSet(
-      'BOT_CONFIG_INTERACTION_SYSTEM_PROMPT',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'INTERACTION_SYSTEM_PROMPT'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('INTERACTION_SYSTEM_PROMPT not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
-  },
-  INTERACTION_REFINE_OUTPUT_PROMPT: async ({ topic }: { topic: string }) => {
-    const prompt = await bento.getOrSet(
-      'BOT_CONFIG_INTERACTION_REFINE_OUTPUT_PROMPT',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'INTERACTION_REFINE_OUTPUT_PROMPT'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('INTERACTION_REFINE_OUTPUT_PROMPT not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
-    const templatedPrompt = Handlebars.compile(prompt);
-    return templatedPrompt({ topic });
-  },
   TWITTER_REPLY_TEMPLATE: async () => {
     return bento.getOrSet(
       'BOT_CONFIG_TWITTER_REPLY_TEMPLATE',
@@ -242,26 +180,6 @@ export const PROMPTS = {
     );
     const templatePrompt = Handlebars.compile(prompt);
     return templatePrompt({ text });
-  },
-  REPLY_SHORTENER_PROMPT: async () => {
-    return bento.getOrSet(
-      'BOT_CONFIG_REPLY_SHORTENER_PROMPT',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'REPLY_SHORTENER_PROMPT'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('REPLY_SHORTENER_PROMPT not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
   },
   REPLY_TWEET_QUESTION_PROMPT: async ({
     question,
