@@ -16,6 +16,42 @@ index 926fb566dd694780a49996010c1c5b8c927fab52..df6ccdf0901620d1c116a5848208b950
          });
          return fullResponse ? resp : resp.data;
      }
+diff --git a/dist/cjs/v2/client.v2.write.d.ts b/dist/cjs/v2/client.v2.write.d.ts
+index a2ef1e6810a5311d306106fa2b55dc1f8c79814e..9f1e0781b0a85cea433f258d735f75abfca598c8 100644
+--- a/dist/cjs/v2/client.v2.write.d.ts
++++ b/dist/cjs/v2/client.v2.write.d.ts
+@@ -1,6 +1,7 @@
+ import TwitterApiv2ReadOnly from './client.v2.read';
+ import type { ListCreateV2Params, ListCreateV2Result, ListDeleteV2Result, ListFollowV2Result, ListMemberV2Result, ListPinV2Result, ListUpdateV2Params, ListUpdateV2Result, TweetV2DeleteTweetResult, SendTweetV2Params, TweetV2HideReplyResult, TweetV2LikeResult, TweetV2PostTweetResult, TweetV2RetweetResult, UserV2BlockResult, UserV2FollowResult, UserV2MuteResult, UserV2UnfollowResult, TweetV2BookmarkResult } from '../types';
+ import TwitterApiv2LabsReadWrite from '../v2-labs/client.v2.labs.write';
++import type { TwitterResponse } from "../types/responses.types";
+ import { CreateDMConversationParams, PostDMInConversationParams, PostDMInConversationResult } from '../types/v2/dm.v2.types';
+ /**
+  * Base Twitter v2 client with read/write rights.
+@@ -55,7 +56,7 @@ export default class TwitterApiv2ReadWrite extends TwitterApiv2ReadOnly {
+      * Creates a Tweet on behalf of an authenticated user.
+      * https://developer.x.com/en/docs/twitter-api/tweets/manage-tweets/api-reference/post-tweets
+      */
+-    tweet(status: string, payload?: Partial<SendTweetV2Params>): Promise<TweetV2PostTweetResult>;
++    tweet(status: string, payload?: Partial<SendTweetV2Params>): Promise<TwitterResponse<TweetV2PostTweetResult>>;
+     tweet(payload: SendTweetV2Params): Promise<TweetV2PostTweetResult>;
+     /**
+      * Reply to a Tweet on behalf of an authenticated user.
+diff --git a/dist/cjs/v2/client.v2.write.js b/dist/cjs/v2/client.v2.write.js
+index 2fb0e7cbd7350496182cdedc07e7dd5cb741d1a6..b438d2b6db6fd991c312b22cb3baac1c50430e1f 100644
+--- a/dist/cjs/v2/client.v2.write.js
++++ b/dist/cjs/v2/client.v2.write.js
+@@ -86,7 +86,9 @@ class TwitterApiv2ReadWrite extends client_v2_read_1.default {
+         else {
+             payload = { text: status, ...payload };
+         }
+-        return this.post('tweets', payload);
++        return this.post('tweets', payload, {
++            fullResponse: true
++        });
+     }
+     /**
+      * Reply to a Tweet on behalf of an authenticated user.
 diff --git a/dist/esm/client.base.js b/dist/esm/client.base.js
 index dcc32addbfd674b483ba9b77d84659d4207ecd43..92dbbb2f4907c6f7f50b29a984b58a6acc456c5c 100644
 --- a/dist/esm/client.base.js
@@ -31,3 +67,39 @@ index dcc32addbfd674b483ba9b77d84659d4207ecd43..92dbbb2f4907c6f7f50b29a984b58a6a
          });
          return fullResponse ? resp : resp.data;
      }
+diff --git a/dist/esm/v2/client.v2.write.d.ts b/dist/esm/v2/client.v2.write.d.ts
+index a2ef1e6810a5311d306106fa2b55dc1f8c79814e..9f1e0781b0a85cea433f258d735f75abfca598c8 100644
+--- a/dist/esm/v2/client.v2.write.d.ts
++++ b/dist/esm/v2/client.v2.write.d.ts
+@@ -1,6 +1,7 @@
+ import TwitterApiv2ReadOnly from './client.v2.read';
+ import type { ListCreateV2Params, ListCreateV2Result, ListDeleteV2Result, ListFollowV2Result, ListMemberV2Result, ListPinV2Result, ListUpdateV2Params, ListUpdateV2Result, TweetV2DeleteTweetResult, SendTweetV2Params, TweetV2HideReplyResult, TweetV2LikeResult, TweetV2PostTweetResult, TweetV2RetweetResult, UserV2BlockResult, UserV2FollowResult, UserV2MuteResult, UserV2UnfollowResult, TweetV2BookmarkResult } from '../types';
+ import TwitterApiv2LabsReadWrite from '../v2-labs/client.v2.labs.write';
++import type { TwitterResponse } from "../types/responses.types";
+ import { CreateDMConversationParams, PostDMInConversationParams, PostDMInConversationResult } from '../types/v2/dm.v2.types';
+ /**
+  * Base Twitter v2 client with read/write rights.
+@@ -55,7 +56,7 @@ export default class TwitterApiv2ReadWrite extends TwitterApiv2ReadOnly {
+      * Creates a Tweet on behalf of an authenticated user.
+      * https://developer.x.com/en/docs/twitter-api/tweets/manage-tweets/api-reference/post-tweets
+      */
+-    tweet(status: string, payload?: Partial<SendTweetV2Params>): Promise<TweetV2PostTweetResult>;
++    tweet(status: string, payload?: Partial<SendTweetV2Params>): Promise<TwitterResponse<TweetV2PostTweetResult>>;
+     tweet(payload: SendTweetV2Params): Promise<TweetV2PostTweetResult>;
+     /**
+      * Reply to a Tweet on behalf of an authenticated user.
+diff --git a/dist/esm/v2/client.v2.write.js b/dist/esm/v2/client.v2.write.js
+index 6114337b9b806e88e623ffbec940b67db9a4c361..46760727da6a57741b8c2eab928a1a6c8272e068 100644
+--- a/dist/esm/v2/client.v2.write.js
++++ b/dist/esm/v2/client.v2.write.js
+@@ -81,7 +81,9 @@ export default class TwitterApiv2ReadWrite extends TwitterApiv2ReadOnly {
+         else {
+             payload = { text: status, ...payload };
+         }
+-        return this.post('tweets', payload);
++        return this.post('tweets', payload, {
++            fullResponse: true
++        });
+     }
+     /**
+      * Reply to a Tweet on behalf of an authenticated user.

@@ -323,7 +323,7 @@ export const executeInteractionTweets = inngest.createFunction(
           });
 
           return {
-            id: resp.data.id,
+            id: resp.data.data.id,
           };
         });
 

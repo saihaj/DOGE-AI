@@ -468,7 +468,7 @@ export const executeTweets = inngest.createFunction(
       });
 
       return {
-        id: resp.data.id,
+        id: resp.data.data.id,
       };
     });
 
