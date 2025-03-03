@@ -256,12 +256,12 @@ async function getReasonBillContext(
         billId: z.nullable(z.string()),
       }),
     });
-    console.log(relevantBill);
 
     if (!relevantBill.billId) {
       log.warn({}, 'no relevant bill found');
       throw new Error(REJECTION_REASON.NO_BILL_ID_FOUND);
     }
+    log.info(relevantBill, 'relevant bill found');
 
     const bill = await db.query.bill.findFirst({
       columns: { id: true, title: true, content: true },
@@ -273,6 +273,7 @@ async function getReasonBillContext(
       throw new Error(REJECTION_REASON.NO_BILL_FOUND);
     }
 
+    log.info(bill, 'found bill');
     return bill;
   }
 
@@ -312,6 +313,7 @@ async function getReasonBillContext(
       .where(inArray(billDbSchema.id, billIds))
       .limit(1);
 
+    log.info(bill[0], 'found bill');
     return bill[0];
   }
 
@@ -405,6 +407,7 @@ async function getReasonBillContext(
       throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
     }
 
+    log.info(bill, 'found bill');
     return bill;
   }
 
@@ -487,6 +490,7 @@ async function getReasonBillContext(
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
+  log.info(bill, 'found bill');
   return bill;
 }
 

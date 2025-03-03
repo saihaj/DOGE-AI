@@ -139,6 +139,7 @@ export async function getTweetContext(
     // Limit max tweets
     if (tweets.length > LIMIT) {
       searchId = null;
+      logger.error({ limit: LIMIT }, 'max thread depth reached');
       throw new NonRetriableError(REJECTION_REASON.MAX_THREAD_DEPTH_REACHED);
     }
 
@@ -267,6 +268,8 @@ export const executeTweets = inngest.createFunction(
         throw new NonRetriableError(REJECTION_REASON.NO_QUESTION_DETECTED);
       }
 
+      log.info({ question: extractedQuestion }, 'question extracted');
+
       return extractedQuestion;
     });
 
@@ -305,6 +308,7 @@ export const executeTweets = inngest.createFunction(
               : '';
 
             if (kb?.documents) {
+              log.info({}, 'documents injected into context');
               messages.push({
                 role: 'user',
                 content: `Documents Context: ${kb.documents}\n\n`,
@@ -401,6 +405,7 @@ export const executeTweets = inngest.createFunction(
               : '';
 
             if (kb?.documents) {
+              log.info({}, 'documents injected into context');
               messages.push({
                 role: 'user',
                 content: `Documents Context: ${kb.documents}\n\n`,
