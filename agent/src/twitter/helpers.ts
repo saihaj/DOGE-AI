@@ -299,7 +299,13 @@ export async function wokeTweetsRewriter(
   });
 
   if (_response.match(/\[woke\]/i)) {
-    log.info({}, 'Woke response detected');
+    log.info(
+      {
+        before: text,
+        after: _response,
+      },
+      'Woke response detected',
+    );
     wokeTweetRewritten.inc({
       method: method,
       action: action,
