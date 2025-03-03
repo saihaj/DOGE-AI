@@ -19,6 +19,7 @@ import {
   DOCUMENT_RELATED_TO_TWEET_PROMPT,
 } from './prompts';
 import { z } from 'zod';
+import pMap from 'p-map';
 
 /**
  * Given a thread and the extracted question, it will return documents that are related to the tweet.
@@ -317,11 +318,15 @@ async function getReasonBillContext(
     return bill[0];
   }
 
-  const embeddingsForKeywords = await Promise.all(
-    billTitleResult.keywords.map(async term => {
+  const embeddingsForKeywords = await pMap(
+    billTitleResult.keywords,
+    async term => {
       const termEmbedding = await generateEmbedding(term);
       return JSON.stringify(termEmbedding);
-    }),
+    },
+    {
+      concurrency: 5,
+    },
   );
   log.info({}, `Found ${embeddingsForKeywords.length} embeddings.`);
 
@@ -352,7 +357,11 @@ async function getReasonBillContext(
     },
   );
 
-  const searchResults = (await Promise.all(searchPromises)).flat();
+  const searchResults = (
+    await pMap(searchPromises, searchPromise => searchPromise, {
+      concurrency: 5,
+    })
+  ).flat();
   log.info(
     { size: searchResults.length },
     `Found ${searchResults.length} vector search results.`,

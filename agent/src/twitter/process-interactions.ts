@@ -92,7 +92,7 @@ export const processInteractionTweets = inngest.createFunction(
         throw Error('weird no question detected. re-run');
       }
 
-      return decision === 'engage' ? true : result.text;
+      return decision.toLowerCase().startsWith('engage') ? true : result.text;
     });
 
     if (shouldEngage === true) {
