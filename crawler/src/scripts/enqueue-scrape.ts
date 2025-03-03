@@ -8,11 +8,19 @@ async function main() {
         url: 'https://doge.gov/savings',
         actions: [
           {
-            selector: "//*[text()='see more']",
+            selector: "//*[text()='Show All Agencies']",
             type: 'click',
           },
           {
-            selector: "//*[text()='See more']",
+            selector: "//*[text()='View All Contracts']",
+            type: 'click',
+          },
+          {
+            selector: "//*[text()='View All Grants']",
+            type: 'click',
+          },
+          {
+            selector: "//*[text()='View All Leases']",
             type: 'click',
           },
         ],
@@ -23,15 +31,17 @@ async function main() {
       data: {
         url: 'https://doge.gov/regulations',
         actions: [
-          { type: 'click', selector: 'Load more agencies' },
+          { type: 'click', selector: "//*[text()='Load More Agencies']" },
           { type: 'wait', milliseconds: 500 },
-          { type: 'click', selector: 'Load more agencies' },
+          { type: 'click', selector: "//*[text()='Load More Agencies']" },
           { type: 'wait', milliseconds: 500 },
-          { type: 'click', selector: 'Load more agencies' },
+          { type: 'click', selector: "//*[text()='Load More Agencies']" },
           { type: 'wait', milliseconds: 500 },
-          { type: 'click', selector: 'Load more agencies' },
+          { type: 'click', selector: "//*[text()='Load More Agencies']" },
           { type: 'wait', milliseconds: 500 },
-          { type: 'click', selector: 'Load more agencies' },
+          { type: 'click', selector: "//*[text()='Load More Agencies']" },
+          { type: 'wait', milliseconds: 500 },
+          { type: 'click', selector: "//*[text()='Load More Agencies']" },
           { type: 'wait', milliseconds: 500 },
         ],
       },
