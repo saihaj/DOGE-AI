@@ -307,6 +307,7 @@ export async function wokeTweetsRewriter(
 
     const response = _response
       .replace(/\[woke\]\s*/i, '')
+      .replace(/<corrected text begins here without any preamble>\s*/i, '')
       .trim()
       .replace(/^\s+/, '') // Extra trim for any leading spaces
       .trim();
