@@ -139,6 +139,7 @@ export async function getTweetContext(
     // Limit max tweets
     if (tweets.length > LIMIT) {
       searchId = null;
+      logger.error({ limit: LIMIT }, 'max thread depth reached');
       throw new NonRetriableError(REJECTION_REASON.MAX_THREAD_DEPTH_REACHED);
     }
 
