@@ -22,6 +22,7 @@ import * as crypto from 'node:crypto';
 import { ANALYZE_TEXT_FROM_IMAGE, PROMPTS } from './prompts';
 import { WithLogger } from '../logger';
 import { wokeTweetRewritten } from '../prom';
+import { NonRetriableError } from 'inngest';
 
 // Ada V2 31.4% vs 54.9% large
 const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
@@ -290,24 +291,31 @@ export async function wokeTweetsRewriter(
   { log, method, action }: { log: WithLogger; method: string; action: string },
 ) {
   const prompt = await PROMPTS.TWITTER_REPLY_REWRITER({ text });
-  const { text: response } = await generateText({
+  const { text: _response } = await generateText({
     model: openai('gpt-4o'),
     temperature: TEMPERATURE,
     seed: SEED,
     messages: [{ role: 'user', content: prompt }],
   });
 
-  if (response.match(/\[woke\]/i)) {
+  if (_response.match(/\[woke\]/i)) {
     log.info({}, 'Woke response detected');
     wokeTweetRewritten.inc({
       method: method,
       action: action,
     });
-    return response
+
+    const response = _response
       .replace(/\[woke\]\s*/i, '')
       .trim()
       .replace(/^\s+/, '') // Extra trim for any leading spaces
       .trim();
+
+    if (response.length === 0) {
+      throw new NonRetriableError(REJECTION_REASON.WOKE_REPLY_NOT_REWRITTEN);
+    }
+
+    return response;
   }
 
   return text;
