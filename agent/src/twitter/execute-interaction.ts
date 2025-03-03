@@ -316,6 +316,7 @@ export const executeInteractionTweets = inngest.createFunction(
               in_reply_to_tweet_id: tweetToActionOn.id,
             },
           });
+          log.info(resp, 'tweet sent');
           tweetsPublished.inc({
             action: event.data.action,
             method: 'execute-interaction-tweets',

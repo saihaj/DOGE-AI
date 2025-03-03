@@ -12,5 +12,10 @@
   "engines": {
     "node": ">=22",
     "pnpm": ">=9"
+  },
+  "pnpm": {
+    "patchedDependencies": {
+      "twitter-api-v2": "patches/twitter-api-v2.patch"
+    }
   }
 }
