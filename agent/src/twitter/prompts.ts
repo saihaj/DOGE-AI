@@ -159,6 +159,26 @@ export const PROMPTS = {
       { ttl: '1d' },
     );
   },
+  REPLY_SHORTENER_PROMPT: async () => {
+    return bento.getOrSet(
+      'BOT_CONFIG_REPLY_SHORTENER_PROMPT',
+      async () => {
+        const prompt = await db.query.botConfig.findFirst({
+          where: eq(botConfig.key, 'REPLY_SHORTENER_PROMPT'),
+          columns: {
+            value: true,
+          },
+        });
+
+        if (!prompt) {
+          throw new Error('REPLY_SHORTENER_PROMPT not found');
+        }
+
+        return prompt.value;
+      },
+      { ttl: '1d' },
+    );
+  },
   TWITTER_REPLY_REWRITER: async ({ text }: { text: string }) => {
     const prompt = await bento.getOrSet(
       'BOT_CONFIG_TWITTER_REPLY_REWRITER',
