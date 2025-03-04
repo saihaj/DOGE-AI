@@ -30,7 +30,12 @@ import {
   mergeConsecutiveSameRole,
 } from './twitter/helpers';
 import { promClient, readiness } from './prom';
-import { ManualKBInsertInput, postKbInsert } from './api/manual-kb';
+import {
+  getKbEntries,
+  ManualKbGetInput,
+  ManualKBInsertInput,
+  postKbInsert,
+} from './api/manual-kb';
 
 const fastify = Fastify();
 
@@ -363,7 +368,108 @@ fastify.route<{ Body: ManualKBInsertInput }>({
 
       return reply.send(result);
     } catch (error) {
-      console.error('Test error:', error);
+      log.error({ error }, 'Error in postKbInsert');
+      return reply.code(500).send({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+  url: '/api/manual-kb',
+});
+
+fastify.route<{ Querystring: ManualKbGetInput }>({
+  method: 'GET',
+  schema: {
+    querystring: ManualKbGetInput,
+    response: {
+      200: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            title: { type: 'string' },
+            content: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+  handler: async (request, reply) => {
+    const log = logger.child({
+      requestId: request.id,
+    });
+    try {
+      const { page, limit } = request.query;
+
+      if (!page) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'page is required',
+        );
+        reply.code(400).send({ success: false, error: 'page is required' });
+      }
+
+      if (page < 0) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'page should be greater than 0',
+        );
+        reply.code(400).send({
+          success: false,
+          error: 'page should be greater than or equal to 0',
+        });
+      }
+
+      if (!limit) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'limit is required',
+        );
+        reply.code(400).send({ success: false, error: 'limit is required' });
+      }
+
+      if (limit < 0) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'limit should be greater than 0',
+        );
+        reply.code(400).send({
+          success: false,
+          error: 'limit should be greater than or equal to 0',
+        });
+      }
+
+      if (limit > 30) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'limit should be less than 30',
+        );
+        reply.code(400).send({
+          success: false,
+          error: 'limit should be less than or equal to 30',
+        });
+      }
+
+      const result = await getKbEntries({
+        page,
+        limit,
+      });
+
+      return reply.send(result);
+    } catch (error) {
+      log.error({ error }, 'Error in getKbEntries');
       return reply.code(500).send({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',

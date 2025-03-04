@@ -4,9 +4,10 @@ import { columns } from './columns';
 import { DataTable } from './data-table';
 import { Drawer } from 'vaul';
 import { Button } from '@/components/ui/button';
-import { PlusIcon } from 'lucide-react';
+import { Loader2Icon, LoaderIcon, PlusIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { set, z } from 'zod';
+import { z } from 'zod';
+import useSWR from 'swr';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -166,11 +167,22 @@ export function InsertEntry() {
 }
 
 export default function ManualKB() {
+  const { data, error, isLoading } = useSWR(
+    `${API_URL}/api/manual-kb?page=1&limit=20`,
+    (url: string) => fetch(url).then(res => res.json()),
+  );
+
   return (
     <>
       <Header right={<InsertEntry />} />
       <main className="mb-10">
-        <DataTable columns={columns} data={data} />
+        {isLoading && (
+          <div className="mt-10 flex justify-center">
+            <Loader2Icon className="animate-spin" />
+          </div>
+        )}
+        {error && <p>Error: {error.message}</p>}
+        {data && <DataTable columns={columns} data={data} />}
       </main>
     </>
   );

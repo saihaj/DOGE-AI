@@ -1,5 +1,12 @@
 import { Static, Type } from '@sinclair/typebox';
-import { billVector, db, document as documentDbSchema } from 'database';
+import {
+  and,
+  asc,
+  billVector,
+  db,
+  document as documentDbSchema,
+  eq,
+} from 'database';
 import * as crypto from 'node:crypto';
 import { slugify } from 'inngest';
 import { generateEmbeddings, textSplitter } from '../twitter/helpers';
@@ -67,4 +74,26 @@ export async function postKbInsert(
   return {
     id: result.id,
   };
+}
+
+export const ManualKbGetInput = Type.Object({
+  page: Type.Number(),
+  limit: Type.Number(),
+});
+export type ManualKbGetInput = Static<typeof ManualKbGetInput>;
+
+export async function getKbEntries({ page, limit }: ManualKbGetInput) {
+  const documents = await db.query.document.findMany({
+    where: eq(documentDbSchema.source, MANUAL_KB_SOURCE),
+    orderBy: (documents, { asc }) => asc(documents.createdAt),
+    limit,
+    offset: (page - 1) * limit,
+    columns: {
+      id: true,
+      content: true,
+      title: true,
+    },
+  });
+
+  return documents;
 }
