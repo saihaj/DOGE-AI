@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Loader2Icon, LoaderIcon, PlusIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { z } from 'zod';
-import useSWR from 'swr';
+import useSWRInfinite from 'swr/infinite';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,7 +43,7 @@ const formSchema = z.object({
   content: z.string().min(10),
 });
 
-export function InsertEntry() {
+export function InsertEntry({ mutate }: { mutate: () => void }) {
   const [open, setOpen] = useState(false);
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
@@ -67,6 +67,7 @@ export function InsertEntry() {
       loading: 'Creating entry...',
       success: data => {
         if (data.ok) {
+          mutate();
           form.reset(
             {
               title: '',
@@ -166,15 +167,20 @@ export function InsertEntry() {
   );
 }
 
+const getKey = (pageIndex, previousPageData) => {
+  if (previousPageData && !previousPageData.length) return null; // End of data
+  return;
+};
+
 export default function ManualKB() {
-  const { data, error, isLoading } = useSWR(
-    `${API_URL}/api/manual-kb?page=1&limit=20`,
+  const { data, error, isLoading, mutate } = useSWRInfinite(
+    index => `${API_URL}/api/manual-kb?page=${index + 1}&limit=20`,
     (url: string) => fetch(url).then(res => res.json()),
   );
 
   return (
     <>
-      <Header right={<InsertEntry />} />
+      <Header right={<InsertEntry mutate={mutate} />} />
       <main className="mb-10">
         {isLoading && (
           <div className="mt-10 flex justify-center">
@@ -182,7 +188,12 @@ export default function ManualKB() {
           </div>
         )}
         {error && <p>Error: {error.message}</p>}
-        {data && <DataTable columns={columns} data={data} />}
+        {data && (
+          <DataTable
+            columns={columns({ mutate })}
+            data={data?.flatMap(a => a)}
+          />
+        )}
       </main>
     </>
   );
