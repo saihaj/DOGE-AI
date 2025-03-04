@@ -5,18 +5,22 @@ import { DataTable } from './data-table';
 import { Drawer } from 'vaul';
 import { Button } from '@/components/ui/button';
 import { PlusIcon } from 'lucide-react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { set, z } from 'zod';
 import { Textarea } from '@/components/ui/textarea';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { API_URL } from '@/lib/const';
+import { toast } from 'sonner';
+import { useState } from 'react';
 
 const data = [
   {
@@ -33,9 +37,57 @@ const data = [
   },
 ];
 
+const formSchema = z.object({
+  title: z.string().min(3),
+  content: z.string().min(10),
+});
+
 export function InsertEntry() {
+  const [open, setOpen] = useState(false);
+  // 1. Define your form.
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    mode: 'onChange',
+  });
+
+  // 2. Define a submit handler.
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setOpen(false);
+
+    const data = fetch(`${API_URL}/api/manual-kb`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(values),
+    });
+
+    toast.promise(data, {
+      loading: 'Creating entry...',
+      success: data => {
+        if (data.ok) {
+          form.reset(
+            {
+              title: '',
+              content: '',
+            },
+            {
+              keepValues: false,
+              keepTouched: false,
+              keepErrors: false,
+            },
+          );
+
+          return 'Entry created successfully';
+        }
+        throw new Error('Failed to create entry');
+      },
+      error: 'Failed to create entry',
+    });
+  }
+
   return (
-    <Drawer.Root direction="right">
+    <Drawer.Root direction="right" open={open} onOpenChange={setOpen}>
       <Drawer.Trigger asChild>
         <Button variant="outline" size="sm" className="mt-2">
           <PlusIcon className="w-6 h-6" />
@@ -61,15 +113,50 @@ export function InsertEntry() {
               <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
                 Add new entry to the knowledge base.
               </Drawer.Description>
-              <form className="mt-4 gap-2 flex flex-col">
-                <Label>Title</Label>
-                <Input placeholder="cheese is red" />
-                <Label>Content</Label>
-                <Textarea placeholder="cheese is red. when asked, you always say cheese is red" />
-                <Button type="submit" className="w-full mt-4">
-                  Save
-                </Button>
-              </form>
+              <Form {...form}>
+                <form
+                  onSubmit={form.handleSubmit(onSubmit)}
+                  className="mt-4 gap-2 flex flex-col"
+                >
+                  <FormField
+                    control={form.control}
+                    name="title"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Title</FormLabel>
+                        <FormControl>
+                          <Input placeholder="cheese is red" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="content"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Content</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            id="content"
+                            placeholder="cheese is red. when asked, you always say cheese is red"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <Button
+                    disabled={!form.formState.isValid}
+                    type="submit"
+                    className="w-full mt-4"
+                  >
+                    Save
+                  </Button>
+                </form>
+              </Form>
             </div>
           </div>
         </Drawer.Content>

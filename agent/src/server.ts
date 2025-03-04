@@ -30,6 +30,7 @@ import {
   mergeConsecutiveSameRole,
 } from './twitter/helpers';
 import { promClient, readiness } from './prom';
+import { ManualKBInsertInput, postKbInsert } from './api/manual-kb';
 
 const fastify = Fastify();
 
@@ -282,6 +283,65 @@ fastify.route<{ Body: ChatStreamInput }>({
     }
   },
   url: '/api/chat',
+});
+
+fastify.route<{ Body: ManualKBInsertInput }>({
+  method: 'POST',
+  schema: {
+    body: ManualKBInsertInput,
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+        },
+      },
+    },
+  },
+  handler: async (request, reply) => {
+    const log = logger.child({
+      requestId: request.id,
+    });
+    try {
+      const { title, content } = request.body;
+
+      if (!title) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'title is required',
+        );
+        reply.code(400).send({ success: false, error: 'Title is required' });
+      }
+
+      if (!content) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'content is required',
+        );
+        reply.code(400).send({ success: false, error: 'Content is required' });
+      }
+      const result = await postKbInsert(
+        {
+          title,
+          content,
+        },
+        log,
+      );
+
+      return reply.send(result);
+    } catch (error) {
+      console.error('Test error:', error);
+      return reply.code(500).send({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+  url: '/api/manual-kb',
 });
 
 // So in fly.io, health should do both the health check and the readiness check
