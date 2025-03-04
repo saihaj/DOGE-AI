@@ -1,5 +1,5 @@
 'use client';
-import { Home, Reply, ReplyAll } from 'lucide-react';
+import { BookIcon, Home, Reply, ReplyAll } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +29,11 @@ const items = [
     title: 'Reply',
     url: '/reply',
     icon: ReplyAll,
+  },
+  {
+    title: 'Knowledge Base',
+    url: '/manual-kb',
+    icon: BookIcon,
   },
 ];
 
