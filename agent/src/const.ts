@@ -60,6 +60,14 @@ export const DISCORD_APPROVED_CHANNEL_ID = (() => {
   }
   return process.env.DISCORD_APPROVED_CHANNEL_ID;
 })();
+export const DISCORD_PRIORITY_APPROVED_CHANNEL_ID = (() => {
+  if (!process.env.DISCORD_PRIORITY_APPROVED_CHANNEL_ID) {
+    throw new Error(
+      'DISCORD_PRIORITY_APPROVED_CHANNEL_ID is not set in your .env',
+    );
+  }
+  return process.env.DISCORD_PRIORITY_APPROVED_CHANNEL_ID;
+})();
 export const DISCORD_REJECTED_CHANNEL_ID = (() => {
   if (!process.env.DISCORD_REJECTED_CHANNEL_ID) {
     throw new Error('DISCORD_REJECTED_CHANNEL_ID is not set in your .env');
