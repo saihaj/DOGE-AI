@@ -97,3 +97,32 @@ export async function getKbEntries({ page, limit }: ManualKbGetInput) {
 
   return documents;
 }
+
+export const ManualKbDeleteInput = Type.Object({
+  id: Type.String(),
+});
+export type ManualKbDeleteInput = Static<typeof ManualKbDeleteInput>;
+
+export async function deleteManualKbEntry(
+  { id }: ManualKbDeleteInput,
+  logger: WithLogger,
+) {
+  const log = logger.child({
+    module: 'deleteManualKbEntry',
+  });
+
+  log.info({ document: id }, 'deleting manual kb document');
+  const documents = await db
+    .delete(documentDbSchema)
+    .where(
+      and(
+        eq(documentDbSchema.id, id),
+        eq(documentDbSchema.source, MANUAL_KB_SOURCE),
+      ),
+    )
+    .execute();
+
+  log.info({ documents: documents.rowsAffected }, 'deleted manual kb document');
+
+  return documents;
+}

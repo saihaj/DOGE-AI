@@ -31,7 +31,9 @@ import {
 } from './twitter/helpers';
 import { promClient, readiness } from './prom';
 import {
+  deleteManualKbEntry,
   getKbEntries,
+  ManualKbDeleteInput,
   ManualKbGetInput,
   ManualKBInsertInput,
   postKbInsert,
@@ -41,7 +43,7 @@ const fastify = Fastify();
 
 fastify.register(cors, {
   allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
   origin: ['http://localhost:4321', 'https://manage.dogeai.info'],
 });
 
@@ -470,6 +472,47 @@ fastify.route<{ Querystring: ManualKbGetInput }>({
       return reply.send(result);
     } catch (error) {
       log.error({ error }, 'Error in getKbEntries');
+      return reply.code(500).send({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+  url: '/api/manual-kb',
+});
+
+fastify.route<{ Body: ManualKbDeleteInput }>({
+  method: 'DELETE',
+  schema: {
+    body: ManualKbDeleteInput,
+  },
+  handler: async (request, reply) => {
+    const log = logger.child({
+      requestId: request.id,
+    });
+    try {
+      const { id } = request.body;
+
+      if (!id) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'id is required',
+        );
+        reply.code(400).send({ success: false, error: 'id is required' });
+      }
+
+      const result = await deleteManualKbEntry(
+        {
+          id,
+        },
+        log,
+      );
+
+      return reply.send(result);
+    } catch (error) {
+      log.error({ error }, 'Error in deleteManualKbEntry');
       return reply.code(500).send({
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',

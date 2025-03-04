@@ -9,8 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { API_URL } from '@/lib/const';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
+import { toast } from 'sonner';
 
 export type KBEntries = {
   id: string;
@@ -30,7 +32,7 @@ export const columns: ColumnDef<KBEntries>[] = [
   {
     id: 'actions',
     cell: ({ row }) => {
-      const payment = row.original;
+      const entry = row.original;
 
       return (
         <DropdownMenu>
@@ -43,12 +45,12 @@ export const columns: ColumnDef<KBEntries>[] = [
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
             <DropdownMenuItem
-              onClick={() => copyToClipboardWithMeta(payment.title)}
+              onClick={() => copyToClipboardWithMeta(entry.title)}
             >
               Copy Title
             </DropdownMenuItem>
             <DropdownMenuItem
-              onClick={() => copyToClipboardWithMeta(payment.content)}
+              onClick={() => copyToClipboardWithMeta(entry.content)}
             >
               Copy Content
             </DropdownMenuItem>
@@ -58,7 +60,24 @@ export const columns: ColumnDef<KBEntries>[] = [
                 variant="destructive"
                 className="w-full"
                 onClick={() => {
-                  alert('Delete entry');
+                  const data = fetch(`${API_URL}/api/manual-kb`, {
+                    method: 'DELETE',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: entry.id }),
+                  });
+
+                  toast.promise(data, {
+                    loading: 'Deleting entry...',
+                    success: data => {
+                      if (data.ok) {
+                        return 'Entry deleted successfully';
+                      }
+                      throw new Error('Failed to delete entry');
+                    },
+                    error: 'Failed to delete entry',
+                  });
                 }}
               >
                 Delete Entry
