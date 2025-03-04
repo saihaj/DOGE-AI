@@ -34,7 +34,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { AutosizeTextarea } from '@/components/ui/autosize-textarea';
 import { Drawer } from 'vaul';
 import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import {
   Popover,
   PopoverContent,

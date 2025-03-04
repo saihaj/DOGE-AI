@@ -4,7 +4,7 @@ import { columns } from './columns';
 import { DataTable } from './data-table';
 import { Drawer } from 'vaul';
 import { Button } from '@/components/ui/button';
-import { Loader2Icon, LoaderIcon, PlusIcon } from 'lucide-react';
+import { Loader2Icon, PlusIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { z } from 'zod';
 import useSWRInfinite from 'swr/infinite';
@@ -22,21 +22,6 @@ import {
 import { API_URL } from '@/lib/const';
 import { toast } from 'sonner';
 import { useState } from 'react';
-
-const data = [
-  {
-    id: '1',
-    title: 'How to create a new user',
-    content:
-      "To create a new user, you need to go to the Users page and click on the 'Create User' button. Fill in the required information and click on the 'Save' button to create the user. ",
-  },
-  {
-    id: '2',
-    title: 'How to reset a password',
-    content:
-      "To reset a password, you need to go to the Users page and click on the 'Reset Password' button next to the user you want to reset the password for. Enter the new password and click on the 'Save' button to reset the password.",
-  },
-];
 
 const formSchema = z.object({
   title: z.string().min(3),
@@ -166,11 +151,6 @@ export function InsertEntry({ mutate }: { mutate: () => void }) {
     </Drawer.Root>
   );
 }
-
-const getKey = (pageIndex, previousPageData) => {
-  if (previousPageData && !previousPageData.length) return null; // End of data
-  return;
-};
 
 export default function ManualKB() {
   const { data, error, isLoading, mutate } = useSWRInfinite(
