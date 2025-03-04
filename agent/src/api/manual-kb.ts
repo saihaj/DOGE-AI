@@ -4,6 +4,7 @@ import * as crypto from 'node:crypto';
 import { slugify } from 'inngest';
 import { generateEmbeddings, textSplitter } from '../twitter/helpers';
 import { WithLogger } from '../logger';
+import { MANUAL_KB_SOURCE } from '../const';
 
 export const ManualKBInsertInput = Type.Object({
   title: Type.String(),
@@ -27,7 +28,7 @@ export async function postKbInsert(
       id: crypto.randomUUID(),
       title,
       url: `/manual-kb/${slugify(title)}`,
-      source: 'manual-kb' as const,
+      source: MANUAL_KB_SOURCE,
       content: Buffer.from(content),
     })
     .returning({
@@ -52,7 +53,7 @@ export async function postKbInsert(
         id: crypto.randomUUID(),
         document: result.id,
         text: value,
-        source: 'manual-kb' as const,
+        source: MANUAL_KB_SOURCE,
         vector: embedding,
       })),
     )

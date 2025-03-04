@@ -63,6 +63,9 @@ export async function processTestReplyRequest({
     {
       messages: [...tweetThread, tweetWeRespondingTo],
       text: extractedQuestion,
+      billEntries: true,
+      documentEntries: true,
+      manualEntries: false,
     },
     log,
   );

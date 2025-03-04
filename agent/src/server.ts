@@ -140,7 +140,15 @@ fastify.route<{ Body: ChatStreamInput }>({
     const log = logger.child({ function: 'api-chat' });
     // Create an AbortController for the backend
     const abortController = new AbortController();
-    let { billSearch, messages, selectedChatModel } = request.body as {
+    let {
+      billSearch,
+      documentSearch,
+      manualKbSearch,
+      messages,
+      selectedChatModel,
+    } = request.body as {
+      documentSearch: boolean;
+      manualKbSearch: boolean;
       billSearch: boolean;
       messages: CoreMessage[];
       selectedChatModel: string;
@@ -198,12 +206,15 @@ fastify.route<{ Body: ChatStreamInput }>({
         }
       }
 
-      if (billSearch) {
+      if (billSearch || documentSearch || manualKbSearch) {
         const latestMessage = messages[messages.length - 1];
         const kb = await getKbContext(
           {
             messages: messages,
             text: latestMessage.content.toString(),
+            manualEntries: manualKbSearch,
+            billEntries: billSearch,
+            documentEntries: documentSearch,
           },
           log,
         );
@@ -213,9 +224,27 @@ fastify.route<{ Body: ChatStreamInput }>({
         }
 
         const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
-        const summary = kb?.documents
-          ? `${kb.documents}\n\n${bill}`
-          : bill || '';
+        const summary = (() => {
+          let result = ' ';
+
+          if (kb.manualEntries) {
+            result += 'Knowledge base entries:\n';
+            result += kb.manualEntries;
+            result += '\n\n';
+          }
+
+          if (kb.documents) {
+            result += kb.documents;
+            result += '\n\n';
+          }
+
+          if (bill) {
+            result += bill;
+            result += '\n\n';
+          }
+
+          return result.trim();
+        })();
 
         if (summary) {
           // want to insert the DB summary as the second last message in the context of messages.

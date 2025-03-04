@@ -13,7 +13,14 @@ import {
   inArray,
 } from 'database';
 import { openai } from '@ai-sdk/openai';
-import { ACTIVE_CONGRESS, REJECTION_REASON, SEED, TEMPERATURE } from '../const';
+import {
+  ACTIVE_CONGRESS,
+  MANUAL_KB_SOURCE,
+  REJECTION_REASON,
+  SEED,
+  TEMPERATURE,
+  WEB_SOURCE,
+} from '../const';
 import {
   BILL_RELATED_TO_TWEET_PROMPT,
   DOCUMENT_RELATED_TO_TWEET_PROMPT,
@@ -24,24 +31,19 @@ import pMap from 'p-map';
 /**
  * Given a thread and the extracted question, it will return documents that are related to the tweet.
  */
-async function getDocumentContext(
+async function getManualKbDocuments(
   {
-    messages,
-    text,
+    termEmbeddingString,
   }: {
-    messages: CoreMessage[];
-    text: string;
+    termEmbeddingString: string;
   },
   logger: WithLogger,
 ) {
   const log = logger.child({
-    method: 'getDocumentContext',
+    method: 'getManualKbDocuments',
   });
   const LIMIT = 5;
   const THRESHOLD = 0.6;
-
-  const termEmbedding = await generateEmbedding(text);
-  const termEmbeddingString = JSON.stringify(termEmbedding);
 
   const embeddingsQuery = await db
     .select({
@@ -56,6 +58,64 @@ async function getDocumentContext(
       and(
         sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
         isNotNull(billVector.document),
+        eq(billVector.source, MANUAL_KB_SOURCE),
+      ),
+    )
+    .orderBy(
+      sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
+    )
+    .leftJoin(document, eq(document.id, billVector.document))
+    .limit(LIMIT);
+
+  if (embeddingsQuery.length === 0) {
+    log.info({}, 'No document embeddings found.');
+    return null;
+  }
+  log.info({ size: embeddingsQuery.length }, 'found document embeddings');
+
+  const baseText = embeddingsQuery
+    .map(
+      ({ title, text, documentId }) =>
+        `documentId: ${documentId}, Title: ${title}, Content: ${text}`,
+    )
+    .join('\n\n');
+
+  return baseText;
+}
+
+/**
+ * Given a thread and the extracted question, it will return documents that are related to the tweet.
+ */
+async function getDocumentContext(
+  {
+    messages,
+    termEmbeddingString,
+  }: {
+    messages: CoreMessage[];
+    termEmbeddingString: string;
+  },
+  logger: WithLogger,
+) {
+  const log = logger.child({
+    method: 'getDocumentContext',
+  });
+  const LIMIT = 5;
+  const THRESHOLD = 0.6;
+
+  const embeddingsQuery = await db
+    .select({
+      text: billVector.text,
+      documentId: billVector.document,
+      title: document.title,
+      source: document.source,
+      distance: sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString}))`,
+    })
+    .from(billVector)
+    .where(
+      and(
+        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
+        isNotNull(billVector.document),
+        eq(billVector.source, WEB_SOURCE),
       ),
     )
     .orderBy(
@@ -507,21 +567,41 @@ export async function getKbContext(
   {
     messages,
     text,
+    manualEntries,
+    documentEntries,
+    billEntries,
   }: {
     messages: CoreMessage[];
     text: string;
+    /** Should we search for manual entries from Web UI? */
+    manualEntries: boolean;
+    /** Should we search for web pages scraped? */
+    documentEntries: boolean;
+    /** Should we search for bills scraped? */
+    billEntries: boolean;
   },
   logger: WithLogger,
 ) {
-  const documents = await getDocumentContext({ messages, text }, logger).catch(
-    _ => null,
-  );
-  const bill = await getReasonBillContext({ messages }, logger).catch(
-    _ => null,
-  );
+  const termEmbedding = await generateEmbedding(text);
+  const termEmbeddingString = JSON.stringify(termEmbedding);
+
+  const manual = manualEntries
+    ? await getManualKbDocuments({ termEmbeddingString }, logger).catch(
+        _ => null,
+      )
+    : null;
+  const documents = documentEntries
+    ? await getDocumentContext({ messages, termEmbeddingString }, logger).catch(
+        _ => null,
+      )
+    : null;
+  const bill = billEntries
+    ? await getReasonBillContext({ messages }, logger).catch(_ => null)
+    : null;
 
   return {
     documents,
+    manualEntries: manual,
     bill,
   };
 }

@@ -113,3 +113,5 @@ export const DISCORD_LOCAL_TWEETS_CHANNEL_ID = (() => {
 export const TEMPERATURE = 0;
 export const SEED = 69;
 export const ACTIVE_CONGRESS = 119;
+export const MANUAL_KB_SOURCE = 'manual-kb';
+export const WEB_SOURCE = 'web';
