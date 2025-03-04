@@ -13,7 +13,14 @@ import {
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
-import { Loader2, Search, Trash2Icon } from 'lucide-react';
+import {
+  BookIcon,
+  Globe,
+  Loader2,
+  Search,
+  Settings,
+  Trash2Icon,
+} from 'lucide-react';
 import { ModelSelector, ModelValues } from '@/components/model-selector';
 import { Logo } from '@/components/logo';
 import { CopyButton } from '@/components/copy-button';
@@ -27,6 +34,12 @@ import { useEffect, useMemo, useState } from 'react';
 import { AutosizeTextarea } from '@/components/ui/autosize-textarea';
 import { Drawer } from 'vaul';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -198,6 +211,14 @@ export function Chat() {
     'o3-mini',
   );
   const [billSearch, setBillSearch] = useLocalStorage('billSearch', true);
+  const [documentSearch, setDocumentSearch] = useLocalStorage(
+    'documentSearch',
+    true,
+  );
+  const [manualKbSearch, setManualKbSearch] = useLocalStorage(
+    'manualKbSearch',
+    true,
+  );
   const [systemPrompt, setSystemPrompt] = useLocalStorage(
     'playgroundSystemPrompt',
     PLACEHOLDER_PROMPT,
@@ -253,6 +274,8 @@ export function Chat() {
     body: {
       selectedChatModel: model,
       billSearch,
+      documentSearch,
+      manualKbSearch,
     },
     onError: error => {
       toast.error(error.message, {
@@ -574,15 +597,49 @@ export function Chat() {
       <div className="p-4 border-t border-secondary-foreground/30 sticky bottom-0 z-10 bg-background">
         <div className="w-full md:max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="flex gap-2">
-            <Toggle
-              pressed={billSearch}
-              onPressedChange={v => setBillSearch(v)}
-              variant="outline"
-              aria-label="Toggle bill search"
-            >
-              <Search />
-              Bill Search
-            </Toggle>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline">
+                  <Settings />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="flex flex-col gap-2">
+                <Toggle
+                  size="sm"
+                  pressed={billSearch}
+                  onPressedChange={v => setBillSearch(v)}
+                  variant="outline"
+                  type="button"
+                  aria-label="Toggle bill search"
+                >
+                  <Search />
+                  Bill Search
+                </Toggle>
+                <Toggle
+                  size="sm"
+                  type="button"
+                  pressed={manualKbSearch}
+                  onPressedChange={v => setManualKbSearch(v)}
+                  variant="outline"
+                  aria-label="Toggle manual KB search"
+                >
+                  <BookIcon />
+                  Manual KB
+                </Toggle>
+                <Toggle
+                  size="sm"
+                  type="button"
+                  pressed={documentSearch}
+                  onPressedChange={v => setDocumentSearch(v)}
+                  variant="outline"
+                  aria-label="Toggle web page search"
+                >
+                  <Globe />
+                  Web page
+                </Toggle>
+              </PopoverContent>
+            </Popover>
+
             <AutosizeTextarea
               disabled={isLoading}
               value={input}
