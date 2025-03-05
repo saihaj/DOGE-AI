@@ -31,6 +31,9 @@ async function main() {
           },
         ],
         text: question,
+        billEntries: true,
+        documentEntries: true,
+        manualEntries: false,
       },
       log,
     );

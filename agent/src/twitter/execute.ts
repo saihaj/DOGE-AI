@@ -271,6 +271,9 @@ export const executeTweets = inngest.createFunction(
               {
                 messages: [...tweetThread, tweetWeRespondingTo],
                 text: question,
+                billEntries: true,
+                documentEntries: true,
+                manualEntries: false,
               },
               log,
             );
@@ -365,6 +368,9 @@ export const executeTweets = inngest.createFunction(
               {
                 messages: tweetThread,
                 text: tweetText,
+                billEntries: true,
+                documentEntries: true,
+                manualEntries: false,
               },
               log,
             );

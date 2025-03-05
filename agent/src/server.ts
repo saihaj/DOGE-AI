@@ -30,12 +30,20 @@ import {
   mergeConsecutiveSameRole,
 } from './twitter/helpers';
 import { promClient, readiness } from './prom';
+import {
+  deleteManualKbEntry,
+  getKbEntries,
+  ManualKbDeleteInput,
+  ManualKbGetInput,
+  ManualKBInsertInput,
+  postKbInsert,
+} from './api/manual-kb';
 
 const fastify = Fastify();
 
 fastify.register(cors, {
   allowedHeaders: ['Content-Type', 'Authorization'],
-  methods: ['GET', 'POST', 'OPTIONS'],
+  methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
   origin: ['http://localhost:4321', 'https://manage.dogeai.info'],
 });
 
@@ -139,7 +147,15 @@ fastify.route<{ Body: ChatStreamInput }>({
     const log = logger.child({ function: 'api-chat' });
     // Create an AbortController for the backend
     const abortController = new AbortController();
-    let { billSearch, messages, selectedChatModel } = request.body as {
+    let {
+      billSearch,
+      documentSearch,
+      manualKbSearch,
+      messages,
+      selectedChatModel,
+    } = request.body as {
+      documentSearch: boolean;
+      manualKbSearch: boolean;
       billSearch: boolean;
       messages: CoreMessage[];
       selectedChatModel: string;
@@ -197,12 +213,15 @@ fastify.route<{ Body: ChatStreamInput }>({
         }
       }
 
-      if (billSearch) {
+      if (billSearch || documentSearch || manualKbSearch) {
         const latestMessage = messages[messages.length - 1];
         const kb = await getKbContext(
           {
             messages: messages,
             text: latestMessage.content.toString(),
+            manualEntries: manualKbSearch,
+            billEntries: billSearch,
+            documentEntries: documentSearch,
           },
           log,
         );
@@ -212,9 +231,27 @@ fastify.route<{ Body: ChatStreamInput }>({
         }
 
         const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
-        const summary = kb?.documents
-          ? `${kb.documents}\n\n${bill}`
-          : bill || '';
+        const summary = (() => {
+          let result = ' ';
+
+          if (kb.manualEntries) {
+            result += 'Knowledge base entries:\n';
+            result += kb.manualEntries;
+            result += '\n\n';
+          }
+
+          if (kb.documents) {
+            result += kb.documents;
+            result += '\n\n';
+          }
+
+          if (bill) {
+            result += bill;
+            result += '\n\n';
+          }
+
+          return result.trim();
+        })();
 
         if (summary) {
           // want to insert the DB summary as the second last message in the context of messages.
@@ -282,6 +319,207 @@ fastify.route<{ Body: ChatStreamInput }>({
     }
   },
   url: '/api/chat',
+});
+
+fastify.route<{ Body: ManualKBInsertInput }>({
+  method: 'POST',
+  schema: {
+    body: ManualKBInsertInput,
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          id: { type: 'string' },
+        },
+      },
+    },
+  },
+  handler: async (request, reply) => {
+    const log = logger.child({
+      requestId: request.id,
+    });
+    try {
+      const { title, content } = request.body;
+
+      if (!title) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'title is required',
+        );
+        reply.code(400).send({ success: false, error: 'Title is required' });
+      }
+
+      if (!content) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'content is required',
+        );
+        reply.code(400).send({ success: false, error: 'Content is required' });
+      }
+      const result = await postKbInsert(
+        {
+          title,
+          content,
+        },
+        log,
+      );
+
+      return reply.send(result);
+    } catch (error) {
+      log.error({ error }, 'Error in postKbInsert');
+      return reply.code(500).send({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+  url: '/api/manual-kb',
+});
+
+fastify.route<{ Querystring: ManualKbGetInput }>({
+  method: 'GET',
+  schema: {
+    querystring: ManualKbGetInput,
+    response: {
+      200: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            title: { type: 'string' },
+            content: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+  handler: async (request, reply) => {
+    const log = logger.child({
+      requestId: request.id,
+    });
+    try {
+      const { page, limit } = request.query;
+
+      if (!page) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'page is required',
+        );
+        reply.code(400).send({ success: false, error: 'page is required' });
+      }
+
+      if (page < 0) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'page should be greater than 0',
+        );
+        reply.code(400).send({
+          success: false,
+          error: 'page should be greater than or equal to 0',
+        });
+      }
+
+      if (!limit) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'limit is required',
+        );
+        reply.code(400).send({ success: false, error: 'limit is required' });
+      }
+
+      if (limit < 0) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'limit should be greater than 0',
+        );
+        reply.code(400).send({
+          success: false,
+          error: 'limit should be greater than or equal to 0',
+        });
+      }
+
+      if (limit > 30) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'limit should be less than 30',
+        );
+        reply.code(400).send({
+          success: false,
+          error: 'limit should be less than or equal to 30',
+        });
+      }
+
+      const result = await getKbEntries({
+        page,
+        limit,
+      });
+
+      return reply.send(result);
+    } catch (error) {
+      log.error({ error }, 'Error in getKbEntries');
+      return reply.code(500).send({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+  url: '/api/manual-kb',
+});
+
+fastify.route<{ Body: ManualKbDeleteInput }>({
+  method: 'DELETE',
+  schema: {
+    body: ManualKbDeleteInput,
+  },
+  handler: async (request, reply) => {
+    const log = logger.child({
+      requestId: request.id,
+    });
+    try {
+      const { id } = request.body;
+
+      if (!id) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'id is required',
+        );
+        reply.code(400).send({ success: false, error: 'id is required' });
+      }
+
+      const result = await deleteManualKbEntry(
+        {
+          id,
+        },
+        log,
+      );
+
+      return reply.send(result);
+    } catch (error) {
+      log.error({ error }, 'Error in deleteManualKbEntry');
+      return reply.code(500).send({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+  url: '/api/manual-kb',
 });
 
 // So in fly.io, health should do both the health check and the readiness check

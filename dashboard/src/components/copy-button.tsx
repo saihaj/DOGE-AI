@@ -5,7 +5,18 @@ import { CheckIcon, ClipboardIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 export async function copyToClipboardWithMeta(value: string) {
-  navigator.clipboard.writeText(value);
+  try {
+    navigator.clipboard.writeText(value);
+    toast.success('Copied to clipboard', {
+      dismissible: true,
+      position: 'top-center',
+    });
+  } catch {
+    toast.error('Failed to copy to clipboard', {
+      dismissible: true,
+      position: 'top-center',
+    });
+  }
 }
 
 interface CopyButtonProps extends ButtonProps {
@@ -32,10 +43,6 @@ export function CopyButton({
       variant={variant}
       className={cn('relative z-10 h-6 w-6 [&_svg]:h-3 [&_svg]:w-3', className)}
       onClick={() => {
-        toast.success('Copied to clipboard', {
-          dismissible: true,
-          position: 'top-center',
-        });
         copyToClipboardWithMeta(value);
         setHasCopied(true);
       }}

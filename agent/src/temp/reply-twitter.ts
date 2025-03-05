@@ -64,6 +64,9 @@ async function main() {
       {
         messages: fullThread,
         text: extractedQuestion,
+        billEntries: true,
+        documentEntries: true,
+        manualEntries: false,
       },
       log,
     );

@@ -38,6 +38,9 @@ export async function processTestEngageRequest({
         },
       ],
       text: content,
+      billEntries: true,
+      documentEntries: true,
+      manualEntries: false,
     },
     log,
   );

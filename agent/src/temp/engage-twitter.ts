@@ -43,6 +43,9 @@ async function main() {
           },
         ],
         text: content,
+        billEntries: true,
+        documentEntries: true,
+        manualEntries: false,
       },
       log,
     );
