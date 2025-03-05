@@ -7,6 +7,7 @@ import { ListResultResponseSchema } from './helpers';
 import { getUnixTime, subMinutes } from 'date-fns';
 import { logger } from '../logger';
 import { tweetsIngested } from '../prom';
+import { NonRetriableError } from 'inngest';
 
 const API = new URL(TWITTER_API_BASE_URL);
 API.pathname = '/twitter/list/tweets';
@@ -39,7 +40,19 @@ export async function fetchTweetsFromList({
         'X-API-Key': TWITTER_API_KEY,
       },
     });
+
     const data = await response.json();
+
+    if (response.status !== 200) {
+      const text = await response.text();
+      log.error(
+        { status: response.status, body: text },
+        'Failed to fetchTweetsFromList',
+      );
+      throw new NonRetriableError(
+        `Failed to fetchTweetsFromList. Status: ${response.status}, Body: ${text}`,
+      );
+    }
 
     const result = await ListResultResponseSchema.safeParseAsync(data);
 
