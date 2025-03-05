@@ -58,8 +58,11 @@ export const processInteractionTweets = inngest.createFunction(
         reason: error.message,
       });
     },
+    timeouts: {
+      start: '10m',
+    },
     throttle: {
-      limit: 10,
+      limit: 100,
       period: '1m',
     },
   },
