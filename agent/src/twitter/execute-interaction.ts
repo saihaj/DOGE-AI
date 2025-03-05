@@ -173,7 +173,7 @@ export const executeInteractionTweets = inngest.createFunction(
       });
     },
     timeouts: {
-      start: '30m',
+      start: '15m',
     },
     throttle: {
       limit: 65,
