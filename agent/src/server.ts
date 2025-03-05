@@ -1,8 +1,5 @@
-import Fastify, {
-  FastifyReply,
-  FastifyRequest,
-  HookHandlerDoneFunction,
-} from 'fastify';
+import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
+import { serve } from 'inngest/fastify';
 import { CoreMessage, StreamData, streamText } from 'ai';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
@@ -41,8 +38,33 @@ import {
   ManualKBInsertInput,
   postKbInsert,
 } from './api/manual-kb';
+import { inngest } from './inngest';
+import { ingestTweets } from './twitter/ingest';
+import { processTweets } from './twitter/process';
+import { executeTweets } from './twitter/execute';
+import { ingestInteractionTweets } from './twitter/ingest-interaction';
+import { processInteractionTweets } from './twitter/process-interactions';
+import { executeInteractionTweets } from './twitter/execute-interaction';
+import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 
 const fastify = Fastify();
+
+fastify.route({
+  method: ['GET', 'POST', 'PUT'],
+  handler: serve({
+    client: inngest,
+    functions: [
+      ingestTweets,
+      processTweets,
+      executeTweets,
+      ingestInteractionTweets,
+      ingestTemporaryInteractionTweets,
+      processInteractionTweets,
+      executeInteractionTweets,
+    ],
+  }),
+  url: '/api/inngest',
+});
 
 fastify.register(cors, {
   allowedHeaders: ['Content-Type', 'Authorization', 'cf-authorization-token'],
