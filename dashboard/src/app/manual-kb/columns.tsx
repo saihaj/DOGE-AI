@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { API_URL } from '@/lib/const';
+import { API_URL, CF_BACKEND_HEADER_NAME } from '@/lib/const';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
@@ -20,7 +20,13 @@ export type KBEntries = {
   content: string;
 };
 
-export const columns = ({ mutate }: { mutate: () => void }) =>
+export const columns = ({
+  mutate,
+  cfAuthorizationCookie,
+}: {
+  mutate: () => void;
+  cfAuthorizationCookie: string;
+}) =>
   [
     {
       accessorKey: 'title',
@@ -65,6 +71,7 @@ export const columns = ({ mutate }: { mutate: () => void }) =>
                       method: 'DELETE',
                       headers: {
                         'Content-Type': 'application/json',
+                        [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
                       },
                       body: JSON.stringify({ id: entry.id }),
                     });

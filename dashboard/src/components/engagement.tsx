@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { API_URL } from '@/lib/const';
+import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { CopyButton } from './copy-button';
 import { Loader2 } from 'lucide-react';
+import { useCookie } from '@/hooks/use-cookie';
 
 export function EngagementTweet({
   label,
@@ -21,6 +22,7 @@ export function EngagementTweet({
     bill: '',
     metadata: '',
   });
+  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
 
   async function onSubmit() {
     setLoading(true);
@@ -45,6 +47,7 @@ export function EngagementTweet({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
       },
       body: JSON.stringify({
         tweetId,

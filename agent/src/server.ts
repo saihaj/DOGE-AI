@@ -45,18 +45,13 @@ import {
 const fastify = Fastify();
 
 fastify.register(cors, {
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'cf-authorization-token'],
   methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
   origin: ['http://localhost:4321', 'https://manage.dogeai.info'],
 });
 
-const authHandler = async (
-  request: FastifyRequest,
-  reply: FastifyReply,
-  done: HookHandlerDoneFunction,
-) => {
+const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
   if (!IS_PROD) {
-    done();
     return;
   }
 
@@ -84,7 +79,6 @@ const authHandler = async (
       audience: CF_AUDIENCE,
     });
     log.info({ result }, 'cf authorization token verified');
-    done();
   } catch (error) {
     log.error({ error }, 'invalid cf authorization token');
     return reply.status(403).send({

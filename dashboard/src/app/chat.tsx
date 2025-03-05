@@ -26,7 +26,7 @@ import { Logo } from '@/components/logo';
 import { CopyButton } from '@/components/copy-button';
 import { Markdown } from '@/components/markdown';
 import { useLocalStorage } from '@uidotdev/usehooks';
-import { API_URL } from '@/lib/const';
+import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { Header } from '@/components/header';
 import { toast } from 'sonner';
 import { Toggle } from '@/components/ui/toggle';
@@ -39,6 +39,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useCookie } from '@/hooks/use-cookie';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -205,6 +206,7 @@ function TemplatePromptWithVars({
 }
 
 export function Chat() {
+  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const [model, setModel] = useLocalStorage<ModelValues>(
     'playgroundSelectedChatModel',
     'o3-mini',
@@ -276,6 +278,7 @@ export function Chat() {
       documentSearch,
       manualKbSearch,
     },
+    headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
     onError: error => {
       toast.error(error.message, {
         dismissible: false,
