@@ -298,14 +298,16 @@ export async function wokeTweetsRewriter(
     messages: [{ role: 'user', content: prompt }],
   });
 
+  log.info(
+    {
+      before: text,
+      after: _response,
+    },
+    'woke rewriter',
+  );
+
   if (_response.match(/\[woke\]/i)) {
-    log.info(
-      {
-        before: text,
-        after: _response,
-      },
-      'Woke response detected',
-    );
+    log.info({}, 'woke response rewritten');
     wokeTweetRewritten.inc({
       method: method,
       action: action,
@@ -325,6 +327,7 @@ export async function wokeTweetsRewriter(
     return response;
   }
 
+  log.info({}, 'woke response not rewritten');
   return text;
 }
 
