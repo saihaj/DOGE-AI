@@ -13,10 +13,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install pnpm
+        run: npm install -g pnpm
       - name: Install dependencies
-        run: cd crawler && npm install # Use npm if pnpm isn’t pre-installed
+        run: cd crawler && pnpm install # Use npm if pnpm isn’t pre-installed
       - name: Build
-        run: cd crawler && npm run build # Runs esbuild to create dist/
+        run: cd crawler && pnpm run build # Runs esbuild to create dist/
       - uses: superfly/flyctl-actions/setup-flyctl@master
       - name: Deploy to Fly.io
         run: cd crawler && flyctl deploy --remote-only
