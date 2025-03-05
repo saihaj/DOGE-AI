@@ -456,20 +456,25 @@ export const executeTweets = inngest.createFunction(
         };
       }
 
-      const resp = await twitterClient.v2.tweet(reply.text, {
-        reply: {
-          in_reply_to_tweet_id: tweetToActionOn.id,
-        },
-      });
-      log.info(resp, 'tweet sent');
-      tweetsPublished.inc({
-        action: event.data.action,
-        method: 'execute-tweets',
-      });
+      try {
+        const resp = await twitterClient.v2.tweet(reply.text, {
+          reply: {
+            in_reply_to_tweet_id: tweetToActionOn.id,
+          },
+        });
+        log.info(resp, 'tweet sent');
+        tweetsPublished.inc({
+          action: event.data.action,
+          method: 'execute-tweets',
+        });
 
-      return {
-        id: resp.data.data.id,
-      };
+        return {
+          id: resp.data.data.id,
+        };
+      } catch (error) {
+        log.error({ error }, 'failed to send tweet');
+        throw new NonRetriableError(error as any);
+      }
     });
 
     await step.run('notify-discord', async () => {
