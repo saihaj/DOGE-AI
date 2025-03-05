@@ -3,13 +3,14 @@ import {
   TWITTER_API_KEY,
   TWITTER_USERNAME,
 } from '../const';
-import { inngest, TweetResponse } from '../inngest';
+import { inngest } from '../inngest';
 import { z } from 'zod';
 import { chunk } from 'lodash-es';
 import { reportFailureToDiscord } from '../discord/action';
 import { SearchResultResponseSchema } from './helpers';
 import { logger } from '../logger';
 import { tweetsIngested } from '../prom';
+import { NonRetriableError } from 'inngest';
 
 const API = new URL(TWITTER_API_BASE_URL);
 API.pathname = '/twitter/tweet/advanced_search';
@@ -58,6 +59,18 @@ export const ingestTweets = inngest.createFunction(
           'X-API-Key': TWITTER_API_KEY,
         },
       });
+
+      if (response.status !== 200) {
+        const text = await response.text();
+        log.error(
+          { status: response.status, body: text },
+          'Failed to fetch tweets',
+        );
+        throw new NonRetriableError(
+          `Failed to fetch tweets. Status: ${response.status}, Body: ${text}`,
+        );
+      }
+
       const data = await response.json();
 
       const result = await SearchResultResponseSchema.safeParseAsync(data);
