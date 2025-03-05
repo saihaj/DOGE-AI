@@ -23,6 +23,7 @@ async function main() {
     throw new Error(`Failed to scrape: ${scrapeResult.error}`);
   }
 
+   // code
   console.log(scrapeResult);
 }
 
