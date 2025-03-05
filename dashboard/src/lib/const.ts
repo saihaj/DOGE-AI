@@ -4,3 +4,5 @@ export const API_URL = (() => {
   }
   return process.env.NEXT_PUBLIC_API_URL;
 })();
+export const CF_COOKIE_NAME = 'CF_Authorization';
+export const CF_BACKEND_HEADER_NAME = 'cf-authorization-token';

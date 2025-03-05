@@ -19,9 +19,10 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { API_URL } from '@/lib/const';
+import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { toast } from 'sonner';
 import { useState } from 'react';
+import { useCookie } from '@/hooks/use-cookie';
 
 const formSchema = z.object({
   title: z.string().min(3),
@@ -29,14 +30,14 @@ const formSchema = z.object({
 });
 
 function InsertEntry({ mutate }: { mutate: () => void }) {
+  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const [open, setOpen] = useState(false);
-  // 1. Define your form.
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
   });
 
-  // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setOpen(false);
 
@@ -44,6 +45,7 @@ function InsertEntry({ mutate }: { mutate: () => void }) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
       },
       body: JSON.stringify(values),
     });
@@ -153,9 +155,15 @@ function InsertEntry({ mutate }: { mutate: () => void }) {
 }
 
 export default function ManualKB() {
+  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const { data, error, isLoading, mutate } = useSWRInfinite(
     index => `${API_URL}/api/manual-kb?page=${index + 1}&limit=20`,
-    (url: string) => fetch(url).then(res => res.json()),
+    (url: string) =>
+      fetch(url, {
+        headers: {
+          [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+        },
+      }).then(res => res.json()),
   );
 
   return (
@@ -170,7 +178,7 @@ export default function ManualKB() {
         {error && <p>Error: {error.message}</p>}
         {data && (
           <DataTable
-            columns={columns({ mutate })}
+            columns={columns({ mutate, cfAuthorizationCookie })}
             data={data?.flatMap(a => a)}
           />
         )}

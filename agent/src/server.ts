@@ -1,23 +1,26 @@
-import { serve } from 'inngest/fastify';
-import Fastify from 'fastify';
+import Fastify, {
+  FastifyReply,
+  FastifyRequest,
+  HookHandlerDoneFunction,
+} from 'fastify';
 import { CoreMessage, StreamData, streamText } from 'ai';
-import { inngest } from './inngest';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
-import { ingestTweets } from './twitter/ingest';
-import { processTweets } from './twitter/process';
-import { executeTweets } from './twitter/execute';
-import { DISCORD_TOKEN, SEED, TEMPERATURE } from './const';
+import {
+  CF_AUDIENCE,
+  CF_TEAM_DOMAIN,
+  DISCORD_TOKEN,
+  IS_PROD,
+  SEED,
+  TEMPERATURE,
+} from './const';
 import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
-import { ingestInteractionTweets } from './twitter/ingest-interaction';
-import { processInteractionTweets } from './twitter/process-interactions';
-import { executeInteractionTweets } from './twitter/execute-interaction';
-import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import {
   processTestEngageRequest,
   ProcessTestEngageRequestInput,
 } from './api/test-engage';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import {
   processTestReplyRequest,
   ProcessTestReplyRequestInput,
@@ -42,30 +45,52 @@ import {
 const fastify = Fastify();
 
 fastify.register(cors, {
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'cf-authorization-token'],
   methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
   origin: ['http://localhost:4321', 'https://manage.dogeai.info'],
 });
 
-fastify.route({
-  method: ['GET', 'POST', 'PUT'],
-  handler: serve({
-    client: inngest,
-    functions: [
-      ingestTweets,
-      processTweets,
-      executeTweets,
-      ingestInteractionTweets,
-      ingestTemporaryInteractionTweets,
-      processInteractionTweets,
-      executeInteractionTweets,
-    ],
-  }),
-  url: '/api/inngest',
-});
+const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
+  if (!IS_PROD) {
+    return;
+  }
+
+  const log = logger.child({
+    requestId: request.id,
+  });
+  const token = request.headers?.['cf-authorization-token'];
+
+  // Your CF Access team domain
+  const CERTS_URL = `${CF_TEAM_DOMAIN}/cdn-cgi/access/certs`;
+  const JWKS = createRemoteJWKSet(new URL(CERTS_URL));
+
+  // Make sure that the incoming request has our token header
+  if (!token || typeof token !== 'string') {
+    log.error({}, 'missing required cf authorization token');
+    return reply.status(403).send({
+      status: false,
+      message: 'missing required cf authorization token',
+    });
+  }
+
+  try {
+    const result = await jwtVerify(token, JWKS, {
+      issuer: CF_TEAM_DOMAIN,
+      audience: CF_AUDIENCE,
+    });
+    log.info({ result }, 'cf authorization token verified');
+  } catch (error) {
+    log.error({ error }, 'invalid cf authorization token');
+    return reply.status(403).send({
+      status: false,
+      message: 'invalid cf authorization token',
+    });
+  }
+};
 
 fastify.route<{ Body: ProcessTestEngageRequestInput }>({
   method: 'POST',
+  preHandler: [authHandler],
   schema: {
     body: ProcessTestEngageRequestInput,
     response: {
@@ -103,6 +128,7 @@ fastify.route<{ Body: ProcessTestEngageRequestInput }>({
 
 fastify.route<{ Body: ProcessTestReplyRequestInput }>({
   method: 'POST',
+  preHandler: [authHandler],
   schema: {
     body: ProcessTestReplyRequestInput,
     response: {
@@ -139,6 +165,7 @@ fastify.route<{ Body: ProcessTestReplyRequestInput }>({
 
 fastify.route<{ Body: ChatStreamInput }>({
   method: 'post',
+  preHandler: [authHandler],
   schema: {
     body: ChatStreamInput,
   },
@@ -323,6 +350,7 @@ fastify.route<{ Body: ChatStreamInput }>({
 
 fastify.route<{ Body: ManualKBInsertInput }>({
   method: 'POST',
+  preHandler: [authHandler],
   schema: {
     body: ManualKBInsertInput,
     response: {
@@ -382,6 +410,7 @@ fastify.route<{ Body: ManualKBInsertInput }>({
 
 fastify.route<{ Querystring: ManualKbGetInput }>({
   method: 'GET',
+  preHandler: [authHandler],
   schema: {
     querystring: ManualKbGetInput,
     response: {
@@ -483,6 +512,7 @@ fastify.route<{ Querystring: ManualKbGetInput }>({
 
 fastify.route<{ Body: ManualKbDeleteInput }>({
   method: 'DELETE',
+  preHandler: [authHandler],
   schema: {
     body: ManualKbDeleteInput,
   },
