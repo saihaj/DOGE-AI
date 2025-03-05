@@ -66,7 +66,7 @@ export const ingestTemporaryInteractionTweets = inngest.createFunction(
       {
         method: 'ingest-temporary-interaction-tweets',
       },
-      totalTweets.length,
+      tweets.length,
     );
 
     return {

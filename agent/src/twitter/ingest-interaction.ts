@@ -137,7 +137,7 @@ export const ingestInteractionTweets = inngest.createFunction(
       {
         method: 'ingest-interaction-tweets',
       },
-      totalTweets.length,
+      tweets.length,
     );
 
     return {
