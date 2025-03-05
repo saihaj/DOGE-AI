@@ -28,7 +28,7 @@ const formSchema = z.object({
   content: z.string().min(10),
 });
 
-export function InsertEntry({ mutate }: { mutate: () => void }) {
+function InsertEntry({ mutate }: { mutate: () => void }) {
   const [open, setOpen] = useState(false);
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
