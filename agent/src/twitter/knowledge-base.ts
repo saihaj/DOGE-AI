@@ -296,14 +296,17 @@ async function getReasonBillContext(
       - Relevant keywords and conversation context.  
       
       Task:  
-      - Analyze the provided bills and determine which "billId" best matches the **conversation context and user intent.  
-      - Prioritize relevance based on keywords, topic alignment, and recency.  
+      - Analyze the provided bills and determine which "billId" best matches the conversation context and user intent. 
+      - Compare against the provided list of bills, looking for the best match by: 
+        - Relevance to the user's topics and keywords.
+        - Alignment with the conversation context.
+        - Recency of introduction date, if multiple are equally relevant or if no close match is found. 
       - If a clear contextual match exists, return the corresponding "billId".
-      - If no strong match is found, return the most recently introduced bill instead.
+      - If multiple matches are found, select the most relevant one, or choose the most recent bill if there is no clear contextual match. Return exactly one 'billId' in JSON.
+      - If there there is no clear contextual match, return 'null'.
       
       Expected Output:
       { "billId": "best_matching_bill_id" }
-      Always return a "billId", selecting the most recent bill if no contextual match is available.
       `,
         },
         {
@@ -318,7 +321,7 @@ async function getReasonBillContext(
       }),
     });
 
-    if (!relevantBill.billId) {
+    if (!relevantBill?.billId) {
       log.warn({}, 'no relevant bill found');
       throw new Error(REJECTION_REASON.NO_BILL_ID_FOUND);
     }
@@ -334,7 +337,13 @@ async function getReasonBillContext(
       throw new Error(REJECTION_REASON.NO_BILL_FOUND);
     }
 
-    log.info(bill, 'found bill');
+    log.info(
+      {
+        id: bill.id,
+        title: bill.title,
+      },
+      'found bill',
+    );
     return bill;
   }
 
@@ -364,7 +373,7 @@ async function getReasonBillContext(
 
   // we got bills from the title, we can just return the first one
   if (billIds.length > 0) {
-    const bill = await db
+    const _bill = await db
       .select({
         id: billDbSchema.id,
         title: billDbSchema.title,
@@ -374,8 +383,16 @@ async function getReasonBillContext(
       .where(inArray(billDbSchema.id, billIds))
       .limit(1);
 
-    log.info(bill[0], 'found bill');
-    return bill[0];
+    const bill = _bill[0];
+    log.info(
+      {
+        id: bill.id,
+        title: bill.title,
+      },
+      'found bill',
+    );
+
+    return bill;
   }
 
   const embeddingsForKeywords = await pMap(
@@ -476,7 +493,13 @@ async function getReasonBillContext(
       throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
     }
 
-    log.info(bill, 'found bill');
+    log.info(
+      {
+        id: bill.id,
+        title: bill.title,
+      },
+      'found bill',
+    );
     return bill;
   }
 
@@ -559,7 +582,13 @@ async function getReasonBillContext(
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
-  log.info(bill, 'found bill');
+  log.info(
+    {
+      id: bill.id,
+      title: bill.title,
+    },
+    'found bill',
+  );
   return bill;
 }
 
