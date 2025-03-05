@@ -334,7 +334,13 @@ async function getReasonBillContext(
       throw new Error(REJECTION_REASON.NO_BILL_FOUND);
     }
 
-    log.info(bill, 'found bill');
+    log.info(
+      {
+        id: bill.id,
+        title: bill.title,
+      },
+      'found bill',
+    );
     return bill;
   }
 
@@ -364,7 +370,7 @@ async function getReasonBillContext(
 
   // we got bills from the title, we can just return the first one
   if (billIds.length > 0) {
-    const bill = await db
+    const _bill = await db
       .select({
         id: billDbSchema.id,
         title: billDbSchema.title,
@@ -374,8 +380,16 @@ async function getReasonBillContext(
       .where(inArray(billDbSchema.id, billIds))
       .limit(1);
 
-    log.info(bill[0], 'found bill');
-    return bill[0];
+    const bill = _bill[0];
+    log.info(
+      {
+        id: bill.id,
+        title: bill.title,
+      },
+      'found bill',
+    );
+
+    return bill;
   }
 
   const embeddingsForKeywords = await pMap(
@@ -476,7 +490,13 @@ async function getReasonBillContext(
       throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
     }
 
-    log.info(bill, 'found bill');
+    log.info(
+      {
+        id: bill.id,
+        title: bill.title,
+      },
+      'found bill',
+    );
     return bill;
   }
 
@@ -559,7 +579,13 @@ async function getReasonBillContext(
     throw new Error(REJECTION_REASON.NO_EXACT_MATCH);
   }
 
-  log.info(bill, 'found bill');
+  log.info(
+    {
+      id: bill.id,
+      title: bill.title,
+    },
+    'found bill',
+  );
   return bill;
 }
 
