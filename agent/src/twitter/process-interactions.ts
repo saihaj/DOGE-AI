@@ -59,7 +59,7 @@ export const processInteractionTweets = inngest.createFunction(
       });
     },
     throttle: {
-      limit: 10,
+      limit: 100,
       period: '1m',
     },
   },
