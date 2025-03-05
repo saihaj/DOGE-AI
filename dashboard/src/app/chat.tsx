@@ -415,7 +415,7 @@ export function Chat() {
     text: string;
     variables: Record<string, string>;
   }) => {
-    const prompt = text ? text.trim() : PLACEHOLDER_PROMPT;
+    const prompt = text.trim();
     setUserPromptTemplate(prompt);
 
     const input = fillTemplate({
