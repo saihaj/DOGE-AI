@@ -178,7 +178,7 @@ export default function ManualKB() {
         {error && <p>Error: {error.message}</p>}
         {data && (
           <DataTable
-            columns={columns({ mutate })}
+            columns={columns({ mutate, cfAuthorizationCookie })}
             data={data?.flatMap(a => a)}
           />
         )}
