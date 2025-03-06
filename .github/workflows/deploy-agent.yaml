@@ -1,0 +1,26 @@
+name: Deploy Agent
+
+on:
+  push:
+    branches:
+      - feature/fly-deploys
+    paths:
+      - 'agent/**'
+
+jobs:
+  deploy:
+    name: Deploy Agent
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        run: npm install -g pnpm
+      - name: Install dependencies
+        run: cd agent && pnpm install # Use npm if pnpm isn’t pre-installed
+      - name: Build
+        run: cd agent && pnpm run build # Runs esbuild to create dist/
+      - uses: superfly/flyctl-actions/setup-flyctl@master
+      - name: Deploy to Fly.io
+        run: cd agent && flyctl deploy --remote-only
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN_AGENT }}
