@@ -5,6 +5,7 @@ import {
   generateEmbeddings,
   getTweet,
   getTweetContentAsText,
+  highPriorityUser,
   longResponseFormatter,
   mergeConsecutiveSameRole,
   sanitizeLlmOutput,
@@ -444,6 +445,7 @@ export const executeTweets = inngest.createFunction(
         await sendDevTweet({
           tweetUrl: `https://x.com/i/status/${tweetToActionOn.id}`,
           question,
+          priority: highPriorityUser(tweetToActionOn.author.userName),
           response: reply.text,
         });
         return {
@@ -479,6 +481,7 @@ export const executeTweets = inngest.createFunction(
       await approvedTweetEngagement({
         sentTweetUrl: `https://x.com/i/status/${repliedTweet.id}`,
         replyTweetUrl: tweetToActionOn.url,
+        priority: highPriorityUser(tweetToActionOn.author.userName),
         sent: reply.text,
       });
     });

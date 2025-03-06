@@ -9,6 +9,7 @@ import {
   DISCORD_APPROVED_CHANNEL_ID,
   DISCORD_ERROR_LOG_CHANNEL_ID,
   DISCORD_LOCAL_TWEETS_CHANNEL_ID,
+  DISCORD_PRIORITY_APPROVED_CHANNEL_ID,
   DISCORD_REJECTED_CHANNEL_ID,
   DISCORD_SERVER_ID,
 } from '../const';
@@ -21,6 +22,7 @@ export async function approvedTweetEngagement({
   longOutput,
   refinedOutput,
   sent,
+  priority,
 }: {
   /** Tweet we are replying to */
   replyTweetUrl: string;
@@ -29,9 +31,13 @@ export async function approvedTweetEngagement({
   longOutput?: string;
   refinedOutput?: string;
   sent: string;
+  priority?: boolean;
 }) {
+  const channelId = priority
+    ? DISCORD_PRIORITY_APPROVED_CHANNEL_ID
+    : DISCORD_APPROVED_CHANNEL_ID;
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
-  const channel = await guild.channels.fetch(DISCORD_APPROVED_CHANNEL_ID);
+  const channel = await guild.channels.fetch(channelId);
 
   if (!channel || !(channel instanceof TextChannel)) {
     throw Error('Approved channel not found or not a text channel');
@@ -154,14 +160,19 @@ export async function sendDevTweet({
   response,
   longOutput,
   refinedOutput,
+  priority,
 }: {
   tweetUrl: string;
   question: string;
   response: string;
   refinedOutput?: string;
   longOutput?: string;
+  priority?: boolean;
 }) {
-  const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
+  const channelId = priority
+    ? DISCORD_PRIORITY_APPROVED_CHANNEL_ID
+    : DISCORD_APPROVED_CHANNEL_ID;
+  const guild = await discordClient.guilds.fetch(channelId);
   const channel = await guild.channels.fetch(DISCORD_LOCAL_TWEETS_CHANNEL_ID);
 
   if (!channel || !(channel instanceof TextChannel)) {

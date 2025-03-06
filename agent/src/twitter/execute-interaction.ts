@@ -6,6 +6,7 @@ import {
   generateEmbeddings,
   getTweet,
   getTweetContentAsText,
+  highPriorityUser,
   longResponseFormatter,
   sanitizeLlmOutput,
   textSplitter,
@@ -32,7 +33,7 @@ import {
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
 import { perplexity } from '@ai-sdk/perplexity';
-import { logger, WithLogger } from '../logger.ts';
+import { logger } from '../logger.ts';
 import { getKbContext } from './knowledge-base.ts';
 import {
   tweetPublishFailed,
@@ -319,6 +320,7 @@ export const executeInteractionTweets = inngest.createFunction(
               tweetUrl: `https://x.com/i/status/${tweetToActionOn.id}`,
               question: text,
               response: reply.response,
+              priority: highPriorityUser(tweetToActionOn.author.userName),
               refinedOutput: reply.refinedOutput,
               longOutput: reply.longOutput,
             });
@@ -356,6 +358,7 @@ export const executeInteractionTweets = inngest.createFunction(
             sentTweetUrl: `https://x.com/i/status/${repliedTweet.id}`,
             replyTweetUrl: tweetToActionOn.url,
             sent: reply.response,
+            priority: highPriorityUser(tweetToActionOn.author.userName),
             refinedOutput: reply.refinedOutput,
             longOutput: reply.longOutput,
           });
