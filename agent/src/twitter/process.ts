@@ -89,8 +89,6 @@ export const processTweets = inngest.createFunction(
     const tweetText = event.data.text;
     // This is where we can try to filter out any unwanted tweets
 
-    const engagementSysPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
-
     if (event.data.inReplyToUsername) {
       if (DO_NOT_ENGAGE_USERNAMES.includes(event.data.inReplyToUsername)) {
         throw new NonRetriableError(
@@ -106,6 +104,8 @@ export const processTweets = inngest.createFunction(
         );
       }
     }
+
+    const engagementSysPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
 
     /**
      * grab any tags to the bot
