@@ -292,6 +292,18 @@ export const executeInteractionTweets = inngest.createFunction(
           const finalAnswer = await getShortResponse({ topic: responseLong });
           log.info({ response: finalAnswer }, 'generated short');
 
+          // some times claude safety kicks in and we get a NO
+          if (finalAnswer.toLowerCase().startsWith('no')) {
+            log.warn({}, 'claude safety kicked in. returning long');
+            return {
+              // Implicitly we are returning the long output so others can be ignored
+              longOutput: '',
+              refinedOutput: '',
+              metadata,
+              response: responseLongFormatted,
+            };
+          }
+
           return {
             longOutput: responseLongFormatted,
             refinedOutput: finalAnswer,
