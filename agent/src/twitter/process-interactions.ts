@@ -68,6 +68,12 @@ export const processInteractionTweets = inngest.createFunction(
   },
   { event: 'tweet.process.interaction' },
   async ({ event, step }) => {
+    const log = logger.child({
+      module: 'process-interaction-tweets',
+      tweetId: event.data.id,
+      eventId: event.id,
+    });
+    log.info({}, 'processing interaction tweet');
     const tweetText = event.data.text;
 
     // Do not engage with tweets from the agent
@@ -95,17 +101,31 @@ export const processInteractionTweets = inngest.createFunction(
       const decision = result.text.toLowerCase().trim().replace('.', ' ');
 
       if (decision === 'ignore') {
+        log.warn(
+          {
+            decision,
+          },
+          'something went wrong. ignoring tweet',
+        );
         throw Error('Need reason to ignore the tweet');
       }
 
       if (decision === 'no_question_detected') {
+        log.warn(
+          {
+            decision,
+          },
+          'no question detected. re-run',
+        );
         throw Error('weird no question detected. re-run');
       }
 
+      log.info({ decision }, 'decision made');
       return decision.toLowerCase().startsWith('engage') ? true : result.text;
     });
 
     if (shouldEngage === true) {
+      log.info({}, 'queuing tweet for engagement');
       await step.sendEvent('fire-off-tweet', {
         name: 'tweet.execute.interaction',
         data: {

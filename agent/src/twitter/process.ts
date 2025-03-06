@@ -86,8 +86,8 @@ export const processTweets = inngest.createFunction(
       tweetId: event.data.id,
       eventId: event.id,
     });
+    log.info({}, 'processing tweet');
     const tweetText = event.data.text;
-    // This is where we can try to filter out any unwanted tweets
 
     if (event.data.inReplyToUsername) {
       if (DO_NOT_ENGAGE_USERNAMES.includes(event.data.inReplyToUsername)) {
@@ -137,6 +137,7 @@ export const processTweets = inngest.createFunction(
         throw new NonRetriableError(REJECTION_REASON.SPAM_DETECTED_ON_TAG);
       }
 
+      log.info({ action: 'tag' }, 'queuing tweet for engagement');
       // now we can send to execution job
       await step.sendEvent('fire-off-tweet', {
         name: 'tweet.execute',
@@ -188,6 +189,7 @@ export const processTweets = inngest.createFunction(
         throw new NonRetriableError(REJECTION_REASON.SPAM_DETECTED_ON_REPLY);
       }
 
+      log.info({ action: 'reply' }, 'queuing tweet for engagement');
       // now we can send to execution job
       await step.sendEvent('fire-off-tweet', {
         name: 'tweet.execute',
@@ -254,6 +256,7 @@ export const processTweets = inngest.createFunction(
         );
       }
 
+      log.info({ action: 'tag-summon' }, 'queuing tweet for engagement');
       // now we can send to execution job
       await step.sendEvent('fire-off-tweet', {
         name: 'tweet.execute',
