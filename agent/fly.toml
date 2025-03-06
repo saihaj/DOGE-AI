@@ -1,33 +1,32 @@
-# fly.toml app configuration file generated for dogexbt-crawler on 2024-12-30T16:25:13+01:00
+# fly.toml app configuration file generated for agent-snowy-surf-935 on 2025-03-06T14:34:49-06:00
 #
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 #
 
-app = 'dogeai-agent'
-primary_region = 'bos'
+app = 'agent-snowy-surf-935'
+primary_region = 'dfw'
 
 [build]
- dockerfile = "./Dockerfile"
 
-[metrics]
-port = 3000
-path = "/api/metrics"
+[processes]
+  app = 'node ./dbsetup.js node ./server.js'
+
+[[mounts]]
+  source = 'data'
+  destination = '/data'
+  auto_extend_size_threshold = 80
+  auto_extend_size_increment = '1GB'
+  auto_extend_size_limit = '10GB'
 
 [http_service]
   internal_port = 3000
   force_https = true
-  auto_stop_machines = 'off'
+  auto_stop_machines = 'stop'
   auto_start_machines = true
-  min_machines_running = 1
-
-[[http_service.checks]]
-  grace_period = "10s"
-  interval = "30s"
-  method = "GET"
-  timeout = "5s"
-  path = "/api/health"
+  min_machines_running = 0
+  processes = ['app']
 
 [[vm]]
-  memory = '512mb'
+  memory = '1gb'
   cpu_kind = 'shared'
   cpus = 1
