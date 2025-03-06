@@ -42,6 +42,7 @@ export const processWebpage = inngest.createFunction(
       .scrapeUrl(url, {
         formats: ['markdown'],
         actions: actions,
+        timeout: 90000,
       })
       .catch(e => {
         throw new NonRetriableError(e.message);
