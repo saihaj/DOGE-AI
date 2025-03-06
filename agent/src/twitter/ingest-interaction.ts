@@ -122,7 +122,10 @@ export const ingestInteractionTweets = inngest.createFunction(
       // even though we set `includeReplies` to false in the API call above it still returns replies sometimes.
       .filter(t => t.isReply === false);
 
-    log.info({ size: tweets.length }, 'fetched tweets');
+    log.info({ size: tweets.length }, `fetched ${tweets.length} tweets`);
+    tweets.forEach(tweet => {
+      log.info({ tweetId: tweet.id }, 'fetched tweet');
+    });
 
     /**
      * There is a limit of 512KB for batching events. To avoid hitting this limit, we chunk the tweets
