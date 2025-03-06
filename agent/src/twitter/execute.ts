@@ -11,7 +11,6 @@ import {
   textSplitter,
   upsertChat,
   upsertUser,
-  wokeTweetsRewriter,
 } from './helpers.ts';
 import { CoreMessage, generateText } from 'ai';
 import * as crypto from 'node:crypto';
@@ -72,12 +71,7 @@ export async function generateReply(
     : null;
 
   const text = sanitizeLlmOutput(_text);
-  const rewrite = await wokeTweetsRewriter(text, {
-    log,
-    method,
-    action,
-  });
-  const formatted = await longResponseFormatter(rewrite);
+  const formatted = await longResponseFormatter(text);
 
   return {
     text,
@@ -427,12 +421,7 @@ export const executeTweets = inngest.createFunction(
             });
 
             const long = sanitizeLlmOutput(_long);
-            const rewriter = await wokeTweetsRewriter(long, {
-              log,
-              method: 'execute-tweets',
-              action: event.data.action,
-            });
-            const formatted = await longResponseFormatter(rewriter);
+            const formatted = await longResponseFormatter(long);
 
             return {
               text: formatted,
