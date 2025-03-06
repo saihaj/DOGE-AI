@@ -8,7 +8,7 @@ import {
 } from '../discord/action.ts';
 import { PROMPTS } from './prompts.ts';
 import { logger } from '../logger.ts';
-import { REJECTION_REASON, TEMPERATURE } from '../const.ts';
+import { REJECTION_REASON, TEMPERATURE, TWITTER_USERNAME } from '../const.ts';
 import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
 
 export const processInteractionTweets = inngest.createFunction(
@@ -69,6 +69,13 @@ export const processInteractionTweets = inngest.createFunction(
   { event: 'tweet.process.interaction' },
   async ({ event, step }) => {
     const tweetText = event.data.text;
+
+    // Do not engage with tweets from the agent
+    if (event.data.author.userName === TWITTER_USERNAME) {
+      throw new NonRetriableError(
+        REJECTION_REASON.ENGAGEMENT_RESTRICTED_ACCOUNT,
+      );
+    }
 
     const shouldEngage = await step.run('should-engage', async () => {
       const systemPrompt =
