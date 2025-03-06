@@ -266,36 +266,37 @@ export const executeInteractionTweets = inngest.createFunction(
             },
           );
 
-          const finalAnswer = await getShortResponse({ topic: responseLong });
-
-          /**
-           * 80% time we want to send the long output
-           * 20% time we want to send the refined output
-           */
-          const response = (() => {
-            // some times claude safety kicks in and we get a NO
-            if (finalAnswer.toLowerCase().startsWith('no')) {
-              log.warn({}, 'unable to create short reply');
-              return responseLong;
-            }
-
-            return Math.random() > 0.2 ? responseLongFormatted : finalAnswer;
-          })();
-
           log.info(
             {
-              long: responseLongFormatted,
-              short: finalAnswer,
+              response: responseLongFormatted,
               metadata,
-              response,
             },
-            'Generated response',
+            'generated long response',
           );
+
+          // 80% of the time we return the long output, 20% of the time we return the short output
+          const returnLong = Math.random() > 0.2;
+
+          if (returnLong) {
+            log.info({}, 'returning long');
+
+            return {
+              // Implicitly we are returning the long output so others can be ignored
+              longOutput: '',
+              refinedOutput: '',
+              metadata,
+              response: responseLongFormatted,
+            };
+          }
+
+          const finalAnswer = await getShortResponse({ topic: responseLong });
+          log.info({ response: finalAnswer }, 'generated short');
+
           return {
             longOutput: responseLongFormatted,
             refinedOutput: finalAnswer,
             metadata,
-            response,
+            response: finalAnswer,
           };
         });
 
