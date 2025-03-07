@@ -1,6 +1,6 @@
 import pino from 'pino';
 
-// Create a logger instance
+// Comment
 export const logger = pino({
   name: 'agent',
   level: 'info',
