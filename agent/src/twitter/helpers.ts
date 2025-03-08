@@ -23,6 +23,7 @@ import { ANALYZE_TEXT_FROM_IMAGE, PROMPTS } from './prompts';
 import { WithLogger } from '../logger';
 import { wokeTweetRewritten } from '../prom';
 import { NonRetriableError } from 'inngest';
+import { anthropic } from '@ai-sdk/anthropic';
 
 // Ada V2 31.4% vs 54.9% large
 const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
@@ -284,6 +285,20 @@ export async function longResponseFormatter(text: string) {
   const responseLong = sanitizeLlmOutput(_responseLong);
 
   return responseLong;
+}
+
+export async function engagementHumanizer(text: string) {
+  const prompt = await PROMPTS.ENGAGEMENT_HUMANIZER({ text });
+
+  const { text: _result } = await generateText({
+    model: anthropic('claude-3-5-sonnet-latest'),
+    temperature: TEMPERATURE,
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  const result = sanitizeLlmOutput(_result);
+
+  return result;
 }
 
 export async function wokeTweetsRewriter(

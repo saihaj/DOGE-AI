@@ -3,6 +3,7 @@ import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
+  engagementHumanizer,
   generateEmbeddings,
   getTweet,
   getTweetContentAsText,
@@ -87,10 +88,13 @@ export async function getLongResponse(
     action,
   });
   const formatted = await longResponseFormatter(rewriter);
+  log.info({ response: formatted }, 'formatted long response');
+  const humanized = await engagementHumanizer(formatted);
+  log.info({ response: humanized }, 'humanized long response');
 
   return {
     responseLong,
-    formatted,
+    formatted: humanized,
     metadata,
   };
 }

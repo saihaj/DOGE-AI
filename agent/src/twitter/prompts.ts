@@ -201,6 +201,28 @@ export const PROMPTS = {
     const templatePrompt = Handlebars.compile(prompt);
     return templatePrompt({ text });
   },
+  ENGAGEMENT_HUMANIZER: async ({ text }: { text: string }) => {
+    const prompt = await bento.getOrSet(
+      'BOT_CONFIG_ENGAGEMENT_HUMANIZER',
+      async () => {
+        const prompt = await db.query.botConfig.findFirst({
+          where: eq(botConfig.key, 'ENGAGEMENT_HUMANIZER'),
+          columns: {
+            value: true,
+          },
+        });
+
+        if (!prompt) {
+          throw new Error('ENGAGEMENT_HUMANIZER not found');
+        }
+
+        return prompt.value;
+      },
+      { ttl: '1d' },
+    );
+    const templatePrompt = Handlebars.compile(prompt);
+    return templatePrompt({ text });
+  },
   REPLY_TWEET_QUESTION_PROMPT: async ({
     question,
     lastDogeReply,
