@@ -93,6 +93,7 @@ export async function getLongResponse(
   log.info({ response: humanized }, 'humanized long response');
 
   return {
+    raw: rewriter,
     formatted,
     humanized,
     metadata,
@@ -254,7 +255,7 @@ export const executeInteractionTweets = inngest.createFunction(
             ? `${kb.documents}\n\n${bill}`
             : bill || '';
 
-          const { formatted, metadata, humanized } = await getLongResponse(
+          const { raw, metadata, humanized } = await getLongResponse(
             {
               summary,
               text,
@@ -289,7 +290,7 @@ export const executeInteractionTweets = inngest.createFunction(
             };
           }
 
-          const finalAnswer = await getShortResponse({ topic: formatted });
+          const finalAnswer = await getShortResponse({ topic: raw });
           log.info({ response: finalAnswer }, 'generated short');
 
           // some times claude safety kicks in and we get a NO
@@ -305,7 +306,7 @@ export const executeInteractionTweets = inngest.createFunction(
           }
 
           return {
-            longOutput: formatted,
+            longOutput: humanized,
             refinedOutput: finalAnswer,
             metadata,
             response: finalAnswer,

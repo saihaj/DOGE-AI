@@ -53,7 +53,7 @@ async function main() {
     const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
     const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
 
-    const { humanized, metadata, formatted } = await getLongResponse(
+    const { humanized, metadata, formatted, raw } = await getLongResponse(
       {
         summary,
         text: content,
@@ -72,7 +72,7 @@ async function main() {
     console.log('\n\nFormatted: ', formatted, '\n\n');
     console.log('\n\nHumanized: ', humanized, '\n\n');
 
-    const refinedOutput = await getShortResponse({ topic: formatted });
+    const refinedOutput = await getShortResponse({ topic: raw });
 
     console.log('\n\nShort: ', refinedOutput, '\n\n');
   } catch (error) {
