@@ -3,6 +3,7 @@ import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
+  engagementHumanizer,
   generateEmbeddings,
   getTweet,
   getTweetContentAsText,
@@ -87,10 +88,14 @@ export async function getLongResponse(
     action,
   });
   const formatted = await longResponseFormatter(rewriter);
+  log.info({ response: formatted }, 'formatted long response');
+  const humanized = await engagementHumanizer(formatted);
+  log.info({ response: humanized }, 'humanized long response');
 
   return {
-    responseLong,
+    raw: rewriter,
     formatted,
+    humanized,
     metadata,
   };
 }
@@ -250,11 +255,7 @@ export const executeInteractionTweets = inngest.createFunction(
             ? `${kb.documents}\n\n${bill}`
             : bill || '';
 
-          const {
-            responseLong,
-            metadata,
-            formatted: responseLongFormatted,
-          } = await getLongResponse(
+          const { raw, metadata, humanized } = await getLongResponse(
             {
               summary,
               text,
@@ -268,10 +269,10 @@ export const executeInteractionTweets = inngest.createFunction(
 
           log.info(
             {
-              response: responseLongFormatted,
+              response: humanized,
               metadata,
             },
-            'generated long response',
+            'generated response',
           );
 
           // 80% of the time we return the long output, 20% of the time we return the short output
@@ -285,11 +286,11 @@ export const executeInteractionTweets = inngest.createFunction(
               longOutput: '',
               refinedOutput: '',
               metadata,
-              response: responseLongFormatted,
+              response: humanized,
             };
           }
 
-          const finalAnswer = await getShortResponse({ topic: responseLong });
+          const finalAnswer = await getShortResponse({ topic: raw });
           log.info({ response: finalAnswer }, 'generated short');
 
           // some times claude safety kicks in and we get a NO
@@ -300,12 +301,12 @@ export const executeInteractionTweets = inngest.createFunction(
               longOutput: '',
               refinedOutput: '',
               metadata,
-              response: responseLongFormatted,
+              response: humanized,
             };
           }
 
           return {
-            longOutput: responseLongFormatted,
+            longOutput: humanized,
             refinedOutput: finalAnswer,
             metadata,
             response: finalAnswer,

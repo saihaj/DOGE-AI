@@ -53,7 +53,7 @@ async function main() {
     const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
     const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
 
-    const { responseLong, metadata, formatted } = await getLongResponse(
+    const { humanized, metadata, formatted, raw } = await getLongResponse(
       {
         summary,
         text: content,
@@ -69,12 +69,12 @@ async function main() {
       console.log('\n\nMetadata: ', metadata, '\n\n');
     }
 
-    console.log('\n\nLong Response: ', responseLong, '\n\n');
-    console.log('\n\nLong formatted gpt-4o: ', formatted, '\n\n');
+    console.log('\n\nFormatted: ', formatted, '\n\n');
+    console.log('\n\nHumanized: ', humanized, '\n\n');
 
-    const refinedOutput = await getShortResponse({ topic: responseLong });
+    const refinedOutput = await getShortResponse({ topic: raw });
 
-    console.log('\n\nShort Response: ', refinedOutput, '\n\n');
+    console.log('\n\nShort: ', refinedOutput, '\n\n');
   } catch (error) {
     console.error('An error occurred:', error);
   }
