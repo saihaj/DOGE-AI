@@ -93,8 +93,8 @@ export async function getLongResponse(
   log.info({ response: humanized }, 'humanized long response');
 
   return {
-    responseLong: formatted,
-    formatted: humanized,
+    formatted,
+    humanized,
     metadata,
   };
 }
@@ -254,11 +254,7 @@ export const executeInteractionTweets = inngest.createFunction(
             ? `${kb.documents}\n\n${bill}`
             : bill || '';
 
-          const {
-            responseLong,
-            metadata,
-            formatted: responseLongFormatted,
-          } = await getLongResponse(
+          const { formatted, metadata, humanized } = await getLongResponse(
             {
               summary,
               text,
@@ -272,7 +268,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
           log.info(
             {
-              response: responseLongFormatted,
+              response: humanized,
               metadata,
             },
             'generated long response',
@@ -289,11 +285,11 @@ export const executeInteractionTweets = inngest.createFunction(
               longOutput: '',
               refinedOutput: '',
               metadata,
-              response: responseLongFormatted,
+              response: humanized,
             };
           }
 
-          const finalAnswer = await getShortResponse({ topic: responseLong });
+          const finalAnswer = await getShortResponse({ topic: formatted });
           log.info({ response: finalAnswer }, 'generated short');
 
           // some times claude safety kicks in and we get a NO
@@ -304,12 +300,12 @@ export const executeInteractionTweets = inngest.createFunction(
               longOutput: '',
               refinedOutput: '',
               metadata,
-              response: responseLongFormatted,
+              response: humanized,
             };
           }
 
           return {
-            longOutput: responseLongFormatted,
+            longOutput: formatted,
             refinedOutput: finalAnswer,
             metadata,
             response: finalAnswer,

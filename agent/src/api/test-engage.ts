@@ -52,7 +52,7 @@ export async function processTestEngageRequest({
   const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
   const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
 
-  const { responseLong, metadata, formatted } = await getLongResponse(
+  const { humanized, metadata, formatted } = await getLongResponse(
     {
       summary,
       text: content,
@@ -67,16 +67,16 @@ export async function processTestEngageRequest({
 
   if (refinePrompt) {
     refinePrompt = Handlebars.compile(refinePrompt)({
-      topic: responseLong,
+      topic: formatted,
     });
   }
 
   const refinedOutput = await getShortResponse({
-    topic: responseLong,
+    topic: formatted,
     refinePrompt,
   });
 
-  log.info({ long: responseLong, short: refinedOutput, metadata });
+  log.info({ long: humanized, short: refinedOutput, metadata });
   return {
     answer: formatted,
     short: refinedOutput,
