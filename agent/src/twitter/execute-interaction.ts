@@ -93,7 +93,7 @@ export async function getLongResponse(
   log.info({ response: humanized }, 'humanized long response');
 
   return {
-    responseLong,
+    responseLong: formatted,
     formatted: humanized,
     metadata,
   };
