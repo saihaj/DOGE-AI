@@ -271,7 +271,7 @@ export const executeInteractionTweets = inngest.createFunction(
               response: humanized,
               metadata,
             },
-            'generated long response',
+            'generated response',
           );
 
           // 80% of the time we return the long output, 20% of the time we return the short output
