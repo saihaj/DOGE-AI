@@ -374,7 +374,7 @@ export function getTimeInSecondsElapsedSinceTweetCreated(
   const createdAt = getUnixTime(toDate(tweet.createdAt));
   const now = getUnixTime(new Date());
 
-  const delta = (now - createdAt) / 60;
+  const delta = now - createdAt;
 
   return delta;
 }
