@@ -48,3 +48,10 @@ export const tweetPublishFailed = new promClient.Counter({
   help: 'Number of tweets failed to publish',
   labelNames: ['method'],
 });
+
+export const tweetProcessingTime = new promClient.Histogram({
+  name: 'tweet_processing_time_seconds',
+  help: 'Time taken to process and post a tweet in seconds',
+  labelNames: ['method'],
+  buckets: [60, 120, 300, 600, 900, 1800, 3600],
+});
