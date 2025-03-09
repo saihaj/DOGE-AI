@@ -5,6 +5,7 @@ import * as crypto from 'node:crypto';
 import {
   engagementHumanizer,
   generateEmbeddings,
+  getTimeInSecondsElapsedSinceTweetCreated,
   getTweet,
   getTweetContentAsText,
   longResponseFormatter,
@@ -36,6 +37,7 @@ import { perplexity } from '@ai-sdk/perplexity';
 import { logger, WithLogger } from '../logger.ts';
 import { getKbContext } from './knowledge-base.ts';
 import {
+  tweetProcessingTime,
   tweetPublishFailed,
   tweetsProcessingRejected,
   tweetsPublished,
@@ -329,19 +331,25 @@ export const executeInteractionTweets = inngest.createFunction(
           }
 
           try {
-            const resp = await twitterClient.v2.tweet(reply.response, {
+            const response = await twitterClient.v2.tweet(reply.response, {
               reply: {
                 in_reply_to_tweet_id: tweetToActionOn.id,
               },
             });
-            log.info(resp, 'tweet sent');
+            const timeElapsed =
+              getTimeInSecondsElapsedSinceTweetCreated(tweetToActionOn);
+            log.info({ response, deltaSeconds: timeElapsed }, 'tweet sent');
+            tweetProcessingTime.observe(
+              { method: 'execute-interaction-tweets' },
+              timeElapsed,
+            );
             tweetsPublished.inc({
               action: event.data.action,
               method: 'execute-interaction-tweets',
             });
 
             return {
-              id: resp.data.data.id,
+              id: response.data.data.id,
             };
           } catch (error) {
             log.error({ error }, 'Failed to send tweet');

@@ -3,6 +3,7 @@ import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import {
   generateEmbeddings,
+  getTimeInSecondsElapsedSinceTweetCreated,
   getTweet,
   getTweetContentAsText,
   longResponseFormatter,
@@ -35,6 +36,7 @@ import { logger, WithLogger } from '../logger.ts';
 import { perplexity } from '@ai-sdk/perplexity';
 import { getKbContext } from './knowledge-base.ts';
 import {
+  tweetProcessingTime,
   tweetPublishFailed,
   tweetsProcessingRejected,
   tweetsPublished,
@@ -452,19 +454,22 @@ export const executeTweets = inngest.createFunction(
       }
 
       try {
-        const resp = await twitterClient.v2.tweet(reply.text, {
+        const response = await twitterClient.v2.tweet(reply.text, {
           reply: {
             in_reply_to_tweet_id: tweetToActionOn.id,
           },
         });
-        log.info(resp, 'tweet sent');
+        const timeElapsed =
+          getTimeInSecondsElapsedSinceTweetCreated(tweetToActionOn);
+        log.info({ response, deltaSeconds: timeElapsed }, 'tweet sent');
+        tweetProcessingTime.observe({ method: 'execute-tweets' }, timeElapsed);
         tweetsPublished.inc({
           action: event.data.action,
           method: 'execute-tweets',
         });
 
         return {
-          id: resp.data.data.id,
+          id: response.data.data.id,
         };
       } catch (error) {
         log.error({ error }, 'failed to send tweet');

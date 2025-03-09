@@ -24,6 +24,7 @@ import { WithLogger } from '../logger';
 import { wokeTweetRewritten } from '../prom';
 import { NonRetriableError } from 'inngest';
 import { anthropic } from '@ai-sdk/anthropic';
+import { getUnixTime, toDate } from 'date-fns';
 
 // Ada V2 31.4% vs 54.9% large
 const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
@@ -362,4 +363,18 @@ export function sanitizeLlmOutput(text: string) {
     .replace(/(\*\*|__)(.*?)\1/g, '$2') // Bold (**text** or __text__)
     .replace(/(\*|_)(.*?)\1/g, '$2') // Italics (*text* or _text_)
     .trim();
+}
+
+/**
+ * Given a tweet id, it will return the time since the tweet was created
+ */
+export function getTimeInSecondsElapsedSinceTweetCreated(
+  tweet: Awaited<ReturnType<typeof getTweet>>,
+) {
+  const createdAt = getUnixTime(toDate(tweet.createdAt));
+  const now = getUnixTime(new Date());
+
+  const delta = (now - createdAt) / 60;
+
+  return delta;
 }
