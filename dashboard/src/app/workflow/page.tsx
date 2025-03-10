@@ -50,12 +50,13 @@ export function Flow() {
     shallow,
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: We want to initialize the workflow only once
   useEffect(() => {
     store.initializeWorkflow(
       NEWS_SUMMARY_WORKFLOW.nodes,
       NEWS_SUMMARY_WORKFLOW.edges,
     );
+    // We want to initialize the workflow only once
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const { screenToFlowPosition } = useReactFlow();
@@ -132,7 +133,7 @@ export function Flow() {
 
 export default function Page() {
   return (
-    <div className="w-screen h-screen">
+    <div className="h-full w-full">
       <ReactFlowProvider>
         <Flow />
       </ReactFlowProvider>
