@@ -230,6 +230,7 @@ const components: Partial<Components> = {
   img: ({ alt, ...props }: React.ImgHTMLAttributes<HTMLImageElement>) => (
     <img className="rounded-md" alt={alt} {...props} />
   ),
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   code: ({ children, node, className, ...props }) => {
     const match = /language-(\w+)/.exec(className || '');
     if (match) {

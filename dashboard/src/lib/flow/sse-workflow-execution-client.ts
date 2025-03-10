@@ -40,7 +40,6 @@ export class SSEWorkflowExecutionClient {
       const decoder = new TextDecoder();
       let buffer = '';
 
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         const { done, value } = await this.reader.read();
         if (done) {

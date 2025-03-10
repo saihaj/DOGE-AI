@@ -290,6 +290,7 @@ function detectCycles(
 
   // Identify cycle nodes and edges
   const cycleNodes = Array.from(indegree.entries())
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     .filter(([_, degree]) => degree > 0)
     .map(([nodeId]) => nodeId);
 
