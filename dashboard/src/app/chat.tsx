@@ -489,7 +489,7 @@ export function Chat() {
       />
 
       {/* Scrollable Messages Area */}
-      <ScrollArea className="flex-1 w-full md:max-w-4xl mx-auto max-h-[calc(100vh-10rem)]">
+      <ScrollArea className="flex-1 w-full md:max-w-4xl mx-auto max-h-[calc(100vh-12rem)]">
         <div className="flex flex-col gap-4 p-4" ref={messagesContainerRef}>
           {messagesWithSources
             .filter(message => message.id !== 'userPersistent')
