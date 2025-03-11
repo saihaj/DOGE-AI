@@ -73,8 +73,8 @@ export async function getLongResponse(
         {
           role: 'user',
           content: summary
-            ? `Context from database: ${summary}\n\n Question: ${text}`
-            : `${text}`,
+            ? `Reply as DOGEai: ${text} \n\nContext from database: ${summary}`
+            : `Reply as DOGEai: ${text}`,
         },
       ],
     });
