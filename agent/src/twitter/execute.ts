@@ -56,7 +56,7 @@ export async function generateReply(
   if (!systemPrompt) {
     systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
   }
-  const { text: _text, experimental_providerMetadata } = await generateText({
+  const { text: _text, sources } = await generateText({
     temperature: TEMPERATURE,
     model: perplexity('sonar-reasoning-pro'),
     messages: [
@@ -68,9 +68,7 @@ export async function generateReply(
     ],
   });
 
-  const metadata = experimental_providerMetadata
-    ? JSON.stringify(experimental_providerMetadata)
-    : null;
+  const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
 
   const text = sanitizeLlmOutput(_text);
   const formatted = await longResponseFormatter(text);

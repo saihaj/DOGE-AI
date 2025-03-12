@@ -314,10 +314,7 @@ fastify.route<{ Body: ChatStreamInput }>({
       }
 
       // if sonar models then need to merge
-      if (
-        selectedChatModel === 'sonar-reasoning-pro' ||
-        selectedChatModel === 'sonar-reasoning'
-      ) {
+      if (selectedChatModel.startsWith('sonar')) {
         messages = mergeConsecutiveSameRole(messages);
       }
 
@@ -331,18 +328,18 @@ fastify.route<{ Body: ChatStreamInput }>({
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
         async onFinish(event) {
-          if (!event.experimental_providerMetadata) {
-            log.info({}, 'no providerMetadata');
+          if (event.sources.length === 0) {
+            log.info({}, 'no sources');
             await stream.close();
             return;
           }
-          const providerMetadata = event.experimental_providerMetadata;
-          log.info({ providerMetadata }, 'providerMetadata');
+          const sources = event.sources;
+          log.info({ sources }, 'sources');
 
-          const pplxSources = providerMetadata.perplexity?.citations;
+          const urls = sources.map(source => source.url);
 
-          if (pplxSources) {
-            stream.append({ role: 'sources', content: pplxSources });
+          if (urls) {
+            stream.append({ role: 'sources', content: urls });
           }
           await stream.close();
         },
