@@ -329,7 +329,7 @@ fastify.route<{ Body: ChatStreamInput }>({
         tools: selectedChatModel.startsWith('gpt')
           ? {
               web_search_preview: openai.tools.webSearchPreview({
-                searchContextSize: 'high',
+                searchContextSize: 'medium',
               }),
             }
           : undefined,
