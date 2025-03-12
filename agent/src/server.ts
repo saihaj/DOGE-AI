@@ -330,8 +330,16 @@ fastify.route<{ Body: ChatStreamInput }>({
           ? {
               web_search_preview: openai.tools.webSearchPreview({
                 searchContextSize: 'medium',
+                userLocation: {
+                  type: 'approximate',
+                  country: 'US',
+                  timezone: 'America/New_York',
+                },
               }),
             }
+          : undefined,
+        toolChoice: selectedChatModel.startsWith('gpt')
+          ? 'required'
           : undefined,
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
