@@ -28,6 +28,9 @@ importers:
       '@ai-sdk/perplexity':
         specifier: ^1.0.5
         version: 1.0.5(zod@3.24.1)
+      '@ai-sdk/xai':
+        specifier: ^1.1.14
+        version: 1.1.14(zod@3.24.1)
       '@fastify/cors':
         specifier: ^10.0.2
         version: 10.0.2
@@ -423,6 +426,12 @@ packages:
     peerDependencies:
       zod: ^3.0.0
 
+  '@ai-sdk/openai-compatible@0.1.14':
+    resolution: {integrity: sha512-TGb4gi3/Vnxf+JwDhQQihFvyXQPee+5C9fLvLldeFbvz0PVW1FbqIURD5V1n3WxjXtyGKbSW5zSWCPwWj4cRMg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+
   '@ai-sdk/openai@1.2.3':
     resolution: {integrity: sha512-iIJKMjKYZN3XWVECDassufz3X7rq/b5BQ6Uhnp03i06T8E4QwCamwtLitJXtrqQ+OxL33Ugn3EIZKGaSBo/+qw==}
     engines: {node: '>=18'}
@@ -468,6 +477,12 @@ packages:
     peerDependenciesMeta:
       zod:
         optional: true
+
+  '@ai-sdk/xai@1.1.14':
+    resolution: {integrity: sha512-6ltD+Sd3VeMaIqGfFImei/Y9VT8cUU1mq3FNuuTdv18bms6/W9Q/MHB1YJPaqzVjORqV2EChfAa4GZBG1gwEpw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
 
   '@alloc/quick-lru@5.2.0':
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
@@ -4529,6 +4544,7 @@ packages:
 
   libsql@0.4.7:
     resolution: {integrity: sha512-T9eIRCs6b0J1SHKYIvD8+KCJMcWZ900iZyxdnSCdqxN12Z1ijzT+jY5nrk72Jw4B0HGzms2NgpryArlJqvc3Lw==}
+    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   light-my-request@6.5.1:
@@ -6216,6 +6232,12 @@ snapshots:
       '@ai-sdk/provider-utils': 2.1.12(zod@3.24.1)
       zod: 3.24.1
 
+  '@ai-sdk/openai-compatible@0.1.14(zod@3.24.1)':
+    dependencies:
+      '@ai-sdk/provider': 1.0.10
+      '@ai-sdk/provider-utils': 2.1.12(zod@3.24.1)
+      zod: 3.24.1
+
   '@ai-sdk/openai@1.2.3(zod@3.24.1)':
     dependencies:
       '@ai-sdk/provider': 1.0.10
@@ -6257,6 +6279,13 @@ snapshots:
       '@ai-sdk/provider-utils': 2.1.12(zod@3.24.1)
       zod-to-json-schema: 3.24.1(zod@3.24.1)
     optionalDependencies:
+      zod: 3.24.1
+
+  '@ai-sdk/xai@1.1.14(zod@3.24.1)':
+    dependencies:
+      '@ai-sdk/openai-compatible': 0.1.14(zod@3.24.1)
+      '@ai-sdk/provider': 1.0.10
+      '@ai-sdk/provider-utils': 2.1.12(zod@3.24.1)
       zod: 3.24.1
 
   '@alloc/quick-lru@5.2.0': {}
@@ -9846,7 +9875,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9)
+      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.0))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -11519,7 +11548,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9):
+  retry-axios@2.6.0(axios@1.7.9(debug@4.4.0)):
     dependencies:
       axios: 1.7.9(debug@4.4.0)
 
