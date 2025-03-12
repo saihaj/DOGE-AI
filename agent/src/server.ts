@@ -327,6 +327,9 @@ fastify.route<{ Body: ChatStreamInput }>({
         maxSteps: 5,
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
+        onError(error) {
+          log.error({ error }, 'Error in chat stream');
+        },
         async onFinish(event) {
           if (event.sources.length === 0) {
             log.info({}, 'no sources');
