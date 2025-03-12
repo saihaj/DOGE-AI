@@ -61,27 +61,24 @@ export async function getLongResponse(
   if (!systemPrompt) {
     systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
   }
-  const { text: _responseLong, experimental_providerMetadata } =
-    await generateText({
-      temperature: TEMPERATURE,
-      model: perplexity('sonar-reasoning-pro'),
-      messages: [
-        {
-          role: 'system',
-          content: systemPrompt,
-        },
-        {
-          role: 'user',
-          content: summary
-            ? `Reply as DOGEai: ${text} \n\nContext from database: ${summary}`
-            : `Reply as DOGEai: ${text}`,
-        },
-      ],
-    });
+  const { text: _responseLong, sources } = await generateText({
+    temperature: TEMPERATURE,
+    model: perplexity('sonar-reasoning-pro'),
+    messages: [
+      {
+        role: 'system',
+        content: systemPrompt,
+      },
+      {
+        role: 'user',
+        content: summary
+          ? `Reply as DOGEai: ${text} \n\nContext from database: ${summary}`
+          : `Reply as DOGEai: ${text}`,
+      },
+    ],
+  });
 
-  const metadata = experimental_providerMetadata
-    ? JSON.stringify(experimental_providerMetadata)
-    : null;
+  const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
 
   const responseLong = sanitizeLlmOutput(_responseLong);
   const rewriter = await wokeTweetsRewriter(responseLong, {

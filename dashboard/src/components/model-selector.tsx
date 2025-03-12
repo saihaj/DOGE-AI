@@ -41,6 +41,10 @@ const models = [
     label: 'OpenAI GPT 4o',
   },
   {
+    value: 'gpt-4o-mini',
+    label: 'OpenAI GPT 4o Mini',
+  },
+  {
     value: 'claude-3-5-sonnet-latest',
     label: 'Sonnet 3.5',
   },
