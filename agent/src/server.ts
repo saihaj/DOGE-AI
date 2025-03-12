@@ -194,7 +194,7 @@ fastify.route<{ Body: ChatStreamInput }>({
   },
   handler: async (request, reply) => {
     const tweetExtractRegex = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
-    const log = logger.child({ function: 'api-chat' });
+    const log = logger.child({ function: 'api-chat', requestId: request.id });
     // Create an AbortController for the backend
     const abortController = new AbortController();
     let {
@@ -394,6 +394,7 @@ fastify.route<{ Body: ManualKBInsertInput }>({
   },
   handler: async (request, reply) => {
     const log = logger.child({
+      function: 'api-manual-kb-insert',
       requestId: request.id,
     });
     try {
@@ -459,6 +460,7 @@ fastify.route<{ Querystring: ManualKbGetInput }>({
   },
   handler: async (request, reply) => {
     const log = logger.child({
+      function: 'api-manual-kb-get',
       requestId: request.id,
     });
     try {
@@ -548,6 +550,7 @@ fastify.route<{ Body: ManualKbDeleteInput }>({
   },
   handler: async (request, reply) => {
     const log = logger.child({
+      function: 'api-manual-kb-delete',
       requestId: request.id,
     });
     try {
