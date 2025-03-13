@@ -46,7 +46,6 @@ import { ingestInteractionTweets } from './twitter/ingest-interaction';
 import { processInteractionTweets } from './twitter/process-interactions';
 import { executeInteractionTweets } from './twitter/execute-interaction';
 import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
-import { openai } from '@ai-sdk/openai';
 
 const fastify = Fastify();
 
@@ -326,21 +325,6 @@ fastify.route<{ Body: ChatStreamInput }>({
         temperature: TEMPERATURE,
         seed: SEED,
         maxSteps: 5,
-        tools: selectedChatModel.startsWith('gpt')
-          ? {
-              web_search_preview: openai.tools.webSearchPreview({
-                searchContextSize: 'medium',
-                userLocation: {
-                  type: 'approximate',
-                  country: 'US',
-                  timezone: 'America/New_York',
-                },
-              }),
-            }
-          : undefined,
-        toolChoice: selectedChatModel.startsWith('gpt')
-          ? 'required'
-          : undefined,
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
         onError(error) {
