@@ -26,33 +26,24 @@ import {
   IS_LOCAL,
 } from '@/lib/const';
 import { toast } from 'sonner';
-import { Dispatch, SetStateAction, useState } from 'react';
 import { useCookie } from '@/hooks/use-cookie';
+import { useDrawerStore } from './store';
 
 const formSchema = z.object({
   title: z.string().min(3),
   content: z.string().min(10),
 });
 
-export function EntryUi({
-  setOpen,
-  open,
-  onSubmit,
-  title,
-  content,
-}: {
-  open: boolean;
-  setOpen: Dispatch<SetStateAction<boolean>>;
-  onSubmit: (values: z.infer<typeof formSchema>) => void;
-  title?: string;
-  content?: string;
-}) {
+function EntryUi({ mutate }: { mutate: () => void }) {
+  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
+  const { open, setOpen, state, type, openDrawer } = useDrawerStore();
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
-    defaultValues: {
-      title,
-      content,
+    values: {
+      title: state?.title || '',
+      content: state?.content || '',
     },
     resetOptions: {
       keepValues: false,
@@ -61,10 +52,84 @@ export function EntryUi({
     },
   });
 
+  const { closeDrawer, clearState } = useDrawerStore();
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    switch (type) {
+      case 'create': {
+        closeDrawer();
+
+        const data = fetch(`${API_URL}/api/manual-kb`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+          },
+          body: JSON.stringify(values),
+        });
+
+        toast.promise(data, {
+          loading: 'Creating entry...',
+          success: data => {
+            if (data.ok) {
+              mutate();
+              clearState();
+              return 'Entry created successfully';
+            }
+            throw new Error('Failed to create entry');
+          },
+          error: 'Failed to create entry',
+        });
+        break;
+      }
+      case 'edit': {
+        closeDrawer();
+        if (!state) {
+          toast.error('Invalid state');
+          return;
+        }
+
+        const data = fetch(`${API_URL}/api/manual-kb`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+          },
+          body: JSON.stringify({
+            id: state.id,
+            ...values,
+          }),
+        });
+
+        toast.promise(data, {
+          loading: 'Creating entry...',
+          success: data => {
+            if (data.ok) {
+              mutate();
+              clearState();
+              return 'Entry created successfully';
+            }
+            throw new Error('Failed to create entry');
+          },
+          error: 'Failed to create entry',
+        });
+        break;
+      }
+      default: {
+        toast.error('Unsupported action');
+      }
+    }
+  }
+
   return (
     <Drawer.Root direction="right" open={open} onOpenChange={setOpen}>
       <Drawer.Trigger asChild>
-        <Button variant="outline" size="sm" className="mt-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-2"
+          onClick={() => openDrawer()}
+        >
           <PlusIcon className="w-6 h-6" />
           Insert Entry
         </Button>
@@ -144,38 +209,6 @@ export function EntryUi({
   );
 }
 
-function InsertEntry({ mutate }: { mutate: () => void }) {
-  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
-  const [open, setOpen] = useState(false);
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setOpen(false);
-
-    const data = fetch(`${API_URL}/api/manual-kb`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
-      },
-      body: JSON.stringify(values),
-    });
-
-    toast.promise(data, {
-      loading: 'Creating entry...',
-      success: data => {
-        if (data.ok) {
-          mutate();
-          return 'Entry created successfully';
-        }
-        throw new Error('Failed to create entry');
-      },
-      error: 'Failed to create entry',
-    });
-  }
-
-  return <EntryUi open={open} setOpen={setOpen} onSubmit={onSubmit} />;
-}
-
 export default function ManualKB() {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
 
@@ -195,7 +228,7 @@ export default function ManualKB() {
 
   return (
     <>
-      <Header right={<InsertEntry mutate={mutate} />} />
+      <Header right={<EntryUi mutate={mutate} />} />
       <main className="mb-10">
         {isLoading && (
           <div className="mt-10 flex justify-center">

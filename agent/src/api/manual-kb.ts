@@ -76,6 +76,94 @@ export async function postKbInsert(
   };
 }
 
+export const ManualKBPatchInput = Type.Object({
+  title: Type.String(),
+  content: Type.String(),
+  id: Type.String(),
+});
+export type ManualKBPatchInput = Static<typeof ManualKBPatchInput>;
+
+export async function patchKbInsert(
+  { title, content, id }: ManualKBPatchInput,
+  logger: WithLogger,
+): Promise<{
+  id: string;
+}> {
+  const log = logger.child({
+    module: 'patchKbInsert',
+    document: id,
+  });
+
+  // search for the document
+  const doc = await db.query.document.findFirst({
+    where: and(
+      eq(documentDbSchema.id, id),
+      eq(documentDbSchema.source, MANUAL_KB_SOURCE),
+    ),
+    columns: {
+      id: true,
+    },
+  });
+
+  if (!doc) {
+    log.error({}, 'document not found');
+    throw new Error('Document not found');
+  }
+
+  // remove old embeddings
+  log.info({}, 'removing old vector embeddings');
+  const removeOldEmbeddings = await db
+    .delete(billVector)
+    .where(eq(billVector.document, doc.id))
+    .execute();
+  log.info(
+    { count: removeOldEmbeddings.rowsAffected },
+    'removed old vector embeddings',
+  );
+
+  // update existing document
+  log.info({}, 'updating document');
+  const doucumentUpdate = await db
+    .update(documentDbSchema)
+    .set({
+      title,
+      content: Buffer.from(content),
+    })
+    .where(eq(documentDbSchema.id, doc.id))
+    .execute();
+  log.info({ count: doucumentUpdate.rowsAffected }, 'updated document');
+
+  const chunks = await textSplitter.splitText(`${title}: ${content}`);
+  const embeddings = await generateEmbeddings(chunks);
+
+  const data = chunks.map((value, index) => ({
+    value,
+    embedding: embeddings[index],
+  }));
+
+  const insertEmbeddings = await db
+    .insert(billVector)
+    .values(
+      data.map(({ value, embedding }) => ({
+        id: crypto.randomUUID(),
+        document: doc.id,
+        text: value,
+        source: MANUAL_KB_SOURCE,
+        vector: embedding,
+      })),
+    )
+    .execute();
+
+  log.info(
+    { count: insertEmbeddings.rowsAffected },
+    'inserted embeddings for manual kb document',
+  );
+
+  return {
+    id,
+  };
+}
+
 export const ManualKbGetInput = Type.Object({
   page: Type.Number(),
   limit: Type.Number(),
