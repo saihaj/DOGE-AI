@@ -137,7 +137,7 @@ function EntryUi({ mutate }: { mutate: () => void }) {
       <Drawer.Portal>
         <Drawer.Overlay className="fixed inset-0 bg-black/60 z-10" />
         <Drawer.Content
-          className="right-2 rounded-2xl top-2 bottom-2 fixed bg-primary-foreground z-10 outline-none max-w-2xl flex overflow-y-auto"
+          className="right-2 rounded-2xl top-2 overflow-hidden bottom-2 fixed bg-primary-foreground z-10 w-1/2 outline-none flex overflow-y-auto"
           // The gap between the edge of the screen and the drawer is 8px in this case.
           style={
             {
@@ -146,7 +146,7 @@ function EntryUi({ mutate }: { mutate: () => void }) {
           }
         >
           <div className="bg-primary-foreground h-full w-full grow p-5 flex flex-col rounded-2xl">
-            <div className="mx-auto">
+            <div>
               <Drawer.Title className="font-bold text-lg mb-2 text-primary">
                 Create new entry
               </Drawer.Title>
