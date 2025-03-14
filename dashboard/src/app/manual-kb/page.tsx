@@ -102,16 +102,16 @@ function EntryUi({ mutate }: { mutate: () => void }) {
         });
 
         toast.promise(data, {
-          loading: 'Creating entry...',
+          loading: 'Updating entry...',
           success: data => {
             if (data.ok) {
               mutate();
               clearState();
-              return 'Entry created successfully';
+              return 'Entry updated successfully';
             }
-            throw new Error('Failed to create entry');
+            throw new Error('Failed to updated entry');
           },
-          error: 'Failed to create entry',
+          error: 'Failed to updated entry',
         });
         break;
       }
