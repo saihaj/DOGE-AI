@@ -19,7 +19,12 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
+import {
+  API_URL,
+  CF_BACKEND_HEADER_NAME,
+  CF_COOKIE_NAME,
+  IS_LOCAL,
+} from '@/lib/const';
 import { toast } from 'sonner';
 import { useState } from 'react';
 import { useCookie } from '@/hooks/use-cookie';
@@ -159,7 +164,7 @@ export default function ManualKB() {
 
   const { data, error, isLoading, mutate } = useSWRInfinite(
     index => {
-      if (!cfAuthorizationCookie) return null;
+      if (!IS_LOCAL && !cfAuthorizationCookie) return null;
 
       return `${API_URL}/api/manual-kb?page=${index + 1}&limit=20`;
     },
