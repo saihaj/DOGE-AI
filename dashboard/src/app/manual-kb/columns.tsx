@@ -13,12 +13,7 @@ import { API_URL, CF_BACKEND_HEADER_NAME } from '@/lib/const';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
-
-export type KBEntries = {
-  id: string;
-  title: string;
-  content: string;
-};
+import { drawerStore, KBEntries } from './store';
 
 export const columns = ({
   mutate,
@@ -62,6 +57,15 @@ export const columns = ({
                 Copy Content
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+              <DropdownMenuItem>
+                <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => drawerStore.getState().openDrawer(entry)}
+                >
+                  Edit Entry
+                </Button>
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <Button
                   variant="destructive"

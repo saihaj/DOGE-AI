@@ -26,64 +26,110 @@ import {
   IS_LOCAL,
 } from '@/lib/const';
 import { toast } from 'sonner';
-import { useState } from 'react';
 import { useCookie } from '@/hooks/use-cookie';
+import { useDrawerStore } from './store';
 
 const formSchema = z.object({
   title: z.string().min(3),
   content: z.string().min(10),
 });
 
-function InsertEntry({ mutate }: { mutate: () => void }) {
+function EntryUi({ mutate }: { mutate: () => void }) {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
-  const [open, setOpen] = useState(false);
+  const { open, setOpen, state, type, openDrawer } = useDrawerStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
+    values: {
+      title: state?.title || '',
+      content: state?.content || '',
+    },
+    resetOptions: {
+      keepValues: false,
+      keepErrors: false,
+      keepTouched: false,
+    },
   });
 
+  const { closeDrawer, clearState } = useDrawerStore();
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    setOpen(false);
+    switch (type) {
+      case 'create': {
+        closeDrawer();
 
-    const data = fetch(`${API_URL}/api/manual-kb`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
-      },
-      body: JSON.stringify(values),
-    });
+        const data = fetch(`${API_URL}/api/manual-kb`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+          },
+          body: JSON.stringify(values),
+        });
 
-    toast.promise(data, {
-      loading: 'Creating entry...',
-      success: data => {
-        if (data.ok) {
-          mutate();
-          form.reset(
-            {
-              title: '',
-              content: '',
-            },
-            {
-              keepValues: false,
-              keepTouched: false,
-              keepErrors: false,
-            },
-          );
-
-          return 'Entry created successfully';
+        toast.promise(data, {
+          loading: 'Creating entry...',
+          success: data => {
+            if (data.ok) {
+              mutate();
+              clearState();
+              return 'Entry created successfully';
+            }
+            throw new Error('Failed to create entry');
+          },
+          error: 'Failed to create entry',
+        });
+        break;
+      }
+      case 'edit': {
+        closeDrawer();
+        if (!state) {
+          toast.error('Invalid state');
+          return;
         }
-        throw new Error('Failed to create entry');
-      },
-      error: 'Failed to create entry',
-    });
+
+        const data = fetch(`${API_URL}/api/manual-kb`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+          },
+          body: JSON.stringify({
+            id: state.id,
+            ...values,
+          }),
+        });
+
+        toast.promise(data, {
+          loading: 'Creating entry...',
+          success: data => {
+            if (data.ok) {
+              mutate();
+              clearState();
+              return 'Entry created successfully';
+            }
+            throw new Error('Failed to create entry');
+          },
+          error: 'Failed to create entry',
+        });
+        break;
+      }
+      default: {
+        toast.error('Unsupported action');
+      }
+    }
   }
 
   return (
     <Drawer.Root direction="right" open={open} onOpenChange={setOpen}>
       <Drawer.Trigger asChild>
-        <Button variant="outline" size="sm" className="mt-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-2"
+          onClick={() => openDrawer()}
+        >
           <PlusIcon className="w-6 h-6" />
           Insert Entry
         </Button>
@@ -109,7 +155,11 @@ function InsertEntry({ mutate }: { mutate: () => void }) {
               </Drawer.Description>
               <Form {...form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  onSubmit={async e => {
+                    e.preventDefault();
+                    await form.handleSubmit(onSubmit)();
+                    form.reset();
+                  }}
                   className="mt-4 gap-2 flex flex-col"
                 >
                   <FormField
@@ -178,7 +228,7 @@ export default function ManualKB() {
 
   return (
     <>
-      <Header right={<InsertEntry mutate={mutate} />} />
+      <Header right={<EntryUi mutate={mutate} />} />
       <main className="mb-10">
         {isLoading && (
           <div className="mt-10 flex justify-center">
