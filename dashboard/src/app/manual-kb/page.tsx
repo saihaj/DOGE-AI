@@ -2,7 +2,6 @@
 import { Header } from '@/components/header';
 import { columns } from './columns';
 import { DataTable } from './data-table';
-import { Drawer } from 'vaul';
 import { Button } from '@/components/ui/button';
 import { Loader2Icon, PlusIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -28,6 +27,14 @@ import {
 import { toast } from 'sonner';
 import { useCookie } from '@/hooks/use-cookie';
 import { useDrawerStore } from './store';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
 const formSchema = z.object({
   title: z.string().min(3),
@@ -122,8 +129,8 @@ function EntryUi({ mutate }: { mutate: () => void }) {
   }
 
   return (
-    <Drawer.Root direction="right" open={open} onOpenChange={setOpen}>
-      <Drawer.Trigger asChild>
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger asChild>
         <Button
           variant="outline"
           size="sm"
@@ -133,79 +140,67 @@ function EntryUi({ mutate }: { mutate: () => void }) {
           <PlusIcon className="w-6 h-6" />
           Insert Entry
         </Button>
-      </Drawer.Trigger>
-      <Drawer.Portal>
-        <Drawer.Overlay className="fixed inset-0 bg-black/60 z-10" />
-        <Drawer.Content
-          className="right-2 rounded-2xl top-2 overflow-hidden bottom-2 fixed bg-primary-foreground z-10 w-1/2 outline-none flex overflow-y-auto"
-          // The gap between the edge of the screen and the drawer is 8px in this case.
-          style={
-            {
-              '--initial-transform': 'calc(100% + 8px)',
-            } as React.CSSProperties
-          }
-        >
-          <div className="bg-primary-foreground h-full w-full grow p-5 flex flex-col rounded-2xl">
-            <div>
-              <Drawer.Title className="font-bold text-lg mb-2 text-primary">
-                Create new entry
-              </Drawer.Title>
-              <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
-                Add new entry to the knowledge base.
-              </Drawer.Description>
-              <Form {...form}>
-                <form
-                  onSubmit={async e => {
-                    e.preventDefault();
-                    await form.handleSubmit(onSubmit)();
-                    form.reset();
-                  }}
-                  className="mt-4 gap-2 flex flex-col"
-                >
-                  <FormField
-                    control={form.control}
-                    name="title"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="cheese is red" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="content"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Content</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            id="content"
-                            placeholder="cheese is red. when asked, you always say cheese is red"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <Button
-                    disabled={!form.formState.isValid}
-                    type="submit"
-                    className="w-full mt-4"
-                  >
-                    {type === 'edit' ? 'Update' : 'Create'}
-                  </Button>
-                </form>
-              </Form>
-            </div>
-          </div>
-        </Drawer.Content>
-      </Drawer.Portal>
-    </Drawer.Root>
+      </SheetTrigger>
+      <SheetContent className="rounded-2xl !max-w-4xl !w-1/42">
+        <SheetHeader>
+          <SheetTitle className="font-bold text-lg mb-2 text-primary">
+            Create new entry
+          </SheetTitle>
+          <SheetDescription className="text-primary mb-2 overflow-y-scroll">
+            Add new entry to the knowledge base.
+          </SheetDescription>
+        </SheetHeader>
+        <Form {...form}>
+          <form
+            onSubmit={async e => {
+              e.preventDefault();
+              await form.handleSubmit(onSubmit)();
+              form.reset();
+            }}
+            className="mt-4 gap-2 flex flex-col"
+          >
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="cheese is red" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="content"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Content</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      id="content"
+                      className="max-h-96"
+                      placeholder="cheese is red. when asked, you always say cheese is red"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              disabled={!form.formState.isValid}
+              type="submit"
+              className="w-full mt-4"
+            >
+              {type === 'edit' ? 'Update' : 'Create'}
+            </Button>
+          </form>
+        </Form>
+      </SheetContent>
+    </Sheet>
   );
 }
 
