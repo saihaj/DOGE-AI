@@ -6,6 +6,7 @@ import {
   integer,
   blob,
   customType,
+  index,
 } from 'drizzle-orm/sqlite-core';
 import * as crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
@@ -67,20 +68,24 @@ export const bill = sqliteTable(
   ],
 );
 
-export const document = sqliteTable('Document', {
-  id: text().primaryKey().notNull(),
-  createdAt: numeric()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
-  updatedAt: numeric()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
-  title: text().notNull(),
-  url: text().notNull(),
-  meta: blob(),
-  content: blob(),
-  source: text(),
-});
+export const document = sqliteTable(
+  'Document',
+  {
+    id: text().primaryKey().notNull(),
+    createdAt: numeric()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updatedAt: numeric()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    title: text().notNull(),
+    url: text().notNull(),
+    meta: blob(),
+    content: blob(),
+    source: text(),
+  },
+  table => [index('Document_id_source_key').on(table.id, table.source)],
+);
 
 export const billVector = sqliteTable('BillVector', {
   id: text().primaryKey().notNull(),

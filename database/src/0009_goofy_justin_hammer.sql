@@ -1,0 +1,1 @@
+CREATE INDEX `Document_id_source_key` ON `Document` (`id`,`source`);
