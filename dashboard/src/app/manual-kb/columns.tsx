@@ -64,6 +64,15 @@ export const columns = ({
               <DropdownMenuSeparator />
               <DropdownMenuItem>
                 <Button
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => {}}
+                >
+                  Edit Entry
+                </Button>
+              </DropdownMenuItem>
+              <DropdownMenuItem>
+                <Button
                   variant="destructive"
                   className="w-full"
                   onClick={() => {

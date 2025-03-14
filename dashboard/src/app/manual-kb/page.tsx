@@ -26,7 +26,7 @@ import {
   IS_LOCAL,
 } from '@/lib/const';
 import { toast } from 'sonner';
-import { useState } from 'react';
+import { Dispatch, SetStateAction, useState } from 'react';
 import { useCookie } from '@/hooks/use-cookie';
 
 const formSchema = z.object({
@@ -34,51 +34,32 @@ const formSchema = z.object({
   content: z.string().min(10),
 });
 
-function InsertEntry({ mutate }: { mutate: () => void }) {
-  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
-  const [open, setOpen] = useState(false);
-
+export function EntryUi({
+  setOpen,
+  open,
+  onSubmit,
+  title,
+  content,
+}: {
+  open: boolean;
+  setOpen: Dispatch<SetStateAction<boolean>>;
+  onSubmit: (values: z.infer<typeof formSchema>) => void;
+  title?: string;
+  content?: string;
+}) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     mode: 'onChange',
+    defaultValues: {
+      title,
+      content,
+    },
+    resetOptions: {
+      keepValues: false,
+      keepErrors: false,
+      keepTouched: false,
+    },
   });
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    setOpen(false);
-
-    const data = fetch(`${API_URL}/api/manual-kb`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
-      },
-      body: JSON.stringify(values),
-    });
-
-    toast.promise(data, {
-      loading: 'Creating entry...',
-      success: data => {
-        if (data.ok) {
-          mutate();
-          form.reset(
-            {
-              title: '',
-              content: '',
-            },
-            {
-              keepValues: false,
-              keepTouched: false,
-              keepErrors: false,
-            },
-          );
-
-          return 'Entry created successfully';
-        }
-        throw new Error('Failed to create entry');
-      },
-      error: 'Failed to create entry',
-    });
-  }
 
   return (
     <Drawer.Root direction="right" open={open} onOpenChange={setOpen}>
@@ -109,7 +90,11 @@ function InsertEntry({ mutate }: { mutate: () => void }) {
               </Drawer.Description>
               <Form {...form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  onSubmit={async e => {
+                    e.preventDefault();
+                    await form.handleSubmit(onSubmit)();
+                    form.reset();
+                  }}
                   className="mt-4 gap-2 flex flex-col"
                 >
                   <FormField
@@ -157,6 +142,38 @@ function InsertEntry({ mutate }: { mutate: () => void }) {
       </Drawer.Portal>
     </Drawer.Root>
   );
+}
+
+function InsertEntry({ mutate }: { mutate: () => void }) {
+  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
+  const [open, setOpen] = useState(false);
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setOpen(false);
+
+    const data = fetch(`${API_URL}/api/manual-kb`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+      },
+      body: JSON.stringify(values),
+    });
+
+    toast.promise(data, {
+      loading: 'Creating entry...',
+      success: data => {
+        if (data.ok) {
+          mutate();
+          return 'Entry created successfully';
+        }
+        throw new Error('Failed to create entry');
+      },
+      error: 'Failed to create entry',
+    });
+  }
+
+  return <EntryUi open={open} setOpen={setOpen} onSubmit={onSubmit} />;
 }
 
 export default function ManualKB() {
