@@ -156,8 +156,13 @@ function InsertEntry({ mutate }: { mutate: () => void }) {
 
 export default function ManualKB() {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
+
   const { data, error, isLoading, mutate } = useSWRInfinite(
-    index => `${API_URL}/api/manual-kb?page=${index + 1}&limit=20`,
+    index => {
+      if (!cfAuthorizationCookie) return null;
+
+      return `${API_URL}/api/manual-kb?page=${index + 1}&limit=20`;
+    },
     (url: string) =>
       fetch(url, {
         headers: {
