@@ -87,20 +87,27 @@ export const document = sqliteTable(
   table => [index('Document_id_source_key').on(table.id, table.source)],
 );
 
-export const billVector = sqliteTable('BillVector', {
-  id: text().primaryKey().notNull(),
-  createdAt: numeric()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
-  updatedAt: numeric()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
-  bill: text().references(() => bill.id, { onDelete: 'cascade' }),
-  document: text().references(() => document.id, { onDelete: 'cascade' }),
-  vector: float32Array({ dimensions: 1536 }).notNull(),
-  text: text().notNull(),
-  source: text().notNull(),
-});
+export const billVector = sqliteTable(
+  'BillVector',
+  {
+    id: text().primaryKey().notNull(),
+    createdAt: numeric()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updatedAt: numeric()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    bill: text().references(() => bill.id, { onDelete: 'cascade' }),
+    document: text().references(() => document.id, { onDelete: 'cascade' }),
+    vector: float32Array({ dimensions: 1536 }).notNull(),
+    text: text().notNull(),
+    source: text().notNull(),
+  },
+  table => [
+    index('BillVector_bill_key').on(table.bill),
+    index('BillVector_document_key').on(table.document),
+  ],
+);
 
 export const prismaMigrations = sqliteTable('_prisma_migrations', {
   id: text().primaryKey().notNull(),
