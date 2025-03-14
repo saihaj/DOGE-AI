@@ -197,7 +197,7 @@ function EntryUi({ mutate }: { mutate: () => void }) {
                     type="submit"
                     className="w-full mt-4"
                   >
-                    Save
+                    {type === 'edit' ? 'Update' : 'Create'}
                   </Button>
                 </form>
               </Form>
