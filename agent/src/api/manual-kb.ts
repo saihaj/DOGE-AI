@@ -45,7 +45,7 @@ export async function postKbInsert(
 
   log.info({ document: result.id }, 'inserted manual kb document');
 
-  const chunks = await textSplitter.splitText(content);
+  const chunks = await textSplitter.splitText(`${title}: ${content}`);
   const embeddings = await generateEmbeddings(chunks);
 
   const data = chunks.map((value, index) => ({
