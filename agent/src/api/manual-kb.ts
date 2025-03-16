@@ -224,16 +224,16 @@ export async function deleteManualKbEntry(
 export const ManualKbSearchInput = Type.Object({
   page: Type.Number(),
   limit: Type.Number(),
-  search: Type.String(),
+  query: Type.String(),
 });
 export type ManualKbSearchInput = Static<typeof ManualKbSearchInput>;
 
 export async function getKbSearchEntries({
   page,
   limit,
-  search,
+  query,
 }: ManualKbSearchInput) {
-  const termEmbedding = await generateEmbedding(search);
+  const termEmbedding = await generateEmbedding(query.trim());
   const termEmbeddingString = JSON.stringify(termEmbedding);
 
   const documents = await db
@@ -250,10 +250,10 @@ export async function getKbSearchEntries({
         eq(billVector.source, MANUAL_KB_SOURCE),
       ),
     )
-    .groupBy(billVector.document)
     .orderBy(
       sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
     )
+    .groupBy(billVector.document)
     .leftJoin(documentDbSchema, eq(documentDbSchema.id, billVector.document))
     .limit(limit)
     .offset((page - 1) * limit);

@@ -35,6 +35,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { useDebounce } from '@uidotdev/usehooks';
+import { useState } from 'react';
 
 const formSchema = z.object({
   title: z.string().min(3),
@@ -208,6 +210,8 @@ const FETCH_SIZE = 20;
 
 export default function ManualKB() {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
+  const [searchQuery, setSearchQuery] = useState('');
+  const debouncedSearch = useDebounce(searchQuery.trim(), 300);
 
   const { data, error, isLoading, mutate, setSize } = useSWRInfinite(
     (index, previousPageData) => {
@@ -216,6 +220,10 @@ export default function ManualKB() {
       // reached the end
       if (previousPageData && !previousPageData.length) {
         return null;
+      }
+
+      if (debouncedSearch) {
+        return `${API_URL}/api/manual-kb/search?query=${debouncedSearch}&page=${index + 1}&limit=${FETCH_SIZE}`;
       }
 
       return `${API_URL}/api/manual-kb?page=${index + 1}&limit=${FETCH_SIZE}`;
@@ -234,6 +242,18 @@ export default function ManualKB() {
     <>
       <Header right={<EntryUi mutate={mutate} />} />
       <main className="mb-10">
+        <Input
+          placeholder="Search entry..."
+          value={searchQuery}
+          onChange={event => {
+            if (event.target.value) {
+              setSearchQuery(event.target.value);
+              return;
+            }
+            setSearchQuery('');
+          }}
+          className="max-w-lg my-2 mx-auto"
+        />
         {isLoading && (
           <div className="mt-10 flex justify-center">
             <Loader2Icon className="animate-spin" />

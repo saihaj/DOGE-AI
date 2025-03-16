@@ -635,16 +635,16 @@ fastify.route<{ Querystring: ManualKbSearchInput }>({
       requestId: request.id,
     });
     try {
-      const { page, limit, search } = request.query;
+      const { page, limit, query } = request.query;
 
-      if (!search) {
+      if (!query) {
         log.error(
           {
             body: request.body,
           },
-          'search is required',
+          'query is required',
         );
-        reply.code(400).send({ success: false, error: 'search is required' });
+        reply.code(400).send({ success: false, error: 'query is required' });
       }
 
       if (!page) {
@@ -709,7 +709,7 @@ fastify.route<{ Querystring: ManualKbSearchInput }>({
       const result = await getKbSearchEntries({
         page,
         limit,
-        search,
+        query,
       });
 
       return reply.send(result);
