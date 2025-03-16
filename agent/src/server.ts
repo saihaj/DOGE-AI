@@ -33,10 +33,12 @@ import { promClient, readiness } from './prom';
 import {
   deleteManualKbEntry,
   getKbEntries,
+  getKbSearchEntries,
   ManualKbDeleteInput,
   ManualKbGetInput,
   ManualKBInsertInput,
   ManualKBPatchInput,
+  ManualKbSearchInput,
   patchKbInsert,
   postKbInsert,
 } from './api/manual-kb';
@@ -606,6 +608,120 @@ fastify.route<{ Querystring: ManualKbGetInput }>({
     }
   },
   url: '/api/manual-kb',
+});
+
+fastify.route<{ Querystring: ManualKbSearchInput }>({
+  method: 'GET',
+  preHandler: [authHandler],
+  schema: {
+    querystring: ManualKbSearchInput,
+    response: {
+      200: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            title: { type: 'string' },
+            content: { type: 'string' },
+          },
+        },
+      },
+    },
+  },
+  handler: async (request, reply) => {
+    const log = logger.child({
+      function: 'api-manual-kb-search',
+      requestId: request.id,
+    });
+    try {
+      const { page, limit, search } = request.query;
+
+      if (!search) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'search is required',
+        );
+        reply.code(400).send({ success: false, error: 'search is required' });
+      }
+
+      if (!page) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'page is required',
+        );
+        reply.code(400).send({ success: false, error: 'page is required' });
+      }
+
+      if (page < 0) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'page should be greater than 0',
+        );
+        reply.code(400).send({
+          success: false,
+          error: 'page should be greater than or equal to 0',
+        });
+      }
+
+      if (!limit) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'limit is required',
+        );
+        reply.code(400).send({ success: false, error: 'limit is required' });
+      }
+
+      if (limit < 0) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'limit should be greater than 0',
+        );
+        reply.code(400).send({
+          success: false,
+          error: 'limit should be greater than or equal to 0',
+        });
+      }
+
+      if (limit > 30) {
+        log.error(
+          {
+            body: request.body,
+          },
+          'limit should be less than 30',
+        );
+        reply.code(400).send({
+          success: false,
+          error: 'limit should be less than or equal to 30',
+        });
+      }
+
+      const result = await getKbSearchEntries({
+        page,
+        limit,
+        search,
+      });
+
+      return reply.send(result);
+    } catch (error) {
+      log.error({ error }, 'Error in getKbSearchEntries');
+      return reply.code(500).send({
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+  url: '/api/manual-kb/search',
 });
 
 fastify.route<{ Body: ManualKbDeleteInput }>({

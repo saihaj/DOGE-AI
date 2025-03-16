@@ -6,12 +6,18 @@ import {
   db,
   document as documentDbSchema,
   eq,
+  isNotNull,
+  sql,
 } from 'database';
 import * as crypto from 'node:crypto';
 import { slugify } from 'inngest';
-import { generateEmbeddings, textSplitter } from '../twitter/helpers';
+import {
+  generateEmbedding,
+  generateEmbeddings,
+  textSplitter,
+} from '../twitter/helpers';
 import { WithLogger } from '../logger';
-import { MANUAL_KB_SOURCE } from '../const';
+import { MANUAL_KB_SOURCE, VECTOR_SEARCH_MATCH_THRESHOLD } from '../const';
 
 export const ManualKBInsertInput = Type.Object({
   title: Type.String(),
@@ -211,6 +217,46 @@ export async function deleteManualKbEntry(
     .execute();
 
   log.info({ documents: documents.rowsAffected }, 'deleted manual kb document');
+
+  return documents;
+}
+
+export const ManualKbSearchInput = Type.Object({
+  page: Type.Number(),
+  limit: Type.Number(),
+  search: Type.String(),
+});
+export type ManualKbSearchInput = Static<typeof ManualKbSearchInput>;
+
+export async function getKbSearchEntries({
+  page,
+  limit,
+  search,
+}: ManualKbSearchInput) {
+  const termEmbedding = await generateEmbedding(search);
+  const termEmbeddingString = JSON.stringify(termEmbedding);
+
+  const documents = await db
+    .select({
+      id: documentDbSchema.id,
+      title: documentDbSchema.title,
+      content: documentDbSchema.content,
+    })
+    .from(billVector)
+    .where(
+      and(
+        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
+        isNotNull(billVector.document),
+        eq(billVector.source, MANUAL_KB_SOURCE),
+      ),
+    )
+    .groupBy(billVector.document)
+    .orderBy(
+      sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
+    )
+    .leftJoin(documentDbSchema, eq(documentDbSchema.id, billVector.document))
+    .limit(limit)
+    .offset((page - 1) * limit);
 
   return documents;
 }
