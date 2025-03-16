@@ -129,3 +129,4 @@ export const CF_TEAM_DOMAIN = (() => {
   }
   return process.env.CF_TEAM_DOMAIN;
 })();
+export const VECTOR_SEARCH_MATCH_THRESHOLD = 0.6;

@@ -19,6 +19,7 @@ import {
   REJECTION_REASON,
   SEED,
   TEMPERATURE,
+  VECTOR_SEARCH_MATCH_THRESHOLD,
   WEB_SOURCE,
 } from '../const';
 import {
@@ -43,7 +44,6 @@ async function getManualKbDocuments(
     method: 'getManualKbDocuments',
   });
   const LIMIT = 5;
-  const THRESHOLD = 0.6;
 
   const embeddingsQuery = await db
     .select({
@@ -56,7 +56,7 @@ async function getManualKbDocuments(
     .from(billVector)
     .where(
       and(
-        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
+        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
         isNotNull(billVector.document),
         eq(billVector.source, MANUAL_KB_SOURCE),
       ),
@@ -100,7 +100,6 @@ async function getDocumentContext(
     method: 'getDocumentContext',
   });
   const LIMIT = 5;
-  const THRESHOLD = 0.6;
 
   const embeddingsQuery = await db
     .select({
@@ -113,7 +112,7 @@ async function getDocumentContext(
     .from(billVector)
     .where(
       and(
-        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
+        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
         isNotNull(billVector.document),
         eq(billVector.source, WEB_SOURCE),
       ),
@@ -201,7 +200,6 @@ async function getReasonBillContext(
     method: 'getReasonBillContext',
   });
   const LIMIT = 5;
-  const THRESHOLD = 0.6;
 
   const { object: billTitleResult } = await generateObject({
     model: openai('gpt-4o', {
@@ -419,7 +417,7 @@ async function getReasonBillContext(
         .from(billVector)
         .where(
           and(
-            sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${THRESHOLD}`,
+            sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
             isNotNull(billVector.bill),
             eq(billDbSchema.congress, ACTIVE_CONGRESS),
           ),
@@ -518,7 +516,7 @@ async function getReasonBillContext(
           const embedding = await generateEmbedding(text);
           const embeddingArrayString = JSON.stringify(embedding);
           const filters = [
-            sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < ${THRESHOLD}`,
+            sql`vector_distance_cos(${billVector.vector}, vector32(${embeddingArrayString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
             isNotNull(billVector.bill),
             eq(billDbSchema.congress, ACTIVE_CONGRESS),
           ];
