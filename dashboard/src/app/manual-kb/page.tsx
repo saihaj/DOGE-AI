@@ -241,21 +241,23 @@ export default function ManualKB() {
         )}
         {error && <p>Error: {error.message}</p>}
         {data && (
-          <DataTable
-            columns={columns({ mutate, cfAuthorizationCookie })}
-            data={data?.flatMap(a => a)}
-          />
+          <>
+            <DataTable
+              columns={columns({ mutate, cfAuthorizationCookie })}
+              data={data?.flatMap(a => a)}
+            />
+            <div className="flex justify-center">
+              <Button
+                disabled={data?.length === 0 || isReachingEnd}
+                onClick={() => setSize(size => size + 1)}
+                className="mt-6 mx-auto"
+                variant="outline"
+              >
+                Load more
+              </Button>
+            </div>
+          </>
         )}
-        <div className="flex justify-center">
-          <Button
-            disabled={data?.length === 0 || isReachingEnd}
-            onClick={() => setSize(size => size + 1)}
-            className="mt-6 mx-auto"
-            variant="outline"
-          >
-            Load more
-          </Button>
-        </div>
       </main>
     </>
   );
