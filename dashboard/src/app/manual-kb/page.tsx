@@ -204,14 +204,21 @@ function EntryUi({ mutate }: { mutate: () => void }) {
   );
 }
 
+const FETCH_SIZE = 20;
+
 export default function ManualKB() {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
 
-  const { data, error, isLoading, mutate } = useSWRInfinite(
-    index => {
+  const { data, error, isLoading, mutate, setSize } = useSWRInfinite(
+    (index, previousPageData) => {
       if (!IS_LOCAL && !cfAuthorizationCookie) return null;
 
-      return `${API_URL}/api/manual-kb?page=${index + 1}&limit=20`;
+      // reached the end
+      if (previousPageData && !previousPageData.length) {
+        return null;
+      }
+
+      return `${API_URL}/api/manual-kb?page=${index + 1}&limit=${FETCH_SIZE}`;
     },
     (url: string) =>
       fetch(url, {
@@ -220,6 +227,8 @@ export default function ManualKB() {
         },
       }).then(res => res.json()),
   );
+
+  const isReachingEnd = data && data[data.length - 1]?.length < FETCH_SIZE;
 
   return (
     <>
@@ -237,6 +246,16 @@ export default function ManualKB() {
             data={data?.flatMap(a => a)}
           />
         )}
+        <div className="flex justify-center">
+          <Button
+            disabled={data?.length === 0 || isReachingEnd}
+            onClick={() => setSize(size => size + 1)}
+            className="mt-6 mx-auto"
+            variant="outline"
+          >
+            Load more
+          </Button>
+        </div>
       </main>
     </>
   );
