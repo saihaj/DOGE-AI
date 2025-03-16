@@ -105,10 +105,10 @@ export const ingestInteractionTweets = inngest.createFunction(
           window: WINDOW,
           id: '1883919897194815632',
         }),
-        // https://x.com/i/lists/225745413
+        // https://x.com/i/lists/1898131093917945898
         fetchTweetsFromList({
           window: WINDOW,
-          id: '225745413',
+          id: '1898131093917945898',
         }),
       ]);
 
