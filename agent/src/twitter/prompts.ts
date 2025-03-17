@@ -313,4 +313,44 @@ export const PROMPTS = {
       { ttl: '1d' },
     );
   },
+  REPLY_AS_DOGE: async () => {
+    return bento.getOrSet(
+      'BOT_CONFIG_REPLY_AS_DOGE',
+      async () => {
+        const prompt = await db.query.botConfig.findFirst({
+          where: eq(botConfig.key, 'REPLY_AS_DOGE'),
+          columns: {
+            value: true,
+          },
+        });
+
+        if (!prompt) {
+          throw new Error('REPLY_AS_DOGE not found');
+        }
+
+        return prompt.value;
+      },
+      { ttl: '1d' },
+    );
+  },
+  TWITTER_REPLY_TEMPLATE_KB: async () => {
+    return bento.getOrSet(
+      'BOT_CONFIG_TWITTER_REPLY_TEMPLATE_KB',
+      async () => {
+        const prompt = await db.query.botConfig.findFirst({
+          where: eq(botConfig.key, 'TWITTER_REPLY_TEMPLATE_KB'),
+          columns: {
+            value: true,
+          },
+        });
+
+        if (!prompt) {
+          throw new Error('TWITTER_REPLY_TEMPLATE_KB not found');
+        }
+
+        return prompt.value;
+      },
+      { ttl: '1d' },
+    );
+  },
 };

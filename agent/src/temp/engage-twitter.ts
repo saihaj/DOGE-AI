@@ -45,15 +45,35 @@ async function main() {
         text: content,
         billEntries: true,
         documentEntries: true,
-        manualEntries: false,
+        manualEntries: true,
       },
       log,
     );
 
     const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
-    const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
+    const summary = (() => {
+      let result = '';
 
-    const { humanized, metadata, formatted, raw } = await getLongResponse(
+      if (kb.manualEntries) {
+        result += 'Knowledge base entries:\n';
+        result += kb.manualEntries;
+        result += '\n\n';
+      }
+
+      if (kb.documents) {
+        result += kb.documents;
+        result += '\n\n';
+      }
+
+      if (bill) {
+        result += bill;
+        result += '\n\n';
+      }
+
+      return result.trim();
+    })();
+
+    const { metadata, formatted, raw } = await getLongResponse(
       {
         summary,
         text: content,
@@ -69,8 +89,7 @@ async function main() {
       console.log('\n\nMetadata: ', metadata, '\n\n');
     }
 
-    console.log('\n\nFormatted: ', formatted, '\n\n');
-    console.log('\n\nHumanized: ', humanized, '\n\n');
+    console.log('\n\nLong: ', formatted, '\n\n');
 
     const refinedOutput = await getShortResponse({ topic: raw });
 

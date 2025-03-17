@@ -9,6 +9,7 @@ import {
   getTweet,
   getTweetContentAsText,
   longResponseFormatter,
+  mergeConsecutiveSameRole,
   sanitizeLlmOutput,
   textSplitter,
   upsertChat,
@@ -61,40 +62,34 @@ export async function getLongResponse(
   if (!systemPrompt) {
     systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
   }
+  const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
   const { text: _responseLong, sources } = await generateText({
     temperature: TEMPERATURE,
     model: perplexity('sonar-reasoning-pro'),
-    messages: [
+    messages: mergeConsecutiveSameRole([
       {
         role: 'system',
         content: systemPrompt,
       },
       {
         role: 'user',
-        content: summary
-          ? `Reply as DOGEai: ${text} \n\nContext from database: ${summary}`
-          : `Reply as DOGEai: ${text}`,
+        content: summary,
       },
-    ],
+      {
+        role: 'user',
+        content: `${REPLY_AS_DOGE_PREFIX} ${text}`,
+      },
+    ]),
   });
 
   const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
 
   const responseLong = sanitizeLlmOutput(_responseLong);
-  const rewriter = await wokeTweetsRewriter(responseLong, {
-    log,
-    method,
-    action,
-  });
-  const formatted = await longResponseFormatter(rewriter);
+  const formatted = await longResponseFormatter(responseLong);
   log.info({ response: formatted }, 'formatted long response');
-  const humanized = await engagementHumanizer(formatted);
-  log.info({ response: humanized }, 'humanized long response');
-
   return {
-    raw: rewriter,
+    raw: responseLong,
     formatted,
-    humanized,
     metadata,
   };
 }
@@ -241,7 +236,7 @@ export const executeInteractionTweets = inngest.createFunction(
               text,
               billEntries: true,
               documentEntries: true,
-              manualEntries: false,
+              manualEntries: true,
             },
             log,
           );
@@ -250,11 +245,29 @@ export const executeInteractionTweets = inngest.createFunction(
             ? `${kb.bill.title}: \n\n${kb.bill.content}`
             : '';
 
-          const summary = kb?.documents
-            ? `${kb.documents}\n\n${bill}`
-            : bill || '';
+          const summary = (() => {
+            let result = '';
 
-          const { raw, metadata, humanized } = await getLongResponse(
+            if (kb.manualEntries) {
+              result += 'Knowledge base entries:\n';
+              result += kb.manualEntries;
+              result += '\n\n';
+            }
+
+            if (kb.documents) {
+              result += kb.documents;
+              result += '\n\n';
+            }
+
+            if (bill) {
+              result += bill;
+              result += '\n\n';
+            }
+
+            return result.trim();
+          })();
+
+          const { raw, metadata, formatted } = await getLongResponse(
             {
               summary,
               text,
@@ -268,7 +281,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
           log.info(
             {
-              response: humanized,
+              response: formatted,
               metadata,
             },
             'generated response',
@@ -285,7 +298,7 @@ export const executeInteractionTweets = inngest.createFunction(
               longOutput: '',
               refinedOutput: '',
               metadata,
-              response: humanized,
+              response: formatted,
             };
           }
 
@@ -300,12 +313,12 @@ export const executeInteractionTweets = inngest.createFunction(
               longOutput: '',
               refinedOutput: '',
               metadata,
-              response: humanized,
+              response: formatted,
             };
           }
 
           return {
-            longOutput: humanized,
+            longOutput: formatted,
             refinedOutput: finalAnswer,
             metadata,
             response: finalAnswer,
