@@ -102,7 +102,7 @@ export async function getTweetContext(
       searchId = tweet.inReplyToId;
     }
 
-    if (tweet.inReplyToId === null) {
+    if (!tweet.inReplyToId) {
       searchId = null;
     }
 
