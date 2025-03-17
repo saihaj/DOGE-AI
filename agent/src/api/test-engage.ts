@@ -40,7 +40,7 @@ export async function processTestEngageRequest({
       text: content,
       billEntries: true,
       documentEntries: true,
-      manualEntries: false,
+      manualEntries: true,
     },
     log,
   );
@@ -50,7 +50,27 @@ export async function processTestEngageRequest({
   }
 
   const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
-  const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
+  const summary = (() => {
+    let result = ' ';
+
+    if (kb.manualEntries) {
+      result += 'Knowledge base entries:\n';
+      result += kb.manualEntries;
+      result += '\n\n';
+    }
+
+    if (kb.documents) {
+      result += kb.documents;
+      result += '\n\n';
+    }
+
+    if (bill) {
+      result += bill;
+      result += '\n\n';
+    }
+
+    return result.trim();
+  })();
 
   const { formatted, metadata, raw } = await getLongResponse(
     {
