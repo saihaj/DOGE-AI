@@ -1,9 +1,8 @@
-import { IS_PROD, REJECTION_REASON, TEMPERATURE } from '../const';
+import { IS_PROD, REJECTION_REASON, SEED, TEMPERATURE } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
-  engagementHumanizer,
   generateEmbeddings,
   getTimeInSecondsElapsedSinceTweetCreated,
   getTweet,
@@ -14,9 +13,8 @@ import {
   textSplitter,
   upsertChat,
   upsertUser,
-  wokeTweetsRewriter,
 } from './helpers.ts';
-import { generateText } from 'ai';
+import { CoreMessage, generateText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { PROMPTS } from './prompts';
 import {
@@ -60,29 +58,31 @@ export async function getLongResponse(
   { method, log, action }: { log: WithLogger; method: string; action: string },
 ) {
   if (!systemPrompt) {
-    systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
+    systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE_KB();
   }
+
+  const messages = [{ role: 'system', content: systemPrompt }] as CoreMessage[];
+
+  if (summary) {
+    messages.push({ role: 'user', content: summary });
+  }
+
   const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
+  messages.push({
+    role: 'user',
+    content: `${REPLY_AS_DOGE_PREFIX} ""${text}""`,
+  });
+
   const { text: _responseLong, sources } = await generateText({
     temperature: TEMPERATURE,
+    seed: SEED,
     model: perplexity('sonar-reasoning-pro'),
-    messages: mergeConsecutiveSameRole([
-      {
-        role: 'system',
-        content: systemPrompt,
-      },
-      {
-        role: 'user',
-        content: summary,
-      },
-      {
-        role: 'user',
-        content: `${REPLY_AS_DOGE_PREFIX} ${text}`,
-      },
-    ]),
+    messages: mergeConsecutiveSameRole(messages),
   });
 
   const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
+
+  log.info({ response: _responseLong }, 'reasoning response');
 
   const responseLong = sanitizeLlmOutput(_responseLong);
   const formatted = await longResponseFormatter(responseLong);
