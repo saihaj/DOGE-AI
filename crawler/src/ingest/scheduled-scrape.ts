@@ -2,7 +2,7 @@ import { inngest } from './client';
 
 export const scheduledScrape = inngest.createFunction(
   { id: 'scheduled-scrape' },
-  { cron: '0 0 * * *' }, // Runs daily at midnight UTC
+  { cron: 'TZ=America/New_York 0 0 * * 1-5' },
   async ({ step }) => {
     await step.sendEvent('send-scrape-events', [
       {
@@ -44,5 +44,5 @@ export const scheduledScrape = inngest.createFunction(
         },
       },
     ]);
-  }
+  },
 );
