@@ -7,6 +7,7 @@ import Handlebars from 'handlebars';
 import { Static, Type } from '@sinclair/typebox';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
+import { PROMPTS } from '../twitter/prompts';
 
 export const ProcessTestEngageRequestInput = Type.Object({
   tweetId: Type.String(),
@@ -27,20 +28,23 @@ export async function processTestEngageRequest({
   bill: string;
 }> {
   const log = logger.child({ module: 'processTestEngageRequest', tweetId });
-  const content = await getTweetContentAsText({ id: tweetId }, log);
+  const _text = await getTweetContentAsText({ id: tweetId }, log);
+
+  const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
+  const text = `${REPLY_AS_DOGE_PREFIX} "${_text}"`;
 
   const kb = await getKbContext(
     {
       messages: [
         {
           role: 'user',
-          content,
+          content: text,
         },
       ],
-      text: content,
+      text,
       billEntries: true,
       documentEntries: true,
-      manualEntries: false,
+      manualEntries: true,
     },
     log,
   );
@@ -50,12 +54,32 @@ export async function processTestEngageRequest({
   }
 
   const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
-  const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
+  const summary = (() => {
+    let result = ' ';
 
-  const { humanized, metadata, raw } = await getLongResponse(
+    if (kb.manualEntries) {
+      result += 'Knowledge base entries:\n';
+      result += kb.manualEntries;
+      result += '\n\n';
+    }
+
+    if (kb.documents) {
+      result += kb.documents;
+      result += '\n\n';
+    }
+
+    if (bill) {
+      result += bill;
+      result += '\n\n';
+    }
+
+    return result.trim();
+  })();
+
+  const { formatted, metadata, raw } = await getLongResponse(
     {
       summary,
-      text: content,
+      text,
       systemPrompt: mainPrompt,
     },
     {
@@ -76,9 +100,9 @@ export async function processTestEngageRequest({
     refinePrompt,
   });
 
-  log.info({ long: humanized, short: refinedOutput, metadata });
+  log.info({ long: formatted, short: refinedOutput, metadata });
   return {
-    answer: humanized,
+    answer: formatted,
     short: refinedOutput,
     bill: summary,
   };

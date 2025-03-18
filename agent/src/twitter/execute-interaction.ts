@@ -1,21 +1,20 @@
-import { IS_PROD, REJECTION_REASON, TEMPERATURE } from '../const';
+import { IS_PROD, REJECTION_REASON, SEED, TEMPERATURE } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
-  engagementHumanizer,
   generateEmbeddings,
   getTimeInSecondsElapsedSinceTweetCreated,
   getTweet,
   getTweetContentAsText,
   longResponseFormatter,
+  mergeConsecutiveSameRole,
   sanitizeLlmOutput,
   textSplitter,
   upsertChat,
   upsertUser,
-  wokeTweetsRewriter,
 } from './helpers.ts';
-import { generateText } from 'ai';
+import { CoreMessage, generateText } from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { PROMPTS } from './prompts';
 import {
@@ -59,42 +58,43 @@ export async function getLongResponse(
   { method, log, action }: { log: WithLogger; method: string; action: string },
 ) {
   if (!systemPrompt) {
-    systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
+    systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE_KB();
   }
+
+  const messages = [
+    {
+      role: 'system',
+      content: systemPrompt,
+    },
+  ] as CoreMessage[];
+
+  if (summary) {
+    messages.push({ role: 'user', content: summary });
+  }
+
+  messages.push({
+    role: 'user',
+    content: text,
+  });
+
   const { text: _responseLong, sources } = await generateText({
     temperature: TEMPERATURE,
+    seed: SEED,
     model: perplexity('sonar-reasoning-pro'),
-    messages: [
-      {
-        role: 'system',
-        content: systemPrompt,
-      },
-      {
-        role: 'user',
-        content: summary
-          ? `Reply as DOGEai: ${text} \n\nContext from database: ${summary}`
-          : `Reply as DOGEai: ${text}`,
-      },
-    ],
+    messages: mergeConsecutiveSameRole(messages),
+    experimental_generateMessageId: crypto.randomUUID,
   });
 
   const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
 
-  const responseLong = sanitizeLlmOutput(_responseLong);
-  const rewriter = await wokeTweetsRewriter(responseLong, {
-    log,
-    method,
-    action,
-  });
-  const formatted = await longResponseFormatter(rewriter);
-  log.info({ response: formatted }, 'formatted long response');
-  const humanized = await engagementHumanizer(formatted);
-  log.info({ response: humanized }, 'humanized long response');
+  log.info({ response: _responseLong }, 'reasoning response');
 
+  const responseLong = sanitizeLlmOutput(_responseLong);
+  const formatted = await longResponseFormatter(responseLong);
+  log.info({ response: formatted }, 'formatted long response');
   return {
-    raw: rewriter,
+    raw: responseLong,
     formatted,
-    humanized,
     metadata,
   };
 }
@@ -219,7 +219,7 @@ export const executeInteractionTweets = inngest.createFunction(
           throw new NonRetriableError(e);
         });
 
-        const text = await getTweetContentAsText(
+        const _text = await getTweetContentAsText(
           {
             id: event.data.tweetId,
           },
@@ -228,6 +228,9 @@ export const executeInteractionTweets = inngest.createFunction(
           log.error({ error: e }, 'Unable to get tweet as text');
           throw new NonRetriableError(e);
         });
+
+        const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
+        const text = `${REPLY_AS_DOGE_PREFIX} "${_text}"`;
 
         const reply = await step.run('generate-reply', async () => {
           const kb = await getKbContext(
@@ -241,7 +244,7 @@ export const executeInteractionTweets = inngest.createFunction(
               text,
               billEntries: true,
               documentEntries: true,
-              manualEntries: false,
+              manualEntries: true,
             },
             log,
           );
@@ -250,11 +253,29 @@ export const executeInteractionTweets = inngest.createFunction(
             ? `${kb.bill.title}: \n\n${kb.bill.content}`
             : '';
 
-          const summary = kb?.documents
-            ? `${kb.documents}\n\n${bill}`
-            : bill || '';
+          const summary = (() => {
+            let result = ' ';
 
-          const { raw, metadata, humanized } = await getLongResponse(
+            if (kb.manualEntries) {
+              result += 'Knowledge base entries:\n';
+              result += kb.manualEntries;
+              result += '\n\n';
+            }
+
+            if (kb.documents) {
+              result += kb.documents;
+              result += '\n\n';
+            }
+
+            if (bill) {
+              result += bill;
+              result += '\n\n';
+            }
+
+            return result.trim();
+          })();
+
+          const { raw, metadata, formatted } = await getLongResponse(
             {
               summary,
               text,
@@ -268,7 +289,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
           log.info(
             {
-              response: humanized,
+              response: formatted,
               metadata,
             },
             'generated response',
@@ -285,7 +306,7 @@ export const executeInteractionTweets = inngest.createFunction(
               longOutput: '',
               refinedOutput: '',
               metadata,
-              response: humanized,
+              response: formatted,
             };
           }
 
@@ -300,12 +321,12 @@ export const executeInteractionTweets = inngest.createFunction(
               longOutput: '',
               refinedOutput: '',
               metadata,
-              response: humanized,
+              response: formatted,
             };
           }
 
           return {
-            longOutput: humanized,
+            longOutput: formatted,
             refinedOutput: finalAnswer,
             metadata,
             response: finalAnswer,

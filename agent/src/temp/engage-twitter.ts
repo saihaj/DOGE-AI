@@ -7,6 +7,7 @@ import {
 } from '../twitter/execute-interaction';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
+import { PROMPTS } from '../twitter/prompts';
 
 const log = logger.child({ module: 'cli-engage-twitter' });
 
@@ -34,29 +35,52 @@ async function main() {
 
     await writeFile(`dev-test/apitweet.txt`, JSON.stringify(content));
 
+    const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
+    const userMessage = `${REPLY_AS_DOGE_PREFIX} "${content}"`;
+
     const kb = await getKbContext(
       {
         messages: [
           {
             role: 'user',
-            content,
+            content: userMessage,
           },
         ],
-        text: content,
+        text: userMessage,
         billEntries: true,
         documentEntries: true,
-        manualEntries: false,
+        manualEntries: true,
       },
       log,
     );
 
     const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
-    const summary = kb?.documents ? `${kb.documents}\n\n${bill}` : bill || '';
+    const summary = (() => {
+      let result = ' ';
 
-    const { humanized, metadata, formatted, raw } = await getLongResponse(
+      if (kb.manualEntries) {
+        result += 'Knowledge base entries:\n';
+        result += kb.manualEntries;
+        result += '\n\n';
+      }
+
+      if (kb.documents) {
+        result += kb.documents;
+        result += '\n\n';
+      }
+
+      if (bill) {
+        result += bill;
+        result += '\n\n';
+      }
+
+      return result.trim();
+    })();
+
+    const { metadata, formatted, raw } = await getLongResponse(
       {
         summary,
-        text: content,
+        text: userMessage,
       },
       {
         log,
@@ -69,8 +93,7 @@ async function main() {
       console.log('\n\nMetadata: ', metadata, '\n\n');
     }
 
-    console.log('\n\nFormatted: ', formatted, '\n\n');
-    console.log('\n\nHumanized: ', humanized, '\n\n');
+    console.log('\n\nLong: ', formatted, '\n\n');
 
     const refinedOutput = await getShortResponse({ topic: raw });
 
