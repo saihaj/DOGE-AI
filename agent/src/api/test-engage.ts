@@ -7,6 +7,7 @@ import Handlebars from 'handlebars';
 import { Static, Type } from '@sinclair/typebox';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
+import { PROMPTS } from '../twitter/prompts';
 
 export const ProcessTestEngageRequestInput = Type.Object({
   tweetId: Type.String(),
@@ -27,17 +28,20 @@ export async function processTestEngageRequest({
   bill: string;
 }> {
   const log = logger.child({ module: 'processTestEngageRequest', tweetId });
-  const content = await getTweetContentAsText({ id: tweetId }, log);
+  const _text = await getTweetContentAsText({ id: tweetId }, log);
+
+  const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
+  const text = `${REPLY_AS_DOGE_PREFIX} "${_text}"`;
 
   const kb = await getKbContext(
     {
       messages: [
         {
           role: 'user',
-          content,
+          content: text,
         },
       ],
-      text: content,
+      text,
       billEntries: true,
       documentEntries: true,
       manualEntries: true,
@@ -75,7 +79,7 @@ export async function processTestEngageRequest({
   const { formatted, metadata, raw } = await getLongResponse(
     {
       summary,
-      text: content,
+      text,
       systemPrompt: mainPrompt,
     },
     {

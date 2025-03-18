@@ -7,6 +7,7 @@ import {
 } from '../twitter/execute-interaction';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
+import { PROMPTS } from '../twitter/prompts';
 
 const log = logger.child({ module: 'cli-engage-twitter' });
 
@@ -34,15 +35,18 @@ async function main() {
 
     await writeFile(`dev-test/apitweet.txt`, JSON.stringify(content));
 
+    const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
+    const userMessage = `${REPLY_AS_DOGE_PREFIX} "${content}"`;
+
     const kb = await getKbContext(
       {
         messages: [
           {
             role: 'user',
-            content,
+            content: userMessage,
           },
         ],
-        text: content,
+        text: userMessage,
         billEntries: true,
         documentEntries: true,
         manualEntries: true,
@@ -52,7 +56,7 @@ async function main() {
 
     const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
     const summary = (() => {
-      let result = '';
+      let result = ' ';
 
       if (kb.manualEntries) {
         result += 'Knowledge base entries:\n';
@@ -76,7 +80,7 @@ async function main() {
     const { metadata, formatted, raw } = await getLongResponse(
       {
         summary,
-        text: content,
+        text: userMessage,
       },
       {
         log,

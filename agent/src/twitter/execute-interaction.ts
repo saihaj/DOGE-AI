@@ -61,16 +61,20 @@ export async function getLongResponse(
     systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE_KB();
   }
 
-  const messages = [{ role: 'system', content: systemPrompt }] as CoreMessage[];
+  const messages = [
+    {
+      role: 'system',
+      content: systemPrompt,
+    },
+  ] as CoreMessage[];
 
   if (summary) {
     messages.push({ role: 'user', content: summary });
   }
 
-  const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
   messages.push({
     role: 'user',
-    content: `${REPLY_AS_DOGE_PREFIX} ""${text}""`,
+    content: text,
   });
 
   const { text: _responseLong, sources } = await generateText({
@@ -78,6 +82,7 @@ export async function getLongResponse(
     seed: SEED,
     model: perplexity('sonar-reasoning-pro'),
     messages: mergeConsecutiveSameRole(messages),
+    experimental_generateMessageId: crypto.randomUUID,
   });
 
   const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
@@ -214,7 +219,7 @@ export const executeInteractionTweets = inngest.createFunction(
           throw new NonRetriableError(e);
         });
 
-        const text = await getTweetContentAsText(
+        const _text = await getTweetContentAsText(
           {
             id: event.data.tweetId,
           },
@@ -223,6 +228,9 @@ export const executeInteractionTweets = inngest.createFunction(
           log.error({ error: e }, 'Unable to get tweet as text');
           throw new NonRetriableError(e);
         });
+
+        const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
+        const text = `${REPLY_AS_DOGE_PREFIX} "${_text}"`;
 
         const reply = await step.run('generate-reply', async () => {
           const kb = await getKbContext(
@@ -246,7 +254,7 @@ export const executeInteractionTweets = inngest.createFunction(
             : '';
 
           const summary = (() => {
-            let result = '';
+            let result = ' ';
 
             if (kb.manualEntries) {
               result += 'Knowledge base entries:\n';
