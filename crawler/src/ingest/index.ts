@@ -9,7 +9,7 @@ export const functions = [
   embedBill,
   processDocument,
   processWebpage,
-  scheduledScrape
+  scheduledScrape,
 ];
 
 export { inngest } from './client';
