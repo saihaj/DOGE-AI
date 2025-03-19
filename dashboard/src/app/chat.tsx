@@ -12,7 +12,6 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useScrollToBottom } from '@/hooks/use-scroll-to-bottom';
 import {
   BookIcon,
   Globe,
@@ -30,7 +29,7 @@ import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { Header } from '@/components/header';
 import { toast } from 'sonner';
 import { Toggle } from '@/components/ui/toggle';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AutosizeTextarea } from '@/components/ui/autosize-textarea';
 import { Drawer } from 'vaul';
 import { Label } from '@/components/ui/label';
@@ -236,9 +235,7 @@ export function Chat() {
     'playgroundUserPromptTemplate',
     '',
   );
-
-  const [messagesContainerRef, messagesEndRef] =
-    useScrollToBottom<HTMLDivElement>();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const initialMessages = useMemo(() => {
     const messages = [
@@ -490,7 +487,7 @@ export function Chat() {
 
       {/* Scrollable Messages Area */}
       <ScrollArea className="flex-1 w-full md:max-w-4xl mx-auto max-h-[calc(100vh-12rem)]">
-        <div className="flex flex-col gap-4 p-4" ref={messagesContainerRef}>
+        <div className="flex flex-col gap-4 p-4">
           {messagesWithSources
             .filter(message => message.id !== 'userPersistent')
             .filter(message => message.role !== 'system')
@@ -512,23 +509,37 @@ export function Chat() {
                   <div
                     className={cn(
                       'max-w-[70%] mx-2 text-wrap whitespace-nowrap', // Added margin
-                      'px-3 py-2 rounded-md',
-                      message.role === 'user'
-                        ? 'bg-secondary text-primary rounded-br-none' // Different corner for user
-                        : 'max-w-full', // Different corner for assistant
                     )}
                   >
-                    <div>
-                      <div className="flex gap-2 items-start flex-col">
+                    <div
+                      className={cn(
+                        'relative group flex flex-col',
+                        message.role === 'user' ? 'items-end' : 'items-start',
+                      )}
+                    >
+                      <div className="flex gap-2">
                         {message.role === 'assistant' && (
                           <span>
                             <Logo className="h-[30px] w-[30px] rounded-full" />
                           </span>
                         )}
-                        <Markdown>{content}</Markdown>
+                        <div
+                          className={cn(
+                            message.role === 'user'
+                              ? 'bg-secondary text-primary rounded-br-none px-3 py-2 rounded-md' // Different corner for user
+                              : 'max-w-full', // Different corner for assistant
+                          )}
+                        >
+                          <Markdown>{content}</Markdown>
+                        </div>
                       </div>
-                      {!isLoading && message.role === 'assistant' && (
-                        <div className="-ml-2 flex items-center">
+                      {!isLoading && (
+                        <div
+                          className={cn(
+                            'opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center',
+                            message.role === 'assistant' ? 'ml-8' : '',
+                          )}
+                        >
                           <CopyButton value={content} />
                         </div>
                       )}
@@ -651,6 +662,10 @@ export function Chat() {
                 if (!input) return;
                 if (input.trim().length === 0) return;
 
+                messagesEndRef?.current?.scrollIntoView({
+                  behavior: 'instant',
+                  block: 'end',
+                });
                 handleSubmit();
               }}
               onChange={handleInputChange}
