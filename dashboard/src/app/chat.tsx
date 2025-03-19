@@ -508,7 +508,8 @@ export function Chat() {
                 >
                   <div
                     className={cn(
-                      'max-w-[70%] mx-2 text-wrap whitespace-nowrap', // Added margin
+                      'mx-2 text-wrap whitespace-nowrap',
+                      message.role === 'user' ? 'max-w-[70%]' : 'w-full',
                     )}
                   >
                     <div
@@ -533,53 +534,59 @@ export function Chat() {
                           <Markdown>{content}</Markdown>
                         </div>
                       </div>
-                      {!isLoading && (
-                        <div
-                          className={cn(
-                            'opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center',
-                            message.role === 'assistant' ? 'ml-8' : '',
-                          )}
-                        >
-                          <CopyButton value={content} />
-                        </div>
-                      )}
-                    </div>
-                    {message?.tweet && (
-                      <Drawer.Root direction="right">
-                        <Drawer.Trigger>
-                          <Button variant="outline" size="sm" className="mt-2">
-                            View Tweet Content
-                          </Button>
-                        </Drawer.Trigger>
-                        <Drawer.Portal>
-                          <Drawer.Overlay className="fixed inset-0 bg-black/60 z-10" />
-                          <Drawer.Content
-                            className="right-2 rounded-2xl top-2 bottom-2 fixed bg-primary-foreground z-10 outline-none max-w-lg flex overflow-y-auto"
-                            // The gap between the edge of the screen and the drawer is 8px in this case.
-                            style={
-                              {
-                                '--initial-transform': 'calc(100% + 8px)',
-                              } as React.CSSProperties
-                            }
+                      <div
+                        className={cn(
+                          'flex flex-row-reverse gap-2 items-center mt-2',
+                          'opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center',
+                        )}
+                      >
+                        {!isLoading && (
+                          <div
+                            className={cn(
+                              message.role === 'assistant' ? 'ml-8' : '',
+                            )}
                           >
-                            <div className="bg-primary-foreground h-full w-full grow p-5 flex flex-col rounded-2xl">
-                              <div className="max-w-xl mx-auto">
-                                <Drawer.Title className="font-bold text-lg mb-2 text-primary">
-                                  Extracted Tweet content
-                                </Drawer.Title>
-                                <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
-                                  <Markdown>{message.tweet}</Markdown>
-                                </Drawer.Description>
-                                <CopyButton
-                                  className="-ml-1 mb-4"
-                                  value={message.tweet}
-                                />
-                              </div>
-                            </div>
-                          </Drawer.Content>
-                        </Drawer.Portal>
-                      </Drawer.Root>
-                    )}
+                            <CopyButton value={content} />
+                          </div>
+                        )}
+                        {message?.tweet && (
+                          <Drawer.Root direction="right">
+                            <Drawer.Trigger>
+                              <Button variant="outline" size="sm">
+                                View Tweet Content
+                              </Button>
+                            </Drawer.Trigger>
+                            <Drawer.Portal>
+                              <Drawer.Overlay className="fixed inset-0 bg-black/60 z-10" />
+                              <Drawer.Content
+                                className="right-2 rounded-2xl top-2 bottom-2 fixed bg-primary-foreground z-10 outline-none max-w-lg flex overflow-y-auto"
+                                // The gap between the edge of the screen and the drawer is 8px in this case.
+                                style={
+                                  {
+                                    '--initial-transform': 'calc(100% + 8px)',
+                                  } as React.CSSProperties
+                                }
+                              >
+                                <div className="bg-primary-foreground h-full w-full grow p-5 flex flex-col rounded-2xl">
+                                  <div className="max-w-xl mx-auto">
+                                    <Drawer.Title className="font-bold text-lg mb-2 text-primary">
+                                      Extracted Tweet content
+                                    </Drawer.Title>
+                                    <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
+                                      <Markdown>{message.tweet}</Markdown>
+                                    </Drawer.Description>
+                                    <CopyButton
+                                      className="-ml-1 mb-4"
+                                      value={message.tweet}
+                                    />
+                                  </div>
+                                </div>
+                              </Drawer.Content>
+                            </Drawer.Portal>
+                          </Drawer.Root>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               );
