@@ -50,7 +50,13 @@ export async function processTestEngageRequest({
   );
 
   if (kb?.bill) {
-    log.info(kb.bill, 'bill found');
+    log.info(
+      {
+        id: kb.bill.id,
+        title: kb.bill.title,
+      },
+      'bill found',
+    );
   }
 
   const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';

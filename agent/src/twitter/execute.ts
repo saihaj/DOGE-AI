@@ -273,7 +273,13 @@ export const executeTweets = inngest.createFunction(
             );
 
             if (kb?.bill) {
-              log.info(kb.bill, 'bill found');
+              log.info(
+                {
+                  id: kb.bill.id,
+                  title: kb.bill.title,
+                },
+                'bill found',
+              );
             }
 
             const summary = kb?.bill
@@ -373,7 +379,13 @@ export const executeTweets = inngest.createFunction(
             const _tweetWeRespondingTo = tweetThread.pop();
 
             if (kb?.bill) {
-              log.info(kb.bill, 'bill found');
+              log.info(
+                {
+                  id: kb.bill.id,
+                  title: kb.bill.title,
+                },
+                'bill found',
+              );
             }
 
             const summary = kb?.bill

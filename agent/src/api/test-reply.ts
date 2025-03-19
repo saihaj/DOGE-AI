@@ -71,7 +71,13 @@ export async function processTestReplyRequest({
   );
 
   if (kb?.bill) {
-    log.info(kb.bill, 'bill found');
+    log.info(
+      {
+        id: kb.bill.id,
+        title: kb.bill.title,
+      },
+      'bill found',
+    );
   }
   const messages: Array<CoreMessage> = [];
 
