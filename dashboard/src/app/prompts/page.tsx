@@ -30,6 +30,13 @@ import { useCookie } from '@/hooks/use-cookie';
 import { cn } from '@/lib/utils';
 import { checkVariablesParser } from './validator';
 
+const EDITOR_MESSAGES = {
+  LOADING: 'Loading...',
+  ERROR: 'Error loading prompt.',
+  EMPTY:
+    'No prompt loaded.\nSelect a prompt by clicking dropdown on the top-right corner.',
+};
+
 function AvailablePrompts({
   value,
   setValue,
@@ -133,13 +140,6 @@ export default function Prompts() {
     },
   );
 
-  const EDITOR_MESSAGES = {
-    LOADING: 'Loading...',
-    ERROR: 'Error loading prompt.',
-    EMPTY:
-      'No prompt loaded.\nSelect a prompt by clicking dropdown on the top-right corner.',
-  };
-
   // Validation function
   function validateTemplateVariables(text: string) {
     const editorRef = editor.current;
@@ -186,7 +186,6 @@ export default function Prompts() {
     if (state === 'back-to-editor') return edited || data.value;
     return data.value;
   })();
-  console.log(value);
 
   const readyForReview = (() => {
     if (edited == null) return false;
