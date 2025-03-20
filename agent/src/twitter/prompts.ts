@@ -138,88 +138,41 @@ export const DOCUMENT_RELATED_TO_TWEET_PROMPT = `You are an AI assistant special
 
 export const ANALYZE_TEXT_FROM_IMAGE = `Analyze the provided image and extract all visible text exactly as it appears. Do not add any commentary or descriptions. If no text is found, return only 'NO_TEXT_FOUND'.`;
 
+async function getPrompt(key: string) {
+  return bento.getOrSet(
+    `BOT_CONFIG_${key}`,
+    async () => {
+      const prompt = await db.query.botConfig.findFirst({
+        where: eq(botConfig.key, key),
+        columns: {
+          value: true,
+        },
+      });
+
+      if (!prompt) {
+        throw new Error(`${key} not found`);
+      }
+
+      return prompt.value;
+    },
+    { ttl: '1d' },
+  );
+}
+
 export const PROMPTS = {
   TWITTER_REPLY_TEMPLATE: async () => {
-    return bento.getOrSet(
-      'BOT_CONFIG_TWITTER_REPLY_TEMPLATE',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'TWITTER_REPLY_TEMPLATE'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('TWITTER_REPLY_TEMPLATE not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
+    return getPrompt('TWITTER_REPLY_TEMPLATE');
   },
   REPLY_SHORTENER_PROMPT: async () => {
-    return bento.getOrSet(
-      'BOT_CONFIG_REPLY_SHORTENER_PROMPT',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'REPLY_SHORTENER_PROMPT'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('REPLY_SHORTENER_PROMPT not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
+    return getPrompt('REPLY_SHORTENER_PROMPT');
   },
   TWITTER_REPLY_REWRITER: async ({ text }: { text: string }) => {
-    const prompt = await bento.getOrSet(
-      'BOT_CONFIG_TWITTER_REPLY_REWRITER',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'TWITTER_REPLY_REWRITER'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('TWITTER_REPLY_REWRITER not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
+    const prompt = await getPrompt('TWITTER_REPLY_REWRITER');
     const templatePrompt = Handlebars.compile(prompt);
     return templatePrompt({ text });
   },
   ENGAGEMENT_HUMANIZER: async ({ text }: { text: string }) => {
-    const prompt = await bento.getOrSet(
-      'BOT_CONFIG_ENGAGEMENT_HUMANIZER',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'ENGAGEMENT_HUMANIZER'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('ENGAGEMENT_HUMANIZER not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
+    const prompt = await getPrompt('ENGAGEMENT_HUMANIZER');
     const templatePrompt = Handlebars.compile(prompt);
     return templatePrompt({ text });
   },
@@ -232,125 +185,23 @@ export const PROMPTS = {
     lastDogeReply: string;
     fullContext: string;
   }) => {
-    const prompt = await bento.getOrSet(
-      'BOT_CONFIG_REPLY_TWEET_QUESTION_PROMPT',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'REPLY_TWEET_QUESTION_PROMPT'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('REPLY_TWEET_QUESTION_PROMPT not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
+    const prompt = await getPrompt('REPLY_TWEET_QUESTION_PROMPT');
     const templatedPrompt = Handlebars.compile(prompt);
     return templatedPrompt({ question, lastDogeReply, fullContext });
   },
   INTERACTION_ENGAGEMENT_DECISION_PROMPT: async () => {
-    return bento.getOrSet(
-      'BOT_CONFIG_INTERACTION_ENGAGEMENT_DECISION_PROMPT',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'INTERACTION_ENGAGEMENT_DECISION_PROMPT'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('INTERACTION_ENGAGEMENT_DECISION_PROMPT not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
+    return getPrompt('INTERACTION_ENGAGEMENT_DECISION_PROMPT');
   },
   ENGAGEMENT_DECISION_PROMPT: async () => {
-    return bento.getOrSet(
-      'BOT_CONFIG_ENGAGEMENT_DECISION_PROMPT',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'ENGAGEMENT_DECISION_PROMPT'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('ENGAGEMENT_DECISION_PROMPT not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
+    return getPrompt('ENGAGEMENT_DECISION_PROMPT');
   },
   LONG_RESPONSE_FORMATTER_PROMPT: async () => {
-    return bento.getOrSet(
-      'BOT_CONFIG_LONG_RESPONSE_FORMATTER_PROMPT',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'LONG_RESPONSE_FORMATTER_PROMPT'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('LONG_RESPONSE_FORMATTER_PROMPT not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
+    return getPrompt('LONG_RESPONSE_FORMATTER_PROMPT');
   },
   REPLY_AS_DOGE: async () => {
-    return bento.getOrSet(
-      'BOT_CONFIG_REPLY_AS_DOGE',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'REPLY_AS_DOGE'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('REPLY_AS_DOGE not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
+    return getPrompt('REPLY_AS_DOGE');
   },
   TWITTER_REPLY_TEMPLATE_KB: async () => {
-    return bento.getOrSet(
-      'BOT_CONFIG_TWITTER_REPLY_TEMPLATE_KB',
-      async () => {
-        const prompt = await db.query.botConfig.findFirst({
-          where: eq(botConfig.key, 'TWITTER_REPLY_TEMPLATE_KB'),
-          columns: {
-            value: true,
-          },
-        });
-
-        if (!prompt) {
-          throw new Error('TWITTER_REPLY_TEMPLATE_KB not found');
-        }
-
-        return prompt.value;
-      },
-      { ttl: '1d' },
-    );
+    return getPrompt('TWITTER_REPLY_TEMPLATE_KB');
   },
 };
