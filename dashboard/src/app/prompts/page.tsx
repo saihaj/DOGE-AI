@@ -29,6 +29,7 @@ import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { useCookie } from '@/hooks/use-cookie';
 import { cn } from '@/lib/utils';
 import { checkVariablesParser } from './validator';
+import { toast } from 'sonner';
 
 const EDITOR_MESSAGES = {
   LOADING: 'Loading...',
@@ -36,6 +37,23 @@ const EDITOR_MESSAGES = {
   EMPTY:
     'No prompt loaded.\nSelect a prompt by clicking dropdown on the top-right corner.',
 };
+
+async function fetchWithErrorAsText(key: string, options?: RequestInit) {
+  const res = await fetch(new URL(key), {
+    ...options,
+  });
+
+  const data = res.headers.get('Content-Type')?.includes('application/json')
+    ? await res.json()
+    : await res.text();
+
+  if (!res.ok) {
+    if (typeof data === 'object' && 'message' in data) throw data.message;
+    else throw new Error('An error occurred while fetching the data.');
+  }
+
+  return data;
+}
 
 function AvailablePrompts({
   value,
@@ -117,6 +135,7 @@ export default function Prompts() {
   const [state, setState] = useState<'editor' | 'review' | 'back-to-editor'>(
     'editor',
   );
+  const [hasErrors, setHasErrors] = useState(false);
   const editor = useRef<Parameters<OnMount>['0']>(null);
   const monaco = useMonaco();
   const { data, isLoading, error } = useSWR<{
@@ -171,6 +190,12 @@ export default function Prompts() {
       }
     });
 
+    if (markers.length > 0) {
+      setHasErrors(true);
+    } else {
+      setHasErrors(false);
+    }
+
     // Set markers in the editor
     monaco?.editor.setModelMarkers(
       editorRef.getModel()!,
@@ -188,6 +213,7 @@ export default function Prompts() {
   })();
 
   const readyForReview = (() => {
+    if (hasErrors) return false;
     if (edited == null) return false;
     if (edited !== data?.value) return true;
     if (error) return false;
@@ -282,7 +308,42 @@ export default function Prompts() {
               <ArrowLeftIcon />
               Go Back
             </Button>
-            <Button onClick={() => {}} className="absolute bottom-20 right-10">
+            <Button
+              disabled={!readyForReview}
+              onClick={async () => {
+                if (!edited) {
+                  toast.error('No changes to save');
+                  return;
+                }
+                const data = fetchWithErrorAsText(
+                  `${API_URL}/api/prompt/${selectedPromptKey}`,
+                  {
+                    method: 'PATCH',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+                    },
+                    body: JSON.stringify({
+                      value: edited,
+                    }),
+                  },
+                );
+
+                toast.promise(data, {
+                  loading: 'Updating prompt...',
+                  success: data => {
+                    setSelectedPromptKey(null);
+                    setEdited(null);
+                    setState('editor');
+                    return data;
+                  },
+                  error: err => {
+                    return err;
+                  },
+                });
+              }}
+              className="absolute bottom-20 right-10"
+            >
               <SaveIcon />
               Save Changes
             </Button>

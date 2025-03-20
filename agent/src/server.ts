@@ -52,6 +52,8 @@ import { executeInteractionTweets } from './twitter/execute-interaction';
 import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import { PROMPTS } from './twitter/prompts';
 import { botConfig, db, eq } from 'database';
+import { Type } from '@sinclair/typebox';
+import { patchPrompt, PatchPrompt } from './api/prompt';
 
 const fastify = Fastify();
 
@@ -850,6 +852,80 @@ fastify.route({
     return reply.send({
       value: promptValue.value,
     });
+  },
+  url: '/api/prompt/:id',
+});
+
+fastify.route<{ Body: PatchPrompt }>({
+  method: 'PATCH',
+  preHandler: [authHandler],
+  schema: {
+    body: PatchPrompt,
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          message: { type: 'string' },
+        },
+      },
+      400: {
+        type: 'object',
+        properties: {
+          message: { type: 'string' },
+        },
+      },
+    },
+  },
+  handler: async (request, reply) => {
+    const { id } = request.params as {
+      id: string;
+    };
+    const { value } = request.body;
+    const log = logger.child({
+      function: 'api-prompt-patch-by-id',
+      requestId: request.id,
+      id,
+    });
+    log.info({}, 'patch prompt');
+
+    if (!id) {
+      log.error({}, 'no ID found');
+      return reply.code(400).send({
+        error: 'ID is required',
+      });
+    }
+
+    if (!value) {
+      log.error({}, 'no value found');
+      return reply.code(400).send({
+        error: 'Value is required',
+      });
+    }
+    try {
+      const result = await patchPrompt(
+        {
+          key: id,
+          value,
+        },
+        log,
+      );
+
+      if (!result) {
+        log.error({}, 'could not patch prompt');
+        return reply.code(400).send({
+          message: 'Could not patch prompt',
+        });
+      }
+
+      return reply.send({
+        message: 'success',
+      });
+    } catch (error) {
+      log.error({ error }, 'Error in patchPrompt');
+      return reply.code(400).send({
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
   },
   url: '/api/prompt/:id',
 });
