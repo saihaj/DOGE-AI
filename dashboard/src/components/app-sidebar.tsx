@@ -1,5 +1,5 @@
 'use client';
-import { BookIcon, Home, Reply, ReplyAll } from 'lucide-react';
+import { BookIcon, Home, PencilIcon, Reply, ReplyAll } from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -34,6 +34,11 @@ const items = [
     title: 'Knowledge Base',
     url: '/manual-kb',
     icon: BookIcon,
+  },
+  {
+    title: 'Prompt Editor',
+    url: '/prompts',
+    icon: PencilIcon,
   },
 ];
 
