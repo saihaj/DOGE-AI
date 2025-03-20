@@ -14,14 +14,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import Editor, {
-  DiffEditor,
-  useMonaco,
-  MonacoDiffEditor,
-  Monaco,
-  OnChange,
-  OnMount,
-} from '@monaco-editor/react';
+import Editor, { DiffEditor, useMonaco, OnMount } from '@monaco-editor/react';
 import {
   ArrowLeftIcon,
   Check,
