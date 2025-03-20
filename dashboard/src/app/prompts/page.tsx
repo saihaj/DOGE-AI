@@ -14,7 +14,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import Editor, { DiffEditor } from '@monaco-editor/react';
+import Editor, {
+  DiffEditor,
+  useMonaco,
+  MonacoDiffEditor,
+  Monaco,
+  OnChange,
+  OnMount,
+} from '@monaco-editor/react';
 import {
   ArrowLeftIcon,
   Check,
@@ -24,10 +31,11 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import useSWR from 'swr';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { useCookie } from '@/hooks/use-cookie';
 import { cn } from '@/lib/utils';
+import { checkVariablesParser } from './validator';
 
 function AvailablePrompts({
   value,
@@ -106,7 +114,11 @@ export default function Prompts() {
   const [selectedPromptKey, setSelectedPromptKey] = useState<string | null>(
     null,
   );
-  const [state, setState] = useState<'editor' | 'review'>('editor');
+  const [state, setState] = useState<'editor' | 'review' | 'back-to-editor'>(
+    'editor',
+  );
+  const editor = useRef<Parameters<OnMount>['0']>(null);
+  const monaco = useMonaco();
   const { data, isLoading, error } = useSWR<{
     value: string;
   }>(
@@ -128,13 +140,66 @@ export default function Prompts() {
     },
   );
 
-  const value = (() => {
-    if (isLoading) return 'Loading...';
-    if (error) return 'Error loading prompt.';
-    return (
-      data?.value ||
-      'No prompt loaded.\nSelect a prompt by clicking dropdown on the top-right corner.'
+  const EDITOR_MESSAGES = {
+    LOADING: 'Loading...',
+    ERROR: 'Error loading prompt.',
+    EMPTY:
+      'No prompt loaded.\nSelect a prompt by clicking dropdown on the top-right corner.',
+  };
+
+  // Validation function
+  function validateTemplateVariables(text: string) {
+    const editorRef = editor.current;
+    if (!monaco || !editorRef) return;
+
+    const result = checkVariablesParser.parse(text);
+    const markers: Parameters<typeof monaco.editor.setModelMarkers>[2] = [];
+
+    // Mark potential templates that aren't valid as warnings
+    result.allPotential.forEach((potential: string) => {
+      if (!result.valid.includes(potential)) {
+        const startPos = text.indexOf(potential);
+        const endPos = startPos + potential.length;
+        const lines = text.substring(0, startPos).split('\n');
+        const startLine = lines.length;
+        const startColumn = lines[lines.length - 1].length + 1;
+        const endLines = text.substring(0, endPos).split('\n');
+        const endLine = endLines.length;
+        const endColumn = endLines[endLines.length - 1].length + 1;
+
+        markers.push({
+          severity: monaco.MarkerSeverity.Error,
+          message: `Invalid template variable: only ""{{variable}}"" is allowed.`,
+          startLineNumber: startLine,
+          startColumn: startColumn,
+          endLineNumber: endLine,
+          endColumn: endColumn,
+        });
+      }
+    });
+
+    // Set markers in the editor
+    monaco?.editor.setModelMarkers(
+      editorRef.getModel()!,
+      'templateValidator',
+      markers,
     );
+  }
+
+  const value = (() => {
+    if (isLoading) return EDITOR_MESSAGES.LOADING;
+    if (error) return EDITOR_MESSAGES.ERROR;
+    if (!data) return EDITOR_MESSAGES.EMPTY;
+    if (state === 'back-to-editor') return edited || data.value;
+    return data.value;
+  })();
+  console.log(value);
+
+  const readyForReview = (() => {
+    if (edited == null) return false;
+    if (edited !== data?.value) return true;
+    if (error) return false;
+    return false;
   })();
 
   return (
@@ -144,6 +209,7 @@ export default function Prompts() {
           <AvailablePrompts
             value={selectedPromptKey}
             setValue={v => {
+              setState('editor');
               setSelectedPromptKey(v);
               setEdited(null);
             }}
@@ -151,15 +217,24 @@ export default function Prompts() {
         }
       />
       <div className="relative">
-        {state === 'editor' && (
+        {state !== 'review' && (
           <>
             <Editor
               height="100vh"
+              onMount={ed => {
+                editor.current = ed;
+                // Initial validation
+                validateTemplateVariables(ed.getValue());
+              }}
               theme={theme === 'dark' ? 'vs-dark' : 'light'}
               defaultLanguage="markdown"
               value={value}
               onChange={v => {
-                if (v) setEdited(v);
+                if (v) {
+                  if (Object.values(EDITOR_MESSAGES).includes(v)) return;
+                  validateTemplateVariables(v);
+                  setEdited(v);
+                }
               }}
               options={{
                 automaticLayout: true,
@@ -181,7 +256,7 @@ export default function Prompts() {
                 },
               }}
             />
-            {edited != null && (
+            {readyForReview && (
               <Button
                 onClick={() => setState('review')}
                 className="absolute bottom-20 right-10"
@@ -209,7 +284,7 @@ export default function Prompts() {
             )}
 
             <Button
-              onClick={() => setState('editor')}
+              onClick={() => setState('back-to-editor')}
               className="absolute bottom-20 left-10"
             >
               <ArrowLeftIcon />
