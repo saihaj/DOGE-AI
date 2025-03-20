@@ -14,8 +14,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import Editor from '@monaco-editor/react';
-import { Check, ChevronsUpDown } from 'lucide-react';
+import Editor, { DiffEditor } from '@monaco-editor/react';
+import {
+  ArrowLeftIcon,
+  Check,
+  ChevronsUpDown,
+  DiffIcon,
+  SaveIcon,
+} from 'lucide-react';
 import { useTheme } from 'next-themes';
 import useSWR from 'swr';
 import { useState } from 'react';
@@ -95,21 +101,33 @@ function AvailablePrompts({
 
 export default function Prompts() {
   const { theme } = useTheme();
+  const [edited, setEdited] = useState<string | null>(null);
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const [selectedPromptKey, setSelectedPromptKey] = useState<string | null>(
     null,
   );
+  const [state, setState] = useState<'editor' | 'review'>('editor');
   const { data, isLoading, error } = useSWR<{
     value: string;
   }>(
     selectedPromptKey ? `${API_URL}/api/prompt/${selectedPromptKey}` : null,
-    (url: string) =>
-      fetch(url, {
+    async (url: string) => {
+      const res = await fetch(url, {
         headers: {
           [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
         },
-      }).then(res => res.json()),
+      });
+
+      if (!res.ok) {
+        const message = await res.text();
+        const error = new Error(message);
+        throw error;
+      }
+
+      return res.json();
+    },
   );
+
   const value = (() => {
     if (isLoading) return 'Loading...';
     if (error) return 'Error loading prompt.';
@@ -125,35 +143,85 @@ export default function Prompts() {
         right={
           <AvailablePrompts
             value={selectedPromptKey}
-            setValue={setSelectedPromptKey}
+            setValue={v => {
+              setSelectedPromptKey(v);
+              setEdited(null);
+            }}
           />
         }
       />
-      <Editor
-        height="100vh"
-        theme={theme === 'dark' ? 'vs-dark' : 'light'}
-        defaultLanguage="markdown"
-        value={value}
-        options={{
-          automaticLayout: true,
-          wordWrap: 'on',
-          inDiffEditor: false,
-          smartSelect: {
-            selectSubwords: true,
-            selectLeadingAndTrailingWhitespace: true,
-          },
-          fontSize: 18,
-          readOnly: !selectedPromptKey || isLoading || error,
-          mouseWheelZoom: false,
-          selectOnLineNumbers: true,
-          cursorBlinking: 'blink',
-          cursorStyle: 'line',
-          contextmenu: true,
-          minimap: {
-            enabled: false,
-          },
-        }}
-      />
+      <div className="relative">
+        {state === 'editor' && (
+          <>
+            <Editor
+              height="100vh"
+              theme={theme === 'dark' ? 'vs-dark' : 'light'}
+              defaultLanguage="markdown"
+              value={value}
+              onChange={v => {
+                if (v) setEdited(v);
+              }}
+              options={{
+                automaticLayout: true,
+                wordWrap: 'on',
+                inDiffEditor: false,
+                smartSelect: {
+                  selectSubwords: true,
+                  selectLeadingAndTrailingWhitespace: true,
+                },
+                fontSize: 18,
+                readOnly: !selectedPromptKey || isLoading || error,
+                mouseWheelZoom: false,
+                selectOnLineNumbers: true,
+                cursorBlinking: 'blink',
+                cursorStyle: 'line',
+                contextmenu: true,
+                minimap: {
+                  enabled: false,
+                },
+              }}
+            />
+            {edited != null && (
+              <Button
+                onClick={() => setState('review')}
+                className="absolute bottom-20 right-10"
+              >
+                <DiffIcon />
+                Review Changes
+              </Button>
+            )}
+          </>
+        )}
+
+        {state === 'review' && (
+          <>
+            {edited != null && (
+              <DiffEditor
+                height="100vh"
+                theme={theme === 'dark' ? 'vs-dark' : 'light'}
+                language="markdown"
+                original={value}
+                modified={edited}
+                options={{
+                  readOnly: true,
+                }}
+              />
+            )}
+
+            <Button
+              onClick={() => setState('editor')}
+              className="absolute bottom-20 left-10"
+            >
+              <ArrowLeftIcon />
+              Go Back
+            </Button>
+            <Button onClick={() => {}} className="absolute bottom-20 right-10">
+              <SaveIcon />
+              Save Changes
+            </Button>
+          </>
+        )}
+      </div>
     </>
   );
 }
