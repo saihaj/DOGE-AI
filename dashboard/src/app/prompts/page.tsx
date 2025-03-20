@@ -1,6 +1,6 @@
 'use client';
 import { Header } from '@/components/header';
-import { Editor } from '@monaco-editor/react';
+import Editor from '@monaco-editor/react';
 import { useTheme } from 'next-themes';
 
 export default function Prompts() {
@@ -10,8 +10,11 @@ export default function Prompts() {
     <>
       <Header />
       <Editor
+        height="100vh"
         theme={theme === 'dark' ? 'vs-dark' : 'light'}
+        defaultLanguage="markdown"
         options={{
+          automaticLayout: true,
           wordWrap: 'on',
           inDiffEditor: false,
           smartSelect: {
