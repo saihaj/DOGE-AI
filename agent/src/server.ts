@@ -50,6 +50,8 @@ import { ingestInteractionTweets } from './twitter/ingest-interaction';
 import { processInteractionTweets } from './twitter/process-interactions';
 import { executeInteractionTweets } from './twitter/execute-interaction';
 import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
+import { PROMPTS } from './twitter/prompts';
+import { botConfig, db, eq } from 'database';
 
 const fastify = Fastify();
 
@@ -771,6 +773,85 @@ fastify.route<{ Body: ManualKbDeleteInput }>({
     }
   },
   url: '/api/manual-kb',
+});
+
+fastify.route({
+  method: 'GET',
+  preHandler: [authHandler],
+  schema: {
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          keys: {
+            type: 'array',
+            items: {
+              type: 'string',
+            },
+          },
+        },
+      },
+    },
+  },
+  handler: async (_, reply) => {
+    const keys = Object.keys(PROMPTS);
+    return reply.send({
+      keys,
+    });
+  },
+  url: '/api/prompts',
+});
+
+fastify.route({
+  method: 'GET',
+  preHandler: [authHandler],
+  schema: {
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          value: { type: 'string' },
+        },
+      },
+    },
+  },
+  handler: async (request, reply) => {
+    const { id } = request.params as {
+      id: string;
+    };
+
+    if (!id) {
+      return reply.code(400).send({
+        error: 'ID is required',
+      });
+    }
+
+    const log = logger.child({
+      function: 'api-prompt-id',
+      requestId: request.id,
+      id,
+    });
+    log.info({}, 'get prompt');
+
+    const promptValue = await db.query.botConfig.findFirst({
+      where: eq(botConfig.key, id),
+      columns: {
+        value: true,
+      },
+    });
+
+    if (!promptValue) {
+      log.error({}, 'prompt not found');
+      return reply.code(404).send({
+        error: 'Prompt not found',
+      });
+    }
+
+    return reply.send({
+      value: promptValue.value,
+    });
+  },
+  url: '/api/prompt/:id',
 });
 
 // So in fly.io, health should do both the health check and the readiness check
