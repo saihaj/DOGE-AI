@@ -112,8 +112,11 @@ export default function Prompts() {
   );
   const value = (() => {
     if (isLoading) return 'Loading...';
-    if (error) return 'Error loading prompt';
-    return data?.value || '';
+    if (error) return 'Error loading prompt.';
+    return (
+      data?.value ||
+      'No prompt loaded.\nSelect a prompt by clicking dropdown on the top-right corner.'
+    );
   })();
 
   return (
@@ -140,7 +143,7 @@ export default function Prompts() {
             selectLeadingAndTrailingWhitespace: true,
           },
           fontSize: 18,
-          readOnly: false,
+          readOnly: !selectedPromptKey || isLoading || error,
           mouseWheelZoom: false,
           selectOnLineNumbers: true,
           cursorBlinking: 'blink',
