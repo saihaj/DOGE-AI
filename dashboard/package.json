@@ -28,6 +28,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
+    "jose": "^6.0.8",
     "lucide-react": "^0.475.0",
     "marked": "^15.0.7",
     "next": "15.1.7",
