@@ -9,14 +9,14 @@ const FLY_APP_TOKEN = (() => {
   return process.env.FLY_APP_TOKEN;
 })();
 export const CF_AUDIENCE = (() => {
-  if (!IS_LOCAL) return '';
+  if (IS_LOCAL) return '';
   if (!process.env.CF_AUDIENCE) {
     throw new Error('CF_AUDIENCE is not set in your .env');
   }
   return process.env.CF_AUDIENCE;
 })();
 export const CF_TEAM_DOMAIN = (() => {
-  if (!IS_LOCAL) return '';
+  if (IS_LOCAL) return '';
   if (!process.env.CF_TEAM_DOMAIN) {
     throw new Error('CF_TEAM_DOMAIN is not set in your .env');
   }
