@@ -10,6 +10,7 @@ import { PROMPTS } from './prompts.ts';
 import { logger } from '../logger.ts';
 import { REJECTION_REASON, TEMPERATURE, TWITTER_USERNAME } from '../const.ts';
 import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
+import { setTweet } from './helpers.ts';
 
 export const processInteractionTweets = inngest.createFunction(
   {
@@ -74,6 +75,8 @@ export const processInteractionTweets = inngest.createFunction(
       eventId: event.id,
     });
     log.info({}, 'processing interaction tweet');
+    // @ts-expect-error: temporary workaround
+    await setTweet({ data: event.data });
     const tweetText = event.data.text;
 
     // Do not engage with tweets from the agent
