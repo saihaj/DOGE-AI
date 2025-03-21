@@ -41,7 +41,7 @@ export function Settings() {
                   action: {
                     label: 'Continue',
                     onClick: () => {
-                      const data = fetch(`${API_URL}/api/restart`, {
+                      const data = fetch(`/api/restart`, {
                         method: 'POST',
                         headers: {
                           [CF_BACKEND_HEADER_NAME]: cookie,
