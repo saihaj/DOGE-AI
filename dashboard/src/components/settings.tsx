@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
 import { useCookie } from '@/hooks/use-cookie';
-import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
+import { CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 
 export function Settings() {
   const { setTheme } = useTheme();
