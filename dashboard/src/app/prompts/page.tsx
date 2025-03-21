@@ -296,7 +296,16 @@ export default function Prompts() {
                 original={value}
                 modified={edited}
                 options={{
+                  wordWrap: 'on',
+                  automaticLayout: true,
                   readOnly: true,
+                  fontSize: 18,
+                  mouseWheelZoom: false,
+                  selectOnLineNumbers: true,
+                  contextmenu: true,
+                  minimap: {
+                    enabled: false,
+                  },
                 }}
               />
             )}
