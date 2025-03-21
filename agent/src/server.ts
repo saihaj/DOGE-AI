@@ -54,6 +54,7 @@ import { PROMPTS } from './twitter/prompts';
 import { botConfig, db, eq } from 'database';
 import { Type } from '@sinclair/typebox';
 import { patchPrompt, PatchPrompt } from './api/prompt';
+import { restartMachines } from './api/machine';
 
 const fastify = Fastify();
 
@@ -928,6 +929,47 @@ fastify.route<{ Body: PatchPrompt }>({
     }
   },
   url: '/api/prompt/:id',
+});
+
+fastify.route({
+  method: 'POST',
+  preHandler: [authHandler],
+  schema: {
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          message: { type: 'string' },
+        },
+      },
+      400: {
+        type: 'object',
+        properties: {
+          message: { type: 'string' },
+        },
+      },
+    },
+  },
+  handler: async (request, reply) => {
+    const log = logger.child({
+      function: 'api-restart',
+      requestId: request.id,
+    });
+    log.info({}, 'scheduling restart');
+
+    try {
+      await restartMachines(log);
+      return reply.send({
+        message: 'success',
+      });
+    } catch (error) {
+      log.error({ error }, 'Error in restartMachines');
+      return reply.code(400).send({
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  },
+  url: '/api/restart',
 });
 
 // So in fly.io, health should do both the health check and the readiness check
