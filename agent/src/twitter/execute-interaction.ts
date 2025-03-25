@@ -3,6 +3,7 @@ import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
+  engagementHumanizer,
   generateEmbeddings,
   getTimeInSecondsElapsedSinceTweetCreated,
   getTweet,
@@ -92,9 +93,13 @@ export async function getLongResponse(
   const responseLong = sanitizeLlmOutput(_responseLong);
   const formatted = await longResponseFormatter(responseLong);
   log.info({ response: formatted }, 'formatted long response');
+  const humanized = await engagementHumanizer(formatted);
+  log.info({ response: humanized }, 'humanized long response');
+
   return {
     raw: responseLong,
     formatted,
+    humanized,
     metadata,
   };
 }
@@ -275,7 +280,7 @@ export const executeInteractionTweets = inngest.createFunction(
             return result.trim();
           })();
 
-          const { raw, metadata, formatted } = await getLongResponse(
+          const { raw, metadata, humanized } = await getLongResponse(
             {
               summary,
               text,
@@ -289,7 +294,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
           log.info(
             {
-              response: formatted,
+              response: humanized,
               metadata,
             },
             'generated response',
@@ -306,7 +311,7 @@ export const executeInteractionTweets = inngest.createFunction(
               longOutput: '',
               refinedOutput: '',
               metadata,
-              response: formatted,
+              response: humanized,
             };
           }
 
@@ -321,12 +326,12 @@ export const executeInteractionTweets = inngest.createFunction(
               longOutput: '',
               refinedOutput: '',
               metadata,
-              response: formatted,
+              response: humanized,
             };
           }
 
           return {
-            longOutput: formatted,
+            longOutput: humanized,
             refinedOutput: finalAnswer,
             metadata,
             response: finalAnswer,
