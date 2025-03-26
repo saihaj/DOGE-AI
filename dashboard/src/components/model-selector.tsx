@@ -33,12 +33,20 @@ const models = [
     label: 'Sonar Reasoning',
   },
   {
-    value: 'o3-mini',
-    label: 'OpenAI o3 mini',
+    value: 'deepseek-r1:online',
+    label: 'DeepSeek: R1 (web)',
+  },
+  {
+    value: 'deepseek-r1',
+    label: 'DeepSeek: R1',
   },
   {
     value: 'gpt-4o',
     label: 'OpenAI GPT 4o',
+  },
+  {
+    value: 'o3-mini',
+    label: 'OpenAI o3 mini',
   },
   {
     value: 'gpt-4o-mini',

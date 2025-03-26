@@ -130,3 +130,9 @@ export const CF_TEAM_DOMAIN = (() => {
   return process.env.CF_TEAM_DOMAIN;
 })();
 export const VECTOR_SEARCH_MATCH_THRESHOLD = 0.6;
+export const OPEN_ROUTER_API_KEY = (() => {
+  if (!process.env.OPEN_ROUTER_API_KEY) {
+    throw new Error('OPEN_ROUTER_API_KEY is not set in your .env');
+  }
+  return process.env.OPEN_ROUTER_API_KEY;
+})();
