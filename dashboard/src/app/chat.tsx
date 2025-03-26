@@ -496,6 +496,10 @@ export function Chat() {
                 message.content,
                 message.sources,
               );
+              const reasoning = message.parts
+                .filter(p => p.type === 'reasoning')
+                .map(p => p.reasoning)
+                .join('\n');
 
               return (
                 <div
@@ -536,7 +540,8 @@ export function Chat() {
                       </div>
                       <div
                         className={cn(
-                          'flex flex-row-reverse gap-2 items-center mt-2',
+                          message.role === 'user' ? 'flex-row-reverse' : '',
+                          'flex gap-2 items-center mt-2',
                           'opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center',
                         )}
                       >
@@ -574,6 +579,42 @@ export function Chat() {
                                     </Drawer.Title>
                                     <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
                                       <Markdown>{message.tweet}</Markdown>
+                                    </Drawer.Description>
+                                    <CopyButton
+                                      className="-ml-1 mb-4"
+                                      value={message.tweet}
+                                    />
+                                  </div>
+                                </div>
+                              </Drawer.Content>
+                            </Drawer.Portal>
+                          </Drawer.Root>
+                        )}
+                        {reasoning && (
+                          <Drawer.Root direction="right">
+                            <Drawer.Trigger>
+                              <Button variant="outline" size="sm">
+                                Reasoning
+                              </Button>
+                            </Drawer.Trigger>
+                            <Drawer.Portal>
+                              <Drawer.Overlay className="fixed inset-0 bg-black/60 z-10" />
+                              <Drawer.Content
+                                className="right-2 rounded-2xl top-2 bottom-2 fixed bg-primary-foreground z-10 outline-none max-w-lg flex overflow-y-auto"
+                                // The gap between the edge of the screen and the drawer is 8px in this case.
+                                style={
+                                  {
+                                    '--initial-transform': 'calc(100% + 8px)',
+                                  } as React.CSSProperties
+                                }
+                              >
+                                <div className="bg-primary-foreground h-full w-full grow p-5 flex flex-col rounded-2xl">
+                                  <div className="max-w-xl mx-auto">
+                                    <Drawer.Title className="font-bold text-lg mb-2 text-primary">
+                                      Reasoning
+                                    </Drawer.Title>
+                                    <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
+                                      <Markdown>{reasoning}</Markdown>
                                     </Drawer.Description>
                                     <CopyButton
                                       className="-ml-1 mb-4"
