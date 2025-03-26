@@ -618,7 +618,7 @@ export function Chat() {
                                     </Drawer.Description>
                                     <CopyButton
                                       className="-ml-1 mb-4"
-                                      value={message.tweet}
+                                      value={reasoning}
                                     />
                                   </div>
                                 </div>
