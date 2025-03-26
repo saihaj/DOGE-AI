@@ -82,7 +82,7 @@ export async function processTestEngageRequest({
     return result.trim();
   })();
 
-  const { humanized, metadata, raw } = await getLongResponse(
+  const { formatted, metadata, raw } = await getLongResponse(
     {
       summary,
       text,
@@ -106,9 +106,9 @@ export async function processTestEngageRequest({
     refinePrompt,
   });
 
-  log.info({ long: humanized, short: refinedOutput, metadata });
+  log.info({ long: formatted, short: refinedOutput, metadata });
   return {
-    answer: humanized,
+    answer: formatted,
     short: refinedOutput,
     bill: summary,
   };

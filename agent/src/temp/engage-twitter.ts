@@ -77,7 +77,7 @@ async function main() {
       return result.trim();
     })();
 
-    const { metadata, humanized, raw } = await getLongResponse(
+    const { metadata, formatted, raw } = await getLongResponse(
       {
         summary,
         text: userMessage,
@@ -93,7 +93,7 @@ async function main() {
       console.log('\n\nMetadata: ', metadata, '\n\n');
     }
 
-    console.log('\n\nLong: ', humanized, '\n\n');
+    console.log('\n\nLong: ', formatted, '\n\n');
 
     const refinedOutput = await getShortResponse({ topic: raw });
 
