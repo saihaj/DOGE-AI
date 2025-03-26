@@ -316,13 +316,12 @@ fastify.route<{ Body: ChatStreamInput }>({
         })();
 
         if (summary) {
+          log.info({ summary }, 'summary');
           // want to insert the DB summary as the second last message in the context of messages.
           messages.splice(messages.length - 1, 0, {
             role: 'user',
             content: summary,
           });
-
-          log.info({ messages }, 'messages with summary');
         }
       }
 
