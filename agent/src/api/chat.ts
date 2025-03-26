@@ -31,5 +31,6 @@ export const myProvider = customProvider({
     'claude-3-5-sonnet-latest': anthropic('claude-3-5-sonnet-latest'),
     'claude-3-7-sonnet-latest': anthropic('claude-3-7-sonnet-latest'),
     'deepseek-r1': openrouter.chat('deepseek/deepseek-r1'),
+    'deepseek-r1:online': openrouter.chat('deepseek/deepseek-r1:online'),
   },
 });
