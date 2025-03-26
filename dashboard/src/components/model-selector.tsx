@@ -52,6 +52,10 @@ const models = [
     value: 'claude-3-7-sonnet-latest',
     label: 'Sonnet 3.7',
   },
+  {
+    value: 'deepseek-r1',
+    label: 'DeepSeek: R1',
+  },
 ] as const;
 
 export type ModelValues = (typeof models)[number]['value'];

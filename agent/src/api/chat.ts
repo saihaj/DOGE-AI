@@ -3,6 +3,8 @@ import { openai } from '@ai-sdk/openai';
 import { perplexity } from '@ai-sdk/perplexity';
 import { Static, Type } from '@sinclair/typebox';
 import { customProvider } from 'ai';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { OPEN_ROUTER_API_KEY } from '../const';
 
 export const ChatStreamInput = Type.Object({
   id: Type.String(),
@@ -14,6 +16,10 @@ export const ChatStreamInput = Type.Object({
 });
 export type ChatStreamInput = Static<typeof ChatStreamInput>;
 
+const openrouter = createOpenRouter({
+  apiKey: OPEN_ROUTER_API_KEY,
+});
+
 export const myProvider = customProvider({
   languageModels: {
     'sonar-reasoning-pro': perplexity('sonar-reasoning-pro'),
@@ -24,5 +30,6 @@ export const myProvider = customProvider({
     'gpt-4o-mini': openai('gpt-4o-mini'),
     'claude-3-5-sonnet-latest': anthropic('claude-3-5-sonnet-latest'),
     'claude-3-7-sonnet-latest': anthropic('claude-3-7-sonnet-latest'),
+    'deepseek-r1': openrouter.chat('deepseek/deepseek-r1'),
   },
 });
