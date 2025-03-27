@@ -7,6 +7,7 @@ import {
   blob,
   customType,
   index,
+  unique,
 } from 'drizzle-orm/sqlite-core';
 import * as crypto from 'node:crypto';
 import { sql } from 'drizzle-orm';
@@ -193,3 +194,46 @@ export const botConfig = sqliteTable('BotConfig', {
   key: text().notNull().unique(),
   value: text().notNull(),
 });
+
+export const prompt = sqliteTable(
+  'Prompt',
+  {
+    id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+    key: text().notNull().unique(),
+    description: text(),
+    latestCommitId: text()
+      .notNull()
+      .references(() => promptCommit.id, { onDelete: 'cascade' }),
+    createdAt: numeric()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updatedAt: numeric()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    meta: blob(),
+  },
+  table => [unique('Prompt_key').on(table.key)],
+);
+
+export const promptCommit = sqliteTable(
+  'PromptCommit',
+  {
+    id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
+    promptId: text()
+      .notNull()
+      .references(() => prompt.id, { onDelete: 'cascade' }),
+    parentCommitId: text().references(() => promptCommit.id),
+    content: text().notNull(),
+    message: text(),
+    createdAt: numeric()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .notNull(),
+    updatedAt: numeric()
+      .default(sql`(CURRENT_TIMESTAMP)`)
+      .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    meta: blob(),
+  },
+  table => [index('PromptCommit_prompt_key').on(table.promptId)],
+);
