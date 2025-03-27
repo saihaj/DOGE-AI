@@ -11,9 +11,6 @@ export const scheduledDogeWebsiteScrape = inngest.createFunction(
           url: 'https://doge.gov/savings',
           actions: [
             { selector: "//*[text()='Show All Agencies']", type: 'click' },
-            { selector: "//*[text()='View All Contracts']", type: 'click' },
-            { selector: "//*[text()='View All Grants']", type: 'click' },
-            { selector: "//*[text()='View All Leases']", type: 'click' },
           ],
         },
       },
