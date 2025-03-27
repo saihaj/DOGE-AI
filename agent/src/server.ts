@@ -271,9 +271,13 @@ fastify.route<{ Body: ChatStreamInput }>({
 
       if (billSearch || documentSearch || manualKbSearch) {
         const latestMessage = messages[messages.length - 1];
+        const convoHistory = messages.filter(
+          message => message.role === 'user' || message.role === 'assistant',
+        );
+
         const kb = await getKbContext(
           {
-            messages: messages,
+            messages: convoHistory,
             text: latestMessage.content.toString(),
             manualEntries: manualKbSearch,
             billEntries: billSearch,
