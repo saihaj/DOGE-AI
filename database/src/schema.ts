@@ -229,7 +229,7 @@ export const promptCommit = sqliteTable(
     meta: blob(),
   },
   table => [
-    index('PromptCommit_prompt_key').on(table.promptId),
+    index('PromptCommit_prompt_id').on(table.promptId),
     foreignKey({
       columns: [table.parentCommitId],
       foreignColumns: [table.id],
