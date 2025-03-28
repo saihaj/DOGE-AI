@@ -1,9 +1,11 @@
-import { db, eq, prompt, promptCommit } from 'database';
+import { db, eq, prompt as dbPromptSchema, promptCommit, desc } from 'database';
+import * as crypto from 'node:crypto';
 
 export async function getLatestPrompt(key: string) {
   return db
     .select({
       commitId: promptCommit.id,
+      parentCommitId: promptCommit.parentCommitId,
       promptId: promptCommit.promptId,
       content: promptCommit.content,
     })
@@ -12,97 +14,132 @@ export async function getLatestPrompt(key: string) {
       eq(
         promptCommit.promptId,
         db
-          .select({ id: prompt.latestCommitId })
-          .from(prompt)
-          .where(eq(prompt.key, key)),
+          .select({ id: dbPromptSchema.latestCommitId })
+          .from(dbPromptSchema)
+          .where(eq(dbPromptSchema.key, key)),
       ),
     )
     .get();
 }
 
-// // Initialize a new prompt
-// export const initPrompt = (name, description) => {
-//   const result = db
-//     .insert(prompts)
-//     .values({ name, description })
-//     .returning({ promptId: prompts.promptId })
-//     .get();
-//   return result.promptId;
-// };
+async function commitPrompt({
+  key,
+  message,
+  value,
+}: {
+  key: string;
+  message: string;
+  value: string;
+}) {
+  const lastPrompt = await getLatestPrompt(key);
+  if (!lastPrompt) throw new Error(`Prompt "${key}" not found`);
 
-// // Commit a new version
-// export const commit = (promptName, content, commitMessage) => {
-//   const prompt = getPromptByName(promptName);
-//   if (!prompt) throw new Error(`Prompt "${promptName}" not found`);
+  const parentCommitId = lastPrompt.parentCommitId ? lastPrompt.commitId : null;
 
-//   const latestCommit = getLatestCommit(prompt.promptId);
-//   const parentCommitId = latestCommit ? latestCommit.commitId : null;
+  const newCommit = await db.transaction(async tx => {
+    // Insert new commit
+    const newCommit = await tx
+      .insert(promptCommit)
+      .values({
+        promptId: lastPrompt.promptId,
+        parentCommitId,
+        content: value,
+        message,
+        id: crypto.randomUUID(),
+      })
+      .returning({ commitId: promptCommit.id })
+      .get();
 
-//   // Insert new commit
-//   const newCommit = db
-//     .insert(commits)
-//     .values({
-//       promptId: prompt.promptId,
-//       parentCommitId,
-//       content,
-//       commitMessage,
-//     })
-//     .returning({ commitId: commits.commitId })
-//     .get();
+    await tx
+      .update(dbPromptSchema)
+      .set({ latestCommitId: newCommit.commitId })
+      .where(eq(dbPromptSchema.id, lastPrompt.promptId))
+      .run();
 
-//   // Update latest_commit_id
-//   db.update(prompts)
-//     .set({ latestCommitId: newCommit.commitId })
-//     .where(eq(prompts.promptId, prompt.promptId))
-//     .run();
+    return newCommit;
+  });
 
-//   return newCommit.commitId;
-// };
+  return newCommit;
+}
 
-// // Revert to a previous commit
-// export const revert = (promptName, targetCommitId) => {
-//   const prompt = getPromptByName(promptName);
-//   if (!prompt) throw new Error(`Prompt "${promptName}" not found`);
+// Revert to a previous commit
+async function revertPrompt({
+  key,
+  targetCommitId,
+}: {
+  key: string;
+  targetCommitId: string;
+}) {
+  const latestPrompt = getLatestPrompt(key);
+  if (!latestPrompt) throw new Error(`Prompt "${key}" not found`);
 
-//   const targetCommit = getCommitById(targetCommitId);
-//   if (!targetCommit) throw new Error(`Commit ${targetCommitId} not found`);
+  const targetCommit = await db.query.promptCommit.findFirst({
+    where: eq(promptCommit.id, targetCommitId),
+    columns: {
+      id: true,
+      content: true,
+    },
+  });
 
-//   const latestCommit = getLatestCommit(prompt.promptId);
-//   const parentCommitId = latestCommit ? latestCommit.commitId : null;
+  if (!targetCommit) throw new Error(`Commit ${targetCommitId} not found`);
 
-//   // Insert new commit with target content
-//   const newCommit = db
-//     .insert(commits)
-//     .values({
-//       promptId: prompt.promptId,
-//       parentCommitId,
-//       content: targetCommit.content,
-//       commitMessage: `Reverted to commit ${targetCommitId}`,
-//     })
-//     .returning({ commitId: commits.commitId })
-//     .get();
+  const newCommit = await commitPrompt({
+    key,
+    message: `Reverted to commit ${targetCommitId}`,
+    value: targetCommit.content,
+  });
 
-//   // Update latest_commit_id
-//   db.update(prompts)
-//     .set({ latestCommitId: newCommit.commitId })
-//     .where(eq(prompts.promptId, prompt.promptId))
-//     .run();
+  return newCommit;
+}
 
-//   return newCommit.commitId;
-// };
+// Get commit history IDs
+async function getPromptHistory(key: string) {
+  const latestPrompt = await getLatestPrompt(key);
+  if (!latestPrompt) throw new Error(`Prompt "${key}" not found`);
 
-// // Get commit history
-// export const getHistory = promptName => {
-//   const prompt = getPromptByName(promptName);
-//   if (!prompt) throw new Error(`Prompt "${promptName}" not found`);
+  return db
+    .select({
+      id: promptCommit.id,
+      createdAt: promptCommit.createdAt,
+    })
+    .from(promptCommit)
+    .where(eq(promptCommit.promptId, latestPrompt.promptId))
+    .orderBy(desc(promptCommit.createdAt))
+    .all();
+}
 
-//   return db
-//     .select()
-//     .from(commits)
-//     .where(eq(commits.promptId, prompt.promptId))
-//     .orderBy(commits.createdAt, 'desc')
-//     .all();
-// };
+// Initialize a new prompt
+async function initPrompt({ key, value }: { key: string; value: string }) {
+  const promptId = crypto.randomUUID();
+  const commitId = crypto.randomUUID();
+
+  const result = await db.transaction(async tx => {
+    // Insert new prompt
+    await tx
+      .insert(dbPromptSchema)
+      .values({
+        key,
+        latestCommitId: commitId,
+        description: '',
+        id: promptId,
+      })
+      .run();
+
+    // Insert initial commit
+    return await tx
+      .insert(promptCommit)
+      .values({
+        promptId,
+        content: value,
+        message: 'Initial commit',
+        id: commitId,
+      })
+      .returning({ promptId: promptCommit.id })
+      .get();
+  });
+
+  return result;
+}
 
 // // Example usage
 // const main = () => {
