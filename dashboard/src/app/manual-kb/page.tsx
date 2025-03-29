@@ -210,9 +210,31 @@ const FETCH_SIZE = 20;
 
 export default function ManualKB() {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
+  const trpc = useTRPC();
+  const { mutateAsync: deleteKbEntry } = useMutation(
+    trpc.deleteKbEntry.mutationOptions(),
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery.trim(), 300);
 
+  function deleteEntry(id: string) {
+    toast.promise(
+      deleteKbEntry({
+        id,
+      }),
+      {
+        loading: 'Deleting entry...',
+        success: data => {
+          if (data) {
+            mutate();
+            return 'Entry deleted successfully';
+          }
+          throw new Error('Failed to delete entry');
+        },
+        error: 'Failed to delete entry',
+      },
+    );
+  }
   const { data, error, isLoading, mutate, setSize } = useSWRInfinite(
     (index, previousPageData) => {
       if (!IS_LOCAL && !cfAuthorizationCookie) return null;
@@ -263,7 +285,9 @@ export default function ManualKB() {
         {data && (
           <>
             <DataTable
-              columns={columns({ mutate, cfAuthorizationCookie })}
+              columns={columns({
+                deleteEntry,
+              })}
               data={data?.flatMap(a => a)}
             />
             <div className="flex justify-center">

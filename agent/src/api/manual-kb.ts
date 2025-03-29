@@ -85,7 +85,7 @@ export const createKbEntry = protectedProcedure
 export const editKbEntry = protectedProcedure
   .input(
     z.object({
-      id: z.string(),
+      id: z.string().uuid(),
       title: z.string(),
       content: z.string(),
     }),
@@ -195,29 +195,36 @@ export const ManualKbDeleteInput = Type.Object({
 });
 export type ManualKbDeleteInput = Static<typeof ManualKbDeleteInput>;
 
-export async function deleteManualKbEntry(
-  { id }: ManualKbDeleteInput,
-  logger: WithLogger,
-) {
-  const log = logger.child({
-    module: 'deleteManualKbEntry',
+export const deleteKbEntry = protectedProcedure
+  .input(z.object({ id: z.string().uuid() }))
+  .mutation(async opts => {
+    const { id } = opts.input;
+    const log = logger.child({
+      function: 'deleteKbEntry',
+      requestId: opts.ctx.requestId,
+      document: id,
+    });
+
+    log.info({}, 'deleting manual kb document');
+    const documents = await db
+      .delete(documentDbSchema)
+      .where(
+        and(
+          eq(documentDbSchema.id, id),
+          eq(documentDbSchema.source, MANUAL_KB_SOURCE),
+        ),
+      )
+      .execute();
+
+    log.info(
+      { documents: documents.rowsAffected },
+      'deleted manual kb document',
+    );
+
+    return {
+      rowsAffected: documents.rowsAffected,
+    };
   });
-
-  log.info({ document: id }, 'deleting manual kb document');
-  const documents = await db
-    .delete(documentDbSchema)
-    .where(
-      and(
-        eq(documentDbSchema.id, id),
-        eq(documentDbSchema.source, MANUAL_KB_SOURCE),
-      ),
-    )
-    .execute();
-
-  log.info({ documents: documents.rowsAffected }, 'deleted manual kb document');
-
-  return documents;
-}
 
 export const ManualKbSearchInput = Type.Object({
   page: Type.Number(),

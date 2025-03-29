@@ -31,10 +31,8 @@ import {
 } from './twitter/helpers';
 import { promClient, readiness } from './prom';
 import {
-  deleteManualKbEntry,
   getKbEntries,
   getKbSearchEntries,
-  ManualKbDeleteInput,
   ManualKbGetInput,
   ManualKbSearchInput,
 } from './api/manual-kb';
@@ -616,49 +614,6 @@ fastify.route<{ Querystring: ManualKbSearchInput }>({
     }
   },
   url: '/api/manual-kb/search',
-});
-
-fastify.route<{ Body: ManualKbDeleteInput }>({
-  method: 'DELETE',
-  preHandler: [authHandler],
-  schema: {
-    body: ManualKbDeleteInput,
-  },
-  handler: async (request, reply) => {
-    const log = logger.child({
-      function: 'api-manual-kb-delete',
-      requestId: request.id,
-    });
-    try {
-      const { id } = request.body;
-
-      if (!id) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'id is required',
-        );
-        reply.code(400).send({ success: false, error: 'id is required' });
-      }
-
-      const result = await deleteManualKbEntry(
-        {
-          id,
-        },
-        log,
-      );
-
-      return reply.send(result);
-    } catch (error) {
-      log.error({ error }, 'Error in deleteManualKbEntry');
-      return reply.code(500).send({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  },
-  url: '/api/manual-kb',
 });
 
 fastify.route({
