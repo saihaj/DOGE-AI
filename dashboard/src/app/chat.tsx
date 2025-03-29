@@ -39,8 +39,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useCookie } from '@/hooks/use-cookie';
-import { useQuery } from '@tanstack/react-query';
-import { useTRPC } from '@/lib/trpc';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
