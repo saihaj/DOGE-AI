@@ -16,159 +16,157 @@ import {
   generateEmbeddings,
   textSplitter,
 } from '../twitter/helpers';
-import { WithLogger } from '../logger';
+import { logger, WithLogger } from '../logger';
 import { MANUAL_KB_SOURCE, VECTOR_SEARCH_MATCH_THRESHOLD } from '../const';
+import z from 'zod';
+import { protectedProcedure } from '../trpc';
 
-export const ManualKBInsertInput = Type.Object({
-  title: Type.String(),
-  content: Type.String(),
-});
-export type ManualKBInsertInput = Static<typeof ManualKBInsertInput>;
-
-export async function postKbInsert(
-  { title, content }: ManualKBInsertInput,
-  logger: WithLogger,
-): Promise<{
-  id: string;
-}> {
-  const log = logger.child({
-    module: 'postKbInsert',
-  });
-
-  const documentDbEntry = await db
-    .insert(documentDbSchema)
-    .values({
-      id: crypto.randomUUID(),
-      title,
-      url: `/manual-kb/${slugify(title)}`,
-      source: MANUAL_KB_SOURCE,
-      content: Buffer.from(content),
-    })
-    .returning({
-      id: documentDbSchema.id,
+export const createKbEntry = protectedProcedure
+  .input(
+    z.object({
+      title: z.string(),
+      content: z.string(),
+    }),
+  )
+  .mutation(async opts => {
+    const log = logger.child({
+      function: 'createKbEntry',
+      requestId: opts.ctx.requestId,
     });
-  const [result] = documentDbEntry;
+    const { title, content } = opts.input;
 
-  log.info({ document: result.id }, 'inserted manual kb document');
-
-  const chunks = await textSplitter.splitText(`${title}: ${content}`);
-  const embeddings = await generateEmbeddings(chunks);
-
-  const data = chunks.map((value, index) => ({
-    value,
-    embedding: embeddings[index],
-  }));
-
-  const insertEmbeddings = await db
-    .insert(billVector)
-    .values(
-      data.map(({ value, embedding }) => ({
+    const documentDbEntry = await db
+      .insert(documentDbSchema)
+      .values({
         id: crypto.randomUUID(),
-        document: result.id,
-        text: value,
+        title,
+        url: `/manual-kb/${slugify(title)}`,
         source: MANUAL_KB_SOURCE,
-        vector: embedding,
-      })),
-    )
-    .execute();
+        content: Buffer.from(content),
+      })
+      .returning({
+        id: documentDbSchema.id,
+      });
+    const [result] = documentDbEntry;
 
-  log.info(
-    { embeddings: insertEmbeddings.rowsAffected, document: result.id },
-    'inserted embeddings for manual kb document',
-  );
+    log.info({ document: result.id }, 'inserted manual kb document');
 
-  return {
-    id: result.id,
-  };
-}
+    const chunks = await textSplitter.splitText(`${title}: ${content}`);
+    const embeddings = await generateEmbeddings(chunks);
 
-export const ManualKBPatchInput = Type.Object({
-  title: Type.String(),
-  content: Type.String(),
-  id: Type.String(),
-});
-export type ManualKBPatchInput = Static<typeof ManualKBPatchInput>;
+    const data = chunks.map((value, index) => ({
+      value,
+      embedding: embeddings[index],
+    }));
 
-export async function patchKbInsert(
-  { title, content, id }: ManualKBPatchInput,
-  logger: WithLogger,
-): Promise<{
-  id: string;
-}> {
-  const log = logger.child({
-    module: 'patchKbInsert',
-    document: id,
+    const insertEmbeddings = await db
+      .insert(billVector)
+      .values(
+        data.map(({ value, embedding }) => ({
+          id: crypto.randomUUID(),
+          document: result.id,
+          text: value,
+          source: MANUAL_KB_SOURCE,
+          vector: embedding,
+        })),
+      )
+      .execute();
+
+    log.info(
+      { embeddings: insertEmbeddings.rowsAffected, document: result.id },
+      'inserted embeddings for manual kb document',
+    );
+
+    return {
+      id: result.id,
+    };
   });
 
-  // search for the document
-  const doc = await db.query.document.findFirst({
-    where: and(
-      eq(documentDbSchema.id, id),
-      eq(documentDbSchema.source, MANUAL_KB_SOURCE),
-    ),
-    columns: {
-      id: true,
-    },
+export const editKbEntry = protectedProcedure
+  .input(
+    z.object({
+      id: z.string().uuid(),
+      title: z.string(),
+      content: z.string(),
+    }),
+  )
+  .mutation(async opts => {
+    const { id, title, content } = opts.input;
+    const log = logger.child({
+      function: 'editKbEntry',
+      requestId: opts.ctx.requestId,
+      document: id,
+    });
+
+    // search for the document
+    const doc = await db.query.document.findFirst({
+      where: and(
+        eq(documentDbSchema.id, id),
+        eq(documentDbSchema.source, MANUAL_KB_SOURCE),
+      ),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (!doc) {
+      log.error({}, 'document not found');
+      throw new Error('Document not found');
+    }
+
+    // remove old embeddings
+    log.info({}, 'removing old vector embeddings');
+    const removeOldEmbeddings = await db
+      .delete(billVector)
+      .where(eq(billVector.document, doc.id))
+      .execute();
+    log.info(
+      { count: removeOldEmbeddings.rowsAffected },
+      'removed old vector embeddings',
+    );
+
+    // update existing document
+    log.info({}, 'updating document');
+    const doucumentUpdate = await db
+      .update(documentDbSchema)
+      .set({
+        title,
+        content: Buffer.from(content),
+      })
+      .where(eq(documentDbSchema.id, doc.id))
+      .execute();
+    log.info({ count: doucumentUpdate.rowsAffected }, 'updated document');
+
+    const chunks = await textSplitter.splitText(`${title}: ${content}`);
+    const embeddings = await generateEmbeddings(chunks);
+
+    const data = chunks.map((value, index) => ({
+      value,
+      embedding: embeddings[index],
+    }));
+
+    const insertEmbeddings = await db
+      .insert(billVector)
+      .values(
+        data.map(({ value, embedding }) => ({
+          id: crypto.randomUUID(),
+          document: doc.id,
+          text: value,
+          source: MANUAL_KB_SOURCE,
+          vector: embedding,
+        })),
+      )
+      .execute();
+
+    log.info(
+      { count: insertEmbeddings.rowsAffected },
+      'inserted embeddings for manual kb document',
+    );
+
+    return {
+      id,
+    };
   });
-
-  if (!doc) {
-    log.error({}, 'document not found');
-    throw new Error('Document not found');
-  }
-
-  // remove old embeddings
-  log.info({}, 'removing old vector embeddings');
-  const removeOldEmbeddings = await db
-    .delete(billVector)
-    .where(eq(billVector.document, doc.id))
-    .execute();
-  log.info(
-    { count: removeOldEmbeddings.rowsAffected },
-    'removed old vector embeddings',
-  );
-
-  // update existing document
-  log.info({}, 'updating document');
-  const doucumentUpdate = await db
-    .update(documentDbSchema)
-    .set({
-      title,
-      content: Buffer.from(content),
-    })
-    .where(eq(documentDbSchema.id, doc.id))
-    .execute();
-  log.info({ count: doucumentUpdate.rowsAffected }, 'updated document');
-
-  const chunks = await textSplitter.splitText(`${title}: ${content}`);
-  const embeddings = await generateEmbeddings(chunks);
-
-  const data = chunks.map((value, index) => ({
-    value,
-    embedding: embeddings[index],
-  }));
-
-  const insertEmbeddings = await db
-    .insert(billVector)
-    .values(
-      data.map(({ value, embedding }) => ({
-        id: crypto.randomUUID(),
-        document: doc.id,
-        text: value,
-        source: MANUAL_KB_SOURCE,
-        vector: embedding,
-      })),
-    )
-    .execute();
-
-  log.info(
-    { count: insertEmbeddings.rowsAffected },
-    'inserted embeddings for manual kb document',
-  );
-
-  return {
-    id,
-  };
-}
 
 export const ManualKbGetInput = Type.Object({
   page: Type.Number(),
@@ -197,29 +195,36 @@ export const ManualKbDeleteInput = Type.Object({
 });
 export type ManualKbDeleteInput = Static<typeof ManualKbDeleteInput>;
 
-export async function deleteManualKbEntry(
-  { id }: ManualKbDeleteInput,
-  logger: WithLogger,
-) {
-  const log = logger.child({
-    module: 'deleteManualKbEntry',
+export const deleteKbEntry = protectedProcedure
+  .input(z.object({ id: z.string().uuid() }))
+  .mutation(async opts => {
+    const { id } = opts.input;
+    const log = logger.child({
+      function: 'deleteKbEntry',
+      requestId: opts.ctx.requestId,
+      document: id,
+    });
+
+    log.info({}, 'deleting manual kb document');
+    const documents = await db
+      .delete(documentDbSchema)
+      .where(
+        and(
+          eq(documentDbSchema.id, id),
+          eq(documentDbSchema.source, MANUAL_KB_SOURCE),
+        ),
+      )
+      .execute();
+
+    log.info(
+      { documents: documents.rowsAffected },
+      'deleted manual kb document',
+    );
+
+    return {
+      rowsAffected: documents.rowsAffected,
+    };
   });
-
-  log.info({ document: id }, 'deleting manual kb document');
-  const documents = await db
-    .delete(documentDbSchema)
-    .where(
-      and(
-        eq(documentDbSchema.id, id),
-        eq(documentDbSchema.source, MANUAL_KB_SOURCE),
-      ),
-    )
-    .execute();
-
-  log.info({ documents: documents.rowsAffected }, 'deleted manual kb document');
-
-  return documents;
-}
 
 export const ManualKbSearchInput = Type.Object({
   page: Type.Number(),

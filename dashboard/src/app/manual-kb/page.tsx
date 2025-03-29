@@ -37,6 +37,8 @@ import {
 } from '@/components/ui/sheet';
 import { useDebounce } from '@uidotdev/usehooks';
 import { useState } from 'react';
+import { useTRPC } from '@/lib/trpc';
+import { useMutation } from '@tanstack/react-query';
 
 const formSchema = z.object({
   title: z.string().min(3),
@@ -44,7 +46,6 @@ const formSchema = z.object({
 });
 
 function EntryUi({ mutate }: { mutate: () => void }) {
-  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const { open, setOpen, state, type, openDrawer } = useDrawerStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -62,33 +63,37 @@ function EntryUi({ mutate }: { mutate: () => void }) {
   });
 
   const { closeDrawer, clearState } = useDrawerStore();
+  const trpc = useTRPC();
+  const { mutateAsync: apiCreateEntry } = useMutation(
+    trpc.createKbEntry.mutationOptions(),
+  );
+  const { mutateAsync: apiEditEntry } = useMutation(
+    trpc.editKbEntry.mutationOptions(),
+  );
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     switch (type) {
       case 'create': {
         closeDrawer();
 
-        const data = fetch(`${API_URL}/api/manual-kb`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+        toast.promise(
+          apiCreateEntry({
+            title: values.title,
+            content: values.content,
+          }),
+          {
+            loading: 'Creating entry...',
+            success: data => {
+              if (data.id) {
+                mutate();
+                clearState();
+                return 'Entry created successfully';
+              }
+              throw new Error('Failed to create entry');
+            },
+            error: 'Failed to create entry',
           },
-          body: JSON.stringify(values),
-        });
-
-        toast.promise(data, {
-          loading: 'Creating entry...',
-          success: data => {
-            if (data.ok) {
-              mutate();
-              clearState();
-              return 'Entry created successfully';
-            }
-            throw new Error('Failed to create entry');
-          },
-          error: 'Failed to create entry',
-        });
+        );
         break;
       }
       case 'edit': {
@@ -98,30 +103,25 @@ function EntryUi({ mutate }: { mutate: () => void }) {
           return;
         }
 
-        const data = fetch(`${API_URL}/api/manual-kb`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
-          },
-          body: JSON.stringify({
+        toast.promise(
+          apiEditEntry({
             id: state.id,
-            ...values,
+            title: values.title,
+            content: values.content,
           }),
-        });
-
-        toast.promise(data, {
-          loading: 'Updating entry...',
-          success: data => {
-            if (data.ok) {
-              mutate();
-              clearState();
-              return 'Entry updated successfully';
-            }
-            throw new Error('Failed to updated entry');
+          {
+            loading: 'Updating entry...',
+            success: data => {
+              if (data.id) {
+                mutate();
+                clearState();
+                return 'Entry updated successfully';
+              }
+              throw new Error('Failed to updated entry');
+            },
+            error: 'Failed to updated entry',
           },
-          error: 'Failed to updated entry',
-        });
+        );
         break;
       }
       default: {
@@ -210,9 +210,31 @@ const FETCH_SIZE = 20;
 
 export default function ManualKB() {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
+  const trpc = useTRPC();
+  const { mutateAsync: deleteKbEntry } = useMutation(
+    trpc.deleteKbEntry.mutationOptions(),
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery.trim(), 300);
 
+  function deleteEntry(id: string) {
+    toast.promise(
+      deleteKbEntry({
+        id,
+      }),
+      {
+        loading: 'Deleting entry...',
+        success: data => {
+          if (data) {
+            mutate();
+            return 'Entry deleted successfully';
+          }
+          throw new Error('Failed to delete entry');
+        },
+        error: 'Failed to delete entry',
+      },
+    );
+  }
   const { data, error, isLoading, mutate, setSize } = useSWRInfinite(
     (index, previousPageData) => {
       if (!IS_LOCAL && !cfAuthorizationCookie) return null;
@@ -263,7 +285,9 @@ export default function ManualKB() {
         {data && (
           <>
             <DataTable
-              columns={columns({ mutate, cfAuthorizationCookie })}
+              columns={columns({
+                deleteEntry,
+              })}
               data={data?.flatMap(a => a)}
             />
             <div className="flex justify-center">

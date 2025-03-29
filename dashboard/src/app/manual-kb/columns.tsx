@@ -9,18 +9,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { API_URL, CF_BACKEND_HEADER_NAME } from '@/lib/const';
 import { ColumnDef } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
-import { toast } from 'sonner';
 import { drawerStore, KBEntries } from './store';
 
 export const columns = ({
-  mutate,
-  cfAuthorizationCookie,
+  deleteEntry,
 }: {
-  mutate: () => void;
-  cfAuthorizationCookie: string;
+  deleteEntry: (id: string) => void;
 }) =>
   [
     {
@@ -71,26 +67,7 @@ export const columns = ({
                   variant="destructive"
                   className="w-full"
                   onClick={() => {
-                    const data = fetch(`${API_URL}/api/manual-kb`, {
-                      method: 'DELETE',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
-                      },
-                      body: JSON.stringify({ id: entry.id }),
-                    });
-
-                    toast.promise(data, {
-                      loading: 'Deleting entry...',
-                      success: data => {
-                        if (data.ok) {
-                          mutate();
-                          return 'Entry deleted successfully';
-                        }
-                        throw new Error('Failed to delete entry');
-                      },
-                      error: 'Failed to delete entry',
-                    });
+                    deleteEntry(entry.id);
                   }}
                 >
                   Delete Entry

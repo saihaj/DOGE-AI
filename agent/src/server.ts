@@ -31,17 +31,12 @@ import {
 } from './twitter/helpers';
 import { promClient, readiness } from './prom';
 import {
-  deleteManualKbEntry,
   getKbEntries,
   getKbSearchEntries,
-  ManualKbDeleteInput,
   ManualKbGetInput,
-  ManualKBInsertInput,
-  ManualKBPatchInput,
   ManualKbSearchInput,
-  patchKbInsert,
-  postKbInsert,
 } from './api/manual-kb';
+import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { inngest } from './inngest';
 import { ingestTweets } from './twitter/ingest';
 import { processTweets } from './twitter/process';
@@ -53,8 +48,10 @@ import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import { PROMPTS } from './twitter/prompts';
 import { botConfig, db, eq } from 'database';
 import { patchPrompt, PatchPrompt } from './api/prompt';
+import { createContext } from './trpc';
+import { appRouter } from './router';
 
-const fastify = Fastify();
+const fastify = Fastify({ maxParamLength: 5000 });
 
 fastify.route({
   method: ['GET', 'POST', 'PUT'],
@@ -75,7 +72,7 @@ fastify.route({
 
 fastify.register(cors, {
   allowedHeaders: ['Content-Type', 'Authorization', 'cf-authorization-token'],
-  methods: ['GET', 'POST', 'OPTIONS', 'DELETE', 'PATCH'],
+  methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
   origin: ['http://localhost:4321', 'https://manage.dogeai.info'],
 });
 
@@ -116,6 +113,22 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     });
   }
 };
+
+fastify.register(fastifyTRPCPlugin, {
+  prefix: '/api/trpc',
+  trpcOptions: {
+    router: appRouter,
+    createContext,
+    onError({ path, error }) {
+      logger.error(
+        {
+          error,
+        },
+        `Error in tRPC handler on path '${path}'`,
+      );
+    },
+  },
+});
 
 fastify.route<{ Body: ProcessTestEngageRequestInput }>({
   method: 'POST',
@@ -386,139 +399,6 @@ fastify.route<{ Body: ChatStreamInput }>({
   url: '/api/chat',
 });
 
-fastify.route<{ Body: ManualKBInsertInput }>({
-  method: 'POST',
-  preHandler: [authHandler],
-  schema: {
-    body: ManualKBInsertInput,
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' },
-        },
-      },
-    },
-  },
-  handler: async (request, reply) => {
-    const log = logger.child({
-      function: 'api-manual-kb-insert',
-      requestId: request.id,
-    });
-    try {
-      const { title, content } = request.body;
-
-      if (!title) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'title is required',
-        );
-        reply.code(400).send({ success: false, error: 'Title is required' });
-      }
-
-      if (!content) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'content is required',
-        );
-        reply.code(400).send({ success: false, error: 'Content is required' });
-      }
-      const result = await postKbInsert(
-        {
-          title,
-          content,
-        },
-        log,
-      );
-
-      return reply.send(result);
-    } catch (error) {
-      log.error({ error }, 'Error in postKbInsert');
-      return reply.code(500).send({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  },
-  url: '/api/manual-kb',
-});
-
-fastify.route<{ Body: ManualKBPatchInput }>({
-  method: 'PATCH',
-  preHandler: [authHandler],
-  schema: {
-    body: ManualKBPatchInput,
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' },
-        },
-      },
-    },
-  },
-  handler: async (request, reply) => {
-    const log = logger.child({
-      function: 'api-manual-kb-patch',
-      requestId: request.id,
-    });
-    try {
-      const { title, content, id } = request.body;
-
-      if (!id) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'id is required',
-        );
-        reply.code(400).send({ success: false, error: 'ID is required' });
-      }
-
-      if (!title) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'title is required',
-        );
-        reply.code(400).send({ success: false, error: 'Title is required' });
-      }
-
-      if (!content) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'content is required',
-        );
-        reply.code(400).send({ success: false, error: 'Content is required' });
-      }
-      const result = await patchKbInsert(
-        {
-          title,
-          content,
-          id,
-        },
-        log,
-      );
-
-      return reply.send(result);
-    } catch (error) {
-      log.error({ error }, 'Error in patchKbInsert');
-      return reply.code(500).send({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  },
-  url: '/api/manual-kb',
-});
-
 fastify.route<{ Querystring: ManualKbGetInput }>({
   method: 'GET',
   preHandler: [authHandler],
@@ -734,49 +614,6 @@ fastify.route<{ Querystring: ManualKbSearchInput }>({
     }
   },
   url: '/api/manual-kb/search',
-});
-
-fastify.route<{ Body: ManualKbDeleteInput }>({
-  method: 'DELETE',
-  preHandler: [authHandler],
-  schema: {
-    body: ManualKbDeleteInput,
-  },
-  handler: async (request, reply) => {
-    const log = logger.child({
-      function: 'api-manual-kb-delete',
-      requestId: request.id,
-    });
-    try {
-      const { id } = request.body;
-
-      if (!id) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'id is required',
-        );
-        reply.code(400).send({ success: false, error: 'id is required' });
-      }
-
-      const result = await deleteManualKbEntry(
-        {
-          id,
-        },
-        log,
-      );
-
-      return reply.send(result);
-    } catch (error) {
-      log.error({ error }, 'Error in deleteManualKbEntry');
-      return reply.code(500).send({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  },
-  url: '/api/manual-kb',
 });
 
 fastify.route({
