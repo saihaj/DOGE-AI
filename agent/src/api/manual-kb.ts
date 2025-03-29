@@ -21,14 +21,13 @@ import { MANUAL_KB_SOURCE, VECTOR_SEARCH_MATCH_THRESHOLD } from '../const';
 import z from 'zod';
 import { protectedProcedure } from '../trpc';
 
-export const ManualKBInsertInput = z.object({
-  title: z.string(),
-  content: z.string(),
-});
-export type ManualKBInsertInput = z.infer<typeof ManualKBInsertInput>;
-
 export const createKbEntry = protectedProcedure
-  .input(ManualKBInsertInput)
+  .input(
+    z.object({
+      title: z.string(),
+      content: z.string(),
+    }),
+  )
   .mutation(async opts => {
     const log = logger.child({
       function: 'createKbEntry',
