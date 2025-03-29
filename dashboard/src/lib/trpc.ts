@@ -1,4 +1,4 @@
-import type { AppRouter } from '../../../agent/src/trpc';
+import type { AppRouter } from '../../../agent/src/router';
 import { QueryClient } from '@tanstack/react-query';
 import { createTRPCContext } from '@trpc/tanstack-react-query';
 

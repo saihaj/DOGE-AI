@@ -36,11 +36,9 @@ import {
   getKbSearchEntries,
   ManualKbDeleteInput,
   ManualKbGetInput,
-  ManualKBInsertInput,
   ManualKBPatchInput,
   ManualKbSearchInput,
   patchKbInsert,
-  postKbInsert,
 } from './api/manual-kb';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { inngest } from './inngest';
@@ -54,7 +52,8 @@ import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import { PROMPTS } from './twitter/prompts';
 import { botConfig, db, eq } from 'database';
 import { patchPrompt, PatchPrompt } from './api/prompt';
-import { appRouter, createContext, protectedProcedure, router } from './trpc';
+import { createContext } from './trpc';
+import { appRouter } from './router';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
