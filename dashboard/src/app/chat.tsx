@@ -207,9 +207,6 @@ function TemplatePromptWithVars({
 }
 
 export function Chat() {
-  const trpc = useTRPC();
-  const a = useQuery(trpc.secret.queryOptions());
-  console.log(a.data);
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const [model, setModel] = useLocalStorage<ModelValues>(
     'playgroundSelectedChatModel',

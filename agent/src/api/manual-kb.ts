@@ -18,12 +18,13 @@ import {
 } from '../twitter/helpers';
 import { WithLogger } from '../logger';
 import { MANUAL_KB_SOURCE, VECTOR_SEARCH_MATCH_THRESHOLD } from '../const';
+import z from 'zod';
 
-export const ManualKBInsertInput = Type.Object({
-  title: Type.String(),
-  content: Type.String(),
+export const ManualKBInsertInput = z.object({
+  title: z.string(),
+  content: z.string(),
 });
-export type ManualKBInsertInput = Static<typeof ManualKBInsertInput>;
+export type ManualKBInsertInput = z.infer<typeof ManualKBInsertInput>;
 
 export async function postKbInsert(
   { title, content }: ManualKBInsertInput,

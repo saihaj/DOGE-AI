@@ -11,6 +11,7 @@ export async function createContext({ req, res }: CreateFastifyContextOptions) {
 
   if (!IS_PROD) {
     return {
+      requestId: req.id,
       userEmail: 'DEV_TESTING',
     };
   }
@@ -25,6 +26,7 @@ export async function createContext({ req, res }: CreateFastifyContextOptions) {
   if (!token || typeof token !== 'string') {
     log.error({}, 'missing required cf authorization token');
     return {
+      requestId: req.id,
       userEmail: null,
     };
   }
@@ -36,11 +38,13 @@ export async function createContext({ req, res }: CreateFastifyContextOptions) {
     });
     log.info({ result }, 'cf authorization token verified');
     return {
+      requestId: req.id,
       userEmail: result.payload.email as string,
     };
   } catch (error) {
     log.error({ error }, 'invalid cf authorization token');
     return {
+      requestId: req.id,
       userEmail: null,
     };
   }

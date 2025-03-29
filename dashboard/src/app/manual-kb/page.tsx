@@ -37,6 +37,8 @@ import {
 } from '@/components/ui/sheet';
 import { useDebounce } from '@uidotdev/usehooks';
 import { useState } from 'react';
+import { useTRPC } from '@/lib/trpc';
+import { useMutation } from '@tanstack/react-query';
 
 const formSchema = z.object({
   title: z.string().min(3),
@@ -62,33 +64,33 @@ function EntryUi({ mutate }: { mutate: () => void }) {
   });
 
   const { closeDrawer, clearState } = useDrawerStore();
-
+  const trpc = useTRPC();
+  const { mutateAsync: apiCreateEntry } = useMutation(
+    trpc.createKbEntry.mutationOptions(),
+  );
   async function onSubmit(values: z.infer<typeof formSchema>) {
     switch (type) {
       case 'create': {
         closeDrawer();
 
-        const data = fetch(`${API_URL}/api/manual-kb`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+        toast.promise(
+          apiCreateEntry({
+            title: values.title,
+            content: values.content,
+          }),
+          {
+            loading: 'Creating entry...',
+            success: data => {
+              if (data.id) {
+                mutate();
+                clearState();
+                return 'Entry created successfully';
+              }
+              throw new Error('Failed to create entry');
+            },
+            error: 'Failed to create entry',
           },
-          body: JSON.stringify(values),
-        });
-
-        toast.promise(data, {
-          loading: 'Creating entry...',
-          success: data => {
-            if (data.ok) {
-              mutate();
-              clearState();
-              return 'Entry created successfully';
-            }
-            throw new Error('Failed to create entry');
-          },
-          error: 'Failed to create entry',
-        });
+        );
         break;
       }
       case 'edit': {
