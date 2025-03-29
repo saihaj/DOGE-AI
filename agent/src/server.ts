@@ -36,9 +36,7 @@ import {
   getKbSearchEntries,
   ManualKbDeleteInput,
   ManualKbGetInput,
-  ManualKBPatchInput,
   ManualKbSearchInput,
-  patchKbInsert,
 } from './api/manual-kb';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { inngest } from './inngest';
@@ -76,7 +74,7 @@ fastify.route({
 
 fastify.register(cors, {
   allowedHeaders: ['Content-Type', 'Authorization', 'cf-authorization-token'],
-  methods: ['GET', 'POST', 'OPTIONS', 'DELETE', 'PATCH'],
+  methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
   origin: ['http://localhost:4321', 'https://manage.dogeai.info'],
 });
 
@@ -401,78 +399,6 @@ fastify.route<{ Body: ChatStreamInput }>({
     }
   },
   url: '/api/chat',
-});
-
-fastify.route<{ Body: ManualKBPatchInput }>({
-  method: 'PATCH',
-  preHandler: [authHandler],
-  schema: {
-    body: ManualKBPatchInput,
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' },
-        },
-      },
-    },
-  },
-  handler: async (request, reply) => {
-    const log = logger.child({
-      function: 'api-manual-kb-patch',
-      requestId: request.id,
-    });
-    try {
-      const { title, content, id } = request.body;
-
-      if (!id) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'id is required',
-        );
-        reply.code(400).send({ success: false, error: 'ID is required' });
-      }
-
-      if (!title) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'title is required',
-        );
-        reply.code(400).send({ success: false, error: 'Title is required' });
-      }
-
-      if (!content) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'content is required',
-        );
-        reply.code(400).send({ success: false, error: 'Content is required' });
-      }
-      const result = await patchKbInsert(
-        {
-          title,
-          content,
-          id,
-        },
-        log,
-      );
-
-      return reply.send(result);
-    } catch (error) {
-      log.error({ error }, 'Error in patchKbInsert');
-      return reply.code(500).send({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  },
-  url: '/api/manual-kb',
 });
 
 fastify.route<{ Querystring: ManualKbGetInput }>({

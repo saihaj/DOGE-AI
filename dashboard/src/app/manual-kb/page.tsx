@@ -46,7 +46,6 @@ const formSchema = z.object({
 });
 
 function EntryUi({ mutate }: { mutate: () => void }) {
-  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const { open, setOpen, state, type, openDrawer } = useDrawerStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -68,6 +67,10 @@ function EntryUi({ mutate }: { mutate: () => void }) {
   const { mutateAsync: apiCreateEntry } = useMutation(
     trpc.createKbEntry.mutationOptions(),
   );
+  const { mutateAsync: apiEditEntry } = useMutation(
+    trpc.editKbEntry.mutationOptions(),
+  );
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     switch (type) {
       case 'create': {
@@ -100,30 +103,25 @@ function EntryUi({ mutate }: { mutate: () => void }) {
           return;
         }
 
-        const data = fetch(`${API_URL}/api/manual-kb`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
-          },
-          body: JSON.stringify({
+        toast.promise(
+          apiEditEntry({
             id: state.id,
-            ...values,
+            title: values.title,
+            content: values.content,
           }),
-        });
-
-        toast.promise(data, {
-          loading: 'Updating entry...',
-          success: data => {
-            if (data.ok) {
-              mutate();
-              clearState();
-              return 'Entry updated successfully';
-            }
-            throw new Error('Failed to updated entry');
+          {
+            loading: 'Updating entry...',
+            success: data => {
+              if (data.id) {
+                mutate();
+                clearState();
+                return 'Entry updated successfully';
+              }
+              throw new Error('Failed to updated entry');
+            },
+            error: 'Failed to updated entry',
           },
-          error: 'Failed to updated entry',
-        });
+        );
         break;
       }
       default: {
