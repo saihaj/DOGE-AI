@@ -3,6 +3,7 @@ import { CreateFastifyContextOptions } from '@trpc/server/adapters/fastify';
 import { CF_AUDIENCE, CF_TEAM_DOMAIN, IS_PROD } from './const';
 import { logger } from './logger';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
+import { ManualKBInsertInput, postKbInsert } from './api/manual-kb';
 
 export async function createContext({ req, res }: CreateFastifyContextOptions) {
   const log = logger.child({
@@ -77,3 +78,24 @@ export const protectedProcedure = t.procedure.use<Context>(
     });
   },
 );
+
+export const appRouter = router({
+  secret: protectedProcedure.query(opts => {
+    return {
+      secret: 'sauce',
+    };
+  }),
+  createKbEntry: protectedProcedure
+    .input(ManualKBInsertInput)
+    .mutation(async opts => {
+      const log = logger.child({
+        function: 'createKbEntry',
+        requestId: opts.ctx.requestId,
+      });
+      const { title, content } = opts.input;
+      const result = await postKbInsert({ title, content }, log);
+      return result;
+    }),
+});
+
+export type AppRouter = typeof appRouter;

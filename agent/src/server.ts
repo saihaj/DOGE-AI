@@ -54,7 +54,7 @@ import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import { PROMPTS } from './twitter/prompts';
 import { botConfig, db, eq } from 'database';
 import { patchPrompt, PatchPrompt } from './api/prompt';
-import { createContext, protectedProcedure, router } from './trpc';
+import { appRouter, createContext, protectedProcedure, router } from './trpc';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -118,25 +118,6 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     });
   }
 };
-
-const appRouter = router({
-  secret: protectedProcedure.query(opts => {
-    return {
-      secret: 'sauce',
-    };
-  }),
-  createKbEntry: protectedProcedure
-    .input(ManualKBInsertInput)
-    .mutation(async opts => {
-      const log = logger.child({
-        function: 'createKbEntry',
-        requestId: opts.ctx.requestId,
-      });
-      const { title, content } = opts.input;
-      const result = await postKbInsert({ title, content }, log);
-      return result;
-    }),
-});
 
 fastify.register(fastifyTRPCPlugin, {
   prefix: '/api/trpc',
@@ -958,5 +939,3 @@ fastify.listen({ host: '0.0.0.0', port: 3000 }, async function (err, address) {
     process.exit(1);
   }
 });
-
-export type AppRouter = typeof appRouter;
