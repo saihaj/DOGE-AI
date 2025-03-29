@@ -39,6 +39,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useCookie } from '@/hooks/use-cookie';
+import { useQuery } from '@tanstack/react-query';
+import { useTRPC } from '@/lib/trpc';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -205,6 +207,9 @@ function TemplatePromptWithVars({
 }
 
 export function Chat() {
+  const trpc = useTRPC();
+  const a = useQuery(trpc.secret.queryOptions());
+  console.log(a.data);
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const [model, setModel] = useLocalStorage<ModelValues>(
     'playgroundSelectedChatModel',

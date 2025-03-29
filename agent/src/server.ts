@@ -42,6 +42,10 @@ import {
   patchKbInsert,
   postKbInsert,
 } from './api/manual-kb';
+import {
+  fastifyTRPCPlugin,
+  FastifyTRPCPluginOptions,
+} from '@trpc/server/adapters/fastify';
 import { inngest } from './inngest';
 import { ingestTweets } from './twitter/ingest';
 import { processTweets } from './twitter/process';
@@ -53,8 +57,9 @@ import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import { PROMPTS } from './twitter/prompts';
 import { botConfig, db, eq } from 'database';
 import { patchPrompt, PatchPrompt } from './api/prompt';
+import { createContext, protectedProcedure, router } from './trpc';
 
-const fastify = Fastify();
+const fastify = Fastify({ maxParamLength: 5000 });
 
 fastify.route({
   method: ['GET', 'POST', 'PUT'],
@@ -116,6 +121,30 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     });
   }
 };
+
+const appRouter = router({
+  secret: protectedProcedure.query(opts => {
+    return {
+      secret: 'sauce',
+    };
+  }),
+});
+
+fastify.register(fastifyTRPCPlugin, {
+  prefix: '/api/trpc',
+  trpcOptions: {
+    router: appRouter,
+    createContext,
+    onError({ path, error }) {
+      logger.error(
+        {
+          error,
+        },
+        `Error in tRPC handler on path '${path}'`,
+      );
+    },
+  },
+});
 
 fastify.route<{ Body: ProcessTestEngageRequestInput }>({
   method: 'POST',
@@ -982,3 +1011,5 @@ fastify.listen({ host: '0.0.0.0', port: 3000 }, async function (err, address) {
     process.exit(1);
   }
 });
+
+export type AppRouter = typeof appRouter;
