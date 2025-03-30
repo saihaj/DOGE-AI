@@ -38,7 +38,7 @@ import {
 import { useDebounce } from '@uidotdev/usehooks';
 import { useState } from 'react';
 import { useTRPC } from '@/lib/trpc';
-import { useMutation } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 
 const formSchema = z.object({
   title: z.string().min(3),
@@ -206,10 +206,9 @@ function EntryUi({ mutate }: { mutate: () => void }) {
   );
 }
 
-const FETCH_SIZE = 20;
+const FETCH_SIZE = 5;
 
 export default function ManualKB() {
-  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const trpc = useTRPC();
   const { mutateAsync: deleteKbEntry } = useMutation(
     trpc.deleteKbEntry.mutationOptions(),
@@ -235,34 +234,30 @@ export default function ManualKB() {
       },
     );
   }
-  const { data, error, isLoading, mutate, setSize } = useSWRInfinite(
-    (index, previousPageData) => {
-      if (!IS_LOCAL && !cfAuthorizationCookie) return null;
 
-      // reached the end
-      if (previousPageData && !previousPageData.length) {
-        return null;
-      }
-
-      if (debouncedSearch) {
-        return `${API_URL}/api/manual-kb/search?query=${debouncedSearch}&page=${index + 1}&limit=${FETCH_SIZE}`;
-      }
-
-      return `${API_URL}/api/manual-kb?page=${index + 1}&limit=${FETCH_SIZE}`;
-    },
-    (url: string) =>
-      fetch(url, {
-        headers: {
-          [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+  const { data, error, isLoading, refetch, fetchNextPage, hasNextPage } =
+    useInfiniteQuery(
+      trpc.getKbEntries.infiniteQueryOptions(
+        {
+          limit: FETCH_SIZE,
         },
-      }).then(res => res.json()),
-  );
-
-  const isReachingEnd = data && data[data.length - 1]?.length < FETCH_SIZE;
+        {
+          select(data) {
+            return {
+              pages: data.pages.flatMap(page => page.items),
+              pageParams: data.pageParams,
+            };
+          },
+          getNextPageParam(lastPage) {
+            return lastPage.nextCursor;
+          },
+        },
+      ),
+    );
 
   return (
     <>
-      <Header right={<EntryUi mutate={mutate} />} />
+      <Header right={<EntryUi mutate={refetch} />} />
       <main className="mb-10">
         <Input
           placeholder="Search entry..."
@@ -288,12 +283,12 @@ export default function ManualKB() {
               columns={columns({
                 deleteEntry,
               })}
-              data={data?.flatMap(a => a)}
+              data={data.pages.flatMap(page => page)}
             />
             <div className="flex justify-center">
               <Button
-                disabled={data?.length === 0 || isReachingEnd}
-                onClick={() => setSize(size => size + 1)}
+                disabled={data?.pages.length === 0 || !hasNextPage}
+                onClick={() => fetchNextPage()}
                 className="mt-6 mx-auto"
                 variant="outline"
               >

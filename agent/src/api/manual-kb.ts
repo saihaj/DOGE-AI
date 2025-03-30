@@ -1,11 +1,11 @@
 import { Static, Type } from '@sinclair/typebox';
 import {
   and,
-  asc,
   billVector,
   db,
   document as documentDbSchema,
   eq,
+  gt,
   isNotNull,
   sql,
 } from 'database';
@@ -16,7 +16,7 @@ import {
   generateEmbeddings,
   textSplitter,
 } from '../twitter/helpers';
-import { logger, WithLogger } from '../logger';
+import { logger } from '../logger';
 import { MANUAL_KB_SOURCE, VECTOR_SEARCH_MATCH_THRESHOLD } from '../const';
 import z from 'zod';
 import { protectedProcedure } from '../trpc';
@@ -168,32 +168,48 @@ export const editKbEntry = protectedProcedure
     };
   });
 
-export const ManualKbGetInput = Type.Object({
-  page: Type.Number(),
-  limit: Type.Number(),
-});
-export type ManualKbGetInput = Static<typeof ManualKbGetInput>;
+export const getKbEntries = protectedProcedure
+  .input(
+    z.object({
+      cursor: z.string().optional(),
+      limit: z.number(),
+    }),
+  )
+  .query(async opts => {
+    const { limit, cursor } = opts.input;
 
-export async function getKbEntries({ page, limit }: ManualKbGetInput) {
-  const documents = await db.query.document.findMany({
-    where: eq(documentDbSchema.source, MANUAL_KB_SOURCE),
-    orderBy: (documents, { asc }) => asc(documents.createdAt),
-    limit,
-    offset: (page - 1) * limit,
-    columns: {
-      id: true,
-      content: true,
-      title: true,
-    },
+    const documents = await db.query.document.findMany({
+      where: and(
+        eq(documentDbSchema.source, MANUAL_KB_SOURCE),
+        cursor ? gt(documentDbSchema.createdAt, cursor) : undefined,
+      ),
+      orderBy: (documents, { asc }) => asc(documents.createdAt),
+      limit: limit + 1,
+      columns: {
+        id: true,
+        content: true,
+        title: true,
+        createdAt: true,
+      },
+    });
+
+    // Process the results
+    const hasNext = documents.length > limit;
+    if (hasNext) documents.pop(); // Remove the extra item
+
+    const nextCursor =
+      documents.length > 0 ? documents[documents.length - 1].createdAt : null;
+
+    return {
+      items: documents.map(doc => ({
+        id: doc.id,
+        title: doc.title,
+        // @ts-expect-error ignore type
+        content: Buffer.from(doc.content).toString(),
+      })),
+      nextCursor: hasNext ? nextCursor : null,
+    };
   });
-
-  return documents;
-}
-
-export const ManualKbDeleteInput = Type.Object({
-  id: Type.String(),
-});
-export type ManualKbDeleteInput = Static<typeof ManualKbDeleteInput>;
 
 export const deleteKbEntry = protectedProcedure
   .input(z.object({ id: z.string().uuid() }))

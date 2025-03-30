@@ -30,12 +30,7 @@ import {
   mergeConsecutiveSameRole,
 } from './twitter/helpers';
 import { promClient, readiness } from './prom';
-import {
-  getKbEntries,
-  getKbSearchEntries,
-  ManualKbGetInput,
-  ManualKbSearchInput,
-} from './api/manual-kb';
+import { getKbSearchEntries, ManualKbSearchInput } from './api/manual-kb';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { inngest } from './inngest';
 import { ingestTweets } from './twitter/ingest';
@@ -397,109 +392,6 @@ fastify.route<{ Body: ChatStreamInput }>({
     }
   },
   url: '/api/chat',
-});
-
-fastify.route<{ Querystring: ManualKbGetInput }>({
-  method: 'GET',
-  preHandler: [authHandler],
-  schema: {
-    querystring: ManualKbGetInput,
-    response: {
-      200: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            id: { type: 'string' },
-            title: { type: 'string' },
-            content: { type: 'string' },
-          },
-        },
-      },
-    },
-  },
-  handler: async (request, reply) => {
-    const log = logger.child({
-      function: 'api-manual-kb-get',
-      requestId: request.id,
-    });
-    try {
-      const { page, limit } = request.query;
-
-      if (!page) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'page is required',
-        );
-        reply.code(400).send({ success: false, error: 'page is required' });
-      }
-
-      if (page < 0) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'page should be greater than 0',
-        );
-        reply.code(400).send({
-          success: false,
-          error: 'page should be greater than or equal to 0',
-        });
-      }
-
-      if (!limit) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'limit is required',
-        );
-        reply.code(400).send({ success: false, error: 'limit is required' });
-      }
-
-      if (limit < 0) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'limit should be greater than 0',
-        );
-        reply.code(400).send({
-          success: false,
-          error: 'limit should be greater than or equal to 0',
-        });
-      }
-
-      if (limit > 30) {
-        log.error(
-          {
-            body: request.body,
-          },
-          'limit should be less than 30',
-        );
-        reply.code(400).send({
-          success: false,
-          error: 'limit should be less than or equal to 30',
-        });
-      }
-
-      const result = await getKbEntries({
-        page,
-        limit,
-      });
-
-      return reply.send(result);
-    } catch (error) {
-      log.error({ error }, 'Error in getKbEntries');
-      return reply.code(500).send({
-        success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  },
-  url: '/api/manual-kb',
 });
 
 fastify.route<{ Querystring: ManualKbSearchInput }>({
