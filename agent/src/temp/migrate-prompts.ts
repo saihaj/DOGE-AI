@@ -1,10 +1,11 @@
 import { botConfig, db, eq } from 'database';
 import { PROMPTS } from '../twitter/prompts';
+import { initPrompt } from '../prompt-registry';
 
 async function main() {
   const promptKeys = Object.keys(PROMPTS);
 
-  for (const key of promptKeys) {
+  for await (const key of promptKeys) {
     const promptValue = await db.query.botConfig.findFirst({
       where: eq(botConfig.key, key),
       columns: {
@@ -12,7 +13,17 @@ async function main() {
       },
     });
 
-    console.log({ key, promptValue });
+    if (!promptValue) {
+      console.log(`Prompt with key ${key} not found in database.`);
+      continue;
+    }
+
+    const r = await initPrompt({
+      key,
+      value: promptValue.value,
+    });
+
+    console.log(`Prompt with key ${key} migrated successfully:`, r);
   }
 }
 

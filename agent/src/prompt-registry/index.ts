@@ -109,7 +109,13 @@ async function getPromptHistory(key: string) {
 }
 
 // Initialize a new prompt
-async function initPrompt({ key, value }: { key: string; value: string }) {
+export async function initPrompt({
+  key,
+  value,
+}: {
+  key: string;
+  value: string;
+}) {
   const promptId = crypto.randomUUID();
   const commitId = crypto.randomUUID();
 
