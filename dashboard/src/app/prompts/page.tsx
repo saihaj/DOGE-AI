@@ -137,27 +137,20 @@ export default function Prompts() {
   const [hasErrors, setHasErrors] = useState(false);
   const editor = useRef<Parameters<OnMount>['0']>(null);
   const monaco = useMonaco();
-  const { data, isLoading, error } = useSWR<{
-    value: string;
-  }>(
-    selectedPromptKey ? `${API_URL}/api/prompt/${selectedPromptKey}` : null,
-    async (url: string) => {
-      const res = await fetch(url, {
-        headers: {
-          [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
-        },
-      });
+  const trpc = useTRPC();
 
-      if (!res.ok) {
-        const message = await res.text();
-        const error = new Error(message);
-        throw error;
-      }
-
-      return res.json();
-    },
+  const { data, isLoading, isError } = useQuery(
+    trpc.getPrompt.queryOptions(
+      {
+        key: selectedPromptKey || '',
+      },
+      {
+        enabled: !!selectedPromptKey,
+        retry: false,
+      },
+    ),
   );
-
+  console.log({ data, isError, isLoading });
   // Validation function
   function validateTemplateVariables(text: string) {
     const editorRef = editor.current;
@@ -205,17 +198,17 @@ export default function Prompts() {
 
   const value = (() => {
     if (isLoading) return EDITOR_MESSAGES.LOADING;
-    if (error) return EDITOR_MESSAGES.ERROR;
+    if (isError) return EDITOR_MESSAGES.ERROR;
     if (!data) return EDITOR_MESSAGES.EMPTY;
-    if (state === 'back-to-editor') return edited || data.value;
-    return data.value;
+    if (state === 'back-to-editor') return edited || data;
+    return data;
   })();
 
   const readyForReview = (() => {
     if (hasErrors) return false;
     if (edited == null) return false;
-    if (edited !== data?.value) return true;
-    if (error) return false;
+    if (edited !== data) return true;
+    if (isError) return false;
     return false;
   })();
 
@@ -262,7 +255,7 @@ export default function Prompts() {
                   selectLeadingAndTrailingWhitespace: true,
                 },
                 fontSize: 18,
-                readOnly: !selectedPromptKey || isLoading || error,
+                readOnly: !selectedPromptKey || isLoading || isError,
                 mouseWheelZoom: false,
                 selectOnLineNumbers: true,
                 cursorBlinking: 'blink',

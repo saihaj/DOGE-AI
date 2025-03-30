@@ -4,13 +4,8 @@ import {
   editKbEntry,
   getKbEntries,
 } from './api/manual-kb';
-import { protectedProcedure, router } from './trpc';
-import { PROMPTS } from './twitter/prompts';
-
-const getPromptKeys = protectedProcedure.query(async opts => {
-  const keys = Object.keys(PROMPTS);
-  return keys;
-});
+import { router } from './trpc';
+import { getPrompt, getPromptKeys } from './api/prompts';
 
 export const appRouter = router({
   createKbEntry,
@@ -18,6 +13,7 @@ export const appRouter = router({
   deleteKbEntry,
   getKbEntries,
   getPromptKeys,
+  getPrompt,
 });
 
 export type AppRouter = typeof appRouter;
