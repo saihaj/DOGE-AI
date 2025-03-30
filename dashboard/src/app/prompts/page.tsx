@@ -24,8 +24,6 @@ import {
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRef, useState } from 'react';
-import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
-import { useCookie } from '@/hooks/use-cookie';
 import { cn } from '@/lib/utils';
 import { checkVariablesParser } from './validator';
 import { toast } from 'sonner';
@@ -38,23 +36,6 @@ const EDITOR_MESSAGES = {
   EMPTY:
     'No prompt loaded.\nSelect a prompt by clicking dropdown on the top-right corner.',
 };
-
-async function fetchWithErrorAsText(key: string, options?: RequestInit) {
-  const res = await fetch(new URL(key), {
-    ...options,
-  });
-
-  const data = res.headers.get('Content-Type')?.includes('application/json')
-    ? await res.json()
-    : await res.text();
-
-  if (!res.ok) {
-    if (typeof data === 'object' && 'message' in data) throw data.message;
-    else throw new Error('An error occurred while fetching the data.');
-  }
-
-  return data;
-}
 
 function AvailablePrompts({
   value,
@@ -126,7 +107,6 @@ function AvailablePrompts({
 export default function Prompts() {
   const { theme } = useTheme();
   const [edited, setEdited] = useState<string | null>(null);
-  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const [selectedPromptKey, setSelectedPromptKey] = useState<string | null>(
     null,
   );
