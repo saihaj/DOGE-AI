@@ -1,10 +1,10 @@
-import { getPrompt, setPromptByKey } from '../twitter/prompts';
+import { getPrompt } from '../twitter/prompts';
 import { z } from 'zod';
 import { protectedProcedure } from '../trpc';
 import { PROMPTS } from '../twitter/prompts';
 import { TRPCError } from '@trpc/server';
 import { logger } from '../logger';
-import { botConfig, db, eq } from 'database';
+import { commitPrompt, getLatestPrompt } from '../prompt-registry';
 
 export const getPromptKeys = protectedProcedure.query(async opts => {
   const keys = Object.keys(PROMPTS);
@@ -27,19 +27,14 @@ export const getPromptByKey = protectedProcedure
     });
     log.info({}, 'get prompt');
 
-    const promptValue = await db.query.botConfig.findFirst({
-      where: eq(botConfig.key, key),
-      columns: {
-        value: true,
-      },
-    });
+    const promptValue = await getLatestPrompt(key);
 
     if (!promptValue) {
       log.error({}, 'prompt not found');
       throw new TRPCError({ code: 'NOT_FOUND' });
     }
 
-    return promptValue.value;
+    return promptValue.content;
   });
 
 // Given a string, it extracts all the template variables
@@ -128,9 +123,13 @@ export const updatePromptByKey = protectedProcedure
     }
 
     // update the prompt
-    const state = await setPromptByKey({ key, value }, logger);
+    const state = await commitPrompt({
+      key,
+      value,
+      message: `By ${opts.ctx.userEmail}`,
+    });
 
-    if (state) {
+    if (state.commitId) {
       log.info({}, 'updated prompt');
       return {
         status: 'success',

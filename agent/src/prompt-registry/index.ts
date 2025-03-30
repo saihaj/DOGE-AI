@@ -1,7 +1,27 @@
-import { db, eq, prompt as dbPromptSchema, promptCommit, desc } from 'database';
+import {
+  db,
+  eq,
+  prompt as dbPromptSchema,
+  promptCommit,
+  desc,
+  and,
+} from 'database';
 import * as crypto from 'node:crypto';
 
 export async function getLatestPrompt(key: string) {
+  const prompt = await db
+    .select({
+      id: dbPromptSchema.id,
+      latestCommitId: dbPromptSchema.latestCommitId,
+    })
+    .from(dbPromptSchema)
+    .where(eq(dbPromptSchema.key, key))
+    .get();
+
+  if (!prompt) {
+    throw new Error(`Prompt "${key}" not found`);
+  }
+
   return db
     .select({
       commitId: promptCommit.id,
@@ -11,18 +31,15 @@ export async function getLatestPrompt(key: string) {
     })
     .from(promptCommit)
     .where(
-      eq(
-        promptCommit.promptId,
-        db
-          .select({ id: dbPromptSchema.latestCommitId })
-          .from(dbPromptSchema)
-          .where(eq(dbPromptSchema.key, key)),
+      and(
+        eq(promptCommit.promptId, prompt.id),
+        eq(promptCommit.id, prompt.latestCommitId),
       ),
     )
     .get();
 }
 
-async function commitPrompt({
+export async function commitPrompt({
   key,
   message,
   value,
@@ -34,25 +51,24 @@ async function commitPrompt({
   const lastPrompt = await getLatestPrompt(key);
   if (!lastPrompt) throw new Error(`Prompt "${key}" not found`);
 
-  const parentCommitId = lastPrompt.parentCommitId ? lastPrompt.commitId : null;
-
   const newCommit = await db.transaction(async tx => {
+    const newCommitId = crypto.randomUUID();
     // Insert new commit
     const newCommit = await tx
       .insert(promptCommit)
       .values({
         promptId: lastPrompt.promptId,
-        parentCommitId,
+        parentCommitId: lastPrompt.commitId,
         content: value,
         message,
-        id: crypto.randomUUID(),
+        id: newCommitId,
       })
       .returning({ commitId: promptCommit.id })
       .get();
 
     await tx
       .update(dbPromptSchema)
-      .set({ latestCommitId: newCommit.commitId })
+      .set({ latestCommitId: newCommitId })
       .where(eq(dbPromptSchema.id, lastPrompt.promptId))
       .run();
 
