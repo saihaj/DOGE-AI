@@ -208,25 +208,6 @@ export default function ManualKB() {
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery.trim(), 300);
 
-  function deleteEntry(id: string) {
-    toast.promise(
-      deleteKbEntry({
-        id,
-      }),
-      {
-        loading: 'Deleting entry...',
-        success: data => {
-          if (data) {
-            mutate();
-            return 'Entry deleted successfully';
-          }
-          throw new Error('Failed to delete entry');
-        },
-        error: 'Failed to delete entry',
-      },
-    );
-  }
-
   const { data, error, isLoading, refetch, fetchNextPage, hasNextPage } =
     useInfiniteQuery(
       trpc.getKbEntries.infiniteQueryOptions(
@@ -251,6 +232,25 @@ export default function ManualKB() {
         },
       ),
     );
+
+  function deleteEntry(id: string) {
+    toast.promise(
+      deleteKbEntry({
+        id,
+      }),
+      {
+        loading: 'Deleting entry...',
+        success: data => {
+          if (data) {
+            refetch();
+            return 'Entry deleted successfully';
+          }
+          throw new Error('Failed to delete entry');
+        },
+        error: 'Failed to delete entry',
+      },
+    );
+  }
 
   return (
     <>

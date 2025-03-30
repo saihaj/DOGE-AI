@@ -250,8 +250,8 @@ export const getKbEntries = protectedProcedure
 
     return {
       items: documents.map(doc => ({
-        id: doc.id,
-        title: doc.title,
+        id: doc.id!,
+        title: doc.title!,
         // @ts-expect-error ignore type
         content: Buffer.from(doc.content).toString(),
       })),
