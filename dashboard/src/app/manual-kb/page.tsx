@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Loader2Icon, PlusIcon } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { z } from 'zod';
-import useSWRInfinite from 'swr/infinite';
 import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -18,14 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import {
-  API_URL,
-  CF_BACKEND_HEADER_NAME,
-  CF_COOKIE_NAME,
-  IS_LOCAL,
-} from '@/lib/const';
 import { toast } from 'sonner';
-import { useCookie } from '@/hooks/use-cookie';
 import { useDrawerStore } from './store';
 import {
   Sheet,
