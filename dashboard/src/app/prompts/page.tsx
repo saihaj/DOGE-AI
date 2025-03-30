@@ -23,13 +23,12 @@ import {
   SaveIcon,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import useSWR from 'swr';
 import { useRef, useState } from 'react';
-import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
-import { useCookie } from '@/hooks/use-cookie';
 import { cn } from '@/lib/utils';
 import { checkVariablesParser } from './validator';
 import { toast } from 'sonner';
+import { useTRPC } from '@/lib/trpc';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 const EDITOR_MESSAGES = {
   LOADING: 'Loading...',
@@ -38,23 +37,6 @@ const EDITOR_MESSAGES = {
     'No prompt loaded.\nSelect a prompt by clicking dropdown on the top-right corner.',
 };
 
-async function fetchWithErrorAsText(key: string, options?: RequestInit) {
-  const res = await fetch(new URL(key), {
-    ...options,
-  });
-
-  const data = res.headers.get('Content-Type')?.includes('application/json')
-    ? await res.json()
-    : await res.text();
-
-  if (!res.ok) {
-    if (typeof data === 'object' && 'message' in data) throw data.message;
-    else throw new Error('An error occurred while fetching the data.');
-  }
-
-  return data;
-}
-
 function AvailablePrompts({
   value,
   setValue,
@@ -62,16 +44,11 @@ function AvailablePrompts({
   value: string | null;
   setValue: (value: string | null) => void;
 }) {
-  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
-  const { data, isLoading } = useSWR<{
-    keys: string[];
-  }>(`${API_URL}/api/prompts`, (url: string) =>
-    fetch(url, {
-      headers: {
-        [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
-      },
-    }).then(res => res.json()),
+  const trpc = useTRPC();
+  const { data: availablePrompts, isLoading } = useQuery(
+    trpc.getPromptKeys.queryOptions(),
   );
+
   const [open, setOpen] = useState(false);
 
   return (
@@ -83,7 +60,9 @@ function AvailablePrompts({
           aria-expanded={open}
           className="w-[400px] justify-between"
         >
-          {value ? data?.keys?.find(k => k === value) : 'Select Prompt...'}
+          {value
+            ? availablePrompts?.find(k => k === value)
+            : 'Select Prompt...'}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -92,15 +71,15 @@ function AvailablePrompts({
           <CommandInput placeholder="Search Model..." />
           <CommandList>
             <CommandEmpty>No Prompts Found.</CommandEmpty>
-            {!isLoading && data?.keys && data.keys.length > 0 && (
+            {!isLoading && availablePrompts && availablePrompts.length > 0 && (
               <CommandGroup>
-                {data?.keys.map(key => (
+                {availablePrompts.map(key => (
                   <CommandItem
                     key={key}
                     value={key}
                     onSelect={currentValue => {
                       const selectedValue =
-                        data.keys.find(k => k === currentValue) || null;
+                        availablePrompts.find(k => k === currentValue) || null;
                       if (selectedValue) {
                         setValue(selectedValue);
                       }
@@ -128,7 +107,6 @@ function AvailablePrompts({
 export default function Prompts() {
   const { theme } = useTheme();
   const [edited, setEdited] = useState<string | null>(null);
-  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const [selectedPromptKey, setSelectedPromptKey] = useState<string | null>(
     null,
   );
@@ -138,25 +116,23 @@ export default function Prompts() {
   const [hasErrors, setHasErrors] = useState(false);
   const editor = useRef<Parameters<OnMount>['0']>(null);
   const monaco = useMonaco();
-  const { data, isLoading, error } = useSWR<{
-    value: string;
-  }>(
-    selectedPromptKey ? `${API_URL}/api/prompt/${selectedPromptKey}` : null,
-    async (url: string) => {
-      const res = await fetch(url, {
-        headers: {
-          [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
-        },
-      });
+  const trpc = useTRPC();
 
-      if (!res.ok) {
-        const message = await res.text();
-        const error = new Error(message);
-        throw error;
-      }
+  const { mutateAsync: apiUpdatePrompt } = useMutation(
+    trpc.updatePromptByKey.mutationOptions(),
+  );
 
-      return res.json();
-    },
+  const { data, isLoading, isError } = useQuery(
+    trpc.getPromptByKey.queryOptions(
+      {
+        key: selectedPromptKey || '',
+      },
+      {
+        staleTime: 0,
+        enabled: !!selectedPromptKey,
+        retry: false,
+      },
+    ),
   );
 
   // Validation function
@@ -206,17 +182,17 @@ export default function Prompts() {
 
   const value = (() => {
     if (isLoading) return EDITOR_MESSAGES.LOADING;
-    if (error) return EDITOR_MESSAGES.ERROR;
+    if (isError) return EDITOR_MESSAGES.ERROR;
     if (!data) return EDITOR_MESSAGES.EMPTY;
-    if (state === 'back-to-editor') return edited || data.value;
-    return data.value;
+    if (state === 'back-to-editor') return edited || data;
+    return data;
   })();
 
   const readyForReview = (() => {
     if (hasErrors) return false;
     if (edited == null) return false;
-    if (edited !== data?.value) return true;
-    if (error) return false;
+    if (edited !== data) return true;
+    if (isError) return false;
     return false;
   })();
 
@@ -263,7 +239,7 @@ export default function Prompts() {
                   selectLeadingAndTrailingWhitespace: true,
                 },
                 fontSize: 18,
-                readOnly: !selectedPromptKey || isLoading || error,
+                readOnly: !selectedPromptKey || isLoading || isError,
                 mouseWheelZoom: false,
                 selectOnLineNumbers: true,
                 cursorBlinking: 'blink',
@@ -324,32 +300,30 @@ export default function Prompts() {
                   toast.error('No changes to save');
                   return;
                 }
-                const data = fetchWithErrorAsText(
-                  `${API_URL}/api/prompt/${selectedPromptKey}`,
+
+                if (!selectedPromptKey) {
+                  toast.error('No prompt selected');
+                  return;
+                }
+
+                toast.promise(
+                  apiUpdatePrompt({
+                    key: selectedPromptKey,
+                    value: edited,
+                  }),
                   {
-                    method: 'PATCH',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+                    loading: 'Updating prompt...',
+                    success: data => {
+                      setSelectedPromptKey(null);
+                      setEdited(null);
+                      setState('editor');
+                      return data.status;
                     },
-                    body: JSON.stringify({
-                      value: edited,
-                    }),
+                    error: err => {
+                      return err?.message || 'Error updating prompt';
+                    },
                   },
                 );
-
-                toast.promise(data, {
-                  loading: 'Updating prompt...',
-                  success: data => {
-                    setSelectedPromptKey(null);
-                    setEdited(null);
-                    setState('editor');
-                    return data;
-                  },
-                  error: err => {
-                    return err;
-                  },
-                });
               }}
               className="absolute bottom-20 right-10"
             >
