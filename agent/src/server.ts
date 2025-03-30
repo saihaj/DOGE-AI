@@ -39,7 +39,6 @@ import { ingestInteractionTweets } from './twitter/ingest-interaction';
 import { processInteractionTweets } from './twitter/process-interactions';
 import { executeInteractionTweets } from './twitter/execute-interaction';
 import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
-import { PROMPTS } from './twitter/prompts';
 import { botConfig, db, eq } from 'database';
 import { patchPrompt, PatchPrompt } from './api/prompt';
 import { createContext } from './trpc';
@@ -391,33 +390,6 @@ fastify.route<{ Body: ChatStreamInput }>({
     }
   },
   url: '/api/chat',
-});
-
-fastify.route({
-  method: 'GET',
-  preHandler: [authHandler],
-  schema: {
-    response: {
-      200: {
-        type: 'object',
-        properties: {
-          keys: {
-            type: 'array',
-            items: {
-              type: 'string',
-            },
-          },
-        },
-      },
-    },
-  },
-  handler: async (_, reply) => {
-    const keys = Object.keys(PROMPTS);
-    return reply.send({
-      keys,
-    });
-  },
-  url: '/api/prompts',
 });
 
 fastify.route({

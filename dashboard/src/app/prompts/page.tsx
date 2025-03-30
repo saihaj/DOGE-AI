@@ -30,6 +30,8 @@ import { useCookie } from '@/hooks/use-cookie';
 import { cn } from '@/lib/utils';
 import { checkVariablesParser } from './validator';
 import { toast } from 'sonner';
+import { useTRPC } from '@/lib/trpc';
+import { useQuery } from '@tanstack/react-query';
 
 const EDITOR_MESSAGES = {
   LOADING: 'Loading...',
@@ -62,16 +64,11 @@ function AvailablePrompts({
   value: string | null;
   setValue: (value: string | null) => void;
 }) {
-  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
-  const { data, isLoading } = useSWR<{
-    keys: string[];
-  }>(`${API_URL}/api/prompts`, (url: string) =>
-    fetch(url, {
-      headers: {
-        [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
-      },
-    }).then(res => res.json()),
+  const trpc = useTRPC();
+  const { data: availablePrompts, isLoading } = useQuery(
+    trpc.getPromptKeys.queryOptions(),
   );
+
   const [open, setOpen] = useState(false);
 
   return (
@@ -83,7 +80,9 @@ function AvailablePrompts({
           aria-expanded={open}
           className="w-[400px] justify-between"
         >
-          {value ? data?.keys?.find(k => k === value) : 'Select Prompt...'}
+          {value
+            ? availablePrompts?.find(k => k === value)
+            : 'Select Prompt...'}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -92,15 +91,15 @@ function AvailablePrompts({
           <CommandInput placeholder="Search Model..." />
           <CommandList>
             <CommandEmpty>No Prompts Found.</CommandEmpty>
-            {!isLoading && data?.keys && data.keys.length > 0 && (
+            {!isLoading && availablePrompts && availablePrompts.length > 0 && (
               <CommandGroup>
-                {data?.keys.map(key => (
+                {availablePrompts.map(key => (
                   <CommandItem
                     key={key}
                     value={key}
                     onSelect={currentValue => {
                       const selectedValue =
-                        data.keys.find(k => k === currentValue) || null;
+                        availablePrompts.find(k => k === currentValue) || null;
                       if (selectedValue) {
                         setValue(selectedValue);
                       }
