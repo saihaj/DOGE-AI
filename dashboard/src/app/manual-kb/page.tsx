@@ -206,7 +206,7 @@ function EntryUi({ mutate }: { mutate: () => void }) {
   );
 }
 
-const FETCH_SIZE = 5;
+const FETCH_SIZE = 20;
 
 export default function ManualKB() {
   const trpc = useTRPC();
@@ -240,6 +240,7 @@ export default function ManualKB() {
       trpc.getKbEntries.infiniteQueryOptions(
         {
           limit: FETCH_SIZE,
+          query: debouncedSearch,
         },
         {
           select(data) {
@@ -249,7 +250,11 @@ export default function ManualKB() {
             };
           },
           getNextPageParam(lastPage) {
-            return lastPage.nextCursor;
+            if (!debouncedSearch) return lastPage.nextCursor;
+
+            if (debouncedSearch === lastPage.query) return lastPage.nextCursor;
+
+            return null;
           },
         },
       ),

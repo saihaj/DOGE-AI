@@ -1,6 +1,6 @@
-import { Static, Type } from '@sinclair/typebox';
 import {
   and,
+  asc,
   billVector,
   db,
   document as documentDbSchema,
@@ -173,25 +173,73 @@ export const getKbEntries = protectedProcedure
     z.object({
       cursor: z.string().optional(),
       limit: z.number(),
+      query: z.string().optional(),
     }),
   )
   .query(async opts => {
-    const { limit, cursor } = opts.input;
+    const { limit, cursor, query } = opts.input;
 
-    const documents = await db.query.document.findMany({
-      where: and(
-        eq(documentDbSchema.source, MANUAL_KB_SOURCE),
-        cursor ? gt(documentDbSchema.createdAt, cursor) : undefined,
-      ),
-      orderBy: (documents, { asc }) => asc(documents.createdAt),
-      limit: limit + 1,
-      columns: {
-        id: true,
-        content: true,
-        title: true,
-        createdAt: true,
-      },
-    });
+    if (!query) {
+      const documents = await db.query.document.findMany({
+        where: and(
+          eq(documentDbSchema.source, MANUAL_KB_SOURCE),
+          cursor ? gt(documentDbSchema.createdAt, cursor) : undefined,
+        ),
+        orderBy: (documents, { asc }) => asc(documents.createdAt),
+        limit: limit + 1,
+        columns: {
+          id: true,
+          content: true,
+          title: true,
+          createdAt: true,
+        },
+      });
+
+      // Process the results
+      const hasNext = documents.length > limit;
+      if (hasNext) documents.pop(); // Remove the extra item
+
+      const nextCursor =
+        documents.length > 0 ? documents[documents.length - 1].createdAt : null;
+
+      return {
+        items: documents.map(doc => ({
+          id: doc.id,
+          title: doc.title,
+          // @ts-expect-error ignore type
+          content: Buffer.from(doc.content).toString(),
+        })),
+        nextCursor: hasNext ? nextCursor : null,
+        query: null,
+      };
+    }
+
+    const termEmbedding = await generateEmbedding(query.trim());
+    const termEmbeddingString = JSON.stringify(termEmbedding);
+
+    const documents = await db
+      .select({
+        id: documentDbSchema.id,
+        title: documentDbSchema.title,
+        content: documentDbSchema.content,
+        createdAt: documentDbSchema.createdAt,
+      })
+      .from(billVector)
+      .where(
+        and(
+          sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
+          isNotNull(billVector.document),
+          eq(billVector.source, MANUAL_KB_SOURCE),
+          cursor ? gt(documentDbSchema.createdAt, cursor) : undefined,
+        ),
+      )
+      .orderBy(
+        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
+        asc(documentDbSchema.createdAt),
+      )
+      .groupBy(billVector.document)
+      .leftJoin(documentDbSchema, eq(documentDbSchema.id, billVector.document))
+      .limit(limit + 1);
 
     // Process the results
     const hasNext = documents.length > limit;
@@ -208,6 +256,7 @@ export const getKbEntries = protectedProcedure
         content: Buffer.from(doc.content).toString(),
       })),
       nextCursor: hasNext ? nextCursor : null,
+      query,
     };
   });
 
@@ -241,43 +290,3 @@ export const deleteKbEntry = protectedProcedure
       rowsAffected: documents.rowsAffected,
     };
   });
-
-export const ManualKbSearchInput = Type.Object({
-  page: Type.Number(),
-  limit: Type.Number(),
-  query: Type.String(),
-});
-export type ManualKbSearchInput = Static<typeof ManualKbSearchInput>;
-
-export async function getKbSearchEntries({
-  page,
-  limit,
-  query,
-}: ManualKbSearchInput) {
-  const termEmbedding = await generateEmbedding(query.trim());
-  const termEmbeddingString = JSON.stringify(termEmbedding);
-
-  const documents = await db
-    .select({
-      id: documentDbSchema.id,
-      title: documentDbSchema.title,
-      content: documentDbSchema.content,
-    })
-    .from(billVector)
-    .where(
-      and(
-        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
-        isNotNull(billVector.document),
-        eq(billVector.source, MANUAL_KB_SOURCE),
-      ),
-    )
-    .orderBy(
-      sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
-    )
-    .groupBy(billVector.document)
-    .leftJoin(documentDbSchema, eq(documentDbSchema.id, billVector.document))
-    .limit(limit)
-    .offset((page - 1) * limit);
-
-  return documents;
-}
