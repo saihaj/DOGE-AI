@@ -7,7 +7,6 @@ import {
   blob,
   customType,
   index,
-  unique,
   foreignKey,
 } from 'drizzle-orm/sqlite-core';
 import * as crypto from 'node:crypto';
