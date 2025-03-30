@@ -23,7 +23,6 @@ import {
   SaveIcon,
 } from 'lucide-react';
 import { useTheme } from 'next-themes';
-import useSWR from 'swr';
 import { useRef, useState } from 'react';
 import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { useCookie } from '@/hooks/use-cookie';
@@ -31,7 +30,7 @@ import { cn } from '@/lib/utils';
 import { checkVariablesParser } from './validator';
 import { toast } from 'sonner';
 import { useTRPC } from '@/lib/trpc';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 
 const EDITOR_MESSAGES = {
   LOADING: 'Loading...',
@@ -139,18 +138,23 @@ export default function Prompts() {
   const monaco = useMonaco();
   const trpc = useTRPC();
 
+  const { mutateAsync: apiUpdatePrompt } = useMutation(
+    trpc.updatePromptByKey.mutationOptions(),
+  );
+
   const { data, isLoading, isError } = useQuery(
-    trpc.getPrompt.queryOptions(
+    trpc.getPromptByKey.queryOptions(
       {
         key: selectedPromptKey || '',
       },
       {
+        staleTime: 0,
         enabled: !!selectedPromptKey,
         retry: false,
       },
     ),
   );
-  console.log({ data, isError, isLoading });
+
   // Validation function
   function validateTemplateVariables(text: string) {
     const editorRef = editor.current;
@@ -316,32 +320,30 @@ export default function Prompts() {
                   toast.error('No changes to save');
                   return;
                 }
-                const data = fetchWithErrorAsText(
-                  `${API_URL}/api/prompt/${selectedPromptKey}`,
+
+                if (!selectedPromptKey) {
+                  toast.error('No prompt selected');
+                  return;
+                }
+
+                toast.promise(
+                  apiUpdatePrompt({
+                    key: selectedPromptKey,
+                    value: edited,
+                  }),
                   {
-                    method: 'PATCH',
-                    headers: {
-                      'Content-Type': 'application/json',
-                      [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie,
+                    loading: 'Updating prompt...',
+                    success: data => {
+                      setSelectedPromptKey(null);
+                      setEdited(null);
+                      setState('editor');
+                      return data.status;
                     },
-                    body: JSON.stringify({
-                      value: edited,
-                    }),
+                    error: err => {
+                      return err?.message || 'Error updating prompt';
+                    },
                   },
                 );
-
-                toast.promise(data, {
-                  loading: 'Updating prompt...',
-                  success: data => {
-                    setSelectedPromptKey(null);
-                    setEdited(null);
-                    setState('editor');
-                    return data;
-                  },
-                  error: err => {
-                    return err;
-                  },
-                });
               }}
               className="absolute bottom-20 right-10"
             >

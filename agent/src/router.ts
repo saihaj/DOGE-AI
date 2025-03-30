@@ -5,7 +5,7 @@ import {
   getKbEntries,
 } from './api/manual-kb';
 import { router } from './trpc';
-import { getPrompt, getPromptKeys } from './api/prompts';
+import { getPromptByKey, getPromptKeys, updatePromptByKey } from './api/prompt';
 
 export const appRouter = router({
   createKbEntry,
@@ -13,7 +13,8 @@ export const appRouter = router({
   deleteKbEntry,
   getKbEntries,
   getPromptKeys,
-  getPrompt,
+  getPromptByKey,
+  updatePromptByKey,
 });
 
 export type AppRouter = typeof appRouter;
