@@ -14,7 +14,7 @@ async function main() {
     });
 
     if (!promptValue) {
-      console.log(`Prompt with key ${key} not found in database.`);
+      console.log(`${key} not found in database.`);
       continue;
     }
 
@@ -23,7 +23,7 @@ async function main() {
       value: promptValue.value,
     });
 
-    console.log(`Prompt with key ${key} migrated successfully:`, r);
+    console.log(`Prompt ${key} migrated successfully:`, r);
   }
 }
 
