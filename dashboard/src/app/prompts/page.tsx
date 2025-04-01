@@ -98,9 +98,9 @@ function AvailableVersion({
       </PopoverTrigger>
       <PopoverContent className="p-0">
         <Command>
-          <CommandInput placeholder="Search Model..." />
+          <CommandInput placeholder="Search Version..." />
           <CommandList>
-            <CommandEmpty>No Prompts Found.</CommandEmpty>
+            <CommandEmpty>No Versions Found.</CommandEmpty>
             {!isLoading &&
               availableVersions?.pages &&
               availableVersions.pages.length > 0 && (
