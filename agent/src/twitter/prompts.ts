@@ -2,6 +2,7 @@ import { botConfig, db, eq } from 'database';
 import { bento } from '../cache';
 import Handlebars from 'handlebars';
 import { WithLogger } from '../logger';
+import { getLatestPrompt, getPrompt } from '../prompt-registry';
 
 export const QUESTION_EXTRACTOR_SYSTEM_PROMPT = `You are an advanced text analysis assistant. Your primary task is to extract questions from a given piece of text. Follow these guidelines:
 
@@ -138,66 +139,6 @@ export const DOCUMENT_RELATED_TO_TWEET_PROMPT = `You are an AI assistant special
 `;
 
 export const ANALYZE_TEXT_FROM_IMAGE = `Analyze the provided image and extract all visible text exactly as it appears. Do not add any commentary or descriptions. If no text is found, return only 'NO_TEXT_FOUND'.`;
-
-const createCacheKey = (key: string) => `BOT_CONFIG_${key}`;
-
-export async function getPrompt(key: string) {
-  return bento.getOrSet(
-    createCacheKey(key),
-    async () => {
-      const prompt = await db.query.botConfig.findFirst({
-        where: eq(botConfig.key, key),
-        columns: {
-          value: true,
-        },
-      });
-
-      if (!prompt) {
-        throw new Error(`${key} not found`);
-      }
-
-      return prompt.value;
-    },
-    { ttl: '1d' },
-  );
-}
-
-export async function setPromptByKey(
-  {
-    key,
-    value,
-  }: {
-    key: string;
-    value: string;
-  },
-  logger: WithLogger,
-) {
-  const upperSnakeCaseRegex = /^[A-Z]+(_[A-Z]+)*$/g;
-
-  if (!upperSnakeCaseRegex.test(key)) {
-    logger.error({ key }, 'Key must be in upper snake case');
-    throw new Error('Key must be in upper snake case');
-  }
-
-  const insert = await db
-    .insert(botConfig)
-    .values([
-      {
-        key: key,
-        value,
-      },
-    ])
-    .onConflictDoUpdate({
-      target: [botConfig.key],
-      set: {
-        value,
-      },
-    });
-
-  logger.info({ insert }, 'Updated prompt');
-
-  return bento.set(createCacheKey(key), value, { ttl: '1d' });
-}
 
 export const PROMPTS = {
   TWITTER_REPLY_TEMPLATE: async () => {

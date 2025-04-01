@@ -7,6 +7,24 @@ import {
   prompt,
 } from 'database';
 import * as crypto from 'node:crypto';
+import { bento } from '../cache';
+
+const createCacheKey = (key: string) => `BOT_CONFIG_${key}`;
+
+export async function getPrompt(key: string) {
+  return bento.getOrSet(
+    createCacheKey(key),
+    async () => {
+      const prompt = await getLatestPrompt(key);
+      if (!prompt) {
+        throw new Error(`${key} not found`);
+      }
+
+      return prompt.content;
+    },
+    { ttl: '1d' },
+  );
+}
 
 export async function getLatestPrompt(key: string) {
   const prompt = await db
@@ -49,7 +67,9 @@ export async function commitPrompt({
   value: string;
 }) {
   const lastPrompt = await getLatestPrompt(key);
-  if (!lastPrompt) throw new Error(`Prompt "${key}" not found`);
+  if (!lastPrompt) {
+    throw new Error(`Prompt "${key}" not found`);
+  }
 
   const newCommit = await db.transaction(async tx => {
     const newCommitId = crypto.randomUUID();
@@ -71,6 +91,11 @@ export async function commitPrompt({
       .set({ latestCommitId: newCommitId })
       .where(eq(dbPromptSchema.id, lastPrompt.promptId))
       .run();
+
+    const status = await bento.delete(createCacheKey(key));
+    if (!status) {
+      throw new Error('Failed to delete cache');
+    }
 
     return newCommit;
   });
@@ -110,6 +135,11 @@ export async function revertPrompt({
       commitId: prompt.latestCommitId,
     })
     .get();
+
+  const status = await bento.delete(createCacheKey(key));
+  if (!status) {
+    throw new Error('Failed to delete cache');
+  }
 
   return version;
 }

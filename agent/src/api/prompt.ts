@@ -1,4 +1,3 @@
-import { getPrompt } from '../twitter/prompts';
 import { z } from 'zod';
 import { protectedProcedure } from '../trpc';
 import { PROMPTS } from '../twitter/prompts';
@@ -79,12 +78,19 @@ export const updatePromptByKey = protectedProcedure
       });
     }
 
-    const currentPrompt = await getPrompt(key);
+    const currentPrompt = await getLatestPrompt(key);
+    if (!currentPrompt) {
+      log.error({}, 'prompt not found');
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: `Prompt "${key}" not found`,
+      });
+    }
 
-    if (currentPrompt === value) {
+    if (currentPrompt.content === value) {
       log.warn(
         {
-          active: currentPrompt,
+          active: currentPrompt.content,
           proposed: value,
         },
         'no change in prompt',
@@ -97,7 +103,9 @@ export const updatePromptByKey = protectedProcedure
     }
 
     // validate variables in the current prompt
-    const currentVariables = extractTemplateVariableNames(currentPrompt);
+    const currentVariables = extractTemplateVariableNames(
+      currentPrompt.content,
+    );
     const proposedVariables = extractTemplateVariableNames(value);
 
     // check if the proposed prompt has the same variables as the current prompt
@@ -138,7 +146,7 @@ export const updatePromptByKey = protectedProcedure
     });
 
     if (state.commitId) {
-      log.info({}, 'updated prompt');
+      log.info(state, 'updated prompt');
       return {
         status: 'success',
       };
@@ -231,7 +239,7 @@ export const revertPromptVersion = protectedProcedure
     });
 
     if (status) {
-      log.info({ status }, 'reverted prompt version');
+      log.info(status, 'reverted prompt version');
       return {
         status: 'success',
       };

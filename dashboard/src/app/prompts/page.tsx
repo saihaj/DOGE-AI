@@ -249,7 +249,7 @@ export default function Prompts() {
   const { mutateAsync: apiRevertPrompt } = useMutation(
     trpc.revertPromptVersion.mutationOptions(),
   );
-  const { data, isLoading, isError, refetch } = useQuery(
+  const { data, isLoading, isError } = useQuery(
     trpc.getPromptByKey.queryOptions(
       {
         key: selectedPromptKey || '',
