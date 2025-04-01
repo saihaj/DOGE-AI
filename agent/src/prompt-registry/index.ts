@@ -109,7 +109,8 @@ export async function revertPrompt({
     .where(eq(prompt.id, latestPrompt.promptId))
     .returning({
       commitId: prompt.latestCommitId,
-    });
+    })
+    .get();
 
   return version;
 }

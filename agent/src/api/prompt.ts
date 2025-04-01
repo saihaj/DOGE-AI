@@ -231,7 +231,7 @@ export const revertPromptVersion = protectedProcedure
     });
 
     if (status) {
-      log.info({}, 'reverted prompt version');
+      log.info({ status }, 'reverted prompt version');
       return {
         status: 'success',
       };
