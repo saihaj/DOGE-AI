@@ -322,9 +322,9 @@ export default function Home() {
               />
               <CongressCard
                 number={119}
-                total={2730}
-                senate={800}
-                house={1930}
+                total={3122}
+                senate={978}
+                house={2144}
               />
             </div>
           </section>
