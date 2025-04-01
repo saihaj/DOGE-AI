@@ -5,6 +5,7 @@ import {
   promptCommit,
   desc,
   and,
+  prompt,
 } from 'database';
 import * as crypto from 'node:crypto';
 
@@ -86,7 +87,7 @@ export async function revertPrompt({
   key: string;
   targetCommitId: string;
 }) {
-  const latestPrompt = getLatestPrompt(key);
+  const latestPrompt = await getLatestPrompt(key);
   if (!latestPrompt) throw new Error(`Prompt "${key}" not found`);
 
   const targetCommit = await db.query.promptCommit.findFirst({
@@ -99,13 +100,18 @@ export async function revertPrompt({
 
   if (!targetCommit) throw new Error(`Commit ${targetCommitId} not found`);
 
-  const newCommit = await commitPrompt({
-    key,
-    message: `Reverted to commit ${targetCommitId}`,
-    value: targetCommit.content,
-  });
+  // update parent commit ID
+  const version = await db
+    .update(prompt)
+    .set({
+      latestCommitId: targetCommit.id,
+    })
+    .where(eq(prompt.id, latestPrompt.promptId))
+    .returning({
+      commitId: prompt.latestCommitId,
+    });
 
-  return newCommit;
+  return version;
 }
 
 // Get commit history IDs
