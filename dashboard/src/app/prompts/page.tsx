@@ -59,6 +59,7 @@ function AvailableVersion({
         limit: 5,
       },
       {
+        staleTime: 0,
         select(data) {
           return {
             pages: data.pages.flatMap(page => page.items),
@@ -166,9 +167,7 @@ function AvailablePrompts({
 }) {
   const trpc = useTRPC();
   const { data: availablePrompts, isLoading } = useQuery(
-    trpc.getPromptKeys.queryOptions(undefined, {
-      staleTime: 0,
-    }),
+    trpc.getPromptKeys.queryOptions(),
   );
 
   const [open, setOpen] = useState(false);
