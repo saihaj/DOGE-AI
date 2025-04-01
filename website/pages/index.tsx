@@ -307,10 +307,10 @@ export default function Home() {
                 borderRadius: '210px',
                 border: '1px solid #232A43',
               }}
-              dateTime="2025-03-25"
+              dateTime="2025-04-01"
             >
               <span className="text-[#839EFF]">Cutoff Date: </span>
-              <span className="font-semibold">March 25, 2025</span>
+              <span className="font-semibold">April 01, 2025</span>
             </time>
 
             <div className="grid md:grid-cols-2 gap-4 w-full">
