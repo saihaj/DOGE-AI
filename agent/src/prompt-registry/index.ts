@@ -79,7 +79,7 @@ export async function commitPrompt({
 }
 
 // Revert to a previous commit
-async function revertPrompt({
+export async function revertPrompt({
   key,
   targetCommitId,
 }: {
