@@ -11,6 +11,11 @@ import { bento } from '../cache';
 
 const createCacheKey = (key: string) => `BOT_CONFIG_${key}`;
 
+/**
+ * This is cached version of {@link getLatestPrompt}.
+ *
+ * If you are looking to just get the prompt content, use {@link getPromptContent}
+ */
 export async function getPrompt(key: string) {
   return bento.getOrSet(
     createCacheKey(key),
@@ -20,13 +25,25 @@ export async function getPrompt(key: string) {
         throw new Error(`${key} not found`);
       }
 
-      return prompt.content;
+      return prompt;
     },
     { ttl: '1d' },
   );
 }
 
-export async function getLatestPrompt(key: string) {
+export async function getPromptContent(key: string) {
+  const prompt = await getPrompt(key);
+  if (!prompt) {
+    throw new Error(`${key} not found`);
+  }
+  return prompt.content;
+}
+
+/**
+ * Meant for DB query.
+ * For public API use {@link getPrompt}
+ */
+async function getLatestPrompt(key: string) {
   const prompt = await db
     .select({
       id: dbPromptSchema.id,

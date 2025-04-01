@@ -1,8 +1,5 @@
-import { botConfig, db, eq } from 'database';
-import { bento } from '../cache';
 import Handlebars from 'handlebars';
-import { WithLogger } from '../logger';
-import { getLatestPrompt, getPrompt } from '../prompt-registry';
+import { getPromptContent } from '../prompt-registry';
 
 export const QUESTION_EXTRACTOR_SYSTEM_PROMPT = `You are an advanced text analysis assistant. Your primary task is to extract questions from a given piece of text. Follow these guidelines:
 
@@ -142,18 +139,18 @@ export const ANALYZE_TEXT_FROM_IMAGE = `Analyze the provided image and extract a
 
 export const PROMPTS = {
   TWITTER_REPLY_TEMPLATE: async () => {
-    return getPrompt('TWITTER_REPLY_TEMPLATE');
+    return getPromptContent('TWITTER_REPLY_TEMPLATE');
   },
   REPLY_SHORTENER_PROMPT: async () => {
-    return getPrompt('REPLY_SHORTENER_PROMPT');
+    return getPromptContent('REPLY_SHORTENER_PROMPT');
   },
   TWITTER_REPLY_REWRITER: async ({ text }: { text: string }) => {
-    const prompt = await getPrompt('TWITTER_REPLY_REWRITER');
+    const prompt = await getPromptContent('TWITTER_REPLY_REWRITER');
     const templatePrompt = Handlebars.compile(prompt);
     return templatePrompt({ text });
   },
   ENGAGEMENT_HUMANIZER: async ({ text }: { text: string }) => {
-    const prompt = await getPrompt('ENGAGEMENT_HUMANIZER');
+    const prompt = await getPromptContent('ENGAGEMENT_HUMANIZER');
     const templatePrompt = Handlebars.compile(prompt);
     return templatePrompt({ text });
   },
@@ -166,23 +163,23 @@ export const PROMPTS = {
     lastDogeReply: string;
     fullContext: string;
   }) => {
-    const prompt = await getPrompt('REPLY_TWEET_QUESTION_PROMPT');
+    const prompt = await getPromptContent('REPLY_TWEET_QUESTION_PROMPT');
     const templatedPrompt = Handlebars.compile(prompt);
     return templatedPrompt({ question, lastDogeReply, fullContext });
   },
   INTERACTION_ENGAGEMENT_DECISION_PROMPT: async () => {
-    return getPrompt('INTERACTION_ENGAGEMENT_DECISION_PROMPT');
+    return getPromptContent('INTERACTION_ENGAGEMENT_DECISION_PROMPT');
   },
   ENGAGEMENT_DECISION_PROMPT: async () => {
-    return getPrompt('ENGAGEMENT_DECISION_PROMPT');
+    return getPromptContent('ENGAGEMENT_DECISION_PROMPT');
   },
   LONG_RESPONSE_FORMATTER_PROMPT: async () => {
-    return getPrompt('LONG_RESPONSE_FORMATTER_PROMPT');
+    return getPromptContent('LONG_RESPONSE_FORMATTER_PROMPT');
   },
   REPLY_AS_DOGE: async () => {
-    return getPrompt('REPLY_AS_DOGE');
+    return getPromptContent('REPLY_AS_DOGE');
   },
   TWITTER_REPLY_TEMPLATE_KB: async () => {
-    return getPrompt('TWITTER_REPLY_TEMPLATE_KB');
+    return getPromptContent('TWITTER_REPLY_TEMPLATE_KB');
   },
 };

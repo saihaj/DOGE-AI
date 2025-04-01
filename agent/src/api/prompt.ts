@@ -3,11 +3,7 @@ import { protectedProcedure } from '../trpc';
 import { PROMPTS } from '../twitter/prompts';
 import { TRPCError } from '@trpc/server';
 import { logger } from '../logger';
-import {
-  commitPrompt,
-  getLatestPrompt,
-  revertPrompt,
-} from '../prompt-registry';
+import { commitPrompt, getPrompt, revertPrompt } from '../prompt-registry';
 import { and, db, desc, eq, lt, promptCommit } from 'database';
 
 export const getPromptKeys = protectedProcedure.query(async opts => {
@@ -31,7 +27,7 @@ export const getPromptByKey = protectedProcedure
     });
     log.info({}, 'get prompt');
 
-    const promptValue = await getLatestPrompt(key);
+    const promptValue = await getPrompt(key);
 
     if (!promptValue) {
       log.error({}, 'prompt not found');
@@ -78,7 +74,7 @@ export const updatePromptByKey = protectedProcedure
       });
     }
 
-    const currentPrompt = await getLatestPrompt(key);
+    const currentPrompt = await getPrompt(key);
     if (!currentPrompt) {
       log.error({}, 'prompt not found');
       throw new TRPCError({
@@ -176,7 +172,7 @@ export const getPromptVersions = protectedProcedure
     });
     log.info({}, 'get prompt versions');
 
-    const latestPrompt = await getLatestPrompt(key);
+    const latestPrompt = await getPrompt(key);
     if (!latestPrompt) {
       throw new TRPCError({
         code: 'NOT_FOUND',
