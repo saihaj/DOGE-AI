@@ -61,6 +61,9 @@ export const bill = sqliteTable(
     sponsorInfoRaw: blob().notNull(),
   },
   table => [
+    index('Bill_idx_number').on(table.number),
+    index('Bill_idx_congress').on(table.congress),
+    index('Bill_idx_type').on(table.type),
     uniqueIndex('Bill_congress_number_type_key').on(
       table.congress,
       table.number,
@@ -105,6 +108,7 @@ export const billVector = sqliteTable(
     source: text().notNull(),
   },
   table => [
+    index('BillVector_source_idx').on(table.source),
     index('BillVector_bill_key').on(table.bill),
     index('BillVector_document_key').on(table.document),
   ],
