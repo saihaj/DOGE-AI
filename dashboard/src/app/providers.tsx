@@ -5,7 +5,7 @@ import {
   isServer,
 } from '@tanstack/react-query';
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
-import { useState } from 'react';
+import { useMemo } from 'react';
 import { TRPCProvider, AppRouter } from '@/lib/trpc';
 import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { useCookie } from '@/hooks/use-cookie';
@@ -43,24 +43,26 @@ function getQueryClient() {
 
 export default function Providers({ children }: { children: React.ReactNode }) {
   const token = useCookie(CF_COOKIE_NAME);
+
   // NOTE: Avoid useState when initializing the query client if you don't
   //       have a suspense boundary between this and the code that may
   //       suspend because React will throw away the client on the initial
   //       render if it suspends and there is no boundary
   const queryClient = getQueryClient();
 
-  const [trpcClient] = useState(() =>
-    createTRPCClient<AppRouter>({
+  // Create TRPC client with useMemo to react to token changes
+  const trpcClient = useMemo(() => {
+    return createTRPCClient<AppRouter>({
       links: [
         httpBatchLink({
           url: `${API_URL}/api/trpc`,
-          headers: {
-            [CF_BACKEND_HEADER_NAME]: token,
-          },
+          headers: () => ({
+            [CF_BACKEND_HEADER_NAME]: token || '', // Fallback to empty string if token is undefined
+          }),
         }),
       ],
-    }),
-  );
+    });
+  }, [token]);
 
   return (
     <QueryClientProvider client={queryClient}>
