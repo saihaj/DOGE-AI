@@ -1,7 +1,5 @@
-import { botConfig, db, eq } from 'database';
-import { bento } from '../cache';
 import Handlebars from 'handlebars';
-import { WithLogger } from '../logger';
+import { getPromptContent } from '../prompt-registry';
 
 export const QUESTION_EXTRACTOR_SYSTEM_PROMPT = `You are an advanced text analysis assistant. Your primary task is to extract questions from a given piece of text. Follow these guidelines:
 
@@ -139,80 +137,20 @@ export const DOCUMENT_RELATED_TO_TWEET_PROMPT = `You are an AI assistant special
 
 export const ANALYZE_TEXT_FROM_IMAGE = `Analyze the provided image and extract all visible text exactly as it appears. Do not add any commentary or descriptions. If no text is found, return only 'NO_TEXT_FOUND'.`;
 
-const createCacheKey = (key: string) => `BOT_CONFIG_${key}`;
-
-export async function getPrompt(key: string) {
-  return bento.getOrSet(
-    createCacheKey(key),
-    async () => {
-      const prompt = await db.query.botConfig.findFirst({
-        where: eq(botConfig.key, key),
-        columns: {
-          value: true,
-        },
-      });
-
-      if (!prompt) {
-        throw new Error(`${key} not found`);
-      }
-
-      return prompt.value;
-    },
-    { ttl: '1d' },
-  );
-}
-
-export async function setPromptByKey(
-  {
-    key,
-    value,
-  }: {
-    key: string;
-    value: string;
-  },
-  logger: WithLogger,
-) {
-  const upperSnakeCaseRegex = /^[A-Z]+(_[A-Z]+)*$/g;
-
-  if (!upperSnakeCaseRegex.test(key)) {
-    logger.error({ key }, 'Key must be in upper snake case');
-    throw new Error('Key must be in upper snake case');
-  }
-
-  const insert = await db
-    .insert(botConfig)
-    .values([
-      {
-        key: key,
-        value,
-      },
-    ])
-    .onConflictDoUpdate({
-      target: [botConfig.key],
-      set: {
-        value,
-      },
-    });
-
-  logger.info({ insert }, 'Updated prompt');
-
-  return bento.set(createCacheKey(key), value, { ttl: '1d' });
-}
-
 export const PROMPTS = {
   TWITTER_REPLY_TEMPLATE: async () => {
-    return getPrompt('TWITTER_REPLY_TEMPLATE');
+    return getPromptContent('TWITTER_REPLY_TEMPLATE');
   },
   REPLY_SHORTENER_PROMPT: async () => {
-    return getPrompt('REPLY_SHORTENER_PROMPT');
+    return getPromptContent('REPLY_SHORTENER_PROMPT');
   },
   TWITTER_REPLY_REWRITER: async ({ text }: { text: string }) => {
-    const prompt = await getPrompt('TWITTER_REPLY_REWRITER');
+    const prompt = await getPromptContent('TWITTER_REPLY_REWRITER');
     const templatePrompt = Handlebars.compile(prompt);
     return templatePrompt({ text });
   },
   ENGAGEMENT_HUMANIZER: async ({ text }: { text: string }) => {
-    const prompt = await getPrompt('ENGAGEMENT_HUMANIZER');
+    const prompt = await getPromptContent('ENGAGEMENT_HUMANIZER');
     const templatePrompt = Handlebars.compile(prompt);
     return templatePrompt({ text });
   },
@@ -225,23 +163,23 @@ export const PROMPTS = {
     lastDogeReply: string;
     fullContext: string;
   }) => {
-    const prompt = await getPrompt('REPLY_TWEET_QUESTION_PROMPT');
+    const prompt = await getPromptContent('REPLY_TWEET_QUESTION_PROMPT');
     const templatedPrompt = Handlebars.compile(prompt);
     return templatedPrompt({ question, lastDogeReply, fullContext });
   },
   INTERACTION_ENGAGEMENT_DECISION_PROMPT: async () => {
-    return getPrompt('INTERACTION_ENGAGEMENT_DECISION_PROMPT');
+    return getPromptContent('INTERACTION_ENGAGEMENT_DECISION_PROMPT');
   },
   ENGAGEMENT_DECISION_PROMPT: async () => {
-    return getPrompt('ENGAGEMENT_DECISION_PROMPT');
+    return getPromptContent('ENGAGEMENT_DECISION_PROMPT');
   },
   LONG_RESPONSE_FORMATTER_PROMPT: async () => {
-    return getPrompt('LONG_RESPONSE_FORMATTER_PROMPT');
+    return getPromptContent('LONG_RESPONSE_FORMATTER_PROMPT');
   },
   REPLY_AS_DOGE: async () => {
-    return getPrompt('REPLY_AS_DOGE');
+    return getPromptContent('REPLY_AS_DOGE');
   },
   TWITTER_REPLY_TEMPLATE_KB: async () => {
-    return getPrompt('TWITTER_REPLY_TEMPLATE_KB');
+    return getPromptContent('TWITTER_REPLY_TEMPLATE_KB');
   },
 };

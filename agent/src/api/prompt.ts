@@ -1,10 +1,10 @@
-import { getPrompt, setPromptByKey } from '../twitter/prompts';
 import { z } from 'zod';
 import { protectedProcedure } from '../trpc';
 import { PROMPTS } from '../twitter/prompts';
 import { TRPCError } from '@trpc/server';
 import { logger } from '../logger';
-import { botConfig, db, eq } from 'database';
+import { commitPrompt, getPrompt, revertPrompt } from '../prompt-registry';
+import { and, db, desc, eq, lt, promptCommit } from 'database';
 
 export const getPromptKeys = protectedProcedure.query(async opts => {
   const keys = Object.keys(PROMPTS);
@@ -27,19 +27,17 @@ export const getPromptByKey = protectedProcedure
     });
     log.info({}, 'get prompt');
 
-    const promptValue = await db.query.botConfig.findFirst({
-      where: eq(botConfig.key, key),
-      columns: {
-        value: true,
-      },
-    });
+    const promptValue = await getPrompt(key);
 
     if (!promptValue) {
       log.error({}, 'prompt not found');
       throw new TRPCError({ code: 'NOT_FOUND' });
     }
 
-    return promptValue.value;
+    return {
+      content: promptValue.content,
+      commitId: promptValue.commitId,
+    };
   });
 
 // Given a string, it extracts all the template variables
@@ -77,11 +75,18 @@ export const updatePromptByKey = protectedProcedure
     }
 
     const currentPrompt = await getPrompt(key);
+    if (!currentPrompt) {
+      log.error({}, 'prompt not found');
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: `Prompt "${key}" not found`,
+      });
+    }
 
-    if (currentPrompt === value) {
+    if (currentPrompt.content === value) {
       log.warn(
         {
-          active: currentPrompt,
+          active: currentPrompt.content,
           proposed: value,
         },
         'no change in prompt',
@@ -94,7 +99,9 @@ export const updatePromptByKey = protectedProcedure
     }
 
     // validate variables in the current prompt
-    const currentVariables = extractTemplateVariableNames(currentPrompt);
+    const currentVariables = extractTemplateVariableNames(
+      currentPrompt.content,
+    );
     const proposedVariables = extractTemplateVariableNames(value);
 
     // check if the proposed prompt has the same variables as the current prompt
@@ -128,10 +135,14 @@ export const updatePromptByKey = protectedProcedure
     }
 
     // update the prompt
-    const state = await setPromptByKey({ key, value }, logger);
+    const state = await commitPrompt({
+      key,
+      value,
+      message: `By ${opts.ctx.userEmail}`,
+    });
 
-    if (state) {
-      log.info({}, 'updated prompt');
+    if (state.commitId) {
+      log.info(state, 'updated prompt');
       return {
         status: 'success',
       };
@@ -141,5 +152,97 @@ export const updatePromptByKey = protectedProcedure
     throw new TRPCError({
       code: 'INTERNAL_SERVER_ERROR',
       message: 'Failed to update prompt',
+    });
+  });
+
+export const getPromptVersions = protectedProcedure
+  .input(
+    z.object({
+      key: z.string(),
+      cursor: z.string().optional(),
+      limit: z.number(),
+    }),
+  )
+  .query(async opts => {
+    const { key, cursor, limit } = opts.input;
+    const log = logger.child({
+      function: 'getPromptVersions',
+      requestId: opts.ctx.requestId,
+      key,
+    });
+    log.info({}, 'get prompt versions');
+
+    const latestPrompt = await getPrompt(key);
+    if (!latestPrompt) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: `Prompt "${key}" not found`,
+      });
+    }
+
+    const promptHistory = await db.query.promptCommit.findMany({
+      where: and(
+        eq(promptCommit.promptId, latestPrompt.promptId),
+        cursor ? lt(promptCommit.createdAt, cursor) : undefined,
+      ),
+      orderBy: (promptCommit, { asc }) => desc(promptCommit.createdAt),
+      columns: {
+        id: true,
+        createdAt: true,
+        content: true,
+      },
+      limit: limit + 1,
+    });
+
+    // Process the results
+    const hasNext = promptHistory.length > limit;
+    if (hasNext) promptHistory.pop(); // Remove the extra item
+
+    const nextCursor =
+      promptHistory.length > 0
+        ? promptHistory[promptHistory.length - 1].createdAt
+        : null;
+
+    return {
+      items: promptHistory.map(item => ({
+        commitId: item.id,
+        createdAt: item.createdAt,
+        content: item.content,
+      })),
+      nextCursor: hasNext ? nextCursor : null,
+    };
+  });
+
+export const revertPromptVersion = protectedProcedure
+  .input(
+    z.object({
+      key: z.string(),
+      commitId: z.string(),
+    }),
+  )
+  .mutation(async opts => {
+    const { key, commitId } = opts.input;
+    const log = logger.child({
+      function: 'revertPromptVersion',
+      requestId: opts.ctx.requestId,
+      key,
+    });
+    log.info({}, 'revert prompt version');
+
+    const status = await revertPrompt({
+      key,
+      targetCommitId: commitId,
+    });
+
+    if (status) {
+      log.info(status, 'reverted prompt version');
+      return {
+        status: 'success',
+      };
+    }
+    log.error({}, 'failed to revert prompt version');
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to revert prompt version',
     });
   });

@@ -28,7 +28,7 @@ import { cn } from '@/lib/utils';
 import { checkVariablesParser } from './validator';
 import { toast } from 'sonner';
 import { useTRPC } from '@/lib/trpc';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
 
 const EDITOR_MESSAGES = {
   LOADING: 'Loading...',
@@ -36,6 +36,127 @@ const EDITOR_MESSAGES = {
   EMPTY:
     'No prompt loaded.\nSelect a prompt by clicking dropdown on the top-right corner.',
 };
+
+function AvailableVersion({
+  promptId,
+  commitId,
+  setValue,
+}: {
+  promptId: string;
+  commitId: string | null;
+  setValue: ({ content, id }: { content: string; id: string }) => void;
+}) {
+  const trpc = useTRPC();
+  const {
+    data: availableVersions,
+    hasNextPage,
+    isLoading,
+    fetchNextPage,
+  } = useInfiniteQuery(
+    trpc.getPromptVersions.infiniteQueryOptions(
+      {
+        key: promptId,
+        limit: 5,
+      },
+      {
+        staleTime: 0,
+        select(data) {
+          return {
+            pages: data.pages.flatMap(page => page.items),
+            pageParams: data.pageParams,
+          };
+        },
+        getNextPageParam: lastPage => lastPage.nextCursor,
+      },
+    ),
+  );
+
+  const [open, setOpen] = useState(false);
+
+  const displaySelectedValue = commitId
+    ? (() => {
+        const v = availableVersions?.pages?.find(
+          k => k.commitId === commitId,
+        )?.commitId;
+        if (!v) return 'Select Version...';
+        return `${v.slice(0, 5)}...${v.slice(-5)}`;
+      })()
+    : 'Select Version...';
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className=" justify-between"
+        >
+          {displaySelectedValue}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="p-0">
+        <Command>
+          <CommandInput placeholder="Search Version..." />
+          <CommandList>
+            <CommandEmpty>No Versions Found.</CommandEmpty>
+            {!isLoading &&
+              availableVersions?.pages &&
+              availableVersions.pages.length > 0 && (
+                <CommandGroup>
+                  {availableVersions.pages.map(key => {
+                    const displayValue = `${key.commitId.slice(0, 5)}...${key.commitId.slice(-5)}`;
+                    return (
+                      <CommandItem
+                        key={key.commitId}
+                        value={key.commitId}
+                        onSelect={currentValue => {
+                          const selectedValue =
+                            availableVersions.pages.find(
+                              k => k.commitId === currentValue,
+                            ) || null;
+                          if (selectedValue) {
+                            setValue({
+                              content: selectedValue.content,
+                              id: selectedValue.commitId,
+                            });
+                          }
+                          setOpen(false);
+                        }}
+                      >
+                        <Check
+                          className={cn(
+                            'mr-2 h-4 w-4',
+                            commitId === key.commitId
+                              ? 'opacity-100'
+                              : 'opacity-0',
+                          )}
+                        />
+                        {displayValue}
+                      </CommandItem>
+                    );
+                  })}
+                  {hasNextPage && (
+                    <CommandItem asChild>
+                      <Button
+                        size="sm"
+                        className="w-full justify-center"
+                        variant="ghost"
+                        onClick={() => fetchNextPage()}
+                      >
+                        Load More
+                      </Button>
+                    </CommandItem>
+                  )}
+                </CommandGroup>
+              )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 function AvailablePrompts({
   value,
@@ -110,18 +231,24 @@ export default function Prompts() {
   const [selectedPromptKey, setSelectedPromptKey] = useState<string | null>(
     null,
   );
-  const [state, setState] = useState<'editor' | 'review' | 'back-to-editor'>(
-    'editor',
-  );
+  const [state, setState] = useState<
+    'editor' | 'review' | 'back-to-editor' | 'revert'
+  >('editor');
   const [hasErrors, setHasErrors] = useState(false);
   const editor = useRef<Parameters<OnMount>['0']>(null);
   const monaco = useMonaco();
   const trpc = useTRPC();
+  const [selectedPromptVersion, setSelectedPromptVersion] = useState<
+    string | null
+  >(null);
 
   const { mutateAsync: apiUpdatePrompt } = useMutation(
     trpc.updatePromptByKey.mutationOptions(),
   );
 
+  const { mutateAsync: apiRevertPrompt } = useMutation(
+    trpc.revertPromptVersion.mutationOptions(),
+  );
   const { data, isLoading, isError } = useQuery(
     trpc.getPromptByKey.queryOptions(
       {
@@ -184,14 +311,14 @@ export default function Prompts() {
     if (isLoading) return EDITOR_MESSAGES.LOADING;
     if (isError) return EDITOR_MESSAGES.ERROR;
     if (!data) return EDITOR_MESSAGES.EMPTY;
-    if (state === 'back-to-editor') return edited || data;
-    return data;
+    if (state === 'back-to-editor') return edited || data.content;
+    return data.content;
   })();
 
   const readyForReview = (() => {
     if (hasErrors) return false;
     if (edited == null) return false;
-    if (edited !== data) return true;
+    if (edited !== data?.content) return true;
     if (isError) return false;
     return false;
   })();
@@ -200,18 +327,38 @@ export default function Prompts() {
     <>
       <Header
         right={
-          <AvailablePrompts
-            value={selectedPromptKey}
-            setValue={v => {
-              setState('editor');
-              setSelectedPromptKey(v);
-              setEdited(null);
-            }}
-          />
+          <div className="flex gap-2">
+            {selectedPromptKey && data?.commitId && (
+              <AvailableVersion
+                promptId={selectedPromptKey}
+                commitId={selectedPromptVersion || data?.commitId || null}
+                setValue={v => {
+                  setSelectedPromptVersion(v.id);
+                  if (v.id === data?.commitId) {
+                    setState('editor');
+                    setEdited(null);
+                  } else {
+                    setState('revert');
+                    validateTemplateVariables(v.content);
+                    setEdited(v.content);
+                  }
+                }}
+              />
+            )}
+            <AvailablePrompts
+              value={selectedPromptKey}
+              setValue={v => {
+                setState('editor');
+                setSelectedPromptKey(v);
+                setSelectedPromptVersion(null);
+                setEdited(null);
+              }}
+            />
+          </div>
         }
       />
       <div className="relative">
-        {state !== 'review' && (
+        {state === 'editor' && (
           <>
             <Editor
               height="100vh"
@@ -262,7 +409,7 @@ export default function Prompts() {
           </>
         )}
 
-        {state === 'review' && (
+        {(state === 'review' || state === 'revert') && (
           <>
             {edited != null && (
               <DiffEditor
@@ -306,6 +453,33 @@ export default function Prompts() {
                   return;
                 }
 
+                if (state === 'revert') {
+                  if (!selectedPromptVersion) {
+                    toast.error('No version selected to revert');
+                    return;
+                  }
+
+                  toast.promise(
+                    apiRevertPrompt({
+                      key: selectedPromptKey,
+                      commitId: selectedPromptVersion,
+                    }),
+                    {
+                      loading: 'Reverting prompt...',
+                      success: data => {
+                        setSelectedPromptKey(null);
+                        setEdited(null);
+                        setState('editor');
+                        return data.status;
+                      },
+                      error: err => {
+                        return err?.message || 'Error reverting prompt';
+                      },
+                    },
+                  );
+                  return;
+                }
+
                 toast.promise(
                   apiUpdatePrompt({
                     key: selectedPromptKey,
@@ -328,7 +502,7 @@ export default function Prompts() {
               className="absolute bottom-20 right-10"
             >
               <SaveIcon />
-              Save Changes
+              {state === 'revert' ? 'Revert' : 'Save Changes'}
             </Button>
           </>
         )}
