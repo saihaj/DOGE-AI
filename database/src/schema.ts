@@ -108,6 +108,7 @@ export const billVector = sqliteTable(
     source: text().notNull(),
   },
   table => [
+    index('BillVector_vector_idx').on(table.id, table.vector),
     index('BillVector_source_idx').on(table.source),
     index('BillVector_bill_key').on(table.bill),
     index('BillVector_document_key').on(table.document),
