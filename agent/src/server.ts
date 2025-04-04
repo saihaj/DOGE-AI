@@ -1,12 +1,20 @@
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { serve } from 'inngest/fastify';
-import { CoreMessage, StreamData, streamText } from 'ai';
+import {
+  CoreMessage,
+  generateObject,
+  generateText,
+  StreamData,
+  streamText,
+  tool,
+} from 'ai';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import {
   CF_AUDIENCE,
   CF_TEAM_DOMAIN,
   DISCORD_TOKEN,
+  EXA_API_KEY,
   IS_PROD,
   SEED,
   TEMPERATURE,
@@ -42,6 +50,51 @@ import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import { botConfig, db, eq } from 'database';
 import { createContext } from './trpc';
 import { appRouter } from './router';
+
+import Exa from 'exa-js';
+import { z } from 'zod';
+import { openai } from '@ai-sdk/openai';
+
+const exa = new Exa(EXA_API_KEY);
+async function getSearchResult(query: string) {
+  const { text } = await generateText({
+    model: openai('gpt-4o'),
+    seed: SEED,
+    temperature: TEMPERATURE,
+    prompt: `Breakdown the user message and search the web for up-to-date information. Message: ""${query}"" and return the results in a list format. Do not include any other information.`,
+    toolChoice: 'required',
+    tools: {
+      webSearch: tool({
+        description: 'Search the web for up-to-date information',
+        parameters: z.object({
+          query: z.string().min(1).max(500).describe('The search query'),
+        }),
+        execute: async ({ query }) => {
+          console.log('searching', query);
+          const { results } = await exa.searchAndContents(query, {
+            // livecrawl: 'always',
+            numResults: 3,
+            text: true,
+          });
+          console.log('search results', results);
+          return results.map(
+            result =>
+              `Title: ${result.title} published on ${result.publishedDate} on \nURL: ${result.url}\n\nContent: ${result.text}`,
+          );
+          return results.map(result => ({
+            title: result.title,
+            url: result.url,
+            content: result.text,
+            publishedDate: result.publishedDate,
+          }));
+        },
+      }),
+    },
+  });
+
+  console.log('search result', text);
+  return text;
+}
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -339,6 +392,12 @@ fastify.route<{ Body: ChatStreamInput }>({
         messages = mergeConsecutiveSameRole(messages);
       }
 
+      const a = await getSearchResult(
+        messages[messages.length - 1].content.toString(),
+      );
+
+      log.info({ a }, 'search result');
+
       const result = streamText({
         model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
         abortSignal: abortController.signal,
@@ -346,6 +405,8 @@ fastify.route<{ Body: ChatStreamInput }>({
         temperature: TEMPERATURE,
         seed: SEED,
         maxSteps: 5,
+        toolChoice: 'required',
+        toolCallStreaming: true,
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
         onError(error) {

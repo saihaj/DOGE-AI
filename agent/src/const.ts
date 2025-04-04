@@ -136,3 +136,9 @@ export const OPEN_ROUTER_API_KEY = (() => {
   }
   return process.env.OPEN_ROUTER_API_KEY;
 })();
+export const EXA_API_KEY = (() => {
+  if (!process.env.EXA_API_KEY) {
+    throw new Error('EXA_API_KEY is not set in your .env');
+  }
+  return process.env.EXA_API_KEY;
+})();
