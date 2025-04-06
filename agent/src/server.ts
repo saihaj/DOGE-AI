@@ -1,20 +1,12 @@
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { serve } from 'inngest/fastify';
-import {
-  CoreMessage,
-  generateObject,
-  generateText,
-  StreamData,
-  streamText,
-  tool,
-} from 'ai';
+import { CoreMessage, StreamData, streamText } from 'ai';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import {
   CF_AUDIENCE,
   CF_TEAM_DOMAIN,
   DISCORD_TOKEN,
-  EXA_API_KEY,
   IS_PROD,
   SEED,
   TEMPERATURE,
@@ -47,54 +39,9 @@ import { ingestInteractionTweets } from './twitter/ingest-interaction';
 import { processInteractionTweets } from './twitter/process-interactions';
 import { executeInteractionTweets } from './twitter/execute-interaction';
 import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
-import { botConfig, db, eq } from 'database';
 import { createContext } from './trpc';
 import { appRouter } from './router';
-
-import Exa from 'exa-js';
-import { z } from 'zod';
-import { openai } from '@ai-sdk/openai';
-
-const exa = new Exa(EXA_API_KEY);
-async function getSearchResult(query: string) {
-  const { text } = await generateText({
-    model: openai('gpt-4o'),
-    seed: SEED,
-    temperature: TEMPERATURE,
-    prompt: `Breakdown the user message and search the web for up-to-date information. Message: ""${query}"" and return the results in a list format. Do not include any other information.`,
-    toolChoice: 'required',
-    tools: {
-      webSearch: tool({
-        description: 'Search the web for up-to-date information',
-        parameters: z.object({
-          query: z.string().min(1).max(500).describe('The search query'),
-        }),
-        execute: async ({ query }) => {
-          console.log('searching', query);
-          const { results } = await exa.searchAndContents(query, {
-            // livecrawl: 'always',
-            numResults: 3,
-            text: true,
-          });
-          console.log('search results', results);
-          return results.map(
-            result =>
-              `Title: ${result.title} published on ${result.publishedDate} on \nURL: ${result.url}\n\nContent: ${result.text}`,
-          );
-          return results.map(result => ({
-            title: result.title,
-            url: result.url,
-            content: result.text,
-            publishedDate: result.publishedDate,
-          }));
-        },
-      }),
-    },
-  });
-
-  console.log('search result', text);
-  return text;
-}
+import { getSearchResult } from './twitter/web';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -387,16 +334,41 @@ fastify.route<{ Body: ChatStreamInput }>({
         }
       }
 
+      const webSearch =
+        // if the model is sonar or online, then don't do web search
+        selectedChatModel.startsWith('sonar') ||
+        selectedChatModel.includes('online')
+          ? null
+          : await getSearchResult(
+              {
+                // latest message
+                messages: [messages[messages.length - 1]],
+              },
+              log,
+            );
+
+      if (webSearch) {
+        const webResult = webSearch
+          .map(
+            result =>
+              `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.content}`,
+          )
+          .join('');
+        const urls = webSearch.map(result => result.url);
+
+        stream.append({ role: 'sources', content: urls });
+
+        // want to insert the internet results summary as the second last message in the context of messages
+        messages.splice(messages.length - 1, 0, {
+          role: 'user',
+          content: `Web search results:\n\n${webResult}`,
+        });
+      }
+
       // if sonar models then need to merge
       if (selectedChatModel.startsWith('sonar')) {
         messages = mergeConsecutiveSameRole(messages);
       }
-
-      const a = await getSearchResult(
-        messages[messages.length - 1].content.toString(),
-      );
-
-      log.info({ a }, 'search result');
 
       const result = streamText({
         model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
