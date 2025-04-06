@@ -405,8 +405,6 @@ fastify.route<{ Body: ChatStreamInput }>({
         temperature: TEMPERATURE,
         seed: SEED,
         maxSteps: 5,
-        toolChoice: 'required',
-        toolCallStreaming: true,
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
         onError(error) {
