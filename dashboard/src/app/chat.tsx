@@ -14,6 +14,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   BookIcon,
+  Database,
   Globe,
   Loader2,
   Search,
@@ -215,6 +216,7 @@ export function Chat() {
     'documentSearch',
     true,
   );
+  const [webSearch, setWebSearch] = useLocalStorage('webSearch', true);
   const [manualKbSearch, setManualKbSearch] = useLocalStorage(
     'manualKbSearch',
     true,
@@ -274,6 +276,7 @@ export function Chat() {
       billSearch,
       documentSearch,
       manualKbSearch,
+      webSearch,
     },
     headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
     onError: error => {
@@ -614,7 +617,14 @@ export function Chat() {
                                       Reasoning
                                     </Drawer.Title>
                                     <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
-                                      <Markdown>{reasoning}</Markdown>
+                                      <Markdown>{`${reasoning} ${
+                                        message?.sources
+                                          ? message?.sources
+                                              // @ts-expect-error we can ignore because BE adds these
+                                              .map(s => `\n- ${s}`)
+                                              .join('\n')
+                                          : ''
+                                      }`}</Markdown>
                                     </Drawer.Description>
                                     <CopyButton
                                       className="-ml-1 mb-4"
@@ -693,10 +703,21 @@ export function Chat() {
                   pressed={documentSearch}
                   onPressedChange={v => setDocumentSearch(v)}
                   variant="outline"
-                  aria-label="Toggle web page search"
+                  aria-label="Toggle crawled pages search"
+                >
+                  <Database />
+                  Crawled Pages
+                </Toggle>
+                <Toggle
+                  size="sm"
+                  type="button"
+                  pressed={webSearch}
+                  onPressedChange={v => setWebSearch(v)}
+                  variant="outline"
+                  aria-label="Toggle internet search"
                 >
                   <Globe />
-                  Web page
+                  Internet
                 </Toggle>
               </PopoverContent>
             </Popover>

@@ -39,9 +39,9 @@ import { ingestInteractionTweets } from './twitter/ingest-interaction';
 import { processInteractionTweets } from './twitter/process-interactions';
 import { executeInteractionTweets } from './twitter/execute-interaction';
 import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
-import { botConfig, db, eq } from 'database';
 import { createContext } from './trpc';
 import { appRouter } from './router';
+import { getSearchResult } from './twitter/web';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -212,11 +212,13 @@ fastify.route<{ Body: ChatStreamInput }>({
       billSearch,
       documentSearch,
       manualKbSearch,
+      webSearch,
       messages,
       selectedChatModel,
     } = request.body as {
       documentSearch: boolean;
       manualKbSearch: boolean;
+      webSearch: boolean;
       billSearch: boolean;
       messages: CoreMessage[];
       selectedChatModel: string;
@@ -274,7 +276,7 @@ fastify.route<{ Body: ChatStreamInput }>({
         }
       }
 
-      if (billSearch || documentSearch || manualKbSearch) {
+      if (billSearch || documentSearch || manualKbSearch || webSearch) {
         const latestMessage = messages[messages.length - 1];
         const convoHistory = messages.filter(
           message => message.role === 'user' || message.role === 'assistant',
@@ -330,6 +332,38 @@ fastify.route<{ Body: ChatStreamInput }>({
           messages.splice(messages.length - 1, 0, {
             role: 'user',
             content: summary,
+          });
+        }
+
+        const webSearchResults = webSearch
+          ? // if the model is sonar or online, then don't do web search
+            selectedChatModel.startsWith('sonar') ||
+            selectedChatModel.includes('online')
+            ? null
+            : await getSearchResult(
+                {
+                  // latest message
+                  messages: [messages[messages.length - 1]],
+                },
+                log,
+              )
+          : null;
+
+        if (webSearchResults) {
+          const webResult = webSearchResults
+            .map(
+              result =>
+                `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
+            )
+            .join('');
+          const urls = webSearchResults.map(result => result.url);
+
+          stream.append({ role: 'sources', content: urls });
+
+          // want to insert the internet results summary as the second last message in the context of messages
+          messages.splice(messages.length - 1, 0, {
+            role: 'user',
+            content: `Web search results:\n\n${webResult}`,
           });
         }
       }
