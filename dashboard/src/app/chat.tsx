@@ -618,7 +618,7 @@ export function Chat() {
                                         message?.sources
                                           ? message?.sources
                                               // @ts-expect-error we can ignore because BE adds these
-                                              .map(s => `- ${s}`)
+                                              .map(s => `\n- ${s}`)
                                               .join('\n')
                                           : ''
                                       }`}</Markdown>
