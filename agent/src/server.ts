@@ -335,10 +335,10 @@ fastify.route<{ Body: ChatStreamInput }>({
           });
         }
 
-        const webSearchResults =
-          // if the model is sonar or online, then don't do web search
-          selectedChatModel.startsWith('sonar') ||
-          selectedChatModel.includes('online')
+        const webSearchResults = webSearch
+          ? // if the model is sonar or online, then don't do web search
+            selectedChatModel.startsWith('sonar') ||
+            selectedChatModel.includes('online')
             ? null
             : await getSearchResult(
                 {
@@ -346,13 +346,14 @@ fastify.route<{ Body: ChatStreamInput }>({
                   messages: [messages[messages.length - 1]],
                 },
                 log,
-              );
+              )
+          : null;
 
         if (webSearchResults) {
           const webResult = webSearchResults
             .map(
               result =>
-                `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.content}`,
+                `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
             )
             .join('');
           const urls = webSearchResults.map(result => result.url);

@@ -39,6 +39,7 @@ Current date: ${new Date().toUTCString()}.
   log.info({ text }, 'search query');
 
   const { results } = await exa.searchAndContents(text, {
+    livecrawl: 'auto',
     numResults: 3,
     text: true,
   });
