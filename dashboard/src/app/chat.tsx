@@ -614,7 +614,14 @@ export function Chat() {
                                       Reasoning
                                     </Drawer.Title>
                                     <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
-                                      <Markdown>{reasoning}</Markdown>
+                                      <Markdown>{`${reasoning} ${
+                                        message?.sources
+                                          ? message?.sources
+                                              // @ts-expect-error we can ignore because BE adds these
+                                              .map(s => `- ${s}`)
+                                              .join('\n')
+                                          : ''
+                                      }`}</Markdown>
                                     </Drawer.Description>
                                     <CopyButton
                                       className="-ml-1 mb-4"
