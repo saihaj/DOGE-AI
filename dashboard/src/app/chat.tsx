@@ -707,7 +707,7 @@ export function Chat() {
                 >
                   <Database />
                   Crawled Pages
-                </Toggle>{' '}
+                </Toggle>
                 <Toggle
                   size="sm"
                   type="button"
