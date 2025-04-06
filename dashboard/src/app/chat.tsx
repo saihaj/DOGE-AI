@@ -14,6 +14,7 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   BookIcon,
+  Database,
   Globe,
   Loader2,
   Search,
@@ -215,6 +216,7 @@ export function Chat() {
     'documentSearch',
     true,
   );
+  const [webSearch, setWebSearch] = useLocalStorage('webSearch', true);
   const [manualKbSearch, setManualKbSearch] = useLocalStorage(
     'manualKbSearch',
     true,
@@ -274,6 +276,7 @@ export function Chat() {
       billSearch,
       documentSearch,
       manualKbSearch,
+      webSearch,
     },
     headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
     onError: error => {
@@ -700,10 +703,21 @@ export function Chat() {
                   pressed={documentSearch}
                   onPressedChange={v => setDocumentSearch(v)}
                   variant="outline"
-                  aria-label="Toggle web page search"
+                  aria-label="Toggle crawled pages search"
+                >
+                  <Database />
+                  Crawled Pages
+                </Toggle>{' '}
+                <Toggle
+                  size="sm"
+                  type="button"
+                  pressed={webSearch}
+                  onPressedChange={v => setWebSearch(v)}
+                  variant="outline"
+                  aria-label="Toggle internet search"
                 >
                   <Globe />
-                  Web page
+                  Internet
                 </Toggle>
               </PopoverContent>
             </Popover>

@@ -13,6 +13,7 @@ export const ChatStreamInput = Type.Object({
   billSearch: Type.Boolean(),
   documentSearch: Type.Boolean(),
   manualKbSearch: Type.Boolean(),
+  webSearch: Type.Boolean(),
 });
 export type ChatStreamInput = Static<typeof ChatStreamInput>;
 
