@@ -45,6 +45,14 @@ const models = [
     label: 'OpenAI GPT 4o',
   },
   {
+    value: 'llama-4-maverick',
+    label: 'Llama 4 Maverick',
+  },
+  {
+    value: 'llama-4-scout',
+    label: 'Llama 4 Scout',
+  },
+  {
     value: 'o3-mini',
     label: 'OpenAI o3 mini',
   },

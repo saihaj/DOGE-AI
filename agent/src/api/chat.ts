@@ -41,5 +41,7 @@ export const myProvider = customProvider({
         effort: 'high',
       },
     }),
+    'llama-4-maverick': openrouter.chat('meta-llama/llama-4-maverick'),
+    'llama-4-scout': openrouter.chat('meta-llama/llama-4-scout'),
   },
 });
