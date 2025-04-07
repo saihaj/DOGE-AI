@@ -1,4 +1,10 @@
-import { IS_PROD, REJECTION_REASON, SEED, TEMPERATURE } from '../const';
+import {
+  IS_PROD,
+  OPEN_ROUTER_API_KEY,
+  REJECTION_REASON,
+  SEED,
+  TEMPERATURE,
+} from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
@@ -41,6 +47,12 @@ import {
   tweetsProcessingRejected,
   tweetsPublished,
 } from '../prom.ts';
+import { getSearchResult } from './web.ts';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+
+const openrouter = createOpenRouter({
+  apiKey: OPEN_ROUTER_API_KEY,
+});
 
 /**
  * Given summary of and text of tweet generate a long contextual response
@@ -61,6 +73,18 @@ export async function getLongResponse(
     systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE_KB();
   }
 
+  const webSearchResults = await getSearchResult(
+    {
+      messages: [
+        {
+          role: 'user',
+          content: text,
+        },
+      ],
+    },
+    log,
+  );
+
   const messages = [
     {
       role: 'system',
@@ -72,22 +96,48 @@ export async function getLongResponse(
     messages.push({ role: 'user', content: summary });
   }
 
+  const webResult = webSearchResults
+    ?.map(
+      result =>
+        `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
+    )
+    .join('');
+
+  const sources =
+    webSearchResults?.map(result => ({
+      url: result.url,
+      title: result.title,
+      publishedDate: result.publishedDate,
+    })) || [];
+
+  if (webResult) {
+    messages.push({
+      role: 'user',
+      content: `Web search results:\n\n${webResult}`,
+    });
+  }
+
   messages.push({
     role: 'user',
     content: text,
   });
 
-  const { text: _responseLong, sources } = await generateText({
+  const { text: _responseLong, reasoning } = await generateText({
     temperature: TEMPERATURE,
     seed: SEED,
-    model: perplexity('sonar-reasoning-pro'),
-    messages: mergeConsecutiveSameRole(messages),
+    model: openrouter.chat('deepseek/deepseek-r1', {
+      reasoning: {
+        effort: 'high',
+      },
+    }),
+    messages: messages,
     experimental_generateMessageId: crypto.randomUUID,
   });
 
   const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
 
-  log.info({ response: _responseLong }, 'reasoning response');
+  log.info({ reasoning }, 'reasoning');
+  log.info({ response: _responseLong }, 'raw long response');
 
   const responseLong = sanitizeLlmOutput(_responseLong);
   const formatted = await longResponseFormatter(responseLong);
