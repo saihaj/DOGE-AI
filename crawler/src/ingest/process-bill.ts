@@ -3,7 +3,7 @@ import { inngest } from './client';
 import { z } from 'zod';
 import { generateObject } from 'ai';
 import { NonRetriableError } from 'inngest';
-import { db, bill as billDbSchema } from 'database';
+import { db, bill as billDbSchema, eq, and } from 'database';
 import { openai } from '@ai-sdk/openai';
 
 const billInfoResponse = z.object({
@@ -114,6 +114,25 @@ export const processBill = inngest.createFunction(
   { event: 'bill.imported' },
   async ({ event, step }) => {
     const bill = event.data;
+
+    await step.run('check-bill-exists', async () => {
+      const b = await db.query.bill.findFirst({
+        where: and(
+          eq(billDbSchema.congress, bill.congress),
+          eq(billDbSchema.number, Number(bill.number)),
+          eq(billDbSchema.type, bill.type),
+        ),
+        columns: {
+          id: true,
+        },
+      });
+
+      if (b) {
+        throw new NonRetriableError('Bill already exists', {
+          cause: `Bill ${bill.congress} ${bill.number} ${bill.type} already exists`,
+        });
+      }
+    });
 
     const info = await step.run('get-bill-info', async () => {
       const url = new URL(bill.url);
