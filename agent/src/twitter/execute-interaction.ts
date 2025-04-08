@@ -14,7 +14,6 @@ import {
   getTweet,
   getTweetContentAsText,
   longResponseFormatter,
-  mergeConsecutiveSameRole,
   sanitizeLlmOutput,
   textSplitter,
   upsertChat,
@@ -38,7 +37,6 @@ import {
   sendDevTweet,
 } from '../discord/action.ts';
 import { twitterClient } from './client.ts';
-import { perplexity } from '@ai-sdk/perplexity';
 import { logger, WithLogger } from '../logger.ts';
 import { getKbContext } from './knowledge-base.ts';
 import {
