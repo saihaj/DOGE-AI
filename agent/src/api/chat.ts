@@ -5,6 +5,7 @@ import { Static, Type } from '@sinclair/typebox';
 import { customProvider } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { OPEN_ROUTER_API_KEY } from '../const';
+import { xai } from '@ai-sdk/xai';
 
 export const ChatStreamInput = Type.Object({
   id: Type.String(),
@@ -43,5 +44,6 @@ export const myProvider = customProvider({
     }),
     'llama-4-maverick': openrouter.chat('meta-llama/llama-4-maverick'),
     'llama-4-scout': openrouter.chat('meta-llama/llama-4-scout'),
+    'grok-3-mini-beta': xai('grok-3-mini-beta'),
   },
 });
