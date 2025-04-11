@@ -16,7 +16,7 @@ export async function getSearchResult(
   });
   log.info({ messages }, 'input messages');
   const { text } = await generateText({
-    model: openai('gpt-4o'),
+    model: openai('gpt-4o-mini'),
     seed: SEED,
     temperature: TEMPERATURE,
     messages: [
