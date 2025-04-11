@@ -1,4 +1,4 @@
-import { IS_PROD, REJECTION_REASON, SEED, TEMPERATURE } from '../const';
+import { IS_PROD, REJECTION_REASON, TEMPERATURE } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import {
@@ -7,6 +7,7 @@ import {
   getTweetContentAsText,
   longResponseFormatter,
   mergeConsecutiveSameRole,
+  questionExtractor,
   sanitizeLlmOutput,
   upsertChat,
   upsertUser,
@@ -14,7 +15,7 @@ import {
 import { CoreMessage, generateText } from 'ai';
 import * as crypto from 'node:crypto';
 import { openai } from '@ai-sdk/openai';
-import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from './prompts';
+import { PROMPTS } from './prompts';
 import {
   db,
   eq,
@@ -213,20 +214,9 @@ export const executeTweets = inngest.createFunction(
     const question = await step.run('extract-question', async () => {
       const tweetText = tweetToActionOn.text;
 
-      const { text: extractedQuestion } = await generateText({
-        model: openai('gpt-4o'),
-        temperature: TEMPERATURE,
-        seed: SEED,
-        messages: [
-          {
-            role: 'system',
-            content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
-          },
-          {
-            role: 'user',
-            content: tweetText,
-          },
-        ],
+      const extractedQuestion = await questionExtractor({
+        role: 'user',
+        content: tweetText,
       });
 
       if (extractedQuestion.startsWith(REJECTION_REASON.NO_QUESTION_DETECTED)) {
