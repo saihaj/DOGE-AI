@@ -9,13 +9,11 @@ import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
-  generateEmbeddings,
   getTimeInSecondsElapsedSinceTweetCreated,
   getTweet,
   getTweetContentAsText,
   longResponseFormatter,
   sanitizeLlmOutput,
-  textSplitter,
   upsertChat,
   upsertUser,
 } from './helpers.ts';
@@ -27,8 +25,6 @@ import {
   db,
   eq,
   message as messageDbSchema,
-  messageVector,
-  sql,
 } from 'database';
 import {
   approvedTweetEngagement,
@@ -475,47 +471,10 @@ export const executeInteractionTweets = inngest.createFunction(
             .returning({
               id: messageDbSchema.id,
               tweetId: messageDbSchema.tweetId,
-            });
+            })
+            .get();
 
-          const [chunkActionTweet, chunkReply] = await Promise.all([
-            textSplitter.splitText(tweetToActionOn.text),
-            textSplitter.splitText(reply.response),
-          ]);
-
-          const actionTweetEmbeddings =
-            await generateEmbeddings(chunkActionTweet);
-
-          await db.insert(messageVector).values(
-            chunkActionTweet
-              .map((value, index) => ({
-                id: crypto.randomUUID(),
-                value,
-                embedding: actionTweetEmbeddings[index],
-              }))
-              .map(({ value, embedding }) => ({
-                id: crypto.randomUUID(),
-                message: message[0].id,
-                text: value,
-                vector: sql`vector32(${JSON.stringify(embedding)})`,
-              })),
-          );
-
-          const replyEmbeddings = await generateEmbeddings(chunkReply);
-
-          await db.insert(messageVector).values(
-            chunkReply
-              .map((value, index) => ({
-                id: crypto.randomUUID(),
-                value,
-                embedding: replyEmbeddings[index],
-              }))
-              .map(({ value, embedding }) => ({
-                id: crypto.randomUUID(),
-                message: message[1].id,
-                text: value,
-                vector: sql`vector32(${JSON.stringify(embedding)})`,
-              })),
-          );
+          return message;
         });
 
         break;

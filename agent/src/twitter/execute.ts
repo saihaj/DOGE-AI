@@ -2,14 +2,12 @@ import { IS_PROD, REJECTION_REASON, SEED, TEMPERATURE } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import {
-  generateEmbeddings,
   getTimeInSecondsElapsedSinceTweetCreated,
   getTweet,
   getTweetContentAsText,
   longResponseFormatter,
   mergeConsecutiveSameRole,
   sanitizeLlmOutput,
-  textSplitter,
   upsertChat,
   upsertUser,
 } from './helpers.ts';
@@ -22,8 +20,6 @@ import {
   eq,
   message as messageDbSchema,
   chat as chatDbSchema,
-  messageVector,
-  sql,
 } from 'database';
 import {
   approvedTweetEngagement,
@@ -536,46 +532,8 @@ export const executeTweets = inngest.createFunction(
         .returning({
           id: messageDbSchema.id,
           tweetId: messageDbSchema.tweetId,
-        });
-
-      const [chunkActionTweet, chunkReply] = await Promise.all([
-        textSplitter.splitText(tweetToActionOn.text),
-        textSplitter.splitText(reply.text),
-      ]);
-
-      const actionTweetEmbeddings = await generateEmbeddings(chunkActionTweet);
-
-      await db.insert(messageVector).values(
-        chunkActionTweet
-          .map((value, index) => ({
-            id: crypto.randomUUID(),
-            value,
-            embedding: actionTweetEmbeddings[index],
-          }))
-          .map(({ value, embedding }) => ({
-            id: crypto.randomUUID(),
-            message: message[0].id,
-            text: value,
-            vector: sql`vector32(${JSON.stringify(embedding)})`,
-          })),
-      );
-
-      const replyEmbeddings = await generateEmbeddings(chunkReply);
-
-      await db.insert(messageVector).values(
-        chunkReply
-          .map((value, index) => ({
-            id: crypto.randomUUID(),
-            value,
-            embedding: replyEmbeddings[index],
-          }))
-          .map(({ value, embedding }) => ({
-            id: crypto.randomUUID(),
-            message: message[1].id,
-            text: value,
-            vector: sql`vector32(${JSON.stringify(embedding)})`,
-          })),
-      );
+        })
+        .get();
     });
   },
 );
