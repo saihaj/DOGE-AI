@@ -64,6 +64,16 @@ export async function getTweet({ id }: { id: string }) {
   });
 }
 
+export async function setTweet({
+  data,
+}: {
+  data: Awaited<ReturnType<typeof getTweet>>;
+}) {
+  return bento.set(`/tweet/${data.id}`, async () => {
+    return data;
+  });
+}
+
 /**
  * Given a tweet it will recurse the quote tweet.
  * It extracts any media and runs it through the AI any textual information
@@ -91,7 +101,7 @@ export async function getTweetContentAsText(
   const tweet = await getTweet({ id });
   const result: string[] = [];
 
-  if (tweet.quoted_tweet) {
+  if (tweet?.quoted_tweet) {
     const text = await getTweetContentAsText(
       { id: tweet.quoted_tweet.id },
       log,
