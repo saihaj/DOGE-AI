@@ -7,11 +7,10 @@ import {
   TEMPERATURE,
 } from '../const';
 import { PROMPTS } from '../twitter/prompts';
-import { generateReply, getTweetContext } from '../twitter/execute';
+import { getTweetContext } from '../twitter/execute';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
 import { questionExtractor } from '../twitter/helpers';
-import { getLongResponse } from '../twitter/execute-interaction';
 import { getSearchResult } from '../twitter/web';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import * as crypto from 'node:crypto';
