@@ -47,7 +47,7 @@ async function getManualKbDocuments(
 
   const embeddingsQuery = await db
     .select({
-      text: billVector.text,
+      text: document.content,
       documentId: billVector.document,
       title: document.title,
       source: document.source,
@@ -71,13 +71,28 @@ async function getManualKbDocuments(
     log.info({}, 'No document embeddings found.');
     return null;
   }
-  log.info({ size: embeddingsQuery.length }, 'found document embeddings');
 
-  const baseText = embeddingsQuery
-    .map(
-      ({ title, text, documentId }) =>
-        `documentId: ${documentId}, Title: ${title}, Content: ${text}`,
-    )
+  // remove duplicates
+  const uniqueDocumentIds = new Set<string>();
+  const uniqueEmbeddingsQuery = embeddingsQuery.filter(({ documentId }) => {
+    if (documentId === null) return false;
+    if (uniqueDocumentIds.has(documentId)) return false;
+    uniqueDocumentIds.add(documentId);
+    return true;
+  });
+
+  log.info(
+    { all: embeddingsQuery.length, unique: uniqueEmbeddingsQuery.length },
+    'removed duplicates',
+  );
+
+  const baseText = uniqueEmbeddingsQuery
+    .map(({ title, text, documentId }) => {
+      // @ts-expect-error - I know what I'm doing
+      const content = Buffer.from(text).toString('utf-8');
+
+      return `documentId: ${documentId}, Title: ${title}, Content: ${content}`;
+    })
     .join('\n\n');
 
   return baseText;
