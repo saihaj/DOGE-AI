@@ -144,11 +144,6 @@ export const PROMPTS = {
   REPLY_SHORTENER_PROMPT: async () => {
     return getPromptContent('REPLY_SHORTENER_PROMPT');
   },
-  TWITTER_REPLY_REWRITER: async ({ text }: { text: string }) => {
-    const prompt = await getPromptContent('TWITTER_REPLY_REWRITER');
-    const templatePrompt = Handlebars.compile(prompt);
-    return templatePrompt({ text });
-  },
   ENGAGEMENT_HUMANIZER: async ({ text }: { text: string }) => {
     const prompt = await getPromptContent('ENGAGEMENT_HUMANIZER');
     const templatePrompt = Handlebars.compile(prompt);

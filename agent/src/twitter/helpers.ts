@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import {
   REJECTION_REASON,
-  SEED,
   TEMPERATURE,
   TWITTER_API_BASE_URL,
   TWITTER_API_KEY,
@@ -21,8 +20,6 @@ import { db, eq, user as userDbSchema, chat as chatDbSchema } from 'database';
 import * as crypto from 'node:crypto';
 import { ANALYZE_TEXT_FROM_IMAGE, PROMPTS } from './prompts';
 import { WithLogger } from '../logger';
-import { wokeTweetRewritten } from '../prom';
-import { NonRetriableError } from 'inngest';
 import { anthropic } from '@ai-sdk/anthropic';
 import { getUnixTime, toDate } from 'date-fns';
 
@@ -300,51 +297,6 @@ export async function engagementHumanizer(text: string) {
   const result = sanitizeLlmOutput(_result);
 
   return result;
-}
-
-export async function wokeTweetsRewriter(
-  text: string,
-  { log, method, action }: { log: WithLogger; method: string; action: string },
-) {
-  const prompt = await PROMPTS.TWITTER_REPLY_REWRITER({ text });
-  const { text: _response } = await generateText({
-    model: openai('gpt-4o'),
-    temperature: TEMPERATURE,
-    seed: SEED,
-    messages: [{ role: 'user', content: prompt }],
-  });
-
-  log.info(
-    {
-      before: text,
-      after: _response,
-    },
-    'woke rewriter',
-  );
-
-  if (_response.match(/\[woke\]/i)) {
-    log.info({}, 'woke response rewritten');
-    wokeTweetRewritten.inc({
-      method: method,
-      action: action,
-    });
-
-    const response = _response
-      .replace(/\[woke\]\s*/i, '')
-      .replace(/<corrected text begins here without any preamble>\s*/i, '')
-      .trim()
-      .replace(/^\s+/, '') // Extra trim for any leading spaces
-      .trim();
-
-    if (response.length === 0) {
-      throw new NonRetriableError(REJECTION_REASON.WOKE_REPLY_NOT_REWRITTEN);
-    }
-
-    return response;
-  }
-
-  log.info({}, 'woke response not rewritten');
-  return text;
 }
 
 export function sanitizeLlmOutput(text: string) {
