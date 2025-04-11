@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   REJECTION_REASON,
+  SEED,
   TEMPERATURE,
   TWITTER_API_BASE_URL,
   TWITTER_API_KEY,
@@ -18,7 +19,11 @@ import { openai } from '@ai-sdk/openai';
 import { RecursiveCharacterTextSplitter } from '@langchain/textsplitters';
 import { db, eq, user as userDbSchema, chat as chatDbSchema } from 'database';
 import * as crypto from 'node:crypto';
-import { ANALYZE_TEXT_FROM_IMAGE, PROMPTS } from './prompts';
+import {
+  ANALYZE_TEXT_FROM_IMAGE,
+  PROMPTS,
+  QUESTION_EXTRACTOR_SYSTEM_PROMPT,
+} from './prompts';
 import { WithLogger } from '../logger';
 import { anthropic } from '@ai-sdk/anthropic';
 import { getUnixTime, toDate } from 'date-fns';
@@ -297,6 +302,23 @@ export async function engagementHumanizer(text: string) {
   const result = sanitizeLlmOutput(_result);
 
   return result;
+}
+
+export async function questionExtractor(message: CoreMessage) {
+  const { text } = await generateText({
+    model: openai('gpt-4o'),
+    temperature: TEMPERATURE,
+    seed: SEED,
+    messages: [
+      {
+        role: 'system',
+        content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
+      },
+      message,
+    ],
+  });
+
+  return text;
 }
 
 export function sanitizeLlmOutput(text: string) {

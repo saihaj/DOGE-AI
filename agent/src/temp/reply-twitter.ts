@@ -1,11 +1,11 @@
 import * as readline from 'node:readline/promises';
-import { CoreMessage, generateText } from 'ai';
-import { REJECTION_REASON, SEED, TEMPERATURE } from '../const';
-import { openai } from '@ai-sdk/openai';
-import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
+import { CoreMessage } from 'ai';
+import { REJECTION_REASON } from '../const';
+import { PROMPTS } from '../twitter/prompts';
 import { generateReply, getTweetContext } from '../twitter/execute';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
+import { questionExtractor } from '../twitter/helpers';
 
 const log = logger.child({ module: 'cli-reply-twitter' });
 
@@ -34,24 +34,13 @@ async function main() {
       throw new Error('No tweet found to respond to.');
     }
 
-    const { text: extractedQuestion } = await generateText({
-      model: openai('gpt-4o'),
-      temperature: TEMPERATURE,
-      seed: SEED,
-      messages: [
-        {
-          role: 'system',
-          content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
-        },
-        {
-          role: 'user',
-          content:
-            tweetWeRespondingTo.role === 'user'
-              ? tweetWeRespondingTo.content
-              : '',
-        },
-      ],
-    });
+    const extractedQuestion =
+      tweetWeRespondingTo.role === 'user'
+        ? await questionExtractor({
+            role: 'user',
+            content: tweetWeRespondingTo.content,
+          })
+        : '';
 
     log.info({ extractedQuestion }, 'extracted question');
 

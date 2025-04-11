@@ -1,13 +1,13 @@
-import { CoreMessage, generateText } from 'ai';
+import { CoreMessage } from 'ai';
 import { generateReply, getTweetContext } from '../twitter/execute';
 import { getShortResponse } from '../twitter/execute-interaction';
 import { Static, Type } from '@sinclair/typebox';
-import { PROMPTS, QUESTION_EXTRACTOR_SYSTEM_PROMPT } from '../twitter/prompts';
-import { openai } from '@ai-sdk/openai';
+import { PROMPTS } from '../twitter/prompts';
 import Handlebars from 'handlebars';
-import { REJECTION_REASON, SEED, TEMPERATURE } from '../const';
+import { REJECTION_REASON } from '../const';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
+import { questionExtractor } from '../twitter/helpers';
 
 export const ProcessTestReplyRequestInput = Type.Object({
   tweetId: Type.String(),
@@ -36,24 +36,13 @@ export async function processTestReplyRequest({
     throw new Error('No tweet found to respond to.');
   }
 
-  const { text: extractedQuestion } = await generateText({
-    model: openai('gpt-4o'),
-    temperature: TEMPERATURE,
-    seed: SEED,
-    messages: [
-      {
-        role: 'system',
-        content: QUESTION_EXTRACTOR_SYSTEM_PROMPT,
-      },
-      {
-        role: 'user',
-        content:
-          tweetWeRespondingTo.role === 'user'
-            ? tweetWeRespondingTo.content
-            : '',
-      },
-    ],
-  });
+  const extractedQuestion =
+    tweetWeRespondingTo.role === 'user'
+      ? await questionExtractor({
+          role: 'user',
+          content: tweetWeRespondingTo.content,
+        })
+      : '';
 
   if (extractedQuestion.startsWith(REJECTION_REASON.NO_QUESTION_DETECTED)) {
     throw new Error(REJECTION_REASON.NO_QUESTION_DETECTED);
