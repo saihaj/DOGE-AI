@@ -125,7 +125,7 @@ export async function getTweetContentAsText(
         async () => {
           return generateText({
             temperature: TEMPERATURE,
-            model: openai('gpt-4o', { downloadImages: true }),
+            model: openai('gpt-4o-mini', { downloadImages: true }),
             messages: [
               {
                 role: 'user',
