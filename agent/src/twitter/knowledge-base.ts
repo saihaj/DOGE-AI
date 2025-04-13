@@ -144,12 +144,29 @@ async function getDocumentContext(
   }
   log.info({ size: embeddingsQuery.length }, 'found document embeddings');
 
-  const baseText = embeddingsQuery
-    .map(({ title, text, documentId }) => {
+  // remove duplicates
+  const uniqueDocumentIds = new Set<string>();
+  const uniqueEmbeddingsQuery = embeddingsQuery
+    .filter(({ documentId }) => {
+      if (documentId === null) return false;
+      if (uniqueDocumentIds.has(documentId)) return false;
+      uniqueDocumentIds.add(documentId);
+      return true;
+    })
+    .map(v => ({
+      ...v,
       // @ts-expect-error - I know what I'm doing
-      const content = Buffer.from(text).toString('utf-8');
+      text: Buffer.from(v.text).toString('utf-8'),
+    }));
 
-      return `documentId: ${documentId}, Title: ${title}, Content: ${content}`;
+  log.info(
+    { all: embeddingsQuery.length, unique: uniqueEmbeddingsQuery.length },
+    'removed duplicates',
+  );
+
+  const baseText = uniqueEmbeddingsQuery
+    .map(({ title, text, documentId }) => {
+      return `documentId: ${documentId}, Title: ${title}, Content: ${text}`;
     })
     .join('\n\n');
 
@@ -183,7 +200,7 @@ async function getDocumentContext(
 
   return relatedDocuments.documentIds
     .map(documentId => {
-      const found = embeddingsQuery.find(
+      const found = uniqueEmbeddingsQuery.find(
         ({ documentId: id }) => id === documentId,
       );
 
