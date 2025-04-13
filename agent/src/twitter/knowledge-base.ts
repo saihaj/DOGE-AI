@@ -443,7 +443,7 @@ async function getReasonBillContext(
     async termEmbeddingString => {
       const embeddingsQuery = db
         .select({
-          text: billVector.text,
+          text: billDbSchema.content,
           billId: billVector.bill,
           distance: sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString}))`,
           title: billDbSchema.title,
@@ -476,7 +476,26 @@ async function getReasonBillContext(
     `Found ${searchResults.length} vector search results.`,
   );
 
-  const baseText = searchResults
+  const uniqueBillIds = new Set<string>();
+  const uniqueSearchResults = searchResults
+    .filter(({ billId }) => {
+      if (billId === null) return false;
+      if (uniqueBillIds.has(billId)) return false;
+      uniqueBillIds.add(billId);
+      return true;
+    })
+    .map(v => ({
+      ...v,
+      // @ts-expect-error - I know what I'm doing
+      text: Buffer.from(v.text).toString('utf-8'),
+    }));
+
+  log.info(
+    { all: searchResults.length, unique: uniqueSearchResults.length },
+    'removed duplicates',
+  );
+
+  const baseText = uniqueSearchResults
     .map(({ title, text, billId }) => {
       return `billId: "${billId}" Bill Title: "${title}"\nText:\n"${text}"`;
     })
