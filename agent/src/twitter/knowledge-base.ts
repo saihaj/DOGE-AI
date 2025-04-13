@@ -376,7 +376,11 @@ async function getReasonBillContext(
       },
       'found bill',
     );
-    return bill;
+    return {
+      ...bill,
+      // @ts-expect-error - I know what I'm doing
+      content: Buffer.from(bill.content).toString('utf-8'),
+    };
   }
 
   const billIds = await (async () => {
@@ -424,7 +428,11 @@ async function getReasonBillContext(
       'found bill',
     );
 
-    return bill;
+    return {
+      ...bill,
+      // @ts-expect-error - I know what I'm doing
+      content: Buffer.from(bill.content).toString('utf-8'),
+    };
   }
 
   const embeddingsForKeywords = await pMap(
@@ -551,7 +559,11 @@ async function getReasonBillContext(
       },
       'found bill',
     );
-    return bill;
+    return {
+      ...bill,
+      // @ts-expect-error - I know what I'm doing
+      content: Buffer.from(bill.content).toString('utf-8'),
+    };
   }
 
   const finalBill = await generateText({
@@ -640,7 +652,11 @@ async function getReasonBillContext(
     },
     'found bill',
   );
-  return bill;
+  return {
+    ...bill,
+    // @ts-expect-error - I know what I'm doing
+    content: Buffer.from(bill.content).toString('utf-8'),
+  };
 }
 
 export async function getKbContext(
