@@ -118,7 +118,7 @@ async function getDocumentContext(
 
   const embeddingsQuery = await db
     .select({
-      text: billVector.text,
+      text: document.content,
       documentId: billVector.document,
       title: document.title,
       source: document.source,
@@ -145,14 +145,16 @@ async function getDocumentContext(
   log.info({ size: embeddingsQuery.length }, 'found document embeddings');
 
   const baseText = embeddingsQuery
-    .map(
-      ({ title, text, documentId }) =>
-        `documentId: ${documentId}, Title: ${title}, Content: ${text}`,
-    )
+    .map(({ title, text, documentId }) => {
+      // @ts-expect-error - I know what I'm doing
+      const content = Buffer.from(text).toString('utf-8');
+
+      return `documentId: ${documentId}, Title: ${title}, Content: ${content}`;
+    })
     .join('\n\n');
 
   const { object: relatedDocuments } = await generateObject({
-    model: openai('gpt-4o'),
+    model: openai('gpt-4o-mini'),
     seed: SEED,
     temperature: TEMPERATURE,
     schemaName: 'documentRelatedToTweet',
