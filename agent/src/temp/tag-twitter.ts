@@ -31,7 +31,7 @@ async function main() {
           },
         ],
         text: question,
-        billEntries: false,
+        billEntries: true,
         documentEntries: true,
         manualEntries: false,
       },
