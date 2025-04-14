@@ -61,6 +61,10 @@ const models = [
     label: 'GPT 4o Mini',
   },
   {
+    value: 'o3-mini',
+    label: 'o3 Mini',
+  },
+  {
     value: 'grok-3-mini-beta',
     label: 'Grok 3 Mini',
   },

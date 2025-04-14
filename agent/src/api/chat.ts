@@ -31,6 +31,7 @@ export const myProvider = customProvider({
     'gpt-4.1': openai('gpt-4.1'),
     'gpt-4.1-mini': openai('gpt-4.1-mini'),
     'gpt-4.1-nano': openai('gpt-4.1-nano'),
+    'o3-mini': openai('o3-mini'),
     'claude-3-5-sonnet-latest': anthropic('claude-3-5-sonnet-latest'),
     'deepseek-r1': openrouter.chat('deepseek/deepseek-r1', {
       reasoning: {
