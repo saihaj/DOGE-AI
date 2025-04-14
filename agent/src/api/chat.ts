@@ -26,18 +26,13 @@ export const myProvider = customProvider({
   languageModels: {
     'sonar-reasoning-pro': perplexity('sonar-reasoning-pro'),
     'sonar-reasoning': perplexity('sonar-reasoning'),
-    'sonar-pro': perplexity('sonar-pro'),
-    'o3-mini': openai('o3-mini'),
     'gpt-4o': openai('gpt-4o'),
     'gpt-4o-mini': openai('gpt-4o-mini'),
+    'gpt-4.1': openai('gpt-4.1'),
+    'gpt-4.1-mini': openai('gpt-4.1-mini'),
+    'gpt-4.1-nano': openai('gpt-4.1-nano'),
     'claude-3-5-sonnet-latest': anthropic('claude-3-5-sonnet-latest'),
-    'claude-3-7-sonnet-latest': anthropic('claude-3-7-sonnet-latest'),
     'deepseek-r1': openrouter.chat('deepseek/deepseek-r1', {
-      reasoning: {
-        effort: 'high',
-      },
-    }),
-    'deepseek-r1:online': openrouter.chat('deepseek/deepseek-r1:online', {
       reasoning: {
         effort: 'high',
       },

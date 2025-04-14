@@ -21,10 +21,6 @@ import {
 
 const models = [
   {
-    value: 'sonar-pro',
-    label: 'Sonar Pro',
-  },
-  {
     value: 'sonar-reasoning-pro',
     label: 'Sonar Reasoning Pro',
   },
@@ -33,16 +29,24 @@ const models = [
     label: 'Sonar Reasoning',
   },
   {
-    value: 'deepseek-r1:online',
-    label: 'DeepSeek: R1 (web)',
-  },
-  {
     value: 'deepseek-r1',
-    label: 'DeepSeek: R1',
+    label: 'DeepSeek R1',
   },
   {
     value: 'gpt-4o',
-    label: 'OpenAI GPT 4o',
+    label: 'GPT 4o',
+  },
+  {
+    value: 'gpt-4.1',
+    label: 'GPT 4.1',
+  },
+  {
+    value: 'gpt-4.1-mini',
+    label: 'GPT 4.1 Mini',
+  },
+  {
+    value: 'gpt-4.1-nano',
+    label: 'GPT 4.1 Nano',
   },
   {
     value: 'llama-4-maverick',
@@ -53,12 +57,8 @@ const models = [
     label: 'Llama 4 Scout',
   },
   {
-    value: 'o3-mini',
-    label: 'OpenAI o3 mini',
-  },
-  {
     value: 'gpt-4o-mini',
-    label: 'OpenAI GPT 4o Mini',
+    label: 'GPT 4o Mini',
   },
   {
     value: 'grok-3-mini-beta',
@@ -67,10 +67,6 @@ const models = [
   {
     value: 'claude-3-5-sonnet-latest',
     label: 'Sonnet 3.5',
-  },
-  {
-    value: 'claude-3-7-sonnet-latest',
-    label: 'Sonnet 3.7',
   },
 ] as const;
 
