@@ -306,7 +306,7 @@ export async function engagementHumanizer(text: string) {
 
 export async function questionExtractor(message: CoreMessage) {
   const { text } = await generateText({
-    model: openai('gpt-4o-mini'),
+    model: openai('gpt-4.1-nano'),
     temperature: TEMPERATURE,
     seed: SEED,
     messages: [
