@@ -582,7 +582,8 @@ export default function Home() {
         <footer className="border-t py-4" role="contentinfo">
           <div className="flex justify-between items-center container mx-auto px-4">
             <p className="text-sm">
-              © {new Date().getFullYear()} DOGEai. All rights reserved.
+              © {new Date().getFullYear()} To The Moon Labs Inc. All rights
+              reserved.
             </p>
 
             <div className="flex items-center gap-3">
