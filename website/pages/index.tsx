@@ -6,6 +6,7 @@ import Image from 'next/image';
 import hero from '../public/images/hero.png';
 import { useCopyToClipboard } from '@uidotdev/usehooks';
 import { useEffect, useState } from 'react';
+import PayPalDonate from '@/components/donate';
 
 function CongressCard({
   number,
@@ -138,17 +139,7 @@ export default function Home() {
                 <span className="md:block hidden">Follow</span>
               </Link>
             </Button>
-            <Button variant="outline" asChild size="sm">
-              <Link
-                target="_blank"
-                href="https://github.com/saihaj/doge-ai"
-                rel="noopener noreferrer"
-                aria-label="Contribute on GitHub"
-              >
-                <RiGithubFill aria-label="Github Icon" />
-                <span className="md:block hidden">Contribute</span>
-              </Link>
-            </Button>
+            <PayPalDonate />
           </nav>
         </header>
 
