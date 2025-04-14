@@ -277,7 +277,7 @@ export async function longResponseFormatter(text: string) {
   const prompt = await PROMPTS.LONG_RESPONSE_FORMATTER_PROMPT();
 
   const { text: _responseLong } = await generateText({
-    model: openai('gpt-4o'),
+    model: openai('gpt-4.1'),
     temperature: TEMPERATURE,
     messages: [
       { role: 'system', content: prompt },
