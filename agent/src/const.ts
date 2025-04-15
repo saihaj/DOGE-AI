@@ -142,3 +142,9 @@ export const EXA_API_KEY = (() => {
   }
   return process.env.EXA_API_KEY;
 })();
+export const DEEPINFRA_API_KEY = (() => {
+  if (!process.env.DEEPINFRA_API_KEY) {
+    throw new Error('DEEPINFRA_API_KEY is not set in your .env');
+  }
+  return process.env.DEEPINFRA_API_KEY;
+})();

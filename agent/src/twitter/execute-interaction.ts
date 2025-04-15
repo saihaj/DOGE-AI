@@ -1,6 +1,6 @@
 import {
+  DEEPINFRA_API_KEY,
   IS_PROD,
-  OPEN_ROUTER_API_KEY,
   REJECTION_REASON,
   SEED,
   TEMPERATURE,
@@ -17,7 +17,12 @@ import {
   upsertChat,
   upsertUser,
 } from './helpers.ts';
-import { CoreMessage, generateText } from 'ai';
+import {
+  CoreMessage,
+  extractReasoningMiddleware,
+  generateText,
+  wrapLanguageModel,
+} from 'ai';
 import { anthropic } from '@ai-sdk/anthropic';
 import { PROMPTS } from './prompts';
 import {
@@ -42,10 +47,10 @@ import {
   tweetsPublished,
 } from '../prom.ts';
 import { getSearchResult } from './web.ts';
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { createDeepInfra } from '@ai-sdk/deepinfra';
 
-const openrouter = createOpenRouter({
-  apiKey: OPEN_ROUTER_API_KEY,
+const deepinfra = createDeepInfra({
+  apiKey: DEEPINFRA_API_KEY,
 });
 
 /**
@@ -119,10 +124,13 @@ export async function getLongResponse(
   const { text: _responseLong, reasoning } = await generateText({
     temperature: TEMPERATURE,
     seed: SEED,
-    model: openrouter.chat('deepseek/deepseek-r1', {
-      reasoning: {
-        effort: 'high',
-      },
+    model: wrapLanguageModel({
+      model: deepinfra('deepseek-ai/DeepSeek-R1'),
+      middleware: [
+        extractReasoningMiddleware({
+          tagName: 'think',
+        }),
+      ],
     }),
     messages: messages,
     experimental_generateMessageId: crypto.randomUUID,
