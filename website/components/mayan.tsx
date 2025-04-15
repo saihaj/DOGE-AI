@@ -6,6 +6,7 @@ export function Mayan() {
   const [mayanLoaded, setMayanLoaded] = useState(false);
 
   useEffect(() => {
+    // @ts-expect-error - ignore for now
     if (mayanLoaded && typeof window !== 'undefined' && window.MayanSwap) {
       try {
         console.log('MayanSwap SDK loaded');
@@ -31,6 +32,7 @@ export function Mayan() {
             background: '#0B0C14',
           },
         };
+        // @ts-expect-error - Initialize the MayanSwap widget
         window.MayanSwap.init('swap_widget', config);
       } catch (error) {
         console.error('Error initializing MayanSwap:', error);
@@ -46,7 +48,9 @@ export function Mayan() {
           widget.innerHTML = ''; // Clear the widget's DOM
         }
         // Optionally, reset MayanSwap state if the SDK provides a method
+        // @ts-expect-error - ignore
         if (window.MayanSwap && typeof window.MayanSwap.reset === 'function') {
+          // @ts-expect-error - ignore
           window.MayanSwap.reset(); // Hypothetical reset method
         }
       } catch (error) {
