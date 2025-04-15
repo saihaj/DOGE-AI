@@ -2,9 +2,14 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { openai } from '@ai-sdk/openai';
 import { perplexity } from '@ai-sdk/perplexity';
 import { Static, Type } from '@sinclair/typebox';
-import { customProvider } from 'ai';
+import {
+  customProvider,
+  extractReasoningMiddleware,
+  wrapLanguageModel,
+} from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { OPEN_ROUTER_API_KEY } from '../const';
+import { createDeepInfra } from '@ai-sdk/deepinfra';
+import { DEEPINFRA_API_KEY, OPEN_ROUTER_API_KEY } from '../const';
 import { xai } from '@ai-sdk/xai';
 
 export const ChatStreamInput = Type.Object({
@@ -22,6 +27,10 @@ const openrouter = createOpenRouter({
   apiKey: OPEN_ROUTER_API_KEY,
 });
 
+const deepinfra = createDeepInfra({
+  apiKey: DEEPINFRA_API_KEY,
+});
+
 export const myProvider = customProvider({
   languageModels: {
     'sonar-reasoning-pro': perplexity('sonar-reasoning-pro'),
@@ -33,10 +42,13 @@ export const myProvider = customProvider({
     'gpt-4.1-nano': openai('gpt-4.1-nano'),
     'o3-mini': openai('o3-mini'),
     'claude-3-5-sonnet-latest': anthropic('claude-3-5-sonnet-latest'),
-    'deepseek-r1': openrouter.chat('deepseek/deepseek-r1', {
-      reasoning: {
-        effort: 'high',
-      },
+    'deepseek-r1': wrapLanguageModel({
+      model: deepinfra('deepseek-ai/DeepSeek-R1'),
+      middleware: [
+        extractReasoningMiddleware({
+          tagName: 'think',
+        }),
+      ],
     }),
     'llama-4-maverick': openrouter.chat('meta-llama/llama-4-maverick'),
     'llama-4-scout': openrouter.chat('meta-llama/llama-4-scout'),
