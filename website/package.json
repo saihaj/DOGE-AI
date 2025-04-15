@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.6",
     "@radix-ui/react-slot": "^1.1.1",
     "@remixicon/react": "^4.6.0",
     "@uidotdev/usehooks": "^2.4.1",

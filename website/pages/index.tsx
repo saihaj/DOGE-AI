@@ -1,12 +1,13 @@
-import Link from 'next/link';
-import { RiGithubFill, RiTwitterXLine } from '@remixicon/react';
-import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/logo';
+import { Button, buttonVariants } from '@/components/ui/button';
 import Image from 'next/image';
 import hero from '../public/images/hero.png';
 import { useCopyToClipboard } from '@uidotdev/usehooks';
 import { useEffect, useState } from 'react';
-import PayPalDonate from '@/components/donate';
+import { Navbar } from '@/components/navbar';
+import { Footer } from '@/components/footer';
+import Link from 'next/link';
+import { cn } from '@/lib/utils';
+import { RiTokenSwapLine } from '@remixicon/react';
 
 function CongressCard({
   number,
@@ -114,34 +115,7 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen container mx-auto px-4 py-5" role="main">
-        <header className="flex items-center justify-between" role="banner">
-          <nav className="flex items-center gap-4" aria-label="Home Navigation">
-            <Link href="/" className="flex items-center gap-4">
-              <Logo className="h-[50px] w-[50px] rounded-full" />
-              <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-america">
-                DOGEai
-              </span>
-            </Link>
-          </nav>
-
-          <nav className="flex items-center gap-3" aria-label="Social Links">
-            <p className="text-lg font-medium lg:block hidden">
-              Built by the community, for the community
-            </p>
-            <Button variant="outline" asChild size="sm">
-              <Link
-                href="https://x.com/dogeai_gov"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Follow us on X"
-              >
-                <RiTwitterXLine aria-label="X (formerly Twitter) Icon" />
-                <span className="md:block hidden">Follow</span>
-              </Link>
-            </Button>
-            <PayPalDonate />
-          </nav>
-        </header>
+        <Navbar />
 
         <main>
           <section
@@ -276,6 +250,13 @@ export default function Home() {
                   </p>
                 </div>
               </div>
+              <Link
+                href="/buy"
+                className={cn(buttonVariants({ size: 'sm' }), 'mt-2 md:mt-8')}
+              >
+                <RiTokenSwapLine />
+                Buy $DOGEai
+              </Link>
             </div>
           </section>
 
@@ -569,40 +550,7 @@ export default function Home() {
             </div>
           </section>
         </main>
-
-        <footer className="border-t py-4" role="contentinfo">
-          <div className="flex justify-between items-center container mx-auto px-4">
-            <p className="text-sm">
-              © {new Date().getFullYear()} To The Moon Labs Inc. All rights
-              reserved.
-            </p>
-
-            <div className="flex items-center gap-3">
-              <Button variant="outline" asChild size="sm">
-                <Link
-                  href="https://x.com/dogeai_gov"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Follow us on X"
-                >
-                  <RiTwitterXLine aria-label="X (formerly Twitter) Icon" />
-                  <span className="md:block hidden">Follow</span>
-                </Link>
-              </Button>
-              <Button variant="outline" asChild size="sm">
-                <Link
-                  target="_blank"
-                  href="https://github.com/saihaj/doge-ai"
-                  rel="noopener noreferrer"
-                  aria-label="Contribute on GitHub"
-                >
-                  <RiGithubFill aria-label="Github Icon" />
-                  <span className="md:block hidden">Contribute</span>
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       </div>
     </>
   );
