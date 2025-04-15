@@ -321,10 +321,7 @@ export default function Home() {
           </section>
 
           {/* Features Section */}
-          <section
-            className="mt-12 mb-16 md:mb-24"
-            aria-labelledby="features-heading"
-          >
+          <section className="my-12" aria-labelledby="features-heading">
             <h2 id="features-heading" className="sr-only">
               Key Features
             </h2>
@@ -567,6 +564,14 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </section>
+
+          <section id="subscribe" className="mx-auto mb-16 md:mb-24">
+            <iframe
+              src="https://dogeai.substack.com/embed"
+              width="100%"
+              height="300px"
+            ></iframe>
           </section>
         </main>
 
