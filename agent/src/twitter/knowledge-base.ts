@@ -11,6 +11,7 @@ import {
   sql,
   bill as billDbSchema,
   inArray,
+  desc,
 } from 'database';
 import { openai } from '@ai-sdk/openai';
 import {
@@ -292,13 +293,17 @@ async function getReasonBillContext(
     log.info({}, 'Searching for bill from number');
     const billFromNumbers = await db
       .select({
-        text: billDbSchema.summary,
+        text: billDbSchema.content,
         billId: billDbSchema.id,
         title: billDbSchema.title,
+        number: billDbSchema.number,
+        type: billDbSchema.type,
+        congress: billDbSchema.congress,
         introducedDate: billDbSchema.introducedDate,
       })
       .from(billDbSchema)
-      .where(eq(billDbSchema.number, billTitleResult.billNumber));
+      .where(eq(billDbSchema.number, billTitleResult.billNumber))
+      .orderBy(desc(billDbSchema.introducedDate));
     log.info(
       { size: billFromNumbers.length },
       `Found ${billFromNumbers.length} bills from number`,
@@ -306,14 +311,18 @@ async function getReasonBillContext(
 
     const billsText = billFromNumbers
       .map(
-        ({ title, text, introducedDate, billId }) =>
-          `"billId": ${billId} "title": ${title} "introducedDate": ${introducedDate} "summary": ${text}`,
+        ({ title, text, introducedDate, billId, congress, type, number }) => {
+          // @ts-expect-error - I know what I'm doing
+          const content = Buffer.from(text).toString('utf-8');
+
+          return `"billId": ${billId} "congress": ${congress} "number": ${type} ${number} "title": ${title} "introducedDate": ${introducedDate} "summary": ${content}`;
+        },
       )
       .join('\n\n');
 
     // now we need to narrow down what bill person is asking about
     const { object: relevantBill } = await generateObject({
-      model: openai('gpt-4o', {
+      model: openai('gpt-4o-mini', {
         structuredOutputs: true,
       }),
       seed: SEED,
