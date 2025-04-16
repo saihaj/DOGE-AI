@@ -678,7 +678,7 @@ export function Chat() {
                 <Toggle
                   size="sm"
                   pressed={billSearch}
-                  onPressedChange={v => setBillSearch(v)}
+                  onPressedChange={setBillSearch}
                   variant="outline"
                   type="button"
                   aria-label="Toggle bill search"
@@ -690,7 +690,7 @@ export function Chat() {
                   size="sm"
                   type="button"
                   pressed={manualKbSearch}
-                  onPressedChange={v => setManualKbSearch(v)}
+                  onPressedChange={setManualKbSearch}
                   variant="outline"
                   aria-label="Toggle manual KB search"
                 >
@@ -701,7 +701,7 @@ export function Chat() {
                   size="sm"
                   type="button"
                   pressed={documentSearch}
-                  onPressedChange={v => setDocumentSearch(v)}
+                  onPressedChange={setDocumentSearch}
                   variant="outline"
                   aria-label="Toggle crawled pages search"
                 >
@@ -712,7 +712,7 @@ export function Chat() {
                   size="sm"
                   type="button"
                   pressed={webSearch}
-                  onPressedChange={v => setWebSearch(v)}
+                  onPressedChange={setWebSearch}
                   variant="outline"
                   aria-label="Toggle internet search"
                 >
