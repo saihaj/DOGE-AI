@@ -1,6 +1,5 @@
 import { inngest } from '../inngest.ts';
 import { NonRetriableError } from 'inngest';
-import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import {
   rejectedInteractionTweet,
@@ -8,8 +7,18 @@ import {
 } from '../discord/action.ts';
 import { PROMPTS } from './prompts.ts';
 import { logger } from '../logger.ts';
-import { REJECTION_REASON, TEMPERATURE, TWITTER_USERNAME } from '../const.ts';
+import {
+  DEEPINFRA_API_KEY,
+  REJECTION_REASON,
+  TEMPERATURE,
+  TWITTER_USERNAME,
+} from '../const.ts';
 import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
+import { createDeepInfra } from '@ai-sdk/deepinfra';
+
+const deepinfra = createDeepInfra({
+  apiKey: DEEPINFRA_API_KEY,
+});
 
 export const processInteractionTweets = inngest.createFunction(
   {
@@ -87,7 +96,7 @@ export const processInteractionTweets = inngest.createFunction(
       const systemPrompt =
         await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
       const result = await generateText({
-        model: openai('gpt-4o'),
+        model: deepinfra('meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'),
         temperature: TEMPERATURE,
         messages: [
           { role: 'system', content: systemPrompt },
