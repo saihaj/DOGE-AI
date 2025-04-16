@@ -7,17 +7,13 @@ import {
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import { getTweet, getTweetContentAsText } from './helpers.ts';
-import { createOpenAI } from '@ai-sdk/openai';
+import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { PROMPTS } from './prompts.ts';
 import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
 import { logger } from '../logger.ts';
 import { getTweetContext } from './execute.ts';
 import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
-
-const openai = createOpenAI({
-  compatibility: 'strict',
-});
 
 const DO_NOT_ENGAGE_USERNAMES = [
   // Do not engage with any of my tweets
@@ -117,7 +113,7 @@ export const processTweets = inngest.createFunction(
         const text = await getTweetContentAsText({ id: event.data.id }, log);
 
         const result = await generateText({
-          model: openai('o3-mini'),
+          model: openai('gpt-4.1-mini'),
           seed: SEED,
           temperature: TEMPERATURE,
           messages: [
@@ -165,7 +161,7 @@ export const processTweets = inngest.createFunction(
       // deter scammers
       const shouldEngage = await step.run('should-engage', async () => {
         const result = await generateText({
-          model: openai('o3-mini'),
+          model: openai('gpt-4.1-mini'),
           seed: SEED,
           temperature: TEMPERATURE,
           messages: [
@@ -234,7 +230,7 @@ export const processTweets = inngest.createFunction(
         const conversationContext = tweetThread.map(t => t.content).join('\n');
 
         const result = await generateText({
-          model: openai('o3-mini'),
+          model: openai('gpt-4.1-mini'),
           seed: SEED,
           temperature: TEMPERATURE,
           messages: [
