@@ -236,7 +236,7 @@ async function getReasonBillContext(
   const LIMIT = 5;
 
   const { object: billTitleResult } = await generateObject({
-    model: openai('gpt-4o', {
+    model: openai('gpt-4o-mini', {
       structuredOutputs: true,
     }),
     seed: SEED,
