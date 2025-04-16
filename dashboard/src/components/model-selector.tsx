@@ -37,6 +37,10 @@ const models = [
     label: 'GPT 4o',
   },
   {
+    value: 'gpt-4o-mini',
+    label: 'GPT 4o Mini',
+  },
+  {
     value: 'gpt-4.1',
     label: 'GPT 4.1',
   },
@@ -57,12 +61,12 @@ const models = [
     label: 'Llama 4 Scout',
   },
   {
-    value: 'gpt-4o-mini',
-    label: 'GPT 4o Mini',
-  },
-  {
     value: 'o3-mini',
     label: 'o3 Mini',
+  },
+  {
+    value: 'o4-mini',
+    label: 'o4 Mini',
   },
   {
     value: 'grok-3-mini-beta',

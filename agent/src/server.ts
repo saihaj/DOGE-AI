@@ -377,7 +377,7 @@ fastify.route<{ Body: ChatStreamInput }>({
         model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
         abortSignal: abortController.signal,
         messages,
-        temperature: TEMPERATURE,
+        temperature: selectedChatModel.startsWith('o4') ? 1 : TEMPERATURE,
         seed: SEED,
         maxSteps: 5,
         experimental_generateMessageId: crypto.randomUUID,
