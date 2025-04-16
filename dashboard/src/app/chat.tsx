@@ -205,6 +205,11 @@ function TemplatePromptWithVars({
   );
 }
 
+interface MessageWithMeta extends Message {
+  sources?: string[];
+  tweet?: string | null;
+}
+
 export function Chat() {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const [model, setModel] = useLocalStorage<ModelValues>(
@@ -291,91 +296,37 @@ export function Chat() {
     initialMessages,
   });
 
-  const assistantMessages = useMemo(
-    () => messages.filter(message => message.role === 'assistant'),
-    [messages],
-  );
-
-  const userMessages = useMemo(
-    () => messages.filter(message => message.role === 'user'),
-    [messages],
-  );
-
-  // Process messages and attach tweets from the data stream
-  const userMessagesWithTweets = useMemo(() => {
-    // @ts-expect-error we can ignore because BE adds these
-    const extractedTweets = data?.filter(d => d?.role === 'tweet') || [];
-
-    return userMessages.map((message, index) => {
-      const relativeData = extractedTweets?.[index];
-
-      // TODO: how can we type these better?
-      // @ts-expect-error we can ignore because BE adds these
-      const tweet = relativeData?.content || null;
-
-      return {
-        ...message,
-        tweet,
-      };
-    });
-  }, [userMessages, data]);
-
-  // Process messages and attach sources from the data stream
-  const assistantMessagesWithSources = useMemo(() => {
+  // Inside Chat component
+  const messagesWithMeta = useMemo(() => {
+    // Filter data for sources and tweets
     // @ts-expect-error we can ignore because BE adds these
     const sourcesData = data?.filter(d => d?.role === 'sources') || [];
+    // @ts-expect-error we can ignore because BE adds these
+    const tweetsData = data?.filter(d => d?.role === 'tweet') || [];
 
-    return assistantMessages.map((message, index) => {
-      const relativeData = sourcesData?.[index];
+    let sourceIndex = 0;
+    let tweetIndex = 0;
 
-      // TODO: how can we type these better?
-      // @ts-expect-error we can ignore because BE adds these
-      const sources = relativeData?.content || [];
-
-      return {
-        ...message,
-        sources,
-      };
+    // Process messages in one pass
+    return messages.map((message): MessageWithMeta => {
+      if (message.role === 'system') {
+        return { ...message, sources: [], tweet: null };
+      }
+      if (message.role === 'assistant') {
+        // @ts-expect-error we can ignore because BE adds these
+        const sources = sourcesData[sourceIndex]?.content || [];
+        sourceIndex++;
+        return { ...message, sources, tweet: null };
+      }
+      if (message.role === 'user') {
+        // @ts-expect-error we can ignore because BE adds these
+        const tweet = tweetsData[tweetIndex]?.content || null;
+        tweetIndex++;
+        return { ...message, sources: [], tweet };
+      }
+      return { ...message, sources: [], tweet: null };
     });
-  }, [assistantMessages, data]);
-
-  const messagesWithSources = useMemo(
-    () =>
-      messages.map(message => {
-        if (message.role === 'assistant') {
-          const assistantMessage = assistantMessagesWithSources.find(
-            m => m.id === message.id,
-          );
-
-          if (assistantMessage) {
-            return {
-              ...assistantMessage,
-              tweet: null,
-            };
-          }
-        }
-
-        if (message.role === 'user') {
-          const userMessage = userMessagesWithTweets.find(
-            m => m.id === message.id,
-          );
-
-          if (userMessage) {
-            return {
-              ...userMessage,
-              sources: [],
-            };
-          }
-        }
-
-        return {
-          ...message,
-          sources: [],
-          tweet: null,
-        };
-      }),
-    [assistantMessagesWithSources, messages, userMessagesWithTweets],
-  );
+  }, [messages, data]);
 
   const handleSystemPromptChange = ({
     text,
@@ -491,16 +442,16 @@ export function Chat() {
       {/* Scrollable Messages Area */}
       <ScrollArea className="flex-1 w-full md:max-w-4xl mx-auto max-h-[calc(100vh-12rem)]">
         <div className="flex flex-col gap-4 p-4">
-          {messagesWithSources
+          {messagesWithMeta
             .filter(message => message.id !== 'userPersistent')
             .filter(message => message.role !== 'system')
             .map(message => {
               const content = parseMessageWithSources(
                 message.content,
-                message.sources,
+                message.sources || [],
               );
               const reasoning = message.parts
-                .filter(p => p.type === 'reasoning')
+                ?.filter(p => p.type === 'reasoning')
                 .map(p => p.reasoning)
                 .join('\n');
 
@@ -620,7 +571,6 @@ export function Chat() {
                                       <Markdown>{`${reasoning} ${
                                         message?.sources
                                           ? message?.sources
-                                              // @ts-expect-error we can ignore because BE adds these
                                               .map(s => `\n- ${s}`)
                                               .join('\n')
                                           : ''
