@@ -1,6 +1,6 @@
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { serve } from 'inngest/fastify';
-import { CoreMessage, StreamData, streamText } from 'ai';
+import { CoreMessage, StreamData, streamText, tool } from 'ai';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import {
@@ -24,7 +24,7 @@ import {
 } from './api/test-reply';
 import { ChatStreamInput, myProvider } from './api/chat';
 import { logger } from './logger';
-import { getKbContext } from './twitter/knowledge-base';
+import { getKbContext, getReasonBillContext } from './twitter/knowledge-base';
 import {
   getTweetContentAsText,
   mergeConsecutiveSameRole,
@@ -42,6 +42,7 @@ import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import { createContext } from './trpc';
 import { appRouter } from './router';
 import { getSearchResult } from './twitter/web';
+import { z } from 'zod';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -379,6 +380,90 @@ fastify.route<{ Body: ChatStreamInput }>({
         messages,
         temperature: selectedChatModel.startsWith('o4') ? 1 : TEMPERATURE,
         seed: SEED,
+        tools: {
+          knowledgeBase: tool({
+            description: 'Get Knowledge Base Entries',
+            parameters: z.object({
+              query: z.string().optional(),
+            }),
+            execute: async ({ query }) => {
+              if (!query) return;
+              log.info({ query }, 'query for knowledge base tool call');
+              const kb = await getKbContext(
+                {
+                  messages: messages,
+                  text: query,
+                  manualEntries: true,
+                  billEntries: false,
+                  documentEntries: false,
+                },
+                log,
+              );
+
+              if (kb?.manualEntries) {
+                return kb.manualEntries;
+              }
+            },
+          }),
+          web: tool({
+            description: 'Browse the web',
+            parameters: z.object({
+              query: z.string().optional(),
+            }),
+            execute: async ({ query }) => {
+              if (!query) return;
+              log.info({ query }, 'query for web tool call');
+              const webSearchResults = await getSearchResult(
+                {
+                  messages: [
+                    {
+                      role: 'user',
+                      content: query,
+                    },
+                  ],
+                },
+                log,
+              );
+
+              const webResult = webSearchResults
+                ?.map(
+                  result =>
+                    `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
+                )
+                .join('');
+
+              return webResult;
+            },
+          }),
+          bill: tool({
+            description: 'Get Bill from Congress',
+            parameters: z.object({
+              query: z.string().optional(),
+            }),
+            execute: async ({ query }) => {
+              if (query) {
+                if (!query) return;
+
+                log.info({ query }, 'query for bill tool call');
+
+                const kb = await getKbContext(
+                  {
+                    messages: messages,
+                    text: query,
+                    manualEntries: false,
+                    billEntries: true,
+                    documentEntries: false,
+                  },
+                  log,
+                );
+
+                if (kb?.bill) {
+                  return kb.bill;
+                }
+              }
+            },
+          }),
+        },
         maxSteps: 5,
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
