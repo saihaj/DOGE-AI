@@ -6,7 +6,7 @@ import {
 } from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
-import { getTweet, getTweetContentAsText } from './helpers.ts';
+import { getTweet, getTweetContentAsText, setTweet } from './helpers.ts';
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { PROMPTS } from './prompts.ts';
@@ -88,6 +88,7 @@ export const processTweets = inngest.createFunction(
     });
     log.info({}, 'processing tweet');
     const tweetText = event.data.text;
+    await setTweet({ data: event.data });
 
     if (event.data.inReplyToUsername) {
       if (DO_NOT_ENGAGE_USERNAMES.includes(event.data.inReplyToUsername)) {
