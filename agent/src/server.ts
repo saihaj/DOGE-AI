@@ -24,7 +24,7 @@ import {
 } from './api/test-reply';
 import { ChatStreamInput, myProvider } from './api/chat';
 import { logger } from './logger';
-import { getKbContext, getReasonBillContext } from './twitter/knowledge-base';
+import { getKbContext } from './twitter/knowledge-base';
 import {
   getTweetContentAsText,
   mergeConsecutiveSameRole,
