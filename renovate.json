@@ -1,5 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
-  "schedule": ["* 3-8 * * *"]
+  "schedule": ["* 3-8 * * *"],
+  "rangeStrategy": "bump"
 }
