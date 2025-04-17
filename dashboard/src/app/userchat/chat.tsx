@@ -1,7 +1,7 @@
 'use client';
 import type React from 'react';
 
-import { useChat, type Message } from 'ai/react';
+import { useChat, type Message, type UseChatHelpers } from 'ai/react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Loader2, Trash2Icon } from 'lucide-react';
-import { ModelSelector, ModelValues } from '@/components/model-selector';
+import { ModelSelector, type ModelValues } from '@/components/model-selector';
 import { Logo } from '@/components/logo';
 import { CopyButton } from '@/components/copy-button';
 import { Markdown } from '@/components/markdown';
@@ -26,6 +26,12 @@ import { AutosizeTextarea } from '@/components/ui/autosize-textarea';
 import { Drawer } from 'vaul';
 import { useCookie } from '@/hooks/use-cookie';
 
+interface MessageWithMeta extends Message {
+  sources?: string[];
+  tweet?: string | null;
+  toolCallResults?: any[]; // Add this line to store tool call results
+}
+
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
 function parseMessageWithSources(content: string, sources: string[]) {
@@ -33,7 +39,7 @@ function parseMessageWithSources(content: string, sources: string[]) {
 
   // Replace [1], [2], etc. with hyperlinks to the corresponding source
   return content.replace(/\[(\d+)\]/g, (match, number) => {
-    const index = parseInt(number, 10) - 1; // Convert to 0-based index
+    const index = Number.parseInt(number, 10) - 1; // Convert to 0-based index
     if (index >= 0 && index < sources.length) {
       const source = sources[index];
       return `[${number}](${source})`;
@@ -42,9 +48,73 @@ function parseMessageWithSources(content: string, sources: string[]) {
   });
 }
 
-interface MessageWithMeta extends Message {
-  sources?: string[];
-  tweet?: string | null;
+// Update the renderMessageParts function to only show thinking state for the last message
+function renderMessageParts(
+  message: MessageWithMeta,
+  status: UseChatHelpers['status'],
+  isLastAssistantMessage: boolean,
+) {
+  // Only show thinking state if this is the last assistant message and status is submitted or streaming
+  if (isLastAssistantMessage && status === 'submitted' && !message.content) {
+    return (
+      <div className="animate-pulse rounded-md flex">
+        <div className="flex items-center gap-2">
+          <Loader2 className="animate-spin h-4 w-4" />
+          Thinking...
+        </div>
+      </div>
+    );
+  }
+
+  if (!message.parts || message.parts.length === 0) {
+    return <Markdown>{message.content}</Markdown>;
+  }
+
+  return (
+    <>
+      {message.parts.map((part, index) => {
+        if (part.type === 'text') {
+          return <Markdown key={index}>{part.text}</Markdown>;
+        }
+
+        if (part.type === 'tool-invocation') {
+          const toolInvocation = part.toolInvocation;
+
+          // Handle different tool invocation states
+          switch (toolInvocation.state) {
+            case 'partial-call':
+              return (
+                <div key={index} className="animate-pulse rounded-md flex">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="animate-spin h-4 w-4" />
+                    Preparing {toolInvocation.toolName} tool
+                  </div>
+                </div>
+              );
+
+            case 'call':
+              return (
+                <div key={index} className="animate-pulse rounded-md flex">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="animate-spin h-4 w-4" />
+                    Processing with {toolInvocation.toolName} tool
+                  </div>
+                </div>
+              );
+
+            default:
+              return null;
+          }
+        }
+
+        if (part.type === 'reasoning') {
+          return null; // We handle reasoning separately
+        }
+
+        return null;
+      })}
+    </>
+  );
 }
 
 export function UserChat() {
@@ -76,12 +146,12 @@ export function UserChat() {
     messages,
     input,
     handleInputChange,
-    isLoading,
     stop,
     handleSubmit,
     setMessages,
     data,
     reload,
+    status,
   } = useChat({
     api: `${API_URL}/api/userchat`,
     body: {
@@ -98,6 +168,7 @@ export function UserChat() {
       });
     },
     initialMessages,
+    // Remove the onToolCall handler since we're using the built-in parts
   });
 
   // Inside Chat component
@@ -107,7 +178,6 @@ export function UserChat() {
     const sourcesData = data?.filter(d => d?.role === 'sources') || [];
     // @ts-expect-error we can ignore because BE adds these
     const tweetsData = data?.filter(d => d?.role === 'tweet') || [];
-
     let sourceIndex = 0;
     let tweetIndex = 0;
 
@@ -198,7 +268,7 @@ export function UserChat() {
           {messagesWithMeta
             .filter(message => message.id !== 'userPersistent')
             .filter(message => message.role !== 'system')
-            .map(message => {
+            .map((message, index, filteredMessages) => {
               const content = parseMessageWithSources(
                 message.content,
                 message.sources || [],
@@ -207,6 +277,15 @@ export function UserChat() {
                 ?.filter(p => p.type === 'reasoning')
                 .map(p => p.reasoning)
                 .join('\n');
+
+              // Check if this is the last assistant message
+              const assistantMessages = filteredMessages.filter(
+                m => m.role === 'assistant',
+              );
+              const isLastAssistantMessage =
+                message.role === 'assistant' &&
+                message.id ===
+                  assistantMessages[assistantMessages.length - 1]?.id;
 
               return (
                 <div
@@ -242,7 +321,11 @@ export function UserChat() {
                               : 'max-w-full', // Different corner for assistant
                           )}
                         >
-                          <Markdown>{content}</Markdown>
+                          {renderMessageParts(
+                            message,
+                            status,
+                            isLastAssistantMessage,
+                          )}
                         </div>
                       </div>
                       <div
@@ -252,7 +335,7 @@ export function UserChat() {
                           'opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center',
                         )}
                       >
-                        {!isLoading && (
+                        {status === 'ready' && (
                           <div
                             className={cn(
                               message.role === 'assistant' ? 'ml-8' : '',
@@ -346,20 +429,36 @@ export function UserChat() {
               );
             })}
 
-          {isLoading && messages[messages.length - 1]?.role === 'user' && (
-            <div
-              className={cn(
-                'mx-2 px-3 py-2 rounded-md',
-                'flex justify-start w-full',
-                'gap-2 items-center',
-              )}
-            >
-              <span>
-                <Logo className="h-[30px] w-[30px] rounded-full" />
-              </span>
-              <Loader2 className="animate-spin" size={20} />
-            </div>
-          )}
+          {/* Add a new assistant message with thinking state when the last message is from user and status is not ready */}
+          {status !== 'ready' &&
+            messages.length > 0 &&
+            messages[messages.length - 1].role === 'user' && (
+              <div className={cn('flex justify-start w-full')}>
+                <div
+                  className={cn('mx-2 text-wrap whitespace-nowrap', 'w-full')}
+                >
+                  <div
+                    className={cn(
+                      'relative group flex flex-col',
+                      'items-start',
+                    )}
+                  >
+                    <div className="flex gap-2">
+                      <span>
+                        <Logo className="h-[30px] w-[30px] rounded-full" />
+                      </span>
+                      <div className="bg-secondary/20 animate-pulse rounded-md flex">
+                        <div className="flex items-center justify-center gap-2">
+                          <Loader2 className="animate-spin h-4 w-4" />
+                          Thinking...
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
           <div
             ref={messagesEndRef}
             className="shrink-0 min-w-[24px] min-h-[24px]"
@@ -371,11 +470,11 @@ export function UserChat() {
         <div className="w-full md:max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <AutosizeTextarea
-              disabled={isLoading}
+              disabled={status !== 'ready'}
               value={input}
               maxHeight={200}
               onSend={() => {
-                if (isLoading) return;
+                if (status !== 'ready') return;
                 if (!input) return;
                 if (input.trim().length === 0) return;
 
@@ -389,11 +488,13 @@ export function UserChat() {
               placeholder="Enter user message..."
               className="flex-1 resize-none border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground"
             />
-            {isLoading ? (
+            {status !== 'ready' ? (
               <Button onClick={stop}>Stop</Button>
             ) : (
               <Button
-                disabled={isLoading || !input || input.trim().length === 0}
+                disabled={
+                  status !== 'ready' || !input || input.trim().length === 0
+                }
                 type="submit"
               >
                 Send
