@@ -21,7 +21,7 @@ import { useLocalStorage } from '@uidotdev/usehooks';
 import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { Header } from '@/components/header';
 import { toast } from 'sonner';
-import { useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { AutosizeTextarea } from '@/components/ui/autosize-textarea';
 import { Drawer } from 'vaul';
 import { useCookie } from '@/hooks/use-cookie';
@@ -169,6 +169,46 @@ export function UserChat() {
     initialMessages,
     // Remove the onToolCall handler since we're using the built-in parts
   });
+
+  useEffect(() => {
+    // Function to handle scrolling
+    const scrollToBottom = () => {
+      if (messagesEndRef.current) {
+        // Check if user is already near the bottom before scrolling
+        const scrollArea = messagesEndRef.current.parentElement;
+        if (scrollArea) {
+          const isNearBottom =
+            scrollArea.scrollHeight -
+              scrollArea.scrollTop -
+              scrollArea.clientHeight <
+            100;
+
+          // Only auto-scroll if user is already near the bottom or if it's a new user message
+          if (
+            isNearBottom ||
+            (messages.length > 0 &&
+              messages[messages.length - 1].role === 'user')
+          ) {
+            messagesEndRef.current.scrollIntoView({
+              behavior: 'smooth',
+              block: 'end',
+            });
+          }
+        } else {
+          // Fallback if parent element isn't available
+          messagesEndRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'end',
+          });
+        }
+      }
+    };
+
+    // Set a small timeout to ensure DOM is updated before scrolling
+    const timeoutId = setTimeout(scrollToBottom, 100);
+
+    return () => clearTimeout(timeoutId);
+  }, [messages, status]);
 
   // Inside Chat component
   const messagesWithMeta = useMemo(() => {
