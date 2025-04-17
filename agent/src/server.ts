@@ -43,6 +43,7 @@ import { createContext } from './trpc';
 import { appRouter } from './router';
 import { getSearchResult } from './twitter/web';
 import { z } from 'zod';
+import { UserChatStreamInput } from './api/user-chat';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -508,6 +509,223 @@ fastify.route<{ Body: ChatStreamInput }>({
     }
   },
   url: '/api/chat',
+});
+
+fastify.route<{ Body: UserChatStreamInput }>({
+  method: 'post',
+  preHandler: [authHandler],
+  schema: {
+    body: UserChatStreamInput,
+  },
+  handler: async (request, reply) => {
+    const tweetExtractRegex = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
+    const log = logger.child({
+      function: 'api-userchat',
+      requestId: request.id,
+    });
+    // Create an AbortController for the backend
+    const abortController = new AbortController();
+    let { messages, selectedChatModel } = request.body as {
+      messages: CoreMessage[];
+      selectedChatModel: string;
+    };
+    const userMessage = messages[messages.length - 1];
+
+    if (!userMessage) {
+      throw new Error('No user message');
+    }
+
+    const userMessageText = userMessage.content.toString();
+
+    log.info({ text: userMessageText }, 'User message');
+
+    // Listen for the client disconnecting (abort)
+    request.raw.on('close', () => {
+      if (request.raw.aborted) {
+        abortController.abort();
+      }
+    });
+
+    // Mark the response as a v1 data stream:
+    reply.header('Content-Type', 'text/plain; charset=utf-8');
+    reply.type('text/event-stream');
+    reply.header('X-Vercel-AI-Data-Stream', 'v1');
+    reply.header('Cache-Control', 'no-cache');
+    reply.header('Connection', 'keep-alive');
+
+    try {
+      const stream = new StreamData();
+
+      const extractedTweetUrl = userMessageText.match(tweetExtractRegex);
+
+      let tweetUrl: string | null = null;
+      if (extractedTweetUrl) {
+        tweetUrl = extractedTweetUrl[0];
+        log.info({ url: tweetUrl }, 'extracted tweet');
+        const url = new URL(tweetUrl);
+        const tweetId = url.pathname.split('/').pop();
+        log.info({ tweetId }, 'tweetId');
+
+        if (tweetId) {
+          const tweetText = await getTweetContentAsText({ id: tweetId }, log);
+          stream.append({
+            role: 'tweet',
+            content: tweetText,
+          });
+          const updatedMessage = userMessageText.replace(
+            tweetExtractRegex,
+            `"${tweetText}"`,
+          );
+          log.info({ updatedMessage }, 'swap tweet url with extracted text');
+          messages.pop();
+          messages.push({ role: 'user', content: updatedMessage });
+        }
+      }
+
+      const result = streamText({
+        model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
+        abortSignal: abortController.signal,
+        messages,
+        temperature: selectedChatModel.startsWith('o4') ? 1 : TEMPERATURE,
+        seed: SEED,
+        tools: {
+          knowledgeBase: tool({
+            description: 'Get Knowledge Base Entries',
+            parameters: z.object({
+              query: z.string().optional(),
+            }),
+            execute: async ({ query }) => {
+              if (!query) return null;
+              log.info({ query }, 'query for knowledge base tool call');
+              const kb = await getKbContext(
+                {
+                  messages: messages,
+                  text: query,
+                  manualEntries: true,
+                  billEntries: false,
+                  documentEntries: false,
+                },
+                log,
+              );
+
+              if (kb?.manualEntries) {
+                return kb.manualEntries;
+              }
+
+              return null;
+            },
+          }),
+          web: tool({
+            description: 'Browse the web',
+            parameters: z.object({
+              query: z.string().optional(),
+            }),
+            execute: async ({ query }) => {
+              if (!query) return;
+              log.info({ query }, 'query for web tool call');
+              const webSearchResults = await getSearchResult(
+                {
+                  messages: [
+                    {
+                      role: 'user',
+                      content: query,
+                    },
+                  ],
+                },
+                log,
+              );
+
+              if (webSearchResults) {
+                const webResult = webSearchResults
+                  .map(
+                    result =>
+                      `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
+                  )
+                  .join('');
+                const urls = webSearchResults.map(result => result.url);
+
+                stream.append({ role: 'sources', content: urls });
+
+                return webResult;
+              }
+
+              return null;
+            },
+          }),
+          bill: tool({
+            description: 'Get Bill from Congress',
+            parameters: z.object({
+              query: z.string().optional(),
+            }),
+            execute: async ({ query }) => {
+              if (!query) return null;
+
+              log.info({ query }, 'query for bill tool call');
+
+              const kb = await getKbContext(
+                {
+                  messages: messages,
+                  text: query,
+                  manualEntries: false,
+                  billEntries: true,
+                  documentEntries: false,
+                },
+                log,
+              );
+
+              if (kb?.bill) {
+                return kb.bill;
+              }
+
+              return null;
+            },
+          }),
+        },
+        maxSteps: 5,
+        experimental_generateMessageId: crypto.randomUUID,
+        experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
+        onError(error) {
+          log.error({ error }, 'Error in chat stream');
+        },
+        async onFinish(event) {
+          if (event.sources.length === 0) {
+            await stream.close();
+            log.info({}, 'stream closed');
+            return;
+          }
+          const sources = event.sources;
+          log.info({ sources }, 'sources');
+
+          const urls = sources.map(source => source.url);
+
+          if (urls) {
+            stream.append({ role: 'sources', content: urls });
+          }
+          log.info({}, 'stream closed');
+          await stream.close();
+        },
+      });
+
+      // Use toDataStreamResponse for simplicity
+      const response = result.toDataStreamResponse({
+        sendReasoning: true,
+        sendUsage: true,
+        data: stream,
+      });
+
+      return response;
+    } catch (error) {
+      log.error({ error }, 'Error in chat stream');
+      if (abortController.signal.aborted) {
+        // Handle the abort gracefully
+        reply.status(204).send(); // No Content
+        return;
+      }
+
+      throw error; // Other errors should be handled as usual
+    }
+  },
+  url: '/api/userchat',
 });
 
 // So in fly.io, health should do both the health check and the readiness check
