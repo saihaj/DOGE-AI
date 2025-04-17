@@ -430,7 +430,7 @@ export function UserChat() {
             })}
 
           {/* Add a new assistant message with thinking state when the last message is from user and status is not ready */}
-          {status !== 'ready' &&
+          {status === 'submitted' &&
             messages.length > 0 &&
             messages[messages.length - 1].role === 'user' && (
               <div className={cn('flex justify-start w-full')}>
@@ -470,7 +470,7 @@ export function UserChat() {
         <div className="w-full md:max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <AutosizeTextarea
-              disabled={status !== 'ready'}
+              disabled={status === 'streaming' || status === 'submitted'}
               value={input}
               maxHeight={200}
               onSend={() => {
@@ -488,13 +488,11 @@ export function UserChat() {
               placeholder="Enter user message..."
               className="flex-1 resize-none border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground"
             />
-            {status !== 'ready' ? (
+            {status === 'submitted' || status === 'streaming' ? (
               <Button onClick={stop}>Stop</Button>
             ) : (
               <Button
-                disabled={
-                  status !== 'ready' || !input || input.trim().length === 0
-                }
+                disabled={!input || input.trim().length === 0}
                 type="submit"
               >
                 Send
