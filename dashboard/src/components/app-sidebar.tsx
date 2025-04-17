@@ -1,5 +1,12 @@
 'use client';
-import { BookIcon, Home, PencilIcon, Reply, ReplyAll } from 'lucide-react';
+import {
+  BookIcon,
+  Home,
+  MessageCircle,
+  PencilIcon,
+  Reply,
+  ReplyAll,
+} from 'lucide-react';
 import {
   Sidebar,
   SidebarContent,
@@ -19,6 +26,11 @@ const items = [
     title: 'Home',
     url: '/',
     icon: Home,
+  },
+  {
+    title: 'User Chat',
+    url: '/userchat',
+    icon: MessageCircle,
   },
   {
     title: 'Engage',
