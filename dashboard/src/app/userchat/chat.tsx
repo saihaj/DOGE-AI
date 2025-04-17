@@ -29,7 +29,6 @@ import { useCookie } from '@/hooks/use-cookie';
 interface MessageWithMeta extends Message {
   sources?: string[];
   tweet?: string | null;
-  toolCallResults?: any[]; // Add this line to store tool call results
 }
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
