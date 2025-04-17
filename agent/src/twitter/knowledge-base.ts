@@ -460,7 +460,7 @@ async function getReasonBillContext(
     async termEmbeddingString => {
       const embeddingsQuery = db
         .select({
-          text: billDbSchema.content,
+          text: billDbSchema.summary,
           billId: billVector.bill,
           distance: sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString}))`,
           title: billDbSchema.title,
@@ -494,18 +494,12 @@ async function getReasonBillContext(
   );
 
   const uniqueBillIds = new Set<string>();
-  const uniqueSearchResults = searchResults
-    .filter(({ billId }) => {
-      if (billId === null) return false;
-      if (uniqueBillIds.has(billId)) return false;
-      uniqueBillIds.add(billId);
-      return true;
-    })
-    .map(v => ({
-      ...v,
-      // @ts-expect-error - I know what I'm doing
-      text: Buffer.from(v.text).toString('utf-8'),
-    }));
+  const uniqueSearchResults = searchResults.filter(({ billId }) => {
+    if (billId === null) return false;
+    if (uniqueBillIds.has(billId)) return false;
+    uniqueBillIds.add(billId);
+    return true;
+  });
 
   log.info(
     { all: searchResults.length, unique: uniqueSearchResults.length },
