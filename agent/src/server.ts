@@ -1,6 +1,6 @@
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { serve } from 'inngest/fastify';
-import { CoreMessage, StreamData, streamText, tool } from 'ai';
+import { CoreMessage, smoothStream, StreamData, streamText, tool } from 'ai';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import {
@@ -383,6 +383,7 @@ fastify.route<{ Body: ChatStreamInput }>({
         seed: SEED,
         maxSteps: 5,
         experimental_generateMessageId: crypto.randomUUID,
+        experimental_transform: smoothStream({}),
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
         onError(error) {
           log.error({ error }, 'Error in chat stream');
@@ -502,6 +503,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
         model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
         abortSignal: abortController.signal,
         messages,
+        experimental_transform: smoothStream({}),
         temperature: selectedChatModel.startsWith('o4') ? 1 : TEMPERATURE,
         seed: SEED,
         tools: {
