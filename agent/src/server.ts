@@ -499,6 +499,29 @@ fastify.route<{ Body: UserChatStreamInput }>({
         }
       }
 
+      const kb = await getKbContext(
+        {
+          messages,
+          // latest message
+          text: messages[messages.length - 1].content.toString(),
+          manualEntries: true,
+          billEntries: false,
+          documentEntries: false,
+        },
+        log,
+      );
+
+      if (kb.manualEntries) {
+        let result = 'Knowledge base entries:\n';
+        result += kb.manualEntries;
+        result += '\n\n';
+        // inject to second last message
+        messages.splice(messages.length - 1, 0, {
+          role: 'user',
+          content: result.trim(),
+        });
+      }
+
       const result = streamText({
         model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
         abortSignal: abortController.signal,
@@ -507,32 +530,6 @@ fastify.route<{ Body: UserChatStreamInput }>({
         temperature: selectedChatModel.startsWith('o4') ? 1 : TEMPERATURE,
         seed: SEED,
         tools: {
-          knowledgeBase: tool({
-            description: 'Get Knowledge Base Entries',
-            parameters: z.object({
-              query: z.string().optional(),
-            }),
-            execute: async ({ query }) => {
-              if (!query) return null;
-              log.info({ query }, 'query for knowledge base tool call');
-              const kb = await getKbContext(
-                {
-                  messages: messages,
-                  text: query,
-                  manualEntries: true,
-                  billEntries: false,
-                  documentEntries: false,
-                },
-                log,
-              );
-
-              if (kb?.manualEntries) {
-                return kb.manualEntries;
-              }
-
-              return null;
-            },
-          }),
           web: tool({
             description: 'Browse the web',
             parameters: z.object({
