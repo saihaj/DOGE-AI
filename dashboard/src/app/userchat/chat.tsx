@@ -230,9 +230,11 @@ export function UserChat() {
       if (message.role === 'assistant') {
         // @ts-expect-error we can ignore because BE adds these
         const sources = sourcesData[sourceIndex]?.content || [];
-        const hasKbAnnotation = message.annotations?.find(
-          // @ts-expect-error we can ignore because BE adds these
-          a => a.role === 'kb-entry-found',
+        const hasKbAnnotation = Boolean(
+          message.annotations?.find(
+            // @ts-expect-error we can ignore because BE adds these
+            a => a.role === 'kb-entry-found',
+          ),
         );
         sourceIndex++;
         return { ...message, sources, tweet: null, hasKbAnnotation };
