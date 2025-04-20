@@ -115,25 +115,6 @@ export const processBill = inngest.createFunction(
   async ({ event, step }) => {
     const bill = event.data;
 
-    await step.run('check-bill-exists', async () => {
-      const b = await db.query.bill.findFirst({
-        where: and(
-          eq(billDbSchema.congress, bill.congress),
-          eq(billDbSchema.number, Number(bill.number)),
-          eq(billDbSchema.type, bill.type),
-        ),
-        columns: {
-          id: true,
-        },
-      });
-
-      if (b) {
-        throw new NonRetriableError('Bill already exists', {
-          cause: `Bill ${bill.congress} ${bill.number} ${bill.type} already exists`,
-        });
-      }
-    });
-
     const info = await step.run('get-bill-info', async () => {
       const url = new URL(bill.url);
       url.pathname = url.pathname + '/text';
