@@ -520,6 +520,9 @@ fastify.route<{ Body: UserChatStreamInput }>({
           role: 'user',
           content: result.trim(),
         });
+        stream.appendMessageAnnotation({
+          role: 'kb-entry-found',
+        });
       }
 
       const result = streamText({

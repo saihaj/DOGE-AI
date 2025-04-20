@@ -25,10 +25,12 @@ import { useEffect, useMemo, useRef } from 'react';
 import { AutosizeTextarea } from '@/components/ui/autosize-textarea';
 import { Drawer } from 'vaul';
 import { useCookie } from '@/hooks/use-cookie';
+import { Badge } from '@/components/ui/badge';
 
 interface MessageWithMeta extends Message {
   sources?: string[];
   tweet?: string | null;
+  hasKbAnnotation?: boolean;
 }
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
@@ -228,8 +230,12 @@ export function UserChat() {
       if (message.role === 'assistant') {
         // @ts-expect-error we can ignore because BE adds these
         const sources = sourcesData[sourceIndex]?.content || [];
+        const hasKbAnnotation = message.annotations?.find(
+          // @ts-expect-error we can ignore because BE adds these
+          a => a.role === 'kb-entry-found',
+        );
         sourceIndex++;
-        return { ...message, sources, tweet: null };
+        return { ...message, sources, tweet: null, hasKbAnnotation };
       }
       if (message.role === 'user') {
         // @ts-expect-error we can ignore because BE adds these
@@ -349,10 +355,21 @@ export function UserChat() {
                     >
                       <div className="flex gap-2">
                         {message.role === 'assistant' && (
-                          <span>
-                            <Logo className="h-[30px] w-[30px] rounded-full" />
-                          </span>
+                          <>
+                            <span>
+                              <Logo className="h-[30px] w-[30px] rounded-full" />
+                              {message.hasKbAnnotation && (
+                                <Badge
+                                  className="bg-green-500"
+                                  variant="outline"
+                                >
+                                  KB
+                                </Badge>
+                              )}
+                            </span>
+                          </>
                         )}
+
                         <div
                           className={cn(
                             message.role === 'user'
