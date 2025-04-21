@@ -35,7 +35,7 @@ async function main() {
 
     const ing = await inngest.send(
       // @ts-expect-error - gotta type this better
-      filteredBills.bills.map(bill => ({
+      filteredBills.map(bill => ({
         name: 'bill.imported',
         id: `${bill.congress}-${bill.originChamberCode.toLowerCase()}-${bill.number}`,
         data: bill,
