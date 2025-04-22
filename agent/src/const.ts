@@ -4,6 +4,9 @@ if (!process.env.PERPLEXITY_API_KEY) {
 if (!process.env.ANTHROPIC_API_KEY) {
   throw new Error('ANTHROPIC_API_KEY is not set in your .env');
 }
+if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
+  throw new Error('GOOGLE_GENERATIVE_AI_API_KEY is not set in your .env');
+}
 if (!process.env.OPENAI_API_KEY) {
   throw new Error('OPENAI_API_KEY is required');
 }

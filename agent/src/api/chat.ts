@@ -11,6 +11,7 @@ import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import { createDeepInfra } from '@ai-sdk/deepinfra';
 import { DEEPINFRA_API_KEY, OPEN_ROUTER_API_KEY } from '../const';
 import { xai } from '@ai-sdk/xai';
+import { google } from '@ai-sdk/google';
 
 export const ChatStreamInput = Type.Object({
   id: Type.String(),
@@ -54,5 +55,10 @@ export const myProvider = customProvider({
     'llama-4-maverick': openrouter.chat('meta-llama/llama-4-maverick'),
     'llama-4-scout': openrouter.chat('meta-llama/llama-4-scout'),
     'grok-3-mini-beta': xai('grok-3-mini-beta'),
+    'gemini-1.5-flash': google('gemini-1.5-flash'),
+    'gemini-1.5-pro': google('gemini-1.5-pro'),
+    'gemini-2.0-flash-exp': google('gemini-2.0-flash-exp'),
+    'gemini-2.0-flash-thinking': google('gemini-2.0-flash-thinking-exp-01-21'),
+    'gemini-2.5-pro-exp': google('gemini-2.5-pro-exp-03-25'),
   },
 });
