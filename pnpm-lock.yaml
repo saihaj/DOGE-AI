@@ -23,8 +23,8 @@ importers:
         specifier: ^1.2.10
         version: 1.2.10(zod@3.24.2)
       '@ai-sdk/deepinfra':
-        specifier: ^0.2.12
-        version: 0.2.12(zod@3.24.2)
+        specifier: ^0.2.13
+        version: 0.2.13(zod@3.24.2)
       '@ai-sdk/openai':
         specifier: ^1.3.16
         version: 1.3.16(zod@3.24.2)
@@ -459,14 +459,20 @@ packages:
     peerDependencies:
       zod: ^3.0.0
 
-  '@ai-sdk/deepinfra@0.2.12':
-    resolution: {integrity: sha512-3tNeIXpnUs/47+75enTWMWbZG489+un4B1sV08dkIMwA9UswmA5UDTWYe/O2FPJQRVc5EY3lAkFuULl8mBByUw==}
+  '@ai-sdk/deepinfra@0.2.13':
+    resolution: {integrity: sha512-ss1Ttg/Hadex/cB2WaZ3OpubThagbLn/k1kjrtSHmVIjcNZStOM3YRbWuCe7ZuRh0RTxMMlkh3sPvowrmG4mxw==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
 
   '@ai-sdk/openai-compatible@0.2.11':
     resolution: {integrity: sha512-56U0uNCcFTygA4h6R/uREv8r5sKA3/pGkpIAnMOpRzs5wiARlTYakWW3LZgxg6D4Gpeswo4gwNJczB7nM0K1Qg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.0.0
+
+  '@ai-sdk/openai-compatible@0.2.12':
+    resolution: {integrity: sha512-WGk3hTYMOkExgKqBZPWgow/2lp8JLYeJiiO/T/SxBa1NolxNcV+fPaZVvIyqeHGV0/AIXHqNtqI95CFblM47iA==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -6416,14 +6422,20 @@ snapshots:
       '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
       zod: 3.24.2
 
-  '@ai-sdk/deepinfra@0.2.12(zod@3.24.2)':
+  '@ai-sdk/deepinfra@0.2.13(zod@3.24.2)':
     dependencies:
-      '@ai-sdk/openai-compatible': 0.2.11(zod@3.24.2)
+      '@ai-sdk/openai-compatible': 0.2.12(zod@3.24.2)
       '@ai-sdk/provider': 1.1.3
       '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
       zod: 3.24.2
 
   '@ai-sdk/openai-compatible@0.2.11(zod@3.24.2)':
+    dependencies:
+      '@ai-sdk/provider': 1.1.3
+      '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
+      zod: 3.24.2
+
+  '@ai-sdk/openai-compatible@0.2.12(zod@3.24.2)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
       '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
@@ -10150,7 +10162,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9)
+      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.0))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -11812,7 +11824,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9):
+  retry-axios@2.6.0(axios@1.7.9(debug@4.4.0)):
     dependencies:
       axios: 1.7.9(debug@4.4.0)
 
