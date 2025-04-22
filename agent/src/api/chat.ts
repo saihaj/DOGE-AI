@@ -44,6 +44,7 @@ export const myProvider = customProvider({
     'o3-mini': openai('o3-mini'),
     'o4-mini': openai('o4-mini'),
     'claude-3-5-sonnet-latest': anthropic('claude-3-5-sonnet-latest'),
+    'claude-3-5-haiku-latest': anthropic('claude-3-5-haiku-latest'),
     'deepseek-r1': wrapLanguageModel({
       model: deepinfra('deepseek-ai/DeepSeek-R1'),
       middleware: [

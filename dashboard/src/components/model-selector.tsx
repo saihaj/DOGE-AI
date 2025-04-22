@@ -77,6 +77,10 @@ const models = [
     label: 'Sonnet 3.5',
   },
   {
+    value: 'claude-3-5-haiku-latest',
+    label: 'Haiku 3.5',
+  },
+  {
     value: 'gemini-1.5-flash',
     label: 'Gemini 1.5 Flash',
   },
