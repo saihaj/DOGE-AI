@@ -32,8 +32,8 @@ importers:
         specifier: ^1.1.7
         version: 1.1.7(zod@3.24.2)
       '@ai-sdk/xai':
-        specifier: ^1.2.13
-        version: 1.2.13(zod@3.24.2)
+        specifier: ^1.2.14
+        version: 1.2.14(zod@3.24.2)
       '@fastify/cors':
         specifier: ^10.0.2
         version: 10.0.2
@@ -554,8 +554,8 @@ packages:
     peerDependencies:
       zod: ^3.23.8
 
-  '@ai-sdk/xai@1.2.13':
-    resolution: {integrity: sha512-vJnzpnRVIVuGgDHrHgfIc3ImjVp6YN+salVX99r+HWd2itiGQy+vAmQKen0Ml8BK/avnLyQneeYRfdlgDBkhgQ==}
+  '@ai-sdk/xai@1.2.14':
+    resolution: {integrity: sha512-ZxGjI/D1heIOX6XqyAwrqyBSkICP2mge2La7qHmr5RRcqw9+vWU+2cAg2y1FqCw8FpN/pGFZI81Dm473cYwlpg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -6522,9 +6522,9 @@ snapshots:
       zod: 3.24.2
       zod-to-json-schema: 3.24.5(zod@3.24.2)
 
-  '@ai-sdk/xai@1.2.13(zod@3.24.2)':
+  '@ai-sdk/xai@1.2.14(zod@3.24.2)':
     dependencies:
-      '@ai-sdk/openai-compatible': 0.2.11(zod@3.24.2)
+      '@ai-sdk/openai-compatible': 0.2.12(zod@3.24.2)
       '@ai-sdk/provider': 1.1.3
       '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
       zod: 3.24.2
