@@ -402,7 +402,7 @@ export function UserChat() {
                             <CopyButton value={content} />
                           </div>
                         )}
-                        {message?.sources && (
+                        {(message?.sources ?? []).length > 0 && (
                           <Drawer.Root direction="right">
                             <Drawer.Trigger>
                               <Button variant="outline" size="sm">
@@ -428,8 +428,8 @@ export function UserChat() {
                                     <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
                                       <Markdown>
                                         {message.sources
-                                          .map(t => `- ${t}`)
-                                          .join('\n')}
+                                          ?.map(t => `- ${t}`)
+                                          .join('\n') || ''}
                                       </Markdown>
                                     </Drawer.Description>
                                   </div>
