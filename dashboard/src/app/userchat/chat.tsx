@@ -402,6 +402,42 @@ export function UserChat() {
                             <CopyButton value={content} />
                           </div>
                         )}
+                        {message?.sources && (
+                          <Drawer.Root direction="right">
+                            <Drawer.Trigger>
+                              <Button variant="outline" size="sm">
+                                Web results
+                              </Button>
+                            </Drawer.Trigger>
+                            <Drawer.Portal>
+                              <Drawer.Overlay className="fixed inset-0 bg-black/60 z-10" />
+                              <Drawer.Content
+                                className="right-2 rounded-2xl top-2 bottom-2 fixed bg-primary-foreground z-10 outline-none max-w-lg flex overflow-y-auto"
+                                // The gap between the edge of the screen and the drawer is 8px in this case.
+                                style={
+                                  {
+                                    '--initial-transform': 'calc(100% + 8px)',
+                                  } as React.CSSProperties
+                                }
+                              >
+                                <div className="bg-primary-foreground h-full w-full grow p-5 flex flex-col rounded-2xl">
+                                  <div className="max-w-xl mx-auto">
+                                    <Drawer.Title className="font-bold text-lg mb-2 text-primary">
+                                      Search results
+                                    </Drawer.Title>
+                                    <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
+                                      <Markdown>
+                                        {message.sources
+                                          .map(t => `- ${t}`)
+                                          .join('\n')}
+                                      </Markdown>
+                                    </Drawer.Description>
+                                  </div>
+                                </div>
+                              </Drawer.Content>
+                            </Drawer.Portal>
+                          </Drawer.Root>
+                        )}
                         {message?.tweet && (
                           <Drawer.Root direction="right">
                             <Drawer.Trigger>
