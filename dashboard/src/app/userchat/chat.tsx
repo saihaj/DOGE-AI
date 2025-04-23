@@ -119,6 +119,75 @@ function renderMessageParts(
 }
 
 export function UserChat() {
+  // Add a style tag for print-specific styles
+  useEffect(() => {
+    // Create a style element for print-specific styles
+    const style = document.createElement('style');
+    style.innerHTML = `
+  @media print {
+    @page {
+      margin: 1cm;
+      size: auto;
+    }
+    body {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .print-only {
+      display: block !important;
+    }
+    body.printing [role="region"] {
+      max-height: none !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .printing .overflow-hidden {
+      overflow: visible !important;
+    }
+  }
+`;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Function to handle printing
+    const handleBeforePrint = () => {
+      // Temporarily remove height constraints for printing
+      document.body.classList.add('printing');
+
+      // Force all content to be rendered
+      const scrollArea = document.querySelector('[role="region"]');
+      if (scrollArea) {
+        scrollArea.setAttribute(
+          'style',
+          'max-height: none !important; height: auto !important; overflow: visible !important;',
+        );
+      }
+    };
+
+    const handleAfterPrint = () => {
+      // Restore normal view
+      document.body.classList.remove('printing');
+
+      // Let the normal styles take over again
+      const scrollArea = document.querySelector('[role="region"]');
+      if (scrollArea) {
+        scrollArea.removeAttribute('style');
+      }
+    };
+
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, []);
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const [model, setModel] = useLocalStorage<ModelValues>(
     'userChatSelectedChatModel',
@@ -274,8 +343,9 @@ export function UserChat() {
   };
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col print:block print:overflow-visible print:h-auto">
       <Header
+        className="print:hidden"
         right={
           <div className="flex gap-2">
             <ModelSelector value={model} setValue={setModel} />
@@ -291,7 +361,11 @@ export function UserChat() {
         }
       />
       {/* Expandable System Prompt Area */}
-      <Accordion type="single" collapsible className="w-full sticky">
+      <Accordion
+        type="single"
+        collapsible
+        className="w-full sticky print:hidden"
+      >
         <AccordionItem value="system-prompt" className="border-b-0">
           <AccordionTrigger className="px-4 py-2 border-secondary-foreground/30 bg-secondary hover:no-underline">
             <span className="text-sm font-medium text-secondary-foreground">
@@ -310,8 +384,8 @@ export function UserChat() {
       </Accordion>
 
       {/* Scrollable Messages Area */}
-      <ScrollArea className="flex-1 w-full md:max-w-4xl mx-auto max-h-[calc(100vh-12rem)]">
-        <div className="flex flex-col gap-4 p-4">
+      <ScrollArea className="flex-1 w-full md:max-w-4xl mx-auto max-h-[calc(100vh-12rem)] print:max-h-none print:overflow-visible print:h-auto">
+        <div className="flex flex-col gap-4 p-4 print:p-0">
           {messagesWithMeta
             .filter(message => message.id !== 'userPersistent')
             .filter(message => message.role !== 'system')
@@ -341,6 +415,7 @@ export function UserChat() {
                     'flex',
                     message.role === 'user' ? 'justify-end' : 'justify-start',
                     'w-full',
+                    'print:break-inside-avoid print:mb-4 print:text-black',
                   )}
                 >
                   <div
@@ -391,6 +466,7 @@ export function UserChat() {
                           message.role === 'user' ? 'flex-row-reverse' : '',
                           'flex gap-2 items-center mt-2',
                           'opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center',
+                          'print:hidden',
                         )}
                       >
                         {status === 'ready' && (
@@ -560,7 +636,7 @@ export function UserChat() {
         </div>
       </ScrollArea>
       {/* Input Area */}
-      <div className="p-4 border-t border-secondary-foreground/30 sticky bottom-0 z-10 bg-background">
+      <div className="p-4 border-t border-secondary-foreground/30 sticky bottom-0 z-10 bg-background print:hidden">
         <div className="w-full md:max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <AutosizeTextarea
