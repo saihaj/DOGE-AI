@@ -69,7 +69,11 @@ const models = [
     label: 'o4 Mini',
   },
   {
-    value: 'grok-3-mini-beta',
+    value: 'grok-3',
+    label: 'Grok 3',
+  },
+  {
+    value: 'grok-3-mini',
     label: 'Grok 3 Mini',
   },
   {
