@@ -134,6 +134,7 @@ export async function getLongResponse(
     }),
     messages: messages,
     experimental_generateMessageId: crypto.randomUUID,
+    maxRetries: 0,
   });
 
   const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
