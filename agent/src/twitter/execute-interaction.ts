@@ -1,6 +1,6 @@
 import {
-  DEEPINFRA_API_KEY,
   IS_PROD,
+  OPEN_ROUTER_API_KEY,
   REJECTION_REASON,
   SEED,
   TEMPERATURE,
@@ -47,10 +47,10 @@ import {
   tweetsPublished,
 } from '../prom.ts';
 import { getSearchResult } from './web.ts';
-import { createDeepInfra } from '@ai-sdk/deepinfra';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
-const deepinfra = createDeepInfra({
-  apiKey: DEEPINFRA_API_KEY,
+const openrouter = createOpenRouter({
+  apiKey: OPEN_ROUTER_API_KEY,
 });
 
 /**
@@ -125,7 +125,11 @@ export async function getLongResponse(
     temperature: TEMPERATURE,
     seed: SEED,
     model: wrapLanguageModel({
-      model: deepinfra('deepseek-ai/DeepSeek-R1'),
+      model: openrouter.chat('deepseek/deepseek-r1', {
+        reasoning: {
+          effort: 'high',
+        },
+      }),
       middleware: [
         extractReasoningMiddleware({
           tagName: 'think',
