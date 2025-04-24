@@ -45,20 +45,8 @@ export const myProvider = customProvider({
     'o4-mini': openai('o4-mini'),
     'claude-3-5-sonnet-latest': anthropic('claude-3-5-sonnet-latest'),
     'claude-3-5-haiku-latest': anthropic('claude-3-5-haiku-latest'),
-    // 'deepseek-r1': wrapLanguageModel({
-    //   model: deepinfra('deepseek-ai/DeepSeek-R1'),
-    //   middleware: [
-    //     extractReasoningMiddleware({
-    //       tagName: 'think',
-    //     }),
-    //   ],
-    // }),
     'deepseek-r1': wrapLanguageModel({
-      model: openrouter.chat('deepseek/deepseek-r1', {
-        reasoning: {
-          effort: 'high',
-        },
-      }),
+      model: deepinfra('deepseek-ai/DeepSeek-R1'),
       middleware: [
         extractReasoningMiddleware({
           tagName: 'think',
