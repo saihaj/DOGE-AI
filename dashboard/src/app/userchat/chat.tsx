@@ -641,7 +641,7 @@ export function UserChat() {
         </div>
       </ScrollArea>
       {/* Input Area */}
-      <div className="p-4 border-t border-secondary-foreground/30 sticky bottom-0 z-10 bg-background print:hidden">
+      <div className="p-4 sticky bottom-0 z-10 print:hidden ">
         <div className="w-full md:max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="flex gap-2">
             <PromptInput
@@ -649,7 +649,7 @@ export function UserChat() {
               onValueChange={setInput}
               isLoading={status === 'streaming' || status === 'submitted'}
               onSubmit={handleSubmit}
-              className="w-full rounded-md"
+              className="w-full rounded-md shadow shadow-white/10"
             >
               <PromptInputTextarea placeholder="Ask me anything..." />
               <PromptInputActions className="justify-end pt-2">
