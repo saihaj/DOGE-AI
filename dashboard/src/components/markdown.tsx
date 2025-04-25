@@ -107,7 +107,7 @@ const components: Partial<Components> = {
   },
   p: ({ node, children, ...props }) => {
     return (
-      <p className="mb-2" {...props}>
+      <p className="mb-2 last-of-type:mb-0" {...props}>
         {children}
       </p>
     );
