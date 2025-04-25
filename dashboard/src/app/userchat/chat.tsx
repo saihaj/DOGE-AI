@@ -12,7 +12,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Trash2Icon } from 'lucide-react';
+import { ArrowUp, Loader2, Square, Trash2Icon } from 'lucide-react';
 import { ModelSelector, type ModelValues } from '@/components/model-selector';
 import { Logo } from '@/components/logo';
 import { CopyButton } from '@/components/copy-button';
@@ -22,10 +22,15 @@ import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { Header } from '@/components/header';
 import { toast } from 'sonner';
 import { useEffect, useMemo, useRef } from 'react';
-import { AutosizeTextarea } from '@/components/ui/autosize-textarea';
 import { Drawer } from 'vaul';
 import { useCookie } from '@/hooks/use-cookie';
 import { Badge } from '@/components/ui/badge';
+import {
+  PromptInput,
+  PromptInputAction,
+  PromptInputActions,
+  PromptInputTextarea,
+} from '@/components/ui/prompt-input';
 
 interface MessageWithMeta extends Message {
   sources?: string[];
@@ -215,7 +220,7 @@ export function UserChat() {
   const {
     messages,
     input,
-    handleInputChange,
+    setInput,
     stop,
     handleSubmit,
     setMessages,
@@ -639,35 +644,45 @@ export function UserChat() {
       <div className="p-4 border-t border-secondary-foreground/30 sticky bottom-0 z-10 bg-background print:hidden">
         <div className="w-full md:max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="flex gap-2">
-            <AutosizeTextarea
-              disabled={status === 'streaming' || status === 'submitted'}
+            <PromptInput
               value={input}
-              maxHeight={200}
-              onSend={() => {
-                if (status !== 'ready') return;
-                if (!input) return;
-                if (input.trim().length === 0) return;
-
-                messagesEndRef?.current?.scrollIntoView({
-                  behavior: 'instant',
-                  block: 'end',
-                });
-                handleSubmit();
-              }}
-              onChange={handleInputChange}
-              placeholder="Enter user message..."
-              className="flex-1 resize-none border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground"
-            />
-            {status === 'submitted' || status === 'streaming' ? (
-              <Button onClick={stop}>Stop</Button>
-            ) : (
-              <Button
-                disabled={!input || input.trim().length === 0}
-                type="submit"
-              >
-                Send
-              </Button>
-            )}
+              onValueChange={setInput}
+              isLoading={status === 'streaming' || status === 'submitted'}
+              onSubmit={handleSubmit}
+              className="w-full rounded-md"
+            >
+              <PromptInputTextarea placeholder="Ask me anything..." />
+              <PromptInputActions className="justify-end pt-2">
+                <PromptInputAction
+                  tooltip={
+                    status === 'submitted' || status === 'streaming'
+                      ? 'Stop generation'
+                      : 'Send message'
+                  }
+                >
+                  {status === 'submitted' || status === 'streaming' ? (
+                    <Button
+                      variant="default"
+                      size="icon"
+                      className="h-8 w-8 rounded-full"
+                      onClick={stop}
+                    >
+                      <Square className="size-5 fill-current" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="default"
+                      size="icon"
+                      className="h-8 w-8 rounded-full"
+                      disabled={!input || input.trim().length === 0}
+                      type="submit"
+                    >
+                      <ArrowUp className="size-5" />
+                    </Button>
+                  )}
+                </PromptInputAction>
+              </PromptInputActions>
+            </PromptInput>
           </form>
         </div>
       </div>
