@@ -430,6 +430,7 @@ fastify.route<{ Body: ChatStreamInput }>({
 
 fastify.route<{ Body: UserChatStreamInput }>({
   method: 'post',
+  bodyLimit: 10485760, // 10MB
   preHandler: [authHandler],
   schema: {
     body: UserChatStreamInput,
