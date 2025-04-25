@@ -105,6 +105,13 @@ const components: Partial<Components> = {
       </h6>
     );
   },
+  p: ({ node, children, ...props }) => {
+    return (
+      <p className="mb-2" {...props}>
+        {children}
+      </p>
+    );
+  },
 };
 
 const remarkPlugins = [remarkGfm];
