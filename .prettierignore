@@ -1,6 +1,9 @@
 website/.next/**
 website/out/**
 website/public/**
+chat/public/**
+chat/.next/**
+chat/out/**
 crawler/data/**
 pnpm-lock.yaml
 database/src/meta/**
