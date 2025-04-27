@@ -82,7 +82,7 @@ If you need a summary of the fiscal or administrative impact, or a comparison to
             className={cn(
               message.role === 'user'
                 ? 'justify-end'
-                : 'justify-enter max-w-none w-full',
+                : 'justify-start max-w-none w-full',
               'py-2',
             )}
           >
