@@ -47,8 +47,8 @@ importers:
         specifier: ^0.4.5
         version: 0.4.5(zod@3.24.2)
       '@sinclair/typebox':
-        specifier: ^0.34.16
-        version: 0.34.16
+        specifier: ^0.34.33
+        version: 0.34.33
       '@trpc/server':
         specifier: ^11.0.1
         version: 11.0.1(typescript@5.7.3)
@@ -2718,8 +2718,8 @@ packages:
     resolution: {integrity: sha512-jjmJywLAFoWeBi1W7994zZyiNWPIiqRRNAmSERxyg93xRGzNYvGjlZ0gR6x0F4gPRi2+0O6S71kOZYyr3cxaIQ==}
     engines: {node: '>=v14.0.0', npm: '>=7.0.0'}
 
-  '@sinclair/typebox@0.34.16':
-    resolution: {integrity: sha512-rIljj8VPYAfn26ANY+5pCNVBPiv6hSufuKGe46y65cJZpvx8vHvPXlU0Q/Le4OGtlNaL8Jg2FuhtvQX18lSIqA==}
+  '@sinclair/typebox@0.34.33':
+    resolution: {integrity: sha512-5HAV9exOMcXRUxo+9iYB5n09XxzCXnfy4VTNW4xnDv+FgjzAGY989C28BIdljKqmF+ZltUwujE3aossvcVtq6g==}
 
   '@standard-schema/utils@0.3.0':
     resolution: {integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==}
@@ -8084,7 +8084,7 @@ snapshots:
 
   '@sapphire/snowflake@3.5.3': {}
 
-  '@sinclair/typebox@0.34.16': {}
+  '@sinclair/typebox@0.34.33': {}
 
   '@standard-schema/utils@0.3.0': {}
 
@@ -10184,7 +10184,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9)
+      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.0))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -11846,7 +11846,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9):
+  retry-axios@2.6.0(axios@1.7.9(debug@4.4.0)):
     dependencies:
       axios: 1.7.9(debug@4.4.0)
 
