@@ -29,8 +29,8 @@ importers:
         specifier: ^1.2.13
         version: 1.2.13(zod@3.24.2)
       '@ai-sdk/openai':
-        specifier: ^1.3.18
-        version: 1.3.18(zod@3.24.2)
+        specifier: ^1.3.20
+        version: 1.3.20(zod@3.24.2)
       '@ai-sdk/perplexity':
         specifier: ^1.1.7
         version: 1.1.7(zod@3.24.2)
@@ -144,8 +144,8 @@ importers:
   crawler:
     dependencies:
       '@ai-sdk/openai':
-        specifier: ^1.3.18
-        version: 1.3.18(zod@3.24.2)
+        specifier: ^1.3.20
+        version: 1.3.20(zod@3.24.2)
       '@langchain/community':
         specifier: ^0.3.28
         version: 0.3.28(@browserbasehq/sdk@2.5.0(encoding@0.1.13))(@browserbasehq/stagehand@1.11.0(@playwright/test@1.50.1)(deepmerge@4.3.1)(dotenv@16.5.0)(encoding@0.1.13)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.2))(zod@3.24.2))(@ibm-cloud/watsonx-ai@1.4.0(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.2))))(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.2)))(@libsql/client@0.14.0)(@mendable/firecrawl-js@1.17.0(ws@8.18.0))(axios@1.7.9)(better-sqlite3@11.6.0)(discord.js@14.17.3)(encoding@0.1.13)(handlebars@4.7.8)(ibm-cloud-sdk-core@5.1.2)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.2))(pdf-parse@1.1.1)(playwright@1.50.1)(ws@8.18.0)
@@ -486,8 +486,8 @@ packages:
     peerDependencies:
       zod: ^3.0.0
 
-  '@ai-sdk/openai@1.3.18':
-    resolution: {integrity: sha512-gqOHTOu62Tm2r4yDQx/Z5tWAgUrcTK8wXnC4A8zF/VOCzIjJDxxPsqJRTtQTMgIdGXhwmsv2sZ2PzvvuLeZeEg==}
+  '@ai-sdk/openai@1.3.20':
+    resolution: {integrity: sha512-/DflUy7ROG9k6n6YTXMBFPbujBKnbGY58f3CwvicLvDar9nDAloVnUWd3LUoOxpSVnX8vtQ7ngxF52SLWO6RwQ==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -6460,7 +6460,7 @@ snapshots:
       '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
       zod: 3.24.2
 
-  '@ai-sdk/openai@1.3.18(zod@3.24.2)':
+  '@ai-sdk/openai@1.3.20(zod@3.24.2)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
       '@ai-sdk/provider-utils': 2.2.7(zod@3.24.2)
