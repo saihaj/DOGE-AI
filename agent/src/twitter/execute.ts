@@ -63,6 +63,7 @@ export async function generateReply(
       },
       ...mergedMessages,
     ],
+    maxRetries: 0,
   });
 
   const metadata = sources.length > 0 ? JSON.stringify(sources) : null;

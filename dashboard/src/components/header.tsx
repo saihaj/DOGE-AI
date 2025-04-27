@@ -1,8 +1,20 @@
+import { cn } from '@/lib/utils';
 import { SidebarTrigger } from './ui/sidebar';
 
-export function Header({ right }: { right?: React.ReactNode }) {
+export function Header({
+  right,
+  className,
+}: {
+  right?: React.ReactNode;
+  className?: string;
+}) {
   return (
-    <header className="flex items-center p-4 border-b border-secondary-foreground/30 h-14">
+    <header
+      className={cn(
+        'flex items-center p-4 border-b border-secondary-foreground/30 h-14',
+        className,
+      )}
+    >
       <div className="flex-1 flex justify-start">
         <SidebarTrigger />
       </div>

@@ -69,12 +69,40 @@ const models = [
     label: 'o4 Mini',
   },
   {
-    value: 'grok-3-mini-beta',
+    value: 'grok-3',
+    label: 'Grok 3',
+  },
+  {
+    value: 'grok-3-mini',
     label: 'Grok 3 Mini',
   },
   {
     value: 'claude-3-5-sonnet-latest',
     label: 'Sonnet 3.5',
+  },
+  {
+    value: 'claude-3-5-haiku-latest',
+    label: 'Haiku 3.5',
+  },
+  {
+    value: 'gemini-1.5-flash',
+    label: 'Gemini 1.5 Flash',
+  },
+  {
+    value: 'gemini-1.5-pro',
+    label: 'Gemini 1.5 Pro',
+  },
+  {
+    value: 'gemini-2.0-flash-exp',
+    label: 'Gemini 2.0 Flash',
+  },
+  {
+    value: 'gemini-2.0-flash-thinking',
+    label: 'Gemini 2.0 Flash Thinking',
+  },
+  {
+    value: 'gemini-2.5-pro-exp',
+    label: 'Gemini 2.5 Pro Exp',
   },
 ] as const;
 

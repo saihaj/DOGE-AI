@@ -12,7 +12,7 @@ import {
   AccordionTrigger,
 } from '@/components/ui/accordion';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, Trash2Icon } from 'lucide-react';
+import { ArrowUp, Loader2, Square, Trash2Icon } from 'lucide-react';
 import { ModelSelector, type ModelValues } from '@/components/model-selector';
 import { Logo } from '@/components/logo';
 import { CopyButton } from '@/components/copy-button';
@@ -22,10 +22,15 @@ import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { Header } from '@/components/header';
 import { toast } from 'sonner';
 import { useEffect, useMemo, useRef } from 'react';
-import { AutosizeTextarea } from '@/components/ui/autosize-textarea';
 import { Drawer } from 'vaul';
 import { useCookie } from '@/hooks/use-cookie';
 import { Badge } from '@/components/ui/badge';
+import {
+  PromptInput,
+  PromptInputAction,
+  PromptInputActions,
+  PromptInputTextarea,
+} from '@/components/ui/prompt-input';
 
 interface MessageWithMeta extends Message {
   sources?: string[];
@@ -119,6 +124,75 @@ function renderMessageParts(
 }
 
 export function UserChat() {
+  // Add a style tag for print-specific styles
+  useEffect(() => {
+    // Create a style element for print-specific styles
+    const style = document.createElement('style');
+    style.innerHTML = `
+  @media print {
+    @page {
+      margin: 1cm;
+      size: auto;
+    }
+    body {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+    .print-only {
+      display: block !important;
+    }
+    body.printing [role="region"] {
+      max-height: none !important;
+      height: auto !important;
+      overflow: visible !important;
+    }
+    .printing .overflow-hidden {
+      overflow: visible !important;
+    }
+  }
+`;
+    document.head.appendChild(style);
+
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  useEffect(() => {
+    // Function to handle printing
+    const handleBeforePrint = () => {
+      // Temporarily remove height constraints for printing
+      document.body.classList.add('printing');
+
+      // Force all content to be rendered
+      const scrollArea = document.querySelector('[role="region"]');
+      if (scrollArea) {
+        scrollArea.setAttribute(
+          'style',
+          'max-height: none !important; height: auto !important; overflow: visible !important;',
+        );
+      }
+    };
+
+    const handleAfterPrint = () => {
+      // Restore normal view
+      document.body.classList.remove('printing');
+
+      // Let the normal styles take over again
+      const scrollArea = document.querySelector('[role="region"]');
+      if (scrollArea) {
+        scrollArea.removeAttribute('style');
+      }
+    };
+
+    window.addEventListener('beforeprint', handleBeforePrint);
+    window.addEventListener('afterprint', handleAfterPrint);
+
+    return () => {
+      window.removeEventListener('beforeprint', handleBeforePrint);
+      window.removeEventListener('afterprint', handleAfterPrint);
+    };
+  }, []);
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const [model, setModel] = useLocalStorage<ModelValues>(
     'userChatSelectedChatModel',
@@ -146,7 +220,7 @@ export function UserChat() {
   const {
     messages,
     input,
-    handleInputChange,
+    setInput,
     stop,
     handleSubmit,
     setMessages,
@@ -274,8 +348,9 @@ export function UserChat() {
   };
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col print:block print:overflow-visible print:h-auto">
       <Header
+        className="print:hidden"
         right={
           <div className="flex gap-2">
             <ModelSelector value={model} setValue={setModel} />
@@ -291,7 +366,11 @@ export function UserChat() {
         }
       />
       {/* Expandable System Prompt Area */}
-      <Accordion type="single" collapsible className="w-full sticky">
+      <Accordion
+        type="single"
+        collapsible
+        className="w-full sticky print:hidden"
+      >
         <AccordionItem value="system-prompt" className="border-b-0">
           <AccordionTrigger className="px-4 py-2 border-secondary-foreground/30 bg-secondary hover:no-underline">
             <span className="text-sm font-medium text-secondary-foreground">
@@ -310,8 +389,8 @@ export function UserChat() {
       </Accordion>
 
       {/* Scrollable Messages Area */}
-      <ScrollArea className="flex-1 w-full md:max-w-4xl mx-auto max-h-[calc(100vh-12rem)]">
-        <div className="flex flex-col gap-4 p-4">
+      <ScrollArea className="flex-1 w-full md:max-w-4xl mx-auto max-h-[calc(100vh-12rem)] print:max-h-none print:overflow-visible print:h-auto">
+        <div className="flex flex-col gap-4 p-4 print:p-0">
           {messagesWithMeta
             .filter(message => message.id !== 'userPersistent')
             .filter(message => message.role !== 'system')
@@ -341,6 +420,7 @@ export function UserChat() {
                     'flex',
                     message.role === 'user' ? 'justify-end' : 'justify-start',
                     'w-full',
+                    'print:break-inside-avoid print:mb-4 print:text-black',
                   )}
                 >
                   <div
@@ -391,6 +471,7 @@ export function UserChat() {
                           message.role === 'user' ? 'flex-row-reverse' : '',
                           'flex gap-2 items-center mt-2',
                           'opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center',
+                          'print:hidden',
                         )}
                       >
                         {status === 'ready' && (
@@ -401,6 +482,42 @@ export function UserChat() {
                           >
                             <CopyButton value={content} />
                           </div>
+                        )}
+                        {(message?.sources ?? []).length > 0 && (
+                          <Drawer.Root direction="right">
+                            <Drawer.Trigger>
+                              <Button variant="outline" size="sm">
+                                Web results
+                              </Button>
+                            </Drawer.Trigger>
+                            <Drawer.Portal>
+                              <Drawer.Overlay className="fixed inset-0 bg-black/60 z-10" />
+                              <Drawer.Content
+                                className="right-2 rounded-2xl top-2 bottom-2 fixed bg-primary-foreground z-10 outline-none max-w-lg flex overflow-y-auto"
+                                // The gap between the edge of the screen and the drawer is 8px in this case.
+                                style={
+                                  {
+                                    '--initial-transform': 'calc(100% + 8px)',
+                                  } as React.CSSProperties
+                                }
+                              >
+                                <div className="bg-primary-foreground h-full w-full grow p-5 flex flex-col rounded-2xl">
+                                  <div className="max-w-xl mx-auto">
+                                    <Drawer.Title className="font-bold text-lg mb-2 text-primary">
+                                      Search results
+                                    </Drawer.Title>
+                                    <Drawer.Description className="text-primary mb-2 overflow-y-scroll">
+                                      <Markdown>
+                                        {message.sources
+                                          ?.map(t => `- ${t}`)
+                                          .join('\n') || ''}
+                                      </Markdown>
+                                    </Drawer.Description>
+                                  </div>
+                                </div>
+                              </Drawer.Content>
+                            </Drawer.Portal>
+                          </Drawer.Root>
                         )}
                         {message?.tweet && (
                           <Drawer.Root direction="right">
@@ -524,38 +641,48 @@ export function UserChat() {
         </div>
       </ScrollArea>
       {/* Input Area */}
-      <div className="p-4 border-t border-secondary-foreground/30 sticky bottom-0 z-10 bg-background">
+      <div className="p-4 sticky bottom-0 z-10 print:hidden ">
         <div className="w-full md:max-w-4xl mx-auto">
           <form onSubmit={handleSubmit} className="flex gap-2">
-            <AutosizeTextarea
-              disabled={status === 'streaming' || status === 'submitted'}
+            <PromptInput
               value={input}
-              maxHeight={200}
-              onSend={() => {
-                if (status !== 'ready') return;
-                if (!input) return;
-                if (input.trim().length === 0) return;
-
-                messagesEndRef?.current?.scrollIntoView({
-                  behavior: 'instant',
-                  block: 'end',
-                });
-                handleSubmit();
-              }}
-              onChange={handleInputChange}
-              placeholder="Enter user message..."
-              className="flex-1 resize-none border-secondary-foreground/30 bg-primary-foreground text-secondary-foreground"
-            />
-            {status === 'submitted' || status === 'streaming' ? (
-              <Button onClick={stop}>Stop</Button>
-            ) : (
-              <Button
-                disabled={!input || input.trim().length === 0}
-                type="submit"
-              >
-                Send
-              </Button>
-            )}
+              onValueChange={setInput}
+              isLoading={status === 'streaming' || status === 'submitted'}
+              onSubmit={handleSubmit}
+              className="w-full rounded-md shadow shadow-white/10"
+            >
+              <PromptInputTextarea placeholder="Ask me anything..." />
+              <PromptInputActions className="justify-end pt-2">
+                <PromptInputAction
+                  tooltip={
+                    status === 'submitted' || status === 'streaming'
+                      ? 'Stop generation'
+                      : 'Send message'
+                  }
+                >
+                  {status === 'submitted' || status === 'streaming' ? (
+                    <Button
+                      variant="default"
+                      size="icon"
+                      className="h-8 w-8 rounded-full"
+                      onClick={stop}
+                    >
+                      <Square className="size-5 fill-current" />
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="default"
+                      size="icon"
+                      className="h-8 w-8 rounded-full"
+                      disabled={!input || input.trim().length === 0}
+                      type="submit"
+                    >
+                      <ArrowUp className="size-5" />
+                    </Button>
+                  )}
+                </PromptInputAction>
+              </PromptInputActions>
+            </PromptInput>
           </form>
         </div>
       </div>

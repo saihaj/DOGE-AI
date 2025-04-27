@@ -430,6 +430,7 @@ fastify.route<{ Body: ChatStreamInput }>({
 
 fastify.route<{ Body: UserChatStreamInput }>({
   method: 'post',
+  bodyLimit: 10485760, // 10MB
   preHandler: [authHandler],
   schema: {
     body: UserChatStreamInput,
@@ -536,10 +537,9 @@ fastify.route<{ Body: UserChatStreamInput }>({
           web: tool({
             description: 'Browse the web',
             parameters: z.object({
-              query: z.string().optional(),
+              query: z.string(),
             }),
             execute: async ({ query }) => {
-              if (!query) return;
               log.info({ query }, 'query for web tool call');
               const webSearchResults = await getSearchResult(
                 {
@@ -573,13 +573,9 @@ fastify.route<{ Body: UserChatStreamInput }>({
           bill: tool({
             description: 'Get Bill from Congress',
             parameters: z.object({
-              query: z.string().optional(),
+              query: z.string(),
             }),
             execute: async ({ query }) => {
-              if (!query) return null;
-
-              log.info({ query }, 'query for bill tool call');
-
               const kb = await getKbContext(
                 {
                   messages: messages,
