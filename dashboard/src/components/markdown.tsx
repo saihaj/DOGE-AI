@@ -18,100 +18,81 @@ const components: Partial<Components> = {
       {children}
     </code>
   ),
-  pre: ({ children }) => <>{children}</>,
-  ol: ({ node, children, ...props }) => {
-    return (
-      <ol className="list-decimal list-outside ml-4" {...props}>
-        {children}
-      </ol>
-    );
-  },
-  li: ({ node, children, ...props }) => {
-    return (
-      <li className="py-1" {...props}>
-        {children}
-      </li>
-    );
-  },
-  ul: ({ node, children, ...props }) => {
-    return (
-      <ul className="list-decimal list-outside ml-4" {...props}>
-        {children}
-      </ul>
-    );
-  },
-  strong: ({ node, children, ...props }) => {
-    return (
-      <span className="font-semibold" {...props}>
-        {children}
-      </span>
-    );
-  },
-  a: ({ node, children, ...props }) => {
-    return (
-      <span>
-        {' '}
-        <Link
-          className="text-blue-500 hover:underline"
-          target="_blank"
-          rel="noreferrer"
-          href={props.href as string}
-          {...props}
-        >
-          {children}
-        </Link>
-      </span>
-    );
-  },
-  h1: ({ node, children, ...props }) => {
-    return (
-      <h1 className="text-3xl font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h1>
-    );
-  },
-  h2: ({ node, children, ...props }) => {
-    return (
-      <h2 className="text-2xl font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h2>
-    );
-  },
-  h3: ({ node, children, ...props }) => {
-    return (
-      <h3 className="text-xl font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h3>
-    );
-  },
-  h4: ({ node, children, ...props }) => {
-    return (
-      <h4 className="text-lg font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h4>
-    );
-  },
-  h5: ({ node, children, ...props }) => {
-    return (
-      <h5 className="text-base font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h5>
-    );
-  },
-  h6: ({ node, children, ...props }) => {
-    return (
-      <h6 className="text-sm font-semibold mt-6 mb-2" {...props}>
-        {children}
-      </h6>
-    );
-  },
-  p: ({ node, children, ...props }) => {
-    return (
-      <p className="mb-2 last-of-type:mb-0" {...props}>
-        {children}
-      </p>
-    );
-  },
+  pre: ({ node, children, ...props }) => (
+    <pre
+      className="bg-zinc-100 dark:bg-zinc-800 p-4 rounded-md overflow-auto"
+      {...props}
+    >
+      {children}
+    </pre>
+  ),
+  ol: ({ node, children, ...props }) => (
+    <ol className="list-decimal list-outside ml-6" {...props}>
+      {children}
+    </ol>
+  ),
+  ul: ({ node, children, ...props }) => (
+    <ul className="list-disc list-outside ml-6" {...props}>
+      {children}
+    </ul>
+  ),
+  li: ({ node, children, ...props }) => (
+    <li className="py-1" {...props}>
+      {children}
+    </li>
+  ),
+  strong: ({ node, children, ...props }) => (
+    <span className="font-semibold" {...props}>
+      {children}
+    </span>
+  ),
+  a: ({ node, children, href, ...props }) => (
+    <Link
+      href={href || '#'}
+      className="text-blue-500 hover:underline inline-flex items-center gap-1"
+      target="_blank"
+      rel="noopener noreferrer"
+      {...props}
+    >
+      {children}
+      <ExternalLink className="w-4 h-4" aria-hidden="true" />
+    </Link>
+  ),
+  h1: ({ node, children, ...props }) => (
+    <h1 className="text-3xl font-semibold mt-6 mb-2" {...props}>
+      {children}
+    </h1>
+  ),
+  h2: ({ node, children, ...props }) => (
+    <h2 className="text-2xl font-semibold mt-6 mb-2" {...props}>
+      {children}
+    </h2>
+  ),
+  h3: ({ node, children, ...props }) => (
+    <h3 className="text-xl font-semibold mt-6 mb-2" {...props}>
+      {children}
+    </h3>
+  ),
+  h4: ({ node, children, ...props }) => (
+    <h4 className="text-lg font-semibold mt-6 mb-2" {...props}>
+      {children}
+    </h4>
+  ),
+  h5: ({ node, children, ...props }) => (
+    <h5 className="text-base font-semibold mt-6 mb-2" {...props}>
+      {children}
+    </h5>
+  ),
+  h6: ({ node, children, ...props }) => (
+    <h6 className="text-sm font-semibold mt-6 mb-2" {...props}>
+      {children}
+    </h6>
+  ),
+  p: ({ node, children, ...props }) => (
+    <p className="mb-2 last-of-type:mb-0" {...props}>
+      {children}
+    </p>
+  ),
 };
 
 const remarkPlugins = [remarkGfm];
