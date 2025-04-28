@@ -4,7 +4,6 @@ import { CoreMessage, smoothStream, StreamData, streamText, tool } from 'ai';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import {
-  CF_AUDIENCE,
   CF_TEAM_DOMAIN,
   DISCORD_TOKEN,
   IS_PROD,
@@ -44,6 +43,7 @@ import { appRouter } from './router';
 import { getSearchResult } from './twitter/web';
 import { z } from 'zod';
 import { UserChatStreamInput } from './api/user-chat';
+import { PROMPTS } from './twitter/prompts';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -67,7 +67,12 @@ fastify.route({
 fastify.register(cors, {
   allowedHeaders: ['Content-Type', 'Authorization', 'cf-authorization-token'],
   methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
-  origin: ['http://localhost:4321', 'https://manage.dogeai.info'],
+  origin: [
+    'http://localhost:4321',
+    'http://localhost:4322',
+    'https://manage.dogeai.info',
+    /^https:\/\/([a-zA-Z0-9-]+\.)*dogeai-chat\.pages\.dev$/, // Matches dogeai-chat.pages.dev and subdomains
+  ],
 });
 
 const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
@@ -96,7 +101,7 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const result = await jwtVerify(token, JWKS, {
       issuer: CF_TEAM_DOMAIN,
-      audience: CF_AUDIENCE,
+      // audience: CF_AUDIENCE, // TODO: need to find a better way for this
     });
     log.info({ result }, 'cf authorization token verified');
   } catch (error) {
@@ -523,6 +528,16 @@ fastify.route<{ Body: UserChatStreamInput }>({
         });
         stream.appendMessageAnnotation({
           role: 'kb-entry-found',
+        });
+      }
+
+      const systemPrompt = messages.find(message => message.role === 'system');
+
+      if (!systemPrompt) {
+        const prompt = await PROMPTS.CHAT_INTERFACE_SYSTEM_PROMPT();
+        messages.unshift({
+          role: 'system',
+          content: `${prompt}.\nCurrent date: ${new Date().toUTCString()}`,
         });
       }
 

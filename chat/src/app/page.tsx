@@ -5,72 +5,85 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
-import { Square, ArrowUp } from 'lucide-react';
+import { Square, ArrowUp, Loader2, Trash2, Trash } from 'lucide-react';
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
-import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/logo';
+import { CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
+import { useChat, UseChatHelpers } from '@ai-sdk/react';
+import { useCookie } from '@/components/hooks/use-cookie';
+import { toast } from 'sonner';
+import { Markdown } from '@/components/ui/markdown';
 
-function ChatWithCustomScroll() {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      role: 'user',
-      content: 'break down the Save act for me?',
-    },
-    {
-      id: 2,
-      role: 'assistant',
-      content: `The SAVE Act (Safeguard American Voter Eligibility Act) is a bill introduced in the U.S. House of Representatives that aims to amend the National Voter Registration Act of 1993. Its primary goal is to require proof of United States citizenship for individuals registering to vote in federal elections. Here’s a breakdown of its key provisions:
+function renderMessageParts(message: UseChatHelpers['messages'][0]) {
+  if (!message.parts || message.parts.length === 0) {
+    return (
+      <MessageContent className="px-0 md:px-2" markdown>
+        {message.content}
+      </MessageContent>
+    );
+  }
 
-1. Proof of Citizenship Requirement
-- The Act mandates that anyone registering to vote in federal elections must provide documentary proof of U.S. citizenship.
-- Acceptable documents include:
-  - REAL ID-compliant identification showing citizenship
-  - Valid U.S. passport
-  - U.S. military ID with a record of U.S. birth
-  - Government-issued photo ID showing U.S. place of birth
-  - Government-issued photo ID plus a certified birth certificate, hospital record of birth, adoption decree, Consular Report of Birth Abroad, Naturalization Certificate, or American Indian Card (KIC classification)
+  return (
+    <>
+      {message.parts.map((part, index) => {
+        if (part.type === 'text') {
+          return (
+            <MessageContent key={index} className="px-0 md:px-2" markdown>
+              {message.content}
+            </MessageContent>
+          );
+        }
 
-2. Application Process Changes
-- States cannot process voter registration applications for federal elections without documentary proof of citizenship.
-- Applies to all registration methods: in-person, by mail, and through motor vehicle departments (DMVs).
-- States must verify citizenship status during the registration process.
+        if (part.type === 'tool-invocation') {
+          const toolInvocation = part.toolInvocation;
 
-3. Special Provisions for Those Without Documents
-- States must establish a process for applicants who cannot provide standard documents but can submit other evidence and sign an attestation under penalty of perjury.
-- Election officials must make a determination and sign an affidavit if citizenship is established by alternative means.
+          // Handle different tool invocation states
+          switch (toolInvocation.state) {
+            case 'partial-call':
+              return (
+                <div key={index} className="animate-pulse rounded-md flex">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="animate-spin h-4 w-4" />
+                    Preparing {toolInvocation.toolName} tool
+                  </div>
+                </div>
+              );
 
-4. Ongoing Verification and Removal
-- States must actively ensure only citizens are registered, using data from the Department of Homeland Security, Social Security Administration, state agencies, and other sources.
-- Noncitizens must be removed from voter rolls if documentation or verified information shows they are not U.S. citizens.
+            case 'call':
+              return (
+                <div key={index} className="animate-pulse rounded-md flex">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="animate-spin h-4 w-4" />
+                    Processing with {toolInvocation.toolName} tool
+                  </div>
+                </div>
+              );
 
-5. Federal Agency Cooperation
-- Federal agencies must provide relevant citizenship information to state election officials within 24 hours of request, free of charge.
+            default:
+              return null;
+          }
+        }
 
-6. Penalties and Enforcement
-- Criminal penalties for election officials who register applicants without proof of citizenship.
-- Private right of action: individuals can sue for violations, including improper registration of noncitizens.
+        if (part.type === 'reasoning') {
+          return null; // We handle reasoning separately
+        }
 
-7. Provisional Ballots
-- The Act does not prevent individuals from casting provisional ballots; these can be counted if citizenship is verified.
+        return null;
+      })}
+    </>
+  );
+}
 
-8. Implementation and Guidance
-- The Election Assistance Commission must issue guidance to states within 10 days of enactment.
-- The Act takes effect immediately upon enactment and applies to all new voter registration applications from that date forward.
-
-9. Exemptions and State Flexibility
-- States previously exempt from the National Voter Registration Act must comply with the new citizenship requirements unless they adopt identical requirements within 60 days of the first federal election after enactment.
-
-Summary
-The SAVE Act is designed to ensure that only U.S. citizens can register to vote in federal elections by requiring documentary proof of citizenship at registration. It establishes strict verification processes, mandates cooperation between federal and state agencies, and imposes penalties for noncompliance.
-
-If you need a summary of the fiscal or administrative impact, or a comparison to current law, let me know!`,
-    },
-  ]);
-
+function ChatWithCustomScroll({
+  messages,
+  status,
+}: {
+  messages: UseChatHelpers['messages'];
+  status: UseChatHelpers['status'];
+}) {
   return (
     <ChatContainer className="relative group flex flex-col justify-center w-full max-w-3xl md:px-4 pb-2 gap-2 items-end">
       {messages.map(message => {
@@ -87,9 +100,7 @@ If you need a summary of the fiscal or administrative impact, or a comparison to
             )}
           >
             {isAssistant ? (
-              <MessageContent className="px-0 md:px-2" markdown>
-                {message.content}
-              </MessageContent>
+              renderMessageParts(message)
             ) : (
               <MessageContent className="bg-primary w-full text-primary-foreground">
                 {message.content}
@@ -98,29 +109,38 @@ If you need a summary of the fiscal or administrative impact, or a comparison to
           </Message>
         );
       })}
+      {status === 'submitted' && (
+        <Message key="loading" className="justify-start max-w-none w-full py-2">
+          <div className="animate-pulse rounded-md flex">
+            <div className="flex items-center gap-2">
+              <Loader2 className="animate-spin h-4 w-4" />
+              Thinking...
+            </div>
+          </div>
+        </Message>
+      )}
       <div style={{ paddingBottom: '80px', width: '100%' }} />
     </ChatContainer>
   );
 }
 
-function Input() {
-  const isLoading = true;
-  const [input, setInput] = useState('');
-
-  const handleValueChange = (value: string) => {
-    setInput(value);
-  };
-
-  const handleSubmit = () => {
-    if (input.trim() === '') return;
-    console.log('Submitted:', input);
-    setInput('');
-  };
-
+function Input({
+  input,
+  setInput,
+  isLoading,
+  handleSubmit,
+  stop,
+}: {
+  input: UseChatHelpers['input'];
+  isLoading: boolean;
+  handleSubmit: UseChatHelpers['handleSubmit'];
+  setInput: UseChatHelpers['setInput'];
+  stop: UseChatHelpers['stop'];
+}) {
   return (
     <PromptInput
       value={input}
-      onValueChange={handleValueChange}
+      onValueChange={setInput}
       isLoading={isLoading}
       onSubmit={handleSubmit}
       className="w-full rounded-sm"
@@ -134,7 +154,7 @@ function Input() {
             variant="default"
             size="icon"
             className="h-6 w-6 rounded-sm"
-            onClick={handleSubmit}
+            onClick={isLoading ? stop : handleSubmit}
           >
             {isLoading ? (
               <Square className="size-4 fill-current" />
@@ -149,6 +169,33 @@ function Input() {
 }
 
 export default function Home() {
+  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
+  const {
+    messages,
+    input,
+    setInput,
+    stop,
+    handleSubmit,
+    reload,
+    status,
+    setMessages,
+  } = useChat({
+    api: `/api/chat`,
+    body: {
+      selectedChatModel: 'gpt-4.1',
+    },
+    headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
+    onError: error => {
+      toast.error(error.message, {
+        dismissible: false,
+        action: {
+          label: 'Retry',
+          onClick: () => reload(),
+        },
+      });
+    },
+  });
+
   return (
     <div className="flex w-full h-full" data-testid="global-drop">
       <div className="flex w-full h-full overflow-hidden @container/mainview">
@@ -156,16 +203,28 @@ export default function Home() {
           <div className="relative flex flex-col items-center h-full @container/main">
             <div className="w-full h-full overflow-y-auto overflow-x-hidden scrollbar-gutter-stable flex flex-col items-center px-5">
               <header className="w-full">
-                <div className="flex items-center justify-start w-full max-w-3xl mt-4">
-                  <Logo height={40} width={40} className="rounded-full" />
-                  <span className="text-2xl ml-2 font-bold gradient-america text-transparent bg-clip-text">
-                    DOGEai
-                  </span>
+                <div className="flex items-center justify-between w-full mt-4">
+                  <div className="flex">
+                    <Logo height={40} width={40} className="rounded-full" />
+                    <span className="text-2xl ml-2 font-bold gradient-america text-transparent bg-clip-text">
+                      DOGEai
+                    </span>
+                  </div>
+                  <Button
+                    disabled={messages.length === 0}
+                    onClick={() => {
+                      stop();
+                      setMessages([]);
+                    }}
+                    variant="outline"
+                  >
+                    <Trash />
+                  </Button>
                 </div>
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">
                 <div className="w-full max-w-3xl flex flex-col">
-                  <ChatWithCustomScroll />
+                  <ChatWithCustomScroll status={status} messages={messages} />
                 </div>
               </div>
             </div>
@@ -175,7 +234,15 @@ export default function Home() {
                 <div style={{ opacity: 1, transform: 'none' }} />
                 <div className="relative w-full sm:px-5 px-2 pb-2 sm:pb-4">
                   <div className="bottom-0 w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
-                    <Input />
+                    <Input
+                      input={input}
+                      isLoading={
+                        status === 'streaming' || status === 'submitted'
+                      }
+                      handleSubmit={handleSubmit}
+                      setInput={setInput}
+                      stop={stop}
+                    />
                   </div>
                   <div className="absolute bottom-0 w-[calc(100%-2rem)] h-full rounded-t-[40px] bg-background" />
                 </div>
