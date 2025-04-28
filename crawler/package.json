@@ -29,7 +29,7 @@
     "@langchain/core": "^0.3.37",
     "@langchain/textsplitters": "^0.1.0",
     "@mendable/firecrawl-js": "^1.17.0",
-    "ai": "^4.3.2",
+    "ai": "^4.3.10",
     "database": "workspace:*",
     "date-fns": "^4.1.0",
     "fast-content-type-parse": "^2.0.1",
