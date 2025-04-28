@@ -124,7 +124,7 @@ export default function Home() {
   } = useChat({
     api: `${API_URL}/api/userchat`,
     body: {
-      selectedChatModel: 'gpt-4.1-nano',
+      selectedChatModel: 'gpt-4.1',
     },
     headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
     onError: error => {
