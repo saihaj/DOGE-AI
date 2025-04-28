@@ -5,7 +5,7 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
-import { Square, ArrowUp } from 'lucide-react';
+import { Square, ArrowUp, Loader2 } from 'lucide-react';
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
@@ -18,8 +18,10 @@ import { toast } from 'sonner';
 
 function ChatWithCustomScroll({
   messages,
+  status,
 }: {
   messages: UseChatHelpers['messages'];
+  status: UseChatHelpers['status'];
 }) {
   return (
     <ChatContainer className="relative group flex flex-col justify-center w-full max-w-3xl md:px-4 pb-2 gap-2 items-end">
@@ -48,6 +50,16 @@ function ChatWithCustomScroll({
           </Message>
         );
       })}
+      {status === 'submitted' && (
+        <Message key="loading" className="justify-start max-w-none w-full py-2">
+          <div className="animate-pulse rounded-md flex">
+            <div className="flex items-center gap-2">
+              <Loader2 className="animate-spin h-4 w-4" />
+              Thinking...
+            </div>
+          </div>
+        </Message>
+      )}
       <div style={{ paddingBottom: '80px', width: '100%' }} />
     </ChatContainer>
   );
@@ -58,11 +70,13 @@ function Input({
   setInput,
   isLoading,
   handleSubmit,
+  stop,
 }: {
   input: UseChatHelpers['input'];
   isLoading: boolean;
   handleSubmit: UseChatHelpers['handleSubmit'];
   setInput: UseChatHelpers['setInput'];
+  stop: UseChatHelpers['stop'];
 }) {
   return (
     <PromptInput
@@ -81,7 +95,7 @@ function Input({
             variant="default"
             size="icon"
             className="h-6 w-6 rounded-sm"
-            onClick={handleSubmit}
+            onClick={isLoading ? stop : handleSubmit}
           >
             {isLoading ? (
               <Square className="size-4 fill-current" />
@@ -110,7 +124,7 @@ export default function Home() {
   } = useChat({
     api: `${API_URL}/api/userchat`,
     body: {
-      selectedChatModel: 'gpt-4.1',
+      selectedChatModel: 'gpt-4.1-nano',
     },
     headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
     onError: error => {
@@ -140,7 +154,7 @@ export default function Home() {
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">
                 <div className="w-full max-w-3xl flex flex-col">
-                  <ChatWithCustomScroll messages={messages} />
+                  <ChatWithCustomScroll status={status} messages={messages} />
                 </div>
               </div>
             </div>
@@ -157,6 +171,7 @@ export default function Home() {
                       }
                       handleSubmit={handleSubmit}
                       setInput={setInput}
+                      stop={stop}
                     />
                   </div>
                   <div className="absolute bottom-0 w-[calc(100%-2rem)] h-full rounded-t-[40px] bg-background" />
