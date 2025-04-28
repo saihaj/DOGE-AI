@@ -42,6 +42,8 @@ Current date: ${new Date().toUTCString()}.
     livecrawl: 'auto',
     numResults: 3,
     text: true,
+    // search for content 2024 and beyond
+    startPublishedDate: '2023-12-31T18:30:00.000Z',
   });
 
   log.info(
