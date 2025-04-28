@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/logo';
-import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
+import { CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { useCookie } from '@/components/hooks/use-cookie';
 import { toast } from 'sonner';
@@ -111,32 +111,23 @@ function Input({
 
 export default function Home() {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
-  const {
-    messages,
-    input,
-    setInput,
-    stop,
-    handleSubmit,
-    setMessages,
-    data,
-    reload,
-    status,
-  } = useChat({
-    api: `/api/chat`,
-    body: {
-      selectedChatModel: 'gpt-4.1',
-    },
-    headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
-    onError: error => {
-      toast.error(error.message, {
-        dismissible: false,
-        action: {
-          label: 'Retry',
-          onClick: () => reload(),
-        },
-      });
-    },
-  });
+  const { messages, input, setInput, stop, handleSubmit, reload, status } =
+    useChat({
+      api: `/api/chat`,
+      body: {
+        selectedChatModel: 'gpt-4.1',
+      },
+      headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
+      onError: error => {
+        toast.error(error.message, {
+          dismissible: false,
+          action: {
+            label: 'Retry',
+            onClick: () => reload(),
+          },
+        });
+      },
+    });
 
   return (
     <div className="flex w-full h-full" data-testid="global-drop">
