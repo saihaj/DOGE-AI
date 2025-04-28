@@ -5,7 +5,7 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
-import { Square, ArrowUp, Loader2 } from 'lucide-react';
+import { Square, ArrowUp, Loader2, Trash2, Trash } from 'lucide-react';
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
@@ -15,6 +15,67 @@ import { CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { useCookie } from '@/components/hooks/use-cookie';
 import { toast } from 'sonner';
+import { Markdown } from '@/components/ui/markdown';
+
+function renderMessageParts(message: UseChatHelpers['messages'][0]) {
+  if (!message.parts || message.parts.length === 0) {
+    return (
+      <MessageContent className="px-0 md:px-2" markdown>
+        {message.content}
+      </MessageContent>
+    );
+  }
+
+  return (
+    <>
+      {message.parts.map((part, index) => {
+        if (part.type === 'text') {
+          return (
+            <MessageContent key={index} className="px-0 md:px-2" markdown>
+              {message.content}
+            </MessageContent>
+          );
+        }
+
+        if (part.type === 'tool-invocation') {
+          const toolInvocation = part.toolInvocation;
+
+          // Handle different tool invocation states
+          switch (toolInvocation.state) {
+            case 'partial-call':
+              return (
+                <div key={index} className="animate-pulse rounded-md flex">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="animate-spin h-4 w-4" />
+                    Preparing {toolInvocation.toolName} tool
+                  </div>
+                </div>
+              );
+
+            case 'call':
+              return (
+                <div key={index} className="animate-pulse rounded-md flex">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="animate-spin h-4 w-4" />
+                    Processing with {toolInvocation.toolName} tool
+                  </div>
+                </div>
+              );
+
+            default:
+              return null;
+          }
+        }
+
+        if (part.type === 'reasoning') {
+          return null; // We handle reasoning separately
+        }
+
+        return null;
+      })}
+    </>
+  );
+}
 
 function ChatWithCustomScroll({
   messages,
@@ -39,9 +100,7 @@ function ChatWithCustomScroll({
             )}
           >
             {isAssistant ? (
-              <MessageContent className="px-0 md:px-2" markdown>
-                {message.content}
-              </MessageContent>
+              renderMessageParts(message)
             ) : (
               <MessageContent className="bg-primary w-full text-primary-foreground">
                 {message.content}
@@ -111,23 +170,31 @@ function Input({
 
 export default function Home() {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
-  const { messages, input, setInput, stop, handleSubmit, reload, status } =
-    useChat({
-      api: `/api/chat`,
-      body: {
-        selectedChatModel: 'gpt-4.1',
-      },
-      headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
-      onError: error => {
-        toast.error(error.message, {
-          dismissible: false,
-          action: {
-            label: 'Retry',
-            onClick: () => reload(),
-          },
-        });
-      },
-    });
+  const {
+    messages,
+    input,
+    setInput,
+    stop,
+    handleSubmit,
+    reload,
+    status,
+    setMessages,
+  } = useChat({
+    api: `/api/chat`,
+    body: {
+      selectedChatModel: 'gpt-4.1',
+    },
+    headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
+    onError: error => {
+      toast.error(error.message, {
+        dismissible: false,
+        action: {
+          label: 'Retry',
+          onClick: () => reload(),
+        },
+      });
+    },
+  });
 
   return (
     <div className="flex w-full h-full" data-testid="global-drop">
@@ -136,11 +203,23 @@ export default function Home() {
           <div className="relative flex flex-col items-center h-full @container/main">
             <div className="w-full h-full overflow-y-auto overflow-x-hidden scrollbar-gutter-stable flex flex-col items-center px-5">
               <header className="w-full">
-                <div className="flex items-center justify-start w-full max-w-3xl mt-4">
-                  <Logo height={40} width={40} className="rounded-full" />
-                  <span className="text-2xl ml-2 font-bold gradient-america text-transparent bg-clip-text">
-                    DOGEai
-                  </span>
+                <div className="flex items-center justify-between w-full mt-4">
+                  <div className="flex">
+                    <Logo height={40} width={40} className="rounded-full" />
+                    <span className="text-2xl ml-2 font-bold gradient-america text-transparent bg-clip-text">
+                      DOGEai
+                    </span>
+                  </div>
+                  <Button
+                    disabled={messages.length === 0}
+                    onClick={() => {
+                      stop();
+                      setMessages([]);
+                    }}
+                    variant="outline"
+                  >
+                    <Trash />
+                  </Button>
                 </div>
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">

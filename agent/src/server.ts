@@ -4,7 +4,6 @@ import { CoreMessage, smoothStream, StreamData, streamText, tool } from 'ai';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import {
-  CF_AUDIENCE,
   CF_TEAM_DOMAIN,
   DISCORD_TOKEN,
   IS_PROD,
@@ -102,7 +101,7 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
   try {
     const result = await jwtVerify(token, JWKS, {
       issuer: CF_TEAM_DOMAIN,
-      audience: CF_AUDIENCE,
+      // audience: CF_AUDIENCE, // TODO: need to find a better way for this
     });
     log.info({ result }, 'cf authorization token verified');
   } catch (error) {
