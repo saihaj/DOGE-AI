@@ -44,6 +44,7 @@ import { appRouter } from './router';
 import { getSearchResult } from './twitter/web';
 import { z } from 'zod';
 import { UserChatStreamInput } from './api/user-chat';
+import { PROMPTS } from './twitter/prompts';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -527,6 +528,16 @@ fastify.route<{ Body: UserChatStreamInput }>({
         });
         stream.appendMessageAnnotation({
           role: 'kb-entry-found',
+        });
+      }
+
+      const systemPrompt = messages.find(message => message.role === 'system');
+
+      if (!systemPrompt) {
+        const prompt = await PROMPTS.CHAT_INTERFACE_SYSTEM_PROMPT();
+        messages.unshift({
+          role: 'system',
+          content: `${prompt}.\nCurrent date: ${new Date().toUTCString()}`,
         });
       }
 

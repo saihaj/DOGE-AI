@@ -177,4 +177,7 @@ export const PROMPTS = {
   TWITTER_REPLY_TEMPLATE_KB: async () => {
     return getPromptContent('TWITTER_REPLY_TEMPLATE_KB');
   },
+  CHAT_INTERFACE_SYSTEM_PROMPT: async () => {
+    return getPromptContent('CHAT_INTERFACE_SYSTEM_PROMPT');
+  },
 };
