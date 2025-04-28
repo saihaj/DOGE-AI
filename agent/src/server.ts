@@ -67,7 +67,11 @@ fastify.route({
 fastify.register(cors, {
   allowedHeaders: ['Content-Type', 'Authorization', 'cf-authorization-token'],
   methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
-  origin: ['http://localhost:4321', 'https://manage.dogeai.info'],
+  origin: [
+    'http://localhost:4321',
+    'http://localhost:4322',
+    'https://manage.dogeai.info',
+  ],
 });
 
 const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
