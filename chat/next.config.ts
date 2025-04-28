@@ -11,8 +11,8 @@ const nextConfig: NextConfig = {
   redirects: async () => {
     return [
       {
-        source: '/api/:path*',
-        destination: `${API_URL}/api/:path*`,
+        source: '/api/chat',
+        destination: `${API_URL}/api/userchat`,
         permanent: false,
       },
     ];

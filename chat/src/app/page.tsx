@@ -122,7 +122,7 @@ export default function Home() {
     reload,
     status,
   } = useChat({
-    api: `${API_URL}/api/userchat`,
+    api: `/api/chat`,
     body: {
       selectedChatModel: 'gpt-4.1',
     },
