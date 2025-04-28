@@ -32,7 +32,6 @@
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.12",
     "@eslint/eslintrc": "^3.3.0",
-    "@flydotio/dockerfile": "^0.7.10",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22.10.2",
     "@types/react": "^19.1.2",
