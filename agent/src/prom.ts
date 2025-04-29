@@ -55,3 +55,9 @@ export const tweetProcessingTime = new promClient.Histogram({
   labelNames: ['method'],
   buckets: [60, 120, 300, 600, 900, 1800, 3600],
 });
+
+export const apiRequest = new promClient.Counter({
+  name: 'api_request',
+  help: 'Number of API requests',
+  labelNames: ['method', 'path'],
+});

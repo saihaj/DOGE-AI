@@ -28,7 +28,7 @@ import {
   getTweetContentAsText,
   mergeConsecutiveSameRole,
 } from './twitter/helpers';
-import { promClient, readiness } from './prom';
+import { apiRequest, promClient, readiness } from './prom';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { inngest } from './inngest';
 import { ingestTweets } from './twitter/ingest';
@@ -61,6 +61,12 @@ fastify.route({
       executeInteractionTweets,
     ],
   }),
+  onResponse(request, reply) {
+    apiRequest.inc({
+      method: request.method,
+      path: '/api/inngest',
+    });
+  },
   url: '/api/inngest',
 });
 
@@ -147,6 +153,10 @@ fastify.route<{ Body: ProcessTestEngageRequestInput }>({
     },
   },
   handler: async (request, reply) => {
+    apiRequest.inc({
+      method: request.method,
+      path: '/api/test/engage',
+    });
     try {
       const { tweetId, mainPrompt, refinePrompt } = request.body;
       const result = await processTestEngageRequest({
@@ -184,6 +194,10 @@ fastify.route<{ Body: ProcessTestReplyRequestInput }>({
     },
   },
   handler: async (request, reply) => {
+    apiRequest.inc({
+      method: request.method,
+      path: '/api/test/reply',
+    });
     try {
       const { tweetId, mainPrompt, refinePrompt } = request.body;
       const result = await processTestReplyRequest({
@@ -211,6 +225,10 @@ fastify.route<{ Body: ChatStreamInput }>({
     body: ChatStreamInput,
   },
   handler: async (request, reply) => {
+    apiRequest.inc({
+      method: request.method,
+      path: '/api/chat',
+    });
     const tweetExtractRegex = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
     const log = logger.child({ function: 'api-chat', requestId: request.id });
     // Create an AbortController for the backend
@@ -441,6 +459,10 @@ fastify.route<{ Body: UserChatStreamInput }>({
     body: UserChatStreamInput,
   },
   handler: async (request, reply) => {
+    apiRequest.inc({
+      method: request.method,
+      path: '/api/userchat',
+    });
     const tweetExtractRegex = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
     const log = logger.child({
       function: 'api-userchat',
