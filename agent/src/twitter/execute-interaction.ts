@@ -328,62 +328,67 @@ export const executeInteractionTweets = inngest.createFunction(
             return result.trim();
           })();
 
-          const { raw, metadata, formatted } = await getLongResponse(
-            {
-              summary,
-              text,
-            },
-            {
-              log,
-              method: 'execute-interaction-tweets',
-              action: event.data.action,
-            },
-          );
+          try {
+            const { raw, metadata, formatted } = await getLongResponse(
+              {
+                summary,
+                text,
+              },
+              {
+                log,
+                method: 'execute-interaction-tweets',
+                action: event.data.action,
+              },
+            );
 
-          log.info(
-            {
-              response: formatted,
-              metadata,
-            },
-            'generated response',
-          );
+            log.info(
+              {
+                response: formatted,
+                metadata,
+              },
+              'generated response',
+            );
 
-          // 90% of the time we return the long output, 10% of the time we return the short output
-          const returnLong = Math.random() > 0.1;
+            // 90% of the time we return the long output, 10% of the time we return the short output
+            const returnLong = Math.random() > 0.1;
 
-          if (returnLong) {
-            log.info({}, 'returning long');
+            if (returnLong) {
+              log.info({}, 'returning long');
+
+              return {
+                // Implicitly we are returning the long output so others can be ignored
+                longOutput: '',
+                refinedOutput: '',
+                metadata,
+                response: formatted,
+              };
+            }
+
+            const finalAnswer = await getShortResponse({ topic: raw });
+            log.info({ response: finalAnswer }, 'generated short');
+
+            // some times claude safety kicks in and we get a NO
+            if (finalAnswer.toLowerCase().startsWith('no')) {
+              log.warn({}, 'claude safety kicked in. returning long');
+              return {
+                // Implicitly we are returning the long output so others can be ignored
+                longOutput: '',
+                refinedOutput: '',
+                metadata,
+                response: formatted,
+              };
+            }
 
             return {
-              // Implicitly we are returning the long output so others can be ignored
-              longOutput: '',
-              refinedOutput: '',
+              longOutput: formatted,
+              refinedOutput: finalAnswer,
               metadata,
-              response: formatted,
+              response: finalAnswer,
             };
+          } catch (e) {
+            // @ts-expect-error for now
+            throw new NonRetriableError(e?.message || e);
           }
-
-          const finalAnswer = await getShortResponse({ topic: raw });
-          log.info({ response: finalAnswer }, 'generated short');
-
-          // some times claude safety kicks in and we get a NO
-          if (finalAnswer.toLowerCase().startsWith('no')) {
-            log.warn({}, 'claude safety kicked in. returning long');
-            return {
-              // Implicitly we are returning the long output so others can be ignored
-              longOutput: '',
-              refinedOutput: '',
-              metadata,
-              response: formatted,
-            };
-          }
-
-          return {
-            longOutput: formatted,
-            refinedOutput: finalAnswer,
-            metadata,
-            response: finalAnswer,
-          };
         });
 
         const repliedTweet = await step.run('send-tweet', async () => {
