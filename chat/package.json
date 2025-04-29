@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@cloudflare/next-on-pages": "^1.13.12",
-    "@eslint/eslintrc": "^3.3.0",
+    "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^22.10.2",
     "@types/react": "^19.1.2",
