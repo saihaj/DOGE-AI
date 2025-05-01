@@ -77,10 +77,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#09090B',
+  themeColor: '#fff',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
+  width: 'device-width',
 };
 
 export default function RootLayout({

@@ -202,9 +202,9 @@ export default function Home() {
         <main className="h-dvh flex-grow flex-shrink relative selection:bg-highlight w-0 @container isolate">
           <div className="relative flex flex-col items-center h-full @container/main">
             <div className="w-full h-full overflow-y-auto overflow-x-hidden scrollbar-gutter-stable flex flex-col items-center px-5">
-              <header className="w-full">
-                <div className="flex items-center justify-between w-full mt-4">
-                  <div className="flex">
+              <header className="w-full sticky top-0 z-50 bg-background mask-b-from-90% backdrop-blur-md pb-2">
+                <div className="flex items-center justify-between w-full mt-2">
+                  <div className="flex items-center">
                     <Logo height={40} width={40} className="rounded-full" />
                     <span className="text-2xl ml-2 font-bold gradient-america text-transparent bg-clip-text">
                       DOGEai
@@ -233,7 +233,7 @@ export default function Home() {
               <div className="relative z-40 flex flex-col items-center w-full">
                 <div style={{ opacity: 1, transform: 'none' }} />
                 <div className="relative w-full sm:px-5 px-2 pb-2 sm:pb-4">
-                  <div className="bottom-0 pb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
+                  <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
                     <Input
                       input={input}
                       isLoading={
