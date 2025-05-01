@@ -233,7 +233,7 @@ export default function Home() {
               <div className="relative z-40 flex flex-col items-center w-full">
                 <div style={{ opacity: 1, transform: 'none' }} />
                 <div className="relative w-full sm:px-5 px-2 pb-2 sm:pb-4">
-                  <div className="bottom-0 pb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
+                  <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
                     <Input
                       input={input}
                       isLoading={
