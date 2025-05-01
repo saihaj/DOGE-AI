@@ -5,7 +5,7 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
-import { Square, ArrowUp, Loader2, Trash2, Trash } from 'lucide-react';
+import { Square, ArrowUp, Loader2, Trash, User2Icon } from 'lucide-react';
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
@@ -15,7 +15,8 @@ import { CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { useCookie } from '@/components/hooks/use-cookie';
 import { toast } from 'sonner';
-import { Markdown } from '@/components/ui/markdown';
+import { usePrivy } from '@privy-io/react-auth';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -168,6 +169,25 @@ function Input({
   );
 }
 
+function LoginButton() {
+  const { login, ready, authenticated, user } = usePrivy();
+
+  if (ready && authenticated) {
+    return (
+      <Button variant="outline" size="sm">
+        Logout
+      </Button>
+    );
+  }
+
+  return (
+    <Button onClick={login}>
+      <User2Icon />
+      <span>Login</span>
+    </Button>
+  );
+}
+
 export default function Home() {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const {
@@ -210,16 +230,19 @@ export default function Home() {
                       DOGEai
                     </span>
                   </div>
-                  <Button
-                    disabled={messages.length === 0}
-                    onClick={() => {
-                      stop();
-                      setMessages([]);
-                    }}
-                    variant="outline"
-                  >
-                    <Trash />
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      disabled={messages.length === 0}
+                      onClick={() => {
+                        stop();
+                        setMessages([]);
+                      }}
+                      variant="outline"
+                    >
+                      <Trash />
+                    </Button>
+                    <LoginButton />
+                  </div>
                 </div>
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">
