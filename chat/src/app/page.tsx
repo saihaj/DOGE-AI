@@ -192,7 +192,9 @@ export default function Home() {
     setMessages,
   } = useChat({
     onResponse() {
-      navigator.vibrate(50);
+      setTimeout(() => {
+        navigator.vibrate(50);
+      }, 100);
     },
     onFinish() {
       navigator.vibrate(50);
