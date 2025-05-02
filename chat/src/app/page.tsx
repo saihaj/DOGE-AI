@@ -159,7 +159,7 @@ function Input({
           tooltip={isLoading ? 'Stop generation' : 'Send message'}
         >
           <Button
-            disabled={input.length === 0}
+            disabled={input.length === 0 && !isLoading}
             variant="default"
             size="icon"
             className="h-6 w-6 rounded-sm"
