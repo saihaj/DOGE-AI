@@ -159,6 +159,7 @@ function Input({
           tooltip={isLoading ? 'Stop generation' : 'Send message'}
         >
           <Button
+            disabled={input.length === 0}
             variant="default"
             size="icon"
             className="h-6 w-6 rounded-sm"
@@ -191,14 +192,6 @@ export default function Home() {
     status,
     setMessages,
   } = useChat({
-    onResponse() {
-      setTimeout(() => {
-        navigator.vibrate(50);
-      }, 100);
-    },
-    onFinish() {
-      navigator.vibrate(50);
-    },
     api: `/api/chat`,
     body: {
       selectedChatModel: 'gpt-4.1',
