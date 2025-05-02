@@ -162,7 +162,7 @@ function Input({
             size="icon"
             className="h-6 w-6 rounded-sm"
             onClick={() => {
-              navigator?.vibrate(50);
+              navigator.vibrate(100);
               isLoading ? stop() : handleSubmit();
             }}
           >
@@ -224,7 +224,7 @@ export default function Home() {
                     <Button
                       disabled={messages.length === 0}
                       onClick={() => {
-                        navigator?.vibrate(1);
+                        navigator.vibrate(20);
                         stop();
                         setMessages([]);
                       }}
