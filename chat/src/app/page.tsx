@@ -1,11 +1,19 @@
 'use client';
+import 'ios-vibrator-pro-max';
 import {
   PromptInput,
   PromptInputAction,
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
-import { Square, ArrowUp, Loader2, Trash2, Trash } from 'lucide-react';
+import {
+  Square,
+  ArrowUp,
+  Loader2,
+  Trash2,
+  Trash,
+  SquarePen,
+} from 'lucide-react';
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
@@ -151,10 +159,14 @@ function Input({
           tooltip={isLoading ? 'Stop generation' : 'Send message'}
         >
           <Button
+            disabled={input.length === 0 && !isLoading}
             variant="default"
             size="icon"
             className="h-6 w-6 rounded-sm"
-            onClick={isLoading ? stop : handleSubmit}
+            onClick={() => {
+              navigator.vibrate(50);
+              isLoading ? stop() : handleSubmit();
+            }}
           >
             {isLoading ? (
               <Square className="size-4 fill-current" />
@@ -210,16 +222,19 @@ export default function Home() {
                       DOGEai
                     </span>
                   </div>
-                  <Button
-                    disabled={messages.length === 0}
-                    onClick={() => {
-                      stop();
-                      setMessages([]);
-                    }}
-                    variant="outline"
-                  >
-                    <Trash />
-                  </Button>
+                  {messages.length > 0 && (
+                    <Button
+                      disabled={messages.length === 0}
+                      onClick={() => {
+                        navigator.vibrate(50);
+                        stop();
+                        setMessages([]);
+                      }}
+                      variant="outline"
+                    >
+                      <SquarePen />
+                    </Button>
+                  )}
                 </div>
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">
