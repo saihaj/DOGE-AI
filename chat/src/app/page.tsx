@@ -5,7 +5,14 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
-import { Square, ArrowUp, Loader2, Trash2, Trash } from 'lucide-react';
+import {
+  Square,
+  ArrowUp,
+  Loader2,
+  Trash2,
+  Trash,
+  SquarePen,
+} from 'lucide-react';
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
@@ -213,17 +220,19 @@ export default function Home() {
                       DOGEai
                     </span>
                   </div>
-                  <Button
-                    disabled={messages.length === 0}
-                    onClick={() => {
-                      navigator?.vibrate(1);
-                      stop();
-                      setMessages([]);
-                    }}
-                    variant="outline"
-                  >
-                    <Trash />
-                  </Button>
+                  {messages.length > 0 && (
+                    <Button
+                      disabled={messages.length === 0}
+                      onClick={() => {
+                        navigator?.vibrate(1);
+                        stop();
+                        setMessages([]);
+                      }}
+                      variant="outline"
+                    >
+                      <SquarePen />
+                    </Button>
+                  )}
                 </div>
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">
