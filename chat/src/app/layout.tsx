@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
+import { PwaInstallBanner } from '@/components/install-pwa';
+import { ClientOnly } from '@/components/client-only';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -96,6 +98,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        <ClientOnly>
+          <PwaInstallBanner />
+        </ClientOnly>
         <Toaster />
       </body>
     </html>
