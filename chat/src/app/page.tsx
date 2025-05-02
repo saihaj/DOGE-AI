@@ -110,7 +110,7 @@ function ChatWithCustomScroll({
             {isAssistant ? (
               renderMessageParts(message)
             ) : (
-              <MessageContent className="bg-primary w-full text-primary-foreground">
+              <MessageContent className="bg-primary w-full text-primary-foreground whitespace-normal">
                 {message.content}
               </MessageContent>
             )}
@@ -164,7 +164,9 @@ function Input({
             size="icon"
             className="h-6 w-6 rounded-sm"
             onClick={() => {
-              navigator.vibrate(50);
+              if ('vibrate' in navigator) {
+                navigator.vibrate(50);
+              }
               isLoading ? stop() : handleSubmit();
             }}
           >
@@ -226,7 +228,9 @@ export default function Home() {
                     <Button
                       disabled={messages.length === 0}
                       onClick={() => {
-                        navigator.vibrate(50);
+                        if ('vibrate' in navigator) {
+                          navigator.vibrate(50);
+                        }
                         stop();
                         setMessages([]);
                       }}
