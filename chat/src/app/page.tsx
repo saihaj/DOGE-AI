@@ -154,7 +154,10 @@ function Input({
             variant="default"
             size="icon"
             className="h-6 w-6 rounded-sm"
-            onClick={isLoading ? stop : handleSubmit}
+            onClick={() => {
+              navigator?.vibrate(50);
+              isLoading ? stop() : handleSubmit();
+            }}
           >
             {isLoading ? (
               <Square className="size-4 fill-current" />
@@ -213,6 +216,7 @@ export default function Home() {
                   <Button
                     disabled={messages.length === 0}
                     onClick={() => {
+                      navigator?.vibrate(1);
                       stop();
                       setMessages([]);
                     }}
