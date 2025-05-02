@@ -6,17 +6,50 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
-import { Square, ArrowUp, Loader2, User2Icon, SquarePen } from 'lucide-react';
+import {
+  Square,
+  ArrowUp,
+  Loader2,
+  User2Icon,
+  SquarePen,
+  UserIcon,
+  LogOut,
+} from 'lucide-react';
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
-import { cn } from '@/lib/utils';
+import { cn, shortenAddress } from '@/lib/utils';
 import { Logo } from '@/components/logo';
 import { CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { useCookie } from '@/components/hooks/use-cookie';
 import { toast } from 'sonner';
 import { usePrivy } from '@privy-io/react-auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useState } from 'react';
+import { useMediaQuery } from '@uidotdev/usehooks';
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+} from '@/components/ui/drawer';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { ClientOnly } from '@/components/client-only';
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -174,13 +207,107 @@ function Input({
 }
 
 function LoginButton() {
-  const { login, ready, authenticated, user } = usePrivy();
+  const { login, ready, authenticated, user, logout, setWalletRecovery } =
+    usePrivy();
+  const [showProfile, setShowProfile] = useState(false);
+  const isMobile = useMediaQuery('only screen and (max-width : 768px)');
 
-  if (ready && authenticated) {
+  if (ready && authenticated && user) {
     return (
-      <Button variant="outline" size="sm">
-        Logout
-      </Button>
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="rounded-full h-10 w-10 text-black"
+            >
+              <Avatar>
+                <AvatarImage
+                  src={user?.twitter?.profilePictureUrl || ''}
+                  alt={`${user?.twitter?.name || ''} profile picture`}
+                />
+                <AvatarFallback>{user.twitter?.name?.charAt(0)}</AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>{user.twitter?.name}</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => setShowProfile(true)}>
+                <UserIcon className="text-black" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={logout}>
+                <LogOut className="text-black" />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {isMobile ? (
+          <Drawer open={showProfile} onOpenChange={setShowProfile}>
+            <DrawerContent>
+              <DrawerHeader>
+                <DrawerTitle>
+                  <div className="flex">
+                    <UserIcon />
+                    Profile
+                  </div>
+                </DrawerTitle>
+              </DrawerHeader>
+              <div className="p-4 pb-6">help</div>
+            </DrawerContent>
+          </Drawer>
+        ) : (
+          <Dialog open={showProfile} onOpenChange={setShowProfile}>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>
+                  <div className="flex items-center gap-2">
+                    <UserIcon />
+                    Profile
+                  </div>
+                </DialogTitle>
+              </DialogHeader>
+              <div>
+                Name: {user.twitter?.name}
+                <br />
+                Twitter: {user.twitter?.username}
+                <br />
+              </div>
+              <div>
+                <h2>Wallets</h2>
+                <ul>
+                  {user.linkedAccounts
+                    .filter(account => account.type === 'wallet')
+                    .map(account => (
+                      <li key={account.id}>
+                        {shortenAddress(account.address)}
+                      </li>
+                    ))}
+                </ul>
+              </div>
+              <div>
+                <h2>
+                  Embedded Wallet {shortenAddress(user.wallet?.address || '')}
+                </h2>
+                <p>
+                  A user's embedded wallet is theirs to keep, and even take with
+                  them.
+                </p>
+                <Button
+                  className="cursor-pointer"
+                  onClick={setWalletRecovery}
+                  variant="secondary"
+                >
+                  Setup Recovery Password
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        )}
+      </>
     );
   }
 
@@ -234,19 +361,24 @@ export default function Home() {
                       DOGEai
                     </span>
                   </div>
-                  {messages.length > 0 && (
-                    <Button
-                      disabled={messages.length === 0}
-                      onClick={() => {
-                        navigator.vibrate(50);
-                        stop();
-                        setMessages([]);
-                      }}
-                      variant="outline"
-                    >
-                      <SquarePen />
-                    </Button>
-                  )}
+                  <div className="flex">
+                    <ClientOnly>
+                      <LoginButton />
+                    </ClientOnly>
+                    {messages.length > 0 && (
+                      <Button
+                        disabled={messages.length === 0}
+                        onClick={() => {
+                          navigator.vibrate(50);
+                          stop();
+                          setMessages([]);
+                        }}
+                        variant="outline"
+                      >
+                        <SquarePen />
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">
