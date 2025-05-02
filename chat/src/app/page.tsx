@@ -163,7 +163,7 @@ function Input({
             size="icon"
             className="h-6 w-6 rounded-sm"
             onClick={() => {
-              navigator.vibrate(100);
+              navigator.vibrate(50);
               isLoading ? stop() : handleSubmit();
             }}
           >
@@ -191,6 +191,12 @@ export default function Home() {
     status,
     setMessages,
   } = useChat({
+    onResponse() {
+      navigator.vibrate(50);
+    },
+    onFinish() {
+      navigator.vibrate(50);
+    },
     api: `/api/chat`,
     body: {
       selectedChatModel: 'gpt-4.1',
@@ -225,7 +231,7 @@ export default function Home() {
                     <Button
                       disabled={messages.length === 0}
                       onClick={() => {
-                        navigator.vibrate(20);
+                        navigator.vibrate(50);
                         stop();
                         setMessages([]);
                       }}
