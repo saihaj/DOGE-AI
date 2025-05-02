@@ -1,4 +1,5 @@
 'use client';
+import 'ios-vibrator-pro-max';
 import {
   PromptInput,
   PromptInputAction,
