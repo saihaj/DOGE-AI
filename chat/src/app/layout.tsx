@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
 import { Providers } from '@/components/providers';
+import { PwaInstallBanner } from '@/components/install-pwa';
+import { ClientOnly } from '@/components/client-only';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -78,10 +80,12 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: '#09090B',
+  themeColor: '#fff',
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover',
+  width: 'device-width',
 };
 
 export default function RootLayout({
@@ -96,6 +100,9 @@ export default function RootLayout({
       >
         <Providers>
           {children}
+          <ClientOnly>
+            <PwaInstallBanner />
+          </ClientOnly>
           <Toaster />
         </Providers>
       </body>

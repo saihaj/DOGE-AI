@@ -1,11 +1,12 @@
 'use client';
+import 'ios-vibrator-pro-max';
 import {
   PromptInput,
   PromptInputAction,
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
-import { Square, ArrowUp, Loader2, Trash, User2Icon } from 'lucide-react';
+import { Square, ArrowUp, Loader2, User2Icon, SquarePen } from 'lucide-react';
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
@@ -16,7 +17,6 @@ import { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { useCookie } from '@/components/hooks/use-cookie';
 import { toast } from 'sonner';
 import { usePrivy } from '@privy-io/react-auth';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -152,10 +152,14 @@ function Input({
           tooltip={isLoading ? 'Stop generation' : 'Send message'}
         >
           <Button
+            disabled={input.length === 0 && !isLoading}
             variant="default"
             size="icon"
             className="h-6 w-6 rounded-sm"
-            onClick={isLoading ? stop : handleSubmit}
+            onClick={() => {
+              navigator.vibrate(50);
+              isLoading ? stop() : handleSubmit();
+            }}
           >
             {isLoading ? (
               <Square className="size-4 fill-current" />
@@ -222,27 +226,27 @@ export default function Home() {
         <main className="h-dvh flex-grow flex-shrink relative selection:bg-highlight w-0 @container isolate">
           <div className="relative flex flex-col items-center h-full @container/main">
             <div className="w-full h-full overflow-y-auto overflow-x-hidden scrollbar-gutter-stable flex flex-col items-center px-5">
-              <header className="w-full">
-                <div className="flex items-center justify-between w-full mt-4">
-                  <div className="flex">
+              <header className="w-full sticky top-0 z-50 bg-background mask-b-from-90% backdrop-blur-md pb-2">
+                <div className="flex items-center justify-between w-full mt-2">
+                  <div className="flex items-center">
                     <Logo height={40} width={40} className="rounded-full" />
                     <span className="text-2xl ml-2 font-bold gradient-america text-transparent bg-clip-text">
                       DOGEai
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
+                  {messages.length > 0 && (
                     <Button
                       disabled={messages.length === 0}
                       onClick={() => {
+                        navigator.vibrate(50);
                         stop();
                         setMessages([]);
                       }}
                       variant="outline"
                     >
-                      <Trash />
+                      <SquarePen />
                     </Button>
-                    <LoginButton />
-                  </div>
+                  )}
                 </div>
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">
@@ -256,7 +260,7 @@ export default function Home() {
               <div className="relative z-40 flex flex-col items-center w-full">
                 <div style={{ opacity: 1, transform: 'none' }} />
                 <div className="relative w-full sm:px-5 px-2 pb-2 sm:pb-4">
-                  <div className="bottom-0 pb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
+                  <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
                     <Input
                       input={input}
                       isLoading={
