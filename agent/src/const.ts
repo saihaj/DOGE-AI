@@ -164,3 +164,4 @@ export const PRIVY_APP_ID = (() => {
   }
   return process.env.PRIVY_APP_ID;
 })();
+export const TWEET_EXTRACT_REGEX = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
