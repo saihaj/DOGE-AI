@@ -1,17 +1,14 @@
 'use client';
 import type React from 'react';
-import { useState } from 'react';
-import { PlusIcon, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronRight, PlusIcon, User } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -20,30 +17,30 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { cn, shortenAddress } from '@/lib/utils';
-import { useLogin, usePrivy, useUser } from '@privy-io/react-auth';
-import { CopyButton } from '@/components/copy-button';
-import { useMediaQuery } from '@uidotdev/usehooks';
+import { usePrivy } from '@privy-io/react-auth';
 import {
   Drawer,
   DrawerContent,
   DrawerHeader,
   DrawerTitle,
+  DrawerTrigger,
 } from '@/components/ui/drawer';
+import { Button } from '@/components/ui/button';
+import { CopyButton } from '@/components/copy-button';
 
 type SettingsTab = 'account';
-interface SettingsSidebarProps {
-  activeTab: SettingsTab;
-  onTabChange: (tab: SettingsTab) => void;
-}
 
-interface SidebarItemProps {
+function SidebarItem({
+  icon,
+  label,
+  active,
+  onClick,
+}: {
   icon: React.ReactNode;
   label: string;
   active: boolean;
   onClick: () => void;
-}
-
-function SidebarItem({ icon, label, active, onClick }: SidebarItemProps) {
+}) {
   return (
     <button
       onClick={onClick}
@@ -68,7 +65,13 @@ const sidebarOptions = [
   },
 ];
 
-function SettingsSidebar({ activeTab, onTabChange }: SettingsSidebarProps) {
+function SettingsSidebar({
+  activeTab,
+  onTabChange,
+}: {
+  activeTab: SettingsTab;
+  onTabChange: (tab: SettingsTab) => void;
+}) {
   return (
     <div className="w-full sm:w-64 border-r shrink-0 bg-muted/10">
       <div className="py-2">
@@ -88,18 +91,11 @@ function SettingsSidebar({ activeTab, onTabChange }: SettingsSidebarProps) {
   );
 }
 
-export function AccountSettings() {
-  const {
-    login,
-    ready,
-    linkWallet,
-    authenticated,
-    user,
-    logout,
-    setWalletRecovery,
-  } = usePrivy();
+function AccountSettings() {
+  const { login, ready, linkWallet, authenticated, user, setWalletRecovery } =
+    usePrivy();
 
-  if (!user) {
+  if (!user || !ready || !authenticated) {
     return (
       <div className="flex items-center justify-center h-full">
         <Button onClick={login}>Login</Button>
@@ -109,7 +105,7 @@ export function AccountSettings() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+      <div className="flex flex-row items-center gap-4">
         <Avatar className="h-16 w-16">
           <AvatarImage
             src={user?.twitter?.profilePictureUrl || ''}
@@ -190,6 +186,108 @@ export function AccountSettings() {
   );
 }
 
+function SettingsMenuItem({
+  icon,
+  label,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      className="flex w-full items-center justify-between rounded-lg p-3 text-left transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+      onClick={onClick}
+    >
+      <div className="flex items-center gap-3">
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50">
+          {icon}
+        </div>
+        <span className="text-base font-medium">{label}</span>
+      </div>
+      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+    </button>
+  );
+}
+
+export function SettingsDrawer({
+  onOpenChange,
+  open,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const [active, setActive] = useState<SettingsTab | 'main'>('main');
+
+  // Reset to main section when drawer closes
+  useEffect(() => {
+    if (!open) {
+      setActive('main');
+    }
+  }, [open]);
+
+  const navigateTo = (newSection: typeof active) => {
+    setActive(newSection);
+  };
+
+  const navigateBack = () => setActive('main');
+
+  return (
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerTrigger asChild>
+        <Button variant="outline">Settings</Button>
+      </DrawerTrigger>
+      <DrawerContent className="rounded-t-xl">
+        <div className="w-full mx-auto max-w-lg">
+          <DrawerHeader className="border-b">
+            <DrawerTitle className="text-lg font-semibold">
+              <div className="flex items-center justify-between">
+                {active !== 'main' ? (
+                  <Button
+                    variant="ghost"
+                    onClick={navigateBack}
+                    className="-ml-4 -my-2"
+                    aria-label="Back to main menu"
+                  >
+                    <ChevronRight className="h-4 w-4 rotate-180" />
+                  </Button>
+                ) : (
+                  <div className="w-4" />
+                )}
+                {active === 'main' ? 'Settings' : 'Account'}
+                <div className="w-4" />
+              </div>
+            </DrawerTitle>
+          </DrawerHeader>
+
+          <div
+            className="overflow-y-auto "
+            style={{ height: 'calc(85vh - 120px)' }}
+          >
+            <div className="pb-8 pt-2 px-3">
+              {active === 'main' ? (
+                <div className="space-y-4">
+                  {sidebarOptions.map(option => (
+                    <SettingsMenuItem
+                      key={option.id}
+                      icon={option.icon}
+                      label={option.label}
+                      onClick={() => navigateTo(option.id)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <AccountSettings />
+              )}
+            </div>
+          </div>
+        </div>
+      </DrawerContent>
+    </Drawer>
+  );
+}
+
 export function SettingsDialog({
   open,
   onOpenChange,
@@ -198,37 +296,6 @@ export function SettingsDialog({
   onOpenChange: (open: boolean) => void;
 }) {
   const [activeTab, setActiveTab] = useState<SettingsTab>('account');
-  const isMobile = useMediaQuery('only screen and (max-width : 768px)');
-
-  if (isMobile) {
-    return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent>
-          <DrawerHeader>
-            <div className="flex items-center justify-between">
-              <DrawerTitle className="text-xl font-semibold">
-                Settings
-              </DrawerTitle>
-            </div>
-          </DrawerHeader>
-          <div className="flex flex-col h-full overflow-hidden">
-            {sidebarOptions.map(item => (
-              <SidebarItem
-                key={item.id}
-                icon={item.icon}
-                label={item.label}
-                active={activeTab === item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  onOpenChange(false);
-                }}
-              />
-            ))}
-          </div>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

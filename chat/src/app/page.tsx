@@ -50,7 +50,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ClientOnly } from '@/components/client-only';
-import { AccountSettings, SettingsDialog } from './profile';
+import { AccountSettings, SettingsDialog, SettingsDrawer } from './profile';
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -248,7 +248,11 @@ function LoginButton() {
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-        <SettingsDialog open={showProfile} onOpenChange={setShowProfile} />
+        {isMobile ? (
+          <SettingsDrawer open={showProfile} onOpenChange={setShowProfile} />
+        ) : (
+          <SettingsDialog open={showProfile} onOpenChange={setShowProfile} />
+        )}
       </>
     );
   }
