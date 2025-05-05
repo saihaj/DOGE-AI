@@ -265,8 +265,8 @@ importers:
         specifier: ^1.3.21
         version: 1.3.21(zod@3.24.4)
       '@langchain/community':
-        specifier: ^0.3.28
-        version: 0.3.28(@browserbasehq/sdk@2.5.0(encoding@0.1.13))(@browserbasehq/stagehand@1.11.0(@playwright/test@1.50.1)(deepmerge@4.3.1)(dotenv@16.5.0)(encoding@0.1.13)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))(zod@3.24.4))(@ibm-cloud/watsonx-ai@1.4.0(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))))(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4)))(@libsql/client@0.14.0)(@mendable/firecrawl-js@1.17.0(ws@8.18.0))(axios@1.7.9)(better-sqlite3@11.6.0)(discord.js@14.17.3)(encoding@0.1.13)(handlebars@4.7.8)(ibm-cloud-sdk-core@5.1.2)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))(pdf-parse@1.1.1)(playwright@1.50.1)(ws@8.18.0)
+        specifier: ^0.3.42
+        version: 0.3.42(@browserbasehq/sdk@2.5.0(encoding@0.1.13))(@browserbasehq/stagehand@1.11.0(@playwright/test@1.50.1)(deepmerge@4.3.1)(dotenv@16.5.0)(encoding@0.1.13)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))(zod@3.24.4))(@ibm-cloud/watsonx-ai@1.4.0(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))))(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4)))(@libsql/client@0.14.0)(@mendable/firecrawl-js@1.17.0(ws@8.18.0))(axios@1.7.9)(better-sqlite3@11.6.0)(discord.js@14.17.3)(encoding@0.1.13)(handlebars@4.7.8)(ibm-cloud-sdk-core@5.1.2)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))(pdf-parse@1.1.1)(playwright@1.50.1)(ws@8.18.0)
       '@langchain/core':
         specifier: ^0.3.37
         version: 0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))
@@ -1621,21 +1621,22 @@ packages:
   '@jridgewell/trace-mapping@0.3.9':
     resolution: {integrity: sha512-3Belt6tdc8bPgAtbcmdtNJlirVoTmEb5e2gC94PnkwEW9jI6CAHUeoG85tjWP5WquqfavoMtMwiG4P926ZKKuQ==}
 
-  '@langchain/community@0.3.28':
-    resolution: {integrity: sha512-lr3rBe5qE1HGlfUieMayNNT8VGiH4yl4WdQnrf+i0IikDooJOvjTIFqsYqGvdLfpuNKN0JN05jwgvUwOGKTv7A==}
+  '@langchain/community@0.3.42':
+    resolution: {integrity: sha512-dTRoAy4XPalCB4Of5N4uQ8/KSGCddv48OGek8CULtdbBSkQ9s7iWtcb8hQEajkCwMfILVVzw1pU8IzE17oNHPA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@arcjet/redact': ^v1.0.0-alpha.23
       '@aws-crypto/sha256-js': ^5.0.0
-      '@aws-sdk/client-bedrock-agent-runtime': ^3.583.0
-      '@aws-sdk/client-bedrock-runtime': ^3.422.0
-      '@aws-sdk/client-dynamodb': ^3.310.0
-      '@aws-sdk/client-kendra': ^3.352.0
-      '@aws-sdk/client-lambda': ^3.310.0
-      '@aws-sdk/client-s3': ^3.310.0
-      '@aws-sdk/client-sagemaker-runtime': ^3.310.0
-      '@aws-sdk/client-sfn': ^3.310.0
+      '@aws-sdk/client-bedrock-agent-runtime': ^3.749.0
+      '@aws-sdk/client-bedrock-runtime': ^3.749.0
+      '@aws-sdk/client-dynamodb': ^3.749.0
+      '@aws-sdk/client-kendra': ^3.749.0
+      '@aws-sdk/client-lambda': ^3.749.0
+      '@aws-sdk/client-s3': ^3.749.0
+      '@aws-sdk/client-sagemaker-runtime': ^3.749.0
+      '@aws-sdk/client-sfn': ^3.749.0
       '@aws-sdk/credential-provider-node': ^3.388.0
+      '@aws-sdk/dsql-signer': '*'
       '@azure/search-documents': ^12.0.0
       '@azure/storage-blob': ^12.15.0
       '@browserbasehq/sdk': '*'
@@ -1690,6 +1691,7 @@ packages:
       '@zilliz/milvus2-sdk-node': '>=2.3.5'
       apify-client: ^2.7.1
       assemblyai: ^4.6.0
+      azion: ^1.11.1
       better-sqlite3: '>=9.4.0 <12.0.0'
       cassandra-driver: ^4.7.2
       cborg: ^4.1.1
@@ -1706,7 +1708,6 @@ packages:
       dria: ^0.0.3
       duck-duck-scrape: ^2.2.5
       epub2: ^3.0.1
-      faiss-node: ^0.5.1
       fast-xml-parser: '*'
       firebase-admin: ^11.9.0 || ^12.0.0
       google-auth-library: '*'
@@ -1724,6 +1725,8 @@ packages:
       lodash: ^4.17.21
       lunary: ^0.7.10
       mammoth: ^1.6.0
+      mariadb: ^3.4.0
+      mem0ai: ^2.1.8
       mongodb: '>=5.2.0'
       mysql2: ^3.9.8
       neo4j-driver: '*'
@@ -1739,7 +1742,7 @@ packages:
       puppeteer: '*'
       pyodide: '>=0.24.1 <0.27.0'
       redis: '*'
-      replicate: ^0.29.4
+      replicate: '*'
       sonix-speech-recognition: ^2.1.1
       srt-parser-2: ^1.2.3
       typeorm: ^0.3.20
@@ -1773,6 +1776,8 @@ packages:
       '@aws-sdk/client-sfn':
         optional: true
       '@aws-sdk/credential-provider-node':
+        optional: true
+      '@aws-sdk/dsql-signer':
         optional: true
       '@azure/search-documents':
         optional: true
@@ -1876,6 +1881,8 @@ packages:
         optional: true
       assemblyai:
         optional: true
+      azion:
+        optional: true
       better-sqlite3:
         optional: true
       cassandra-driver:
@@ -1908,8 +1915,6 @@ packages:
         optional: true
       epub2:
         optional: true
-      faiss-node:
-        optional: true
       fast-xml-parser:
         optional: true
       firebase-admin:
@@ -1941,6 +1946,10 @@ packages:
       lunary:
         optional: true
       mammoth:
+        optional: true
+      mariadb:
+        optional: true
+      mem0ai:
         optional: true
       mongodb:
         optional: true
@@ -7985,7 +7994,7 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
 
-  '@langchain/community@0.3.28(@browserbasehq/sdk@2.5.0(encoding@0.1.13))(@browserbasehq/stagehand@1.11.0(@playwright/test@1.50.1)(deepmerge@4.3.1)(dotenv@16.5.0)(encoding@0.1.13)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))(zod@3.24.4))(@ibm-cloud/watsonx-ai@1.4.0(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))))(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4)))(@libsql/client@0.14.0)(@mendable/firecrawl-js@1.17.0(ws@8.18.0))(axios@1.7.9)(better-sqlite3@11.6.0)(discord.js@14.17.3)(encoding@0.1.13)(handlebars@4.7.8)(ibm-cloud-sdk-core@5.1.2)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))(pdf-parse@1.1.1)(playwright@1.50.1)(ws@8.18.0)':
+  '@langchain/community@0.3.42(@browserbasehq/sdk@2.5.0(encoding@0.1.13))(@browserbasehq/stagehand@1.11.0(@playwright/test@1.50.1)(deepmerge@4.3.1)(dotenv@16.5.0)(encoding@0.1.13)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))(zod@3.24.4))(@ibm-cloud/watsonx-ai@1.4.0(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))))(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4)))(@libsql/client@0.14.0)(@mendable/firecrawl-js@1.17.0(ws@8.18.0))(axios@1.7.9)(better-sqlite3@11.6.0)(discord.js@14.17.3)(encoding@0.1.13)(handlebars@4.7.8)(ibm-cloud-sdk-core@5.1.2)(ignore@5.3.2)(jsonwebtoken@9.0.2)(lodash@4.17.21)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))(pdf-parse@1.1.1)(playwright@1.50.1)(ws@8.18.0)':
     dependencies:
       '@browserbasehq/stagehand': 1.11.0(@playwright/test@1.50.1)(deepmerge@4.3.1)(dotenv@16.5.0)(encoding@0.1.13)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))(zod@3.24.4)
       '@ibm-cloud/watsonx-ai': 1.4.0(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4)))
@@ -7997,11 +8006,11 @@ snapshots:
       ibm-cloud-sdk-core: 5.1.2
       js-yaml: 4.1.0
       langchain: 0.3.24(@langchain/core@0.3.37(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4)))(axios@1.7.9)(encoding@0.1.13)(handlebars@4.7.8)(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))(ws@8.18.0)
-      langsmith: 0.3.4(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))
+      langsmith: 0.3.22(openai@4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4))
       openai: 4.80.1(encoding@0.1.13)(ws@8.18.0)(zod@3.24.4)
       uuid: 10.0.0
       zod: 3.24.4
-      zod-to-json-schema: 3.24.1(zod@3.24.4)
+      zod-to-json-schema: 3.24.5(zod@3.24.4)
     optionalDependencies:
       '@browserbasehq/sdk': 2.5.0(encoding@0.1.13)
       '@libsql/client': 0.14.0
@@ -10964,7 +10973,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.0))
+      retry-axios: 2.6.0(axios@1.7.9)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -12801,7 +12810,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9(debug@4.4.0)):
+  retry-axios@2.6.0(axios@1.7.9):
     dependencies:
       axios: 1.7.9(debug@4.4.0)
 
