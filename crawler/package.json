@@ -19,7 +19,7 @@
   "devDependencies": {
     "@types/he": "^1.2.3",
     "@types/node": "^22.10.2",
-    "@types/sanitize-html": "^2.13.0",
+    "@types/sanitize-html": "^2.15.0",
     "esbuild": "^0.25.3",
     "inngest-cli": "1.5.10"
   },
