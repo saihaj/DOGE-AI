@@ -302,10 +302,7 @@ export default function Home() {
                       DOGEai
                     </span>
                   </div>
-                  <div className="flex">
-                    <ClientOnly>
-                      <LoginButton />
-                    </ClientOnly>
+                  <div className="flex gap-2 items-center">
                     {messages.length > 0 && (
                       <Button
                         disabled={messages.length === 0}
@@ -321,6 +318,9 @@ export default function Home() {
                         <SquarePen />
                       </Button>
                     )}
+                    <ClientOnly>
+                      <LoginButton />
+                    </ClientOnly>
                   </div>
                 </div>
               </header>
