@@ -22,7 +22,6 @@ import { cn, shortenAddress } from '@/lib/utils';
 import { Logo } from '@/components/logo';
 import { PRIVY_COOKIE_NAME } from '@/lib/const';
 import { useChat, UseChatHelpers } from '@ai-sdk/react';
-import { useCookie } from '@/components/hooks/use-cookie';
 import { toast } from 'sonner';
 import { usePrivy } from '@privy-io/react-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -36,7 +35,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
-import { useMediaQuery } from '@uidotdev/usehooks';
+import { useLocalStorage, useMediaQuery } from '@uidotdev/usehooks';
 import { ClientOnly } from '@/components/client-only';
 import { SettingsDialog, SettingsDrawer } from './profile';
 
@@ -258,7 +257,7 @@ function LoginButton() {
 }
 
 export default function Home() {
-  const privyTokenCookie = useCookie(PRIVY_COOKIE_NAME);
+  const [privyToken] = useLocalStorage('privy:token', '');
   const { login, authenticated } = usePrivy();
   const {
     messages,
@@ -275,7 +274,7 @@ export default function Home() {
       selectedChatModel: 'gpt-4.1',
     },
     headers: {
-      [PRIVY_COOKIE_NAME]: privyTokenCookie,
+      [PRIVY_COOKIE_NAME]: privyToken,
     },
     onError: error => {
       toast.error(error.message, {
