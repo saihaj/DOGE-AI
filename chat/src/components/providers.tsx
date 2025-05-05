@@ -12,7 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           showWalletLoginFirst: false,
           walletChainType: 'solana-only',
         },
-        loginMethods: ['wallet', 'twitter'],
+        loginMethods: ['wallet'],
         // @ts-ignore i don't want to deal with the types here right now.
         externalWallets: { solana: { connectors: toSolanaWalletConnectors() } },
       }}
