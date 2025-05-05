@@ -24,7 +24,7 @@ import { PRIVY_COOKIE_NAME } from '@/lib/const';
 import { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { useCookie } from '@/components/hooks/use-cookie';
 import { toast } from 'sonner';
-import { useLogin, usePrivy } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
