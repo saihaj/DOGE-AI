@@ -92,8 +92,15 @@ function SettingsSidebar({
 }
 
 function AccountSettings() {
-  const { login, ready, linkWallet, authenticated, user, setWalletRecovery } =
-    usePrivy();
+  const {
+    login,
+    ready,
+    linkWallet,
+    authenticated,
+    user,
+    setWalletRecovery,
+    linkTwitter,
+  } = usePrivy();
 
   if (!user || !ready || !authenticated) {
     return (
@@ -115,13 +122,24 @@ function AccountSettings() {
         </Avatar>
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium">{user.twitter?.name}</h3>
+            <h3 className="font-medium">
+              {user.twitter?.name || shortenAddress(user.wallet?.address || '')}
+            </h3>
           </div>
-          <p className="text-sm text-muted-foreground">
-            @{user.twitter?.username}
-          </p>
+          {user.twitter?.username && (
+            <p className="text-sm text-muted-foreground">
+              @{user.twitter?.username}
+            </p>
+          )}
+          {!user.twitter && (
+            <Button variant="outline" onClick={linkTwitter}>
+              <PlusIcon className="text-black h-4 w-4" />
+              Link Twitter
+            </Button>
+          )}
         </div>
       </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Wallets</CardTitle>
@@ -163,6 +181,7 @@ function AccountSettings() {
           <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
             {user.linkedAccounts
               .filter(a => a.type === 'wallet')
+              .filter(a => a.connectorType === 'embedded')
               .map(account => (
                 <div
                   key={account.address}

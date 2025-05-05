@@ -18,17 +18,13 @@ import {
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
-import { cn } from '@/lib/utils';
+import { cn, shortenAddress } from '@/lib/utils';
 import { Logo } from '@/components/logo';
-import {
-  CF_BACKEND_HEADER_NAME,
-  CF_COOKIE_NAME,
-  PRIVY_COOKIE_NAME,
-} from '@/lib/const';
+import { PRIVY_COOKIE_NAME } from '@/lib/const';
 import { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { useCookie } from '@/components/hooks/use-cookie';
 import { toast } from 'sonner';
-import { usePrivy } from '@privy-io/react-auth';
+import { useLogin, usePrivy } from '@privy-io/react-auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -221,12 +217,16 @@ function LoginButton() {
                   src={user?.twitter?.profilePictureUrl || ''}
                   alt={`${user?.twitter?.name || ''} profile picture`}
                 />
-                <AvatarFallback>{user.twitter?.name?.charAt(0)}</AvatarFallback>
+                <AvatarFallback>
+                  {user.twitter?.name?.charAt(0) || 'U'}
+                </AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
-            <DropdownMenuLabel>{user.twitter?.name}</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              {user.twitter?.name || shortenAddress(user.wallet?.address || '')}
+            </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem onClick={() => setShowProfile(true)}>
@@ -258,8 +258,8 @@ function LoginButton() {
 }
 
 export default function Home() {
-  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
   const privyTokenCookie = useCookie(PRIVY_COOKIE_NAME);
+  const { login, authenticated } = usePrivy();
   const {
     messages,
     input,
@@ -341,7 +341,18 @@ export default function Home() {
                       isLoading={
                         status === 'streaming' || status === 'submitted'
                       }
-                      handleSubmit={handleSubmit}
+                      handleSubmit={e => {
+                        if (!authenticated) {
+                          toast.error('Please login to continue', {
+                            action: {
+                              label: 'Login',
+                              onClick: login,
+                            },
+                          });
+                          return;
+                        }
+                        handleSubmit(e);
+                      }}
                       setInput={setInput}
                       stop={stop}
                     />
