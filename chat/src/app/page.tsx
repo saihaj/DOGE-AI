@@ -18,7 +18,7 @@ import {
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
-import { cn, shortenAddress } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Logo } from '@/components/logo';
 import { CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
 import { useChat, UseChatHelpers } from '@ai-sdk/react';
@@ -37,20 +37,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useState } from 'react';
 import { useMediaQuery } from '@uidotdev/usehooks';
-import {
-  Drawer,
-  DrawerContent,
-  DrawerHeader,
-  DrawerTitle,
-} from '@/components/ui/drawer';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
 import { ClientOnly } from '@/components/client-only';
-import { AccountSettings, SettingsDialog, SettingsDrawer } from './profile';
+import { SettingsDialog, SettingsDrawer } from './profile';
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
