@@ -50,6 +50,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { ClientOnly } from '@/components/client-only';
+import { AccountSettings, SettingsDialog } from './profile';
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -247,68 +248,7 @@ function LoginButton() {
             </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
-        {isMobile ? (
-          <Drawer open={showProfile} onOpenChange={setShowProfile}>
-            <DrawerContent>
-              <DrawerHeader>
-                <DrawerTitle>
-                  <div className="flex">
-                    <UserIcon />
-                    Profile
-                  </div>
-                </DrawerTitle>
-              </DrawerHeader>
-              <div className="p-4 pb-6">help</div>
-            </DrawerContent>
-          </Drawer>
-        ) : (
-          <Dialog open={showProfile} onOpenChange={setShowProfile}>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>
-                  <div className="flex items-center gap-2">
-                    <UserIcon />
-                    Profile
-                  </div>
-                </DialogTitle>
-              </DialogHeader>
-              <div>
-                Name: {user.twitter?.name}
-                <br />
-                Twitter: {user.twitter?.username}
-                <br />
-              </div>
-              <div>
-                <h2>Wallets</h2>
-                <ul>
-                  {user.linkedAccounts
-                    .filter(account => account.type === 'wallet')
-                    .map(account => (
-                      <li key={account.id}>
-                        {shortenAddress(account.address)}
-                      </li>
-                    ))}
-                </ul>
-              </div>
-              <div>
-                <h2>
-                  Embedded Wallet {shortenAddress(user.wallet?.address || '')}
-                </h2>
-                <p>
-                  A user's embedded wallet is theirs to keep, and even take with
-                  them.
-                </p>
-                <Button
-                  className="cursor-pointer"
-                  onClick={setWalletRecovery}
-                  variant="secondary"
-                >
-                  Setup Recovery Password
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+        <SettingsDialog open={showProfile} onOpenChange={setShowProfile} />
       </>
     );
   }
