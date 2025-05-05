@@ -235,9 +235,6 @@ export function SettingsDrawer({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerTrigger asChild>
-        <Button variant="outline">Settings</Button>
-      </DrawerTrigger>
       <DrawerContent className="rounded-t-xl">
         <div className="w-full mx-auto max-w-lg">
           <DrawerHeader className="border-b">
