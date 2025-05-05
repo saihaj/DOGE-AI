@@ -256,7 +256,7 @@ function LoginButton() {
   );
 }
 
-export default function Home() {
+function Home() {
   const [privyToken] = useLocalStorage('privy:token', '');
   const { login, authenticated } = usePrivy();
   const {
@@ -364,5 +364,13 @@ export default function Home() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <ClientOnly>
+      <Home />
+    </ClientOnly>
   );
 }
