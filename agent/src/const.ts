@@ -166,14 +166,14 @@ export const PRIVY_APP_ID = (() => {
 })();
 export const TWEET_EXTRACT_REGEX = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
 export const CHAT_OPENAI_API_KEY = (() => {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not set in your .env');
+  if (!process.env.CHAT_OPENAI_API_KEY) {
+    throw new Error('CHAT_OPENAI_API_KEY is not set in your .env');
   }
-  return process.env.OPENAI_API_KEY;
+  return process.env.CHAT_OPENAI_API_KEY;
 })();
 export const CHAT_EXA_API_KEY = (() => {
-  if (!process.env.EXA_API_KEY) {
-    throw new Error('EXA_API_KEY is not set in your .env');
+  if (!process.env.CHAT_EXA_API_KEY) {
+    throw new Error('CHAT_EXA_API_KEY is not set in your .env');
   }
-  return process.env.EXA_API_KEY;
+  return process.env.CHAT_EXA_API_KEY;
 })();
