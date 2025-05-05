@@ -574,6 +574,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
           manualEntries: true,
           billEntries: false,
           documentEntries: false,
+          type: 'chat',
         },
         log,
       );
@@ -625,6 +626,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
                       content: query,
                     },
                   ],
+                  type: 'chat',
                 },
                 log,
               );
@@ -659,6 +661,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
                   manualEntries: false,
                   billEntries: true,
                   documentEntries: false,
+                  type: 'chat',
                 },
                 log,
               );
