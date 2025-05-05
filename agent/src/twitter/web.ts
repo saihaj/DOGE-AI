@@ -1,22 +1,35 @@
 import Exa from 'exa-js';
-import { openai } from '@ai-sdk/openai';
-import { EXA_API_KEY, SEED, TEMPERATURE } from '../const';
+import { createOpenAI, openai } from '@ai-sdk/openai';
+import {
+  CHAT_EXA_API_KEY,
+  CHAT_OPENAI_API_KEY,
+  EXA_API_KEY,
+  SEED,
+  TEMPERATURE,
+} from '../const';
 import { CoreMessage, generateText } from 'ai';
 import dedent from 'dedent';
 import { WithLogger } from '../logger';
 
-const exa = new Exa(EXA_API_KEY);
+const chatOpenAI = createOpenAI({
+  apiKey: CHAT_OPENAI_API_KEY,
+  compatibility: 'strict',
+});
+
+const exaDefault = new Exa(EXA_API_KEY);
+const exaChat = new Exa(CHAT_EXA_API_KEY);
 
 export async function getSearchResult(
-  { messages }: { messages: CoreMessage[] },
+  { messages, type }: { messages: CoreMessage[]; type?: 'chat' | 'default' },
   logger: WithLogger,
 ) {
   const log = logger.child({
     function: 'getSearchResult',
+    type,
   });
   log.info({ messages }, 'input messages');
   const { text } = await generateText({
-    model: openai('gpt-4o-mini'),
+    model: type === 'chat' ? chatOpenAI('gpt-4o-mini') : openai('gpt-4o-mini'),
     seed: SEED,
     temperature: TEMPERATURE,
     messages: [
@@ -38,6 +51,7 @@ Current date: ${new Date().toUTCString()}.
   });
   log.info({ text }, 'search query');
 
+  const exa = type === 'chat' ? exaChat : exaDefault;
   const { results } = await exa.searchAndContents(text, {
     livecrawl: 'auto',
     numResults: 3,

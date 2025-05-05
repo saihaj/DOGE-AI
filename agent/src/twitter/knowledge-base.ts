@@ -13,9 +13,10 @@ import {
   inArray,
   desc,
 } from 'database';
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI, openai } from '@ai-sdk/openai';
 import {
   ACTIVE_CONGRESS,
+  CHAT_OPENAI_API_KEY,
   MANUAL_KB_SOURCE,
   REJECTION_REASON,
   SEED,
@@ -29,6 +30,11 @@ import {
 } from './prompts';
 import { z } from 'zod';
 import pMap from 'p-map';
+
+const chatOpenAi = createOpenAI({
+  apiKey: CHAT_OPENAI_API_KEY,
+  compatibility: 'strict',
+});
 
 /**
  * Given a thread and the extracted question, it will return documents that are related to the tweet.
@@ -106,9 +112,11 @@ async function getDocumentContext(
   {
     messages,
     termEmbeddingString,
+    type,
   }: {
     messages: CoreMessage[];
     termEmbeddingString: string;
+    type?: 'default' | 'chat';
   },
   logger: WithLogger,
 ) {
@@ -172,7 +180,7 @@ async function getDocumentContext(
     .join('\n\n');
 
   const { object: relatedDocuments } = await generateObject({
-    model: openai('gpt-4o-mini'),
+    model: type === 'chat' ? chatOpenAi('gpt-4o-mini') : openai('gpt-4o-mini'),
     seed: SEED,
     temperature: TEMPERATURE,
     schemaName: 'documentRelatedToTweet',
@@ -226,8 +234,10 @@ async function getDocumentContext(
 async function getReasonBillContext(
   {
     messages,
+    type,
   }: {
     messages: CoreMessage[];
+    type?: 'default' | 'chat';
   },
   logger: WithLogger,
 ) {
@@ -237,9 +247,12 @@ async function getReasonBillContext(
   const LIMIT = 5;
 
   const { object: billTitleResult } = await generateObject({
-    model: openai('gpt-4o-mini', {
-      structuredOutputs: true,
-    }),
+    model:
+      type === 'chat'
+        ? chatOpenAi('gpt-4o-mini', { structuredOutputs: true })
+        : openai('gpt-4o-mini', {
+            structuredOutputs: true,
+          }),
     seed: SEED,
     temperature: TEMPERATURE,
     messages: [
@@ -322,9 +335,14 @@ async function getReasonBillContext(
 
     // now we need to narrow down what bill person is asking about
     const { object: relevantBill } = await generateObject({
-      model: openai('gpt-4o-mini', {
-        structuredOutputs: true,
-      }),
+      model:
+        type === 'chat'
+          ? chatOpenAi('gpt-4o-mini', {
+              structuredOutputs: true,
+            })
+          : openai('gpt-4o-mini', {
+              structuredOutputs: true,
+            }),
       seed: SEED,
       temperature: TEMPERATURE,
       messages: [
@@ -513,7 +531,7 @@ async function getReasonBillContext(
     .join('\n\n');
 
   const { object: relatedBills } = await generateObject({
-    model: openai('gpt-4o'),
+    model: type === 'chat' ? chatOpenAi('gpt-4o') : openai('gpt-4o'),
     seed: SEED,
     temperature: TEMPERATURE,
     schemaName: 'billRelatedToTweet',
@@ -570,7 +588,7 @@ async function getReasonBillContext(
   }
 
   const finalBill = await generateText({
-    model: openai('gpt-4o'),
+    model: type === 'chat' ? chatOpenAi('gpt-4o') : openai('gpt-4o'),
     seed: SEED,
     temperature: TEMPERATURE,
     tools: {
@@ -669,6 +687,7 @@ export async function getKbContext(
     manualEntries,
     documentEntries,
     billEntries,
+    type,
   }: {
     messages: CoreMessage[];
     text: string;
@@ -678,6 +697,7 @@ export async function getKbContext(
     documentEntries: boolean;
     /** Should we search for bills scraped? */
     billEntries: boolean;
+    type?: 'default' | 'chat';
   },
   logger: WithLogger,
 ) {
@@ -690,12 +710,13 @@ export async function getKbContext(
       )
     : null;
   const documents = documentEntries
-    ? await getDocumentContext({ messages, termEmbeddingString }, logger).catch(
-        _ => null,
-      )
+    ? await getDocumentContext(
+        { messages, termEmbeddingString, type },
+        logger,
+      ).catch(_ => null)
     : null;
   const bill = billEntries
-    ? await getReasonBillContext({ messages }, logger).catch(_ => null)
+    ? await getReasonBillContext({ messages, type }, logger).catch(_ => null)
     : null;
 
   return {
