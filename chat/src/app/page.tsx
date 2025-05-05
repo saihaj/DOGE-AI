@@ -10,20 +10,35 @@ import {
   Square,
   ArrowUp,
   Loader2,
-  Trash2,
-  Trash,
+  User2Icon,
   SquarePen,
+  UserIcon,
+  LogOut,
 } from 'lucide-react';
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
-import { cn } from '@/lib/utils';
+import { cn, shortenAddress } from '@/lib/utils';
 import { Logo } from '@/components/logo';
-import { CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
+import { PRIVY_COOKIE_NAME } from '@/lib/const';
 import { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { useCookie } from '@/components/hooks/use-cookie';
 import { toast } from 'sonner';
-import { Markdown } from '@/components/ui/markdown';
+import { usePrivy } from '@privy-io/react-auth';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { useState } from 'react';
+import { useMediaQuery } from '@uidotdev/usehooks';
+import { ClientOnly } from '@/components/client-only';
+import { SettingsDialog, SettingsDrawer } from './profile';
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -182,8 +197,69 @@ function Input({
   );
 }
 
+function LoginButton() {
+  const { login, ready, authenticated, user, logout, setWalletRecovery } =
+    usePrivy();
+  const [showProfile, setShowProfile] = useState(false);
+  const isMobile = useMediaQuery('only screen and (max-width : 768px)');
+
+  if (ready && authenticated && user) {
+    return (
+      <>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              className="rounded-full h-10 w-10 text-black"
+            >
+              <Avatar>
+                <AvatarImage
+                  src={user?.twitter?.profilePictureUrl || ''}
+                  alt={`${user?.twitter?.name || ''} profile picture`}
+                />
+                <AvatarFallback>
+                  {user.twitter?.name?.charAt(0) || 'U'}
+                </AvatarFallback>
+              </Avatar>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuLabel>
+              {user.twitter?.name || shortenAddress(user.wallet?.address || '')}
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => setShowProfile(true)}>
+                <UserIcon className="text-black" />
+                Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={logout}>
+                <LogOut className="text-black" />
+                Log out
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+        {isMobile ? (
+          <SettingsDrawer open={showProfile} onOpenChange={setShowProfile} />
+        ) : (
+          <SettingsDialog open={showProfile} onOpenChange={setShowProfile} />
+        )}
+      </>
+    );
+  }
+
+  return (
+    <Button onClick={login}>
+      <User2Icon />
+      <span>Login</span>
+    </Button>
+  );
+}
+
 export default function Home() {
-  const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
+  const privyTokenCookie = useCookie(PRIVY_COOKIE_NAME);
+  const { login, authenticated } = usePrivy();
   const {
     messages,
     input,
@@ -198,7 +274,9 @@ export default function Home() {
     body: {
       selectedChatModel: 'gpt-4.1',
     },
-    headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
+    headers: {
+      [PRIVY_COOKIE_NAME]: privyTokenCookie,
+    },
     onError: error => {
       toast.error(error.message, {
         dismissible: false,
@@ -224,21 +302,26 @@ export default function Home() {
                       DOGEai
                     </span>
                   </div>
-                  {messages.length > 0 && (
-                    <Button
-                      disabled={messages.length === 0}
-                      onClick={() => {
-                        if ('vibrate' in navigator) {
-                          navigator.vibrate(50);
-                        }
-                        stop();
-                        setMessages([]);
-                      }}
-                      variant="outline"
-                    >
-                      <SquarePen />
-                    </Button>
-                  )}
+                  <div className="flex gap-2 items-center">
+                    {messages.length > 0 && (
+                      <Button
+                        disabled={messages.length === 0}
+                        onClick={() => {
+                          if ('vibrate' in navigator) {
+                            navigator.vibrate(50);
+                          }
+                          stop();
+                          setMessages([]);
+                        }}
+                        variant="outline"
+                      >
+                        <SquarePen />
+                      </Button>
+                    )}
+                    <ClientOnly>
+                      <LoginButton />
+                    </ClientOnly>
+                  </div>
                 </div>
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">
@@ -258,7 +341,18 @@ export default function Home() {
                       isLoading={
                         status === 'streaming' || status === 'submitted'
                       }
-                      handleSubmit={handleSubmit}
+                      handleSubmit={e => {
+                        if (!authenticated) {
+                          toast.error('Please login to continue', {
+                            action: {
+                              label: 'Login',
+                              onClick: login,
+                            },
+                          });
+                          return;
+                        }
+                        handleSubmit(e);
+                      }}
                       setInput={setInput}
                       stop={stop}
                     />

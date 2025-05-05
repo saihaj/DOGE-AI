@@ -7,6 +7,8 @@ import {
   CF_TEAM_DOMAIN,
   DISCORD_TOKEN,
   IS_PROD,
+  PRIVY_APP_ID,
+  PRIVY_JWKS,
   SEED,
   TEMPERATURE,
 } from './const';
@@ -71,7 +73,12 @@ fastify.route({
 });
 
 fastify.register(cors, {
-  allowedHeaders: ['Content-Type', 'Authorization', 'cf-authorization-token'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'cf-authorization-token',
+    'privy-token',
+  ],
   methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
   origin: [
     'http://localhost:4321',
@@ -90,6 +97,38 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     requestId: request.id,
   });
   const token = request.headers?.['cf-authorization-token'];
+  const privyToken = request.headers?.['privy-token'];
+
+  if (privyToken) {
+    const JWKS = createRemoteJWKSet(new URL(PRIVY_JWKS));
+
+    // Make sure that the incoming request has our token header
+    if (!privyToken || typeof privyToken !== 'string') {
+      log.error({}, 'missing required privy authorization token');
+      return reply.status(403).send({
+        status: false,
+        message: 'missing required privy token',
+      });
+    }
+
+    try {
+      const result = await jwtVerify(privyToken, JWKS, {
+        issuer: 'privy.io',
+        audience: PRIVY_APP_ID,
+      });
+      log.info(
+        { result: result.payload },
+        'privy authorization token verified',
+      );
+      return;
+    } catch (error) {
+      log.error({ error }, 'invalid privy token');
+      return reply.status(403).send({
+        status: false,
+        message: 'invalid privy token',
+      });
+    }
+  }
 
   // Your CF Access team domain
   const CERTS_URL = `${CF_TEAM_DOMAIN}/cdn-cgi/access/certs`;
@@ -109,7 +148,7 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
       issuer: CF_TEAM_DOMAIN,
       // audience: CF_AUDIENCE, // TODO: need to find a better way for this
     });
-    log.info({ result }, 'cf authorization token verified');
+    log.info({ result: result.payload }, 'cf authorization token verified');
   } catch (error) {
     log.error({ error }, 'invalid cf authorization token');
     return reply.status(403).send({

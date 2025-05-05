@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
+import { Providers } from '@/components/providers';
 import { PwaInstallBanner } from '@/components/install-pwa';
 import { ClientOnly } from '@/components/client-only';
 
@@ -97,11 +98,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
-        <ClientOnly>
-          <PwaInstallBanner />
-        </ClientOnly>
-        <Toaster />
+        <Providers>
+          {children}
+          <ClientOnly>
+            <PwaInstallBanner />
+          </ClientOnly>
+          <Toaster />
+        </Providers>
       </body>
     </html>
   );
