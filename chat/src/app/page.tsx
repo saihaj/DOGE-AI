@@ -20,7 +20,11 @@ import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
 import { cn } from '@/lib/utils';
 import { Logo } from '@/components/logo';
-import { CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
+import {
+  CF_BACKEND_HEADER_NAME,
+  CF_COOKIE_NAME,
+  PRIVY_COOKIE_NAME,
+} from '@/lib/const';
 import { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { useCookie } from '@/components/hooks/use-cookie';
 import { toast } from 'sonner';
@@ -255,6 +259,7 @@ function LoginButton() {
 
 export default function Home() {
   const cfAuthorizationCookie = useCookie(CF_COOKIE_NAME);
+  const privyTokenCookie = useCookie(PRIVY_COOKIE_NAME);
   const {
     messages,
     input,
@@ -269,7 +274,9 @@ export default function Home() {
     body: {
       selectedChatModel: 'gpt-4.1',
     },
-    headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
+    headers: {
+      [PRIVY_COOKIE_NAME]: privyTokenCookie,
+    },
     onError: error => {
       toast.error(error.message, {
         dismissible: false,

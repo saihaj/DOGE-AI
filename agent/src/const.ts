@@ -151,3 +151,16 @@ export const DEEPINFRA_API_KEY = (() => {
   }
   return process.env.DEEPINFRA_API_KEY;
 })();
+export const PRIVY_JWKS = (() => {
+  if (!IS_PROD) return '';
+  if (!process.env.PRIVY_JWKS) {
+    throw new Error('PRIVY_JWKS is not set in your .env');
+  }
+  return process.env.PRIVY_JWKS;
+})();
+export const PRIVY_APP_ID = (() => {
+  if (!process.env.PRIVY_APP_ID) {
+    throw new Error('PRIVY_APP_ID is not set in your .env');
+  }
+  return process.env.PRIVY_APP_ID;
+})();
