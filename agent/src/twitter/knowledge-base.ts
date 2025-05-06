@@ -16,7 +16,8 @@ import {
 import { openai } from '@ai-sdk/openai';
 import {
   ACTIVE_CONGRESS,
-  MANUAL_KB_SOURCE,
+  MANUAL_KB_AGENT_SOURCE,
+  MANUAL_KB_CHAT_SOURCE,
   REJECTION_REASON,
   SEED,
   TEMPERATURE,
@@ -36,15 +37,21 @@ import pMap from 'p-map';
 async function getManualKbDocuments(
   {
     termEmbeddingString,
+    kbSourceType,
   }: {
     termEmbeddingString: string;
+    kbSourceType: 'agent' | 'chat';
   },
   logger: WithLogger,
 ) {
   const log = logger.child({
     method: 'getManualKbDocuments',
+    kbSourceType,
   });
   const LIMIT = 5;
+
+  const source =
+    kbSourceType === 'agent' ? MANUAL_KB_AGENT_SOURCE : MANUAL_KB_CHAT_SOURCE;
 
   const embeddingsQuery = await db
     .select({
@@ -59,7 +66,7 @@ async function getManualKbDocuments(
       and(
         sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
         isNotNull(billVector.document),
-        eq(billVector.source, MANUAL_KB_SOURCE),
+        eq(billVector.source, source),
       ),
     )
     .orderBy(
@@ -673,7 +680,7 @@ export async function getKbContext(
     messages: CoreMessage[];
     text: string;
     /** Should we search for manual entries from Web UI? */
-    manualEntries: boolean;
+    manualEntries: false | 'agent' | 'chat';
     /** Should we search for web pages scraped? */
     documentEntries: boolean;
     /** Should we search for bills scraped? */
@@ -685,9 +692,10 @@ export async function getKbContext(
   const termEmbeddingString = JSON.stringify(termEmbedding);
 
   const manual = manualEntries
-    ? await getManualKbDocuments({ termEmbeddingString }, logger).catch(
-        _ => null,
-      )
+    ? await getManualKbDocuments(
+        { termEmbeddingString, kbSourceType: manualEntries },
+        logger,
+      ).catch(_ => null)
     : null;
   const documents = documentEntries
     ? await getDocumentContext({ messages, termEmbeddingString }, logger).catch(

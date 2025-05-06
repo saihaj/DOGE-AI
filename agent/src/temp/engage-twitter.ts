@@ -49,7 +49,7 @@ async function main() {
         text: userMessage,
         billEntries: true,
         documentEntries: true,
-        manualEntries: true,
+        manualEntries: 'agent',
       },
       log,
     );

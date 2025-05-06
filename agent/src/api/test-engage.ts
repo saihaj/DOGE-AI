@@ -44,7 +44,7 @@ export async function processTestEngageRequest({
       text,
       billEntries: true,
       documentEntries: true,
-      manualEntries: true,
+      manualEntries: 'agent',
     },
     log,
   );
