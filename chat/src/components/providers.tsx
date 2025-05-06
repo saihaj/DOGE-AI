@@ -13,6 +13,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
           walletChainType: 'solana-only',
         },
         loginMethods: ['wallet'],
+        embeddedWallets: {
+          solana: {
+            createOnLogin: 'all-users',
+          },
+        },
         // @ts-ignore i don't want to deal with the types here right now.
         externalWallets: { solana: { connectors: toSolanaWalletConnectors() } },
       }}
