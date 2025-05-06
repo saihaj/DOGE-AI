@@ -202,7 +202,9 @@ function LoginButton() {
   const [showProfile, setShowProfile] = useState(false);
   const isMobile = useMediaQuery('only screen and (max-width : 768px)');
 
-  if (ready && authenticated && user) {
+  if (!ready) return null;
+
+  if (user) {
     return (
       <>
         <DropdownMenu>
