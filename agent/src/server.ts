@@ -4,6 +4,7 @@ import { CoreMessage, smoothStream, StreamData, streamText, tool } from 'ai';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import {
+  ACTIVE_CONGRESS,
   CF_TEAM_DOMAIN,
   DISCORD_TOKEN,
   IS_PROD,
@@ -46,6 +47,7 @@ import { getSearchResult } from './twitter/web';
 import { z } from 'zod';
 import { UserChatStreamInput } from './api/user-chat';
 import { PROMPTS } from './twitter/prompts';
+import { bill, db, eq } from 'database';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -666,6 +668,68 @@ fastify.route<{ Body: UserChatStreamInput }>({
 
               if (kb?.bill) {
                 return kb.bill;
+              }
+
+              return null;
+            },
+          }),
+          latestBills: tool({
+            description: 'Get latest bills from Congress',
+            parameters: z.object({
+              count: z.number(),
+            }),
+            execute: async ({ count }) => {
+              log.info({ count }, 'latest bills tool call');
+              const _bills = await db.query.bill.findMany({
+                where: eq(bill.congress, ACTIVE_CONGRESS),
+                limit: count || 1,
+                orderBy: (bill, { desc }) => desc(bill.introducedDate),
+                columns: {
+                  id: true,
+                  title: true,
+                  content: true,
+                },
+              });
+
+              const bills = _bills.map(bill => ({
+                ...bill,
+                // @ts-expect-error ignore type
+                content: Buffer.from(bill.content).toString(),
+              }));
+
+              if (bills.length > 0) {
+                return bills;
+              }
+
+              return null;
+            },
+          }),
+          randomBills: tool({
+            description: 'Get random bills from active Congress',
+            parameters: z.object({
+              count: z.number(),
+            }),
+            execute: async ({ count }) => {
+              log.info({ count }, 'random bills tool call');
+              const _bills = await db.query.bill.findMany({
+                where: eq(bill.congress, ACTIVE_CONGRESS),
+                limit: count || 1,
+                orderBy: (_, { sql }) => sql`RANDOM()`,
+                columns: {
+                  id: true,
+                  title: true,
+                  content: true,
+                },
+              });
+
+              const bills = _bills.map(bill => ({
+                ...bill,
+                // @ts-expect-error ignore type
+                content: Buffer.from(bill.content).toString(),
+              }));
+
+              if (bills.length > 0) {
+                return bills;
               }
 
               return null;
