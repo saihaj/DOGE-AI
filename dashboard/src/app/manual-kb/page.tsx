@@ -30,6 +30,7 @@ import {
 import { useDebounce } from '@uidotdev/usehooks';
 import { useState } from 'react';
 import { useTRPC } from '@/lib/trpc';
+import { TypeSelector } from './type-selector';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 
 const formSchema = z.object({
@@ -37,7 +38,13 @@ const formSchema = z.object({
   content: z.string().min(10),
 });
 
-function EntryUi({ mutate }: { mutate: () => void }) {
+function EntryUi({
+  mutate,
+  kbType,
+}: {
+  mutate: () => void;
+  kbType: 'agent' | 'chat';
+}) {
   const { open, setOpen, state, type, openDrawer } = useDrawerStore();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -72,6 +79,7 @@ function EntryUi({ mutate }: { mutate: () => void }) {
           apiCreateEntry({
             title: values.title,
             content: values.content,
+            type: kbType,
           }),
           {
             loading: 'Creating entry...',
@@ -100,6 +108,7 @@ function EntryUi({ mutate }: { mutate: () => void }) {
             id: state.id,
             title: values.title,
             content: values.content,
+            type: kbType,
           }),
           {
             loading: 'Updating entry...',
@@ -125,12 +134,7 @@ function EntryUi({ mutate }: { mutate: () => void }) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="mt-2"
-          onClick={() => openDrawer()}
-        >
+        <Button variant="outline" size="sm" onClick={() => openDrawer()}>
           <PlusIcon className="w-6 h-6" />
           Insert Entry
         </Button>
@@ -138,10 +142,10 @@ function EntryUi({ mutate }: { mutate: () => void }) {
       <SheetContent className="rounded-2xl !max-w-4xl !w-1/42">
         <SheetHeader>
           <SheetTitle className="font-bold text-lg mb-2 text-primary">
-            Create new entry
+            Create new {kbType} entry
           </SheetTitle>
           <SheetDescription className="text-primary mb-2 overflow-y-scroll">
-            Add new entry to the knowledge base.
+            Add new entry to the {kbType} knowledge base.
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
@@ -207,6 +211,7 @@ export default function ManualKB() {
   );
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery.trim(), 300);
+  const [type, setType] = useState<'agent' | 'chat'>('agent');
 
   const { data, error, isLoading, refetch, fetchNextPage, hasNextPage } =
     useInfiniteQuery(
@@ -214,6 +219,7 @@ export default function ManualKB() {
         {
           limit: FETCH_SIZE,
           query: debouncedSearch,
+          type,
         },
         {
           select(data) {
@@ -237,6 +243,7 @@ export default function ManualKB() {
     toast.promise(
       deleteKbEntry({
         id,
+        type,
       }),
       {
         loading: 'Deleting entry...',
@@ -254,7 +261,14 @@ export default function ManualKB() {
 
   return (
     <>
-      <Header right={<EntryUi mutate={refetch} />} />
+      <Header
+        right={
+          <div className="flex flex-row justify-center gap-2">
+            <TypeSelector value={type} setValue={setType} />
+            <EntryUi mutate={refetch} kbType={type} />
+          </div>
+        }
+      />
       <main className="mb-10">
         <Input
           placeholder="Search entry..."
