@@ -12,7 +12,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
           showWalletLoginFirst: false,
           walletChainType: 'solana-only',
         },
-        loginMethods: ['wallet'],
+        loginMethods: ['wallet', 'twitter'],
         embeddedWallets: {
           solana: {
             createOnLogin: 'all-users',
