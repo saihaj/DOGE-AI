@@ -17,7 +17,10 @@ import {
   textSplitter,
 } from '../twitter/helpers';
 import { logger } from '../logger';
-import { MANUAL_KB_SOURCE, VECTOR_SEARCH_MATCH_THRESHOLD } from '../const';
+import {
+  MANUAL_KB_AGENT_SOURCE,
+  VECTOR_SEARCH_MATCH_THRESHOLD,
+} from '../const';
 import z from 'zod';
 import { protectedProcedure } from '../trpc';
 
@@ -41,7 +44,7 @@ export const createKbEntry = protectedProcedure
         id: crypto.randomUUID(),
         title,
         url: `/manual-kb/${slugify(title)}`,
-        source: MANUAL_KB_SOURCE,
+        source: MANUAL_KB_AGENT_SOURCE,
         content: Buffer.from(content),
       })
       .returning({
@@ -66,7 +69,7 @@ export const createKbEntry = protectedProcedure
           id: crypto.randomUUID(),
           document: result.id,
           text: value,
-          source: MANUAL_KB_SOURCE,
+          source: MANUAL_KB_AGENT_SOURCE,
           vector: embedding,
         })),
       )
@@ -102,7 +105,7 @@ export const editKbEntry = protectedProcedure
     const doc = await db.query.document.findFirst({
       where: and(
         eq(documentDbSchema.id, id),
-        eq(documentDbSchema.source, MANUAL_KB_SOURCE),
+        eq(documentDbSchema.source, MANUAL_KB_AGENT_SOURCE),
       ),
       columns: {
         id: true,
@@ -152,7 +155,7 @@ export const editKbEntry = protectedProcedure
           id: crypto.randomUUID(),
           document: doc.id,
           text: value,
-          source: MANUAL_KB_SOURCE,
+          source: MANUAL_KB_AGENT_SOURCE,
           vector: embedding,
         })),
       )
@@ -182,7 +185,7 @@ export const getKbEntries = protectedProcedure
     if (!query) {
       const documents = await db.query.document.findMany({
         where: and(
-          eq(documentDbSchema.source, MANUAL_KB_SOURCE),
+          eq(documentDbSchema.source, MANUAL_KB_AGENT_SOURCE),
           cursor ? gt(documentDbSchema.createdAt, cursor) : undefined,
         ),
         orderBy: (documents, { asc }) => asc(documents.createdAt),
@@ -229,7 +232,7 @@ export const getKbEntries = protectedProcedure
         and(
           sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
           isNotNull(billVector.document),
-          eq(billVector.source, MANUAL_KB_SOURCE),
+          eq(billVector.source, MANUAL_KB_AGENT_SOURCE),
           cursor ? gt(documentDbSchema.createdAt, cursor) : undefined,
         ),
       )
@@ -276,7 +279,7 @@ export const deleteKbEntry = protectedProcedure
       .where(
         and(
           eq(documentDbSchema.id, id),
-          eq(documentDbSchema.source, MANUAL_KB_SOURCE),
+          eq(documentDbSchema.source, MANUAL_KB_AGENT_SOURCE),
         ),
       )
       .execute();

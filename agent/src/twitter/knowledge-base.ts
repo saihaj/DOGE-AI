@@ -16,7 +16,7 @@ import {
 import { openai } from '@ai-sdk/openai';
 import {
   ACTIVE_CONGRESS,
-  MANUAL_KB_SOURCE,
+  MANUAL_KB_AGENT_SOURCE,
   REJECTION_REASON,
   SEED,
   TEMPERATURE,
@@ -59,7 +59,7 @@ async function getManualKbDocuments(
       and(
         sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
         isNotNull(billVector.document),
-        eq(billVector.source, MANUAL_KB_SOURCE),
+        eq(billVector.source, MANUAL_KB_AGENT_SOURCE),
       ),
     )
     .orderBy(
