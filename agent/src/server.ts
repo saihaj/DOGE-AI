@@ -351,7 +351,7 @@ fastify.route<{ Body: ChatStreamInput }>({
           {
             messages: convoHistory,
             text: latestMessage.content.toString(),
-            manualEntries: manualKbSearch,
+            manualEntries: 'agent',
             billEntries: billSearch,
             documentEntries: documentSearch,
           },
@@ -572,7 +572,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
           messages,
           // latest message
           text: messages[messages.length - 1].content.toString(),
-          manualEntries: true,
+          manualEntries: 'chat',
           billEntries: false,
           documentEntries: false,
         },

@@ -301,7 +301,7 @@ export const executeInteractionTweets = inngest.createFunction(
               text,
               billEntries: true,
               documentEntries: true,
-              manualEntries: true,
+              manualEntries: 'agent',
             },
             log,
           );
