@@ -38,6 +38,8 @@ import { useRef, useState } from 'react';
 import { useLocalStorage, useMediaQuery } from '@uidotdev/usehooks';
 import { ClientOnly } from '@/components/client-only';
 import { SettingsDialog, SettingsDrawer } from './profile';
+import { PromptSuggestion } from '@/components/ui/prompt-suggestion';
+import { AnimatePresence, motion } from 'motion/react';
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -264,6 +266,24 @@ function LoginButton() {
   );
 }
 
+const SUGGESTED_PROMPTS = [
+  {
+    value: 'What’s in H.R. 4671?',
+  },
+  {
+    value: 'Which agencies are giving out the most duplicative grants',
+  },
+  {
+    value: 'Give me 3 recent bills',
+  },
+  {
+    value: 'What is the save act?',
+  },
+  {
+    value: 'How much has DOGE saved so far?',
+  },
+];
+
 function Home() {
   const [privyToken] = useLocalStorage('privy:token', '');
   const conatinerRef = useRef(null);
@@ -351,6 +371,41 @@ function Home() {
                 <div style={{ opacity: 1, transform: 'none' }} />
                 <div className="relative w-full sm:px-5 px-2 pb-2 sm:pb-4">
                   <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
+                    <AnimatePresence>
+                      {input.length === 0 && messages.length === 0 && (
+                        <motion.div className="flex flex-wrap gap-2">
+                          {SUGGESTED_PROMPTS.map(({ value }, i) => (
+                            <motion.div
+                              key={i}
+                              initial={{ opacity: 0, y: 10 }}
+                              animate={{
+                                opacity: 1,
+                                y: 0,
+                                transition: {
+                                  delay: i * 0.1, // Staggered delay
+                                  duration: 0.3,
+                                },
+                              }}
+                              exit={{
+                                opacity: 0,
+                                y: 10,
+                                transition: {
+                                  delay: i * 0.05, // Faster staggered exit
+                                  duration: 0.2,
+                                },
+                              }}
+                            >
+                              <PromptSuggestion
+                                key={i}
+                                onClick={() => setInput(value)}
+                              >
+                                {value}
+                              </PromptSuggestion>
+                            </motion.div>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                     <Input
                       input={input}
                       isLoading={
