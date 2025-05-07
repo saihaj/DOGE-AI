@@ -10,7 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@radix-ui/react-slot": "^1.2.0",
+    "@radix-ui/react-slot": "^1.2.2",
     "@remixicon/react": "^4.6.0",
     "@uidotdev/usehooks": "^2.4.1",
     "class-variance-authority": "^0.7.1",
