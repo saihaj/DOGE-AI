@@ -86,8 +86,8 @@ importers:
         specifier: ^3.30.0
         version: 3.30.0(@vercel/node@5.1.14(encoding@0.1.13))(encoding@0.1.13)(express@5.1.0)(fastify@5.3.2)(h3@1.15.3)(next@15.3.1(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.7.3)
       jose:
-        specifier: ^6.0.10
-        version: 6.0.10
+        specifier: ^6.0.11
+        version: 6.0.11
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -5657,8 +5657,8 @@ packages:
   jose@5.9.6:
     resolution: {integrity: sha512-AMlnetc9+CV9asI19zHmrgS/WYsWUwCn2R7RzlbJWD7F9eWYUTGyBmU9o6PxngtLGOiDGPRu+Uc4fhKzbpteZQ==}
 
-  jose@6.0.10:
-    resolution: {integrity: sha512-skIAxZqcMkOrSwjJvplIPYrlXGpxTPnro2/QWTDCxAdWQrSTV5/KqspMWmi5WAx5+ULswASJiZ0a+1B/Lxt9cw==}
+  jose@6.0.11:
+    resolution: {integrity: sha512-QxG7EaliDARm1O1S8BGakqncGT9s25bKL1WSf6/oa17Tkqwi8D2ZNglqCF+DsYF88/rV66Q/Q2mFAy697E1DUg==}
 
   joycon@3.1.1:
     resolution: {integrity: sha512-34wB/Y7MW7bzjKRjUKTa46I2Z7eV62Rkhva+KkopW7Qvv/OSWBqvkSY7vusOPrNuZcUG3tApvdVgNB8POj3SPw==}
@@ -13959,7 +13959,7 @@ snapshots:
 
   jose@5.9.6: {}
 
-  jose@6.0.10: {}
+  jose@6.0.11: {}
 
   joycon@3.1.1: {}
 
