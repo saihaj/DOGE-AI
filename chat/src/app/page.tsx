@@ -296,6 +296,7 @@ function Home() {
     handleSubmit,
     reload,
     status,
+    append,
     setMessages,
   } = useChat({
     api: `/api/chat`,
@@ -397,7 +398,21 @@ function Home() {
                             >
                               <PromptSuggestion
                                 key={i}
-                                onClick={() => setInput(value)}
+                                onClick={() => {
+                                  if (!authenticated) {
+                                    toast.error('Please login to continue', {
+                                      action: {
+                                        label: 'Login',
+                                        onClick: login,
+                                      },
+                                    });
+                                    return;
+                                  }
+                                  append({
+                                    content: value,
+                                    role: 'user',
+                                  });
+                                }}
                               >
                                 {value}
                               </PromptSuggestion>
