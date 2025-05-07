@@ -34,7 +34,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useLocalStorage, useMediaQuery } from '@uidotdev/usehooks';
 import { ClientOnly } from '@/components/client-only';
 import { SettingsDialog, SettingsDrawer } from './profile';
@@ -102,12 +102,18 @@ function renderMessageParts(message: UseChatHelpers['messages'][0]) {
 function ChatWithCustomScroll({
   messages,
   status,
+  ref,
 }: {
   messages: UseChatHelpers['messages'];
   status: UseChatHelpers['status'];
+  ref?: React.RefObject<HTMLDivElement | null>;
 }) {
   return (
-    <ChatContainer className="relative group flex flex-col justify-center w-full max-w-3xl md:px-4 pb-2 gap-2 items-end">
+    <ChatContainer
+      ref={ref}
+      autoScroll
+      className="relative group flex flex-col justify-center w-full max-w-3xl md:px-4 pb-2 gap-2 items-end"
+    >
       {messages.map(message => {
         const isAssistant = message.role === 'assistant';
 
@@ -260,6 +266,7 @@ function LoginButton() {
 
 function Home() {
   const [privyToken] = useLocalStorage('privy:token', '');
+  const conatinerRef = useRef(null);
   const { login, authenticated } = usePrivy();
   const {
     messages,
@@ -294,7 +301,10 @@ function Home() {
       <div className="flex w-full h-full overflow-hidden @container/mainview">
         <main className="h-dvh flex-grow flex-shrink relative selection:bg-highlight w-0 @container isolate">
           <div className="relative flex flex-col items-center h-full @container/main">
-            <div className="w-full h-full overflow-y-auto overflow-x-hidden scrollbar-gutter-stable flex flex-col items-center px-5">
+            <div
+              ref={conatinerRef}
+              className="w-full overflow-y-auto overflow-x-hidden scrollbar-gutter-stable flex flex-col items-center px-5"
+            >
               <header className="w-full sticky top-0 z-50 bg-background mask-b-from-90% backdrop-blur-md pb-2">
                 <div className="flex items-center justify-between w-full mt-2">
                   <div className="flex items-center">
@@ -327,7 +337,11 @@ function Home() {
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">
                 <div className="w-full max-w-3xl flex flex-col">
-                  <ChatWithCustomScroll status={status} messages={messages} />
+                  <ChatWithCustomScroll
+                    ref={conatinerRef}
+                    status={status}
+                    messages={messages}
+                  />
                 </div>
               </div>
             </div>
