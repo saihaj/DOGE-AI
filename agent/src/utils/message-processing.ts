@@ -23,7 +23,7 @@ export async function extractAndProcessTweet(
   const extractedTweetUrl = userMessageText.match(TWEET_EXTRACT_REGEX);
 
   if (!extractedTweetUrl) {
-    return { messages: updatedMessages, tweetProcessed: false };
+    return { messages: updatedMessages };
   }
 
   const tweetUrl = extractedTweetUrl[0];
