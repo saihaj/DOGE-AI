@@ -14,7 +14,7 @@ import {
   TEMPERATURE,
   TWEET_EXTRACT_REGEX,
 } from './const';
-import { setStreamHeaders } from './utils/stream';
+import { getChatTools, setStreamHeaders } from './utils/tools';
 import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
 import {
@@ -49,7 +49,7 @@ import { getSearchResult } from './twitter/web';
 import { z } from 'zod';
 import { UserChatStreamInput } from './api/user-chat';
 import { PROMPTS } from './twitter/prompts';
-import { bill, db, eq } from 'database';
+import { db, eq } from 'database';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -604,130 +604,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
         experimental_transform: smoothStream({}),
         temperature: selectedChatModel.startsWith('o4') ? 1 : TEMPERATURE,
         seed: SEED,
-        tools: {
-          web: tool({
-            description: 'Browse the web',
-            parameters: z.object({
-              query: z.string(),
-            }),
-            execute: async ({ query }) => {
-              log.info({ query }, 'query for web tool call');
-              const webSearchResults = await getSearchResult(
-                {
-                  messages: [
-                    {
-                      role: 'user',
-                      content: query,
-                    },
-                  ],
-                },
-                log,
-              );
-
-              if (webSearchResults) {
-                const webResult = webSearchResults
-                  .map(
-                    result =>
-                      `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
-                  )
-                  .join('');
-                const urls = webSearchResults.map(result => result.url);
-
-                stream.append({ role: 'sources', content: urls });
-
-                return webResult;
-              }
-
-              return null;
-            },
-          }),
-          bill: tool({
-            description: 'Get Bill from Congress',
-            parameters: z.object({
-              query: z.string(),
-            }),
-            execute: async ({ query }) => {
-              const kb = await getKbContext(
-                {
-                  messages: messages,
-                  text: query,
-                  manualEntries: false,
-                  billEntries: true,
-                  documentEntries: false,
-                },
-                log,
-              );
-
-              if (kb?.bill) {
-                return kb.bill;
-              }
-
-              return null;
-            },
-          }),
-          latestBills: tool({
-            description: 'Get latest bills from Congress',
-            parameters: z.object({
-              count: z.number(),
-            }),
-            execute: async ({ count }) => {
-              log.info({ count }, 'latest bills tool call');
-              const _bills = await db.query.bill.findMany({
-                where: eq(bill.congress, ACTIVE_CONGRESS),
-                limit: count || 1,
-                orderBy: (bill, { desc }) => desc(bill.introducedDate),
-                columns: {
-                  id: true,
-                  title: true,
-                  content: true,
-                },
-              });
-
-              const bills = _bills.map(bill => ({
-                ...bill,
-                // @ts-expect-error ignore type
-                content: Buffer.from(bill.content).toString(),
-              }));
-
-              if (bills.length > 0) {
-                return bills;
-              }
-
-              return null;
-            },
-          }),
-          randomBills: tool({
-            description: 'Get random bills from active Congress',
-            parameters: z.object({
-              count: z.number(),
-            }),
-            execute: async ({ count }) => {
-              log.info({ count }, 'random bills tool call');
-              const _bills = await db.query.bill.findMany({
-                where: eq(bill.congress, ACTIVE_CONGRESS),
-                limit: count || 1,
-                orderBy: (_, { sql }) => sql`RANDOM()`,
-                columns: {
-                  id: true,
-                  title: true,
-                  content: true,
-                },
-              });
-
-              const bills = _bills.map(bill => ({
-                ...bill,
-                // @ts-expect-error ignore type
-                content: Buffer.from(bill.content).toString(),
-              }));
-
-              if (bills.length > 0) {
-                return bills;
-              }
-
-              return null;
-            },
-          }),
-        },
+        tools: getChatTools(messages, log, stream),
         maxSteps: 5,
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
