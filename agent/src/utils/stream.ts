@@ -2,7 +2,7 @@ import { FastifyReply } from 'fastify';
 
 /**
  * Sets the standard headers required for server-sent events (SSE) streaming responses.
- * 
+ *
  * @param reply The Fastify reply object to set headers on
  */
 export function setStreamHeaders(reply: FastifyReply): void {

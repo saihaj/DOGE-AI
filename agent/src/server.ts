@@ -14,7 +14,7 @@ import {
   TEMPERATURE,
   TWEET_EXTRACT_REGEX,
 } from './const';
-import { setStreamHeaders } from './utils';
+import { setStreamHeaders } from './utils/stream';
 import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
 import {
