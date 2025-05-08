@@ -14,7 +14,9 @@ import {
   TEMPERATURE,
   TWEET_EXTRACT_REGEX,
 } from './const';
-import { getChatTools, setStreamHeaders } from './utils/tools';
+import { setStreamHeaders } from './utils/stream';
+import { getChatTools } from './utils/tools';
+import { extractAndProcessTweet } from './utils/message-processing';
 import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
 import {
@@ -29,10 +31,7 @@ import {
 import { ChatStreamInput, myProvider } from './api/chat';
 import { logger } from './logger';
 import { getKbContext } from './twitter/knowledge-base';
-import {
-  getTweetContentAsText,
-  mergeConsecutiveSameRole,
-} from './twitter/helpers';
+import { mergeConsecutiveSameRole } from './twitter/helpers';
 import { apiRequest, promClient, readiness } from './prom';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { inngest } from './inngest';
@@ -46,10 +45,8 @@ import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import { createContext } from './trpc';
 import { appRouter } from './router';
 import { getSearchResult } from './twitter/web';
-import { z } from 'zod';
 import { UserChatStreamInput } from './api/user-chat';
 import { PROMPTS } from './twitter/prompts';
-import { db, eq } from 'database';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -314,31 +311,16 @@ fastify.route<{ Body: ChatStreamInput }>({
     try {
       const stream = new StreamData();
 
-      const extractedTweetUrl = userMessageText.match(TWEET_EXTRACT_REGEX);
+      // Process any tweet URLs in the message
+      const { messages: updatedMessages } = await extractAndProcessTweet(
+        messages,
+        userMessageText,
+        stream,
+        log,
+      );
 
-      let tweetUrl: string | null = null;
-      if (extractedTweetUrl) {
-        tweetUrl = extractedTweetUrl[0];
-        log.info({ url: tweetUrl }, 'extracted tweet');
-        const url = new URL(tweetUrl);
-        const tweetId = url.pathname.split('/').pop();
-        log.info({ tweetId }, 'tweetId');
-
-        if (tweetId) {
-          const tweetText = await getTweetContentAsText({ id: tweetId }, log);
-          stream.append({
-            role: 'tweet',
-            content: tweetText,
-          });
-          const updatedMessage = userMessageText.replace(
-            TWEET_EXTRACT_REGEX,
-            `"${tweetText}"`,
-          );
-          log.info({ updatedMessage }, 'swap tweet url with extracted text');
-          messages.pop();
-          messages.push({ role: 'user', content: updatedMessage });
-        }
-      }
+      // Update messages with the processed result
+      messages = updatedMessages;
 
       if (billSearch || documentSearch || manualKbSearch || webSearch) {
         const latestMessage = messages[messages.length - 1];
@@ -535,31 +517,16 @@ fastify.route<{ Body: UserChatStreamInput }>({
     try {
       const stream = new StreamData();
 
-      const extractedTweetUrl = userMessageText.match(TWEET_EXTRACT_REGEX);
+      // Process any tweet URLs in the message
+      const { messages: updatedMessages } = await extractAndProcessTweet(
+        messages,
+        userMessageText,
+        stream,
+        log,
+      );
 
-      let tweetUrl: string | null = null;
-      if (extractedTweetUrl) {
-        tweetUrl = extractedTweetUrl[0];
-        log.info({ url: tweetUrl }, 'extracted tweet');
-        const url = new URL(tweetUrl);
-        const tweetId = url.pathname.split('/').pop();
-        log.info({ tweetId }, 'tweetId');
-
-        if (tweetId) {
-          const tweetText = await getTweetContentAsText({ id: tweetId }, log);
-          stream.append({
-            role: 'tweet',
-            content: tweetText,
-          });
-          const updatedMessage = userMessageText.replace(
-            TWEET_EXTRACT_REGEX,
-            `"${tweetText}"`,
-          );
-          log.info({ updatedMessage }, 'swap tweet url with extracted text');
-          messages.pop();
-          messages.push({ role: 'user', content: updatedMessage });
-        }
-      }
+      // Update messages with the processed result
+      messages = updatedMessages;
 
       const kb = await getKbContext(
         {
