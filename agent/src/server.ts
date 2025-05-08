@@ -12,6 +12,7 @@ import {
   PRIVY_JWKS,
   SEED,
   TEMPERATURE,
+  TWEET_EXTRACT_REGEX,
 } from './const';
 import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
@@ -271,7 +272,6 @@ fastify.route<{ Body: ChatStreamInput }>({
       method: request.method,
       path: '/api/chat',
     });
-    const tweetExtractRegex = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
     const log = logger.child({ function: 'api-chat', requestId: request.id });
     // Create an AbortController for the backend
     const abortController = new AbortController();
@@ -317,7 +317,7 @@ fastify.route<{ Body: ChatStreamInput }>({
     try {
       const stream = new StreamData();
 
-      const extractedTweetUrl = userMessageText.match(tweetExtractRegex);
+      const extractedTweetUrl = userMessageText.match(TWEET_EXTRACT_REGEX);
 
       let tweetUrl: string | null = null;
       if (extractedTweetUrl) {
@@ -334,7 +334,7 @@ fastify.route<{ Body: ChatStreamInput }>({
             content: tweetText,
           });
           const updatedMessage = userMessageText.replace(
-            tweetExtractRegex,
+            TWEET_EXTRACT_REGEX,
             `"${tweetText}"`,
           );
           log.info({ updatedMessage }, 'swap tweet url with extracted text');
@@ -505,7 +505,6 @@ fastify.route<{ Body: UserChatStreamInput }>({
       method: request.method,
       path: '/api/userchat',
     });
-    const tweetExtractRegex = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
     const log = logger.child({
       function: 'api-userchat',
       requestId: request.id,
@@ -543,7 +542,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
     try {
       const stream = new StreamData();
 
-      const extractedTweetUrl = userMessageText.match(tweetExtractRegex);
+      const extractedTweetUrl = userMessageText.match(TWEET_EXTRACT_REGEX);
 
       let tweetUrl: string | null = null;
       if (extractedTweetUrl) {
@@ -560,7 +559,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
             content: tweetText,
           });
           const updatedMessage = userMessageText.replace(
-            tweetExtractRegex,
+            TWEET_EXTRACT_REGEX,
             `"${tweetText}"`,
           );
           log.info({ updatedMessage }, 'swap tweet url with extracted text');
