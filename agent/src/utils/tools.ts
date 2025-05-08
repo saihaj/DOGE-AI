@@ -9,13 +9,17 @@ import { CoreMessage } from 'ai';
 
 /**
  * Returns shared tools for chat interfaces
- * 
+ *
  * @param messages Current chat messages
  * @param log Logger instance
  * @param stream Optional StreamData instance for appending data
  * @returns Object containing tool definitions
  */
-export function getChatTools(messages: CoreMessage[], log: WithLogger, stream?: StreamData) {
+export function getChatTools(
+  messages: CoreMessage[],
+  log: WithLogger,
+  stream?: StreamData,
+) {
   return {
     web: tool({
       description: 'Browse the web',
@@ -43,14 +47,14 @@ export function getChatTools(messages: CoreMessage[], log: WithLogger, stream?: 
                 `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
             )
             .join('');
-          
+
           const urls = webSearchResults.map(result => result.url);
-          
+
           // If stream is provided, append sources
           if (stream) {
             stream.append({ role: 'sources', content: urls });
           }
-          
+
           return webResult;
         }
 
