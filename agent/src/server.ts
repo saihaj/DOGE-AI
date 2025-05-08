@@ -14,6 +14,7 @@ import {
   TEMPERATURE,
   TWEET_EXTRACT_REGEX,
 } from './const';
+import { setStreamHeaders } from './utils';
 import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
 import {
@@ -308,11 +309,7 @@ fastify.route<{ Body: ChatStreamInput }>({
     });
 
     // Mark the response as a v1 data stream:
-    reply.header('Content-Type', 'text/plain; charset=utf-8');
-    reply.type('text/event-stream');
-    reply.header('X-Vercel-AI-Data-Stream', 'v1');
-    reply.header('Cache-Control', 'no-cache');
-    reply.header('Connection', 'keep-alive');
+    setStreamHeaders(reply);
 
     try {
       const stream = new StreamData();
@@ -533,11 +530,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
     });
 
     // Mark the response as a v1 data stream:
-    reply.header('Content-Type', 'text/plain; charset=utf-8');
-    reply.type('text/event-stream');
-    reply.header('X-Vercel-AI-Data-Stream', 'v1');
-    reply.header('Cache-Control', 'no-cache');
-    reply.header('Connection', 'keep-alive');
+    setStreamHeaders(reply);
 
     try {
       const stream = new StreamData();
