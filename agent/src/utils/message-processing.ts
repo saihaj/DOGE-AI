@@ -34,7 +34,7 @@ export async function extractAndProcessTweet(
   log.info({ tweetId }, 'tweetId');
 
   if (!tweetId) {
-    return { messages: updatedMessages, tweetProcessed: false };
+    return { messages: updatedMessages };
   }
 
   try {
