@@ -1,7 +1,5 @@
-# fly.toml app configuration file generated for dogexbt-crawler on 2024-12-30T16:25:13+01:00
-#
+# fly.toml app configuration file
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
-#
 
 app = 'dogeai-agent'
 primary_region = 'bos'
@@ -33,32 +31,33 @@ port = 3000
 path = "/api/metrics"
 processes = ["agent"]
 
-
-# LLM agent service (chat) on llm.dogeai-agent.fly.dev:8080 (port 8080, HTTP)
+# Chat service configuration
 [[services]]
 internal_port = 3001
-protocol = "tcp"
 processes = ["chat"]
+protocol = "tcp"
 auto_stop_machines = 'off'
 auto_start_machines = true
 min_machines_running = 1
 
 [[services.ports]]
-port = 8080
+port = 3001
 handlers = ["http"]
+force_https = false # Use CF for SSL
 
-[[services.checks]]
-grace_period = "10s"
+[[services.http_checks]]
 interval = "30s"
+grace_period = "10s"
 method = "GET"
-timeout = "5s"
 path = "/api/health"
+protocol = "http"
+timeout = "5s"
 
 # Metrics for LLM agent (chat)
 [[metrics]]
+processes = ["chat"]
 port = 3001
 path = "/api/metrics"
-processes = ["chat"]
 
 # VM configuration for HTTP API (agent)
 [[vm]]

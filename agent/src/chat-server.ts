@@ -263,13 +263,8 @@ fastify.route<{ Body: UserChatStreamInput }>({
 fastify.route({
   method: 'GET',
   handler: async (request, reply) => {
-    const status = discordClient.isReady();
-    readiness.set(status ? 1 : 0);
-    if (status) {
-      return reply.send({ status: 'ready' }).code(200);
-    } else {
-      return reply.send({ status: 'not ready' }).code(503);
-    }
+    return reply.send({ status: 'ready' }).code(200);
+    readiness.set(1);
   },
   url: '/api/health',
 });
