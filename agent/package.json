@@ -23,7 +23,7 @@
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.11",
     "@ai-sdk/deepinfra": "^0.2.15",
-    "@ai-sdk/google": "^1.2.16",
+    "@ai-sdk/google": "^1.2.17",
     "@ai-sdk/openai": "^1.3.21",
     "@ai-sdk/perplexity": "^1.1.8",
     "@ai-sdk/xai": "^1.2.15",
