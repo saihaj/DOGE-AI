@@ -5,7 +5,7 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "prebuild": "pnpm run check:types",
-    "build": "esbuild --bundle --platform=node --outdir=dist ./src/server.ts '--external:@libsql/client'",
+    "build": "esbuild --bundle --platform=node --outdir=dist ./src/server.ts ./src/chat-server.ts '--external:@libsql/client'",
     "predeploy": "pnpm run build",
     "check:types": "tsc --noEmit",
     "deploy": "fly deploy",
@@ -16,6 +16,7 @@
     "twitter:reply": "tsx --watch --env-file=.env ./src/temp/reply-twitter.ts",
     "twitter:tag": "tsx --watch --env-file=.env ./src/temp/tag-twitter.ts",
     "twitter:engage": "tsx --watch --env-file=.env ./src/temp/engage-twitter.ts",
+    "dev:chat": "tsx --watch --env-file=.env ./src/chat-server.ts | pino-pretty",
     "dev:server": "tsx --watch --env-file=.env ./src/server.ts | pino-pretty",
     "dev:inngest": "inngest dev -u http://localhost:3000/api/inngest",
     "dev:agent": "pnpm run dev:server & pnpm run dev:inngest"
