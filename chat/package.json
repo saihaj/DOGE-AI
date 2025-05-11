@@ -13,7 +13,7 @@
     "deploy": "npm run pages:build && wrangler pages deploy"
   },
   "dependencies": {
-    "@ai-sdk/react": "^1.2.11",
+    "@ai-sdk/react": "^1.2.12",
     "@privy-io/react-auth": "^2.12.0",
     "@radix-ui/react-avatar": "^1.1.9",
     "@radix-ui/react-dialog": "^1.1.13",
