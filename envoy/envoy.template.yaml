@@ -34,6 +34,18 @@ static_resources:
                               inline_string: 'OK'
                         - match:
                             prefix: '/chat'
+                            headers:
+                              - name: ":method"
+                                exact_match: "OPTIONS"
+                          route:
+                            cluster: chat_cluster
+                            regex_rewrite:
+                              pattern:
+                                regex: '^/chat(/.*)$'
+                              substitution: '\1'
+                            timeout: 5s
+                        - match:
+                            prefix: '/chat'
                           route:
                             cluster: chat_cluster
                             regex_rewrite:
@@ -47,22 +59,42 @@ static_resources:
                               retriable_status_codes: [503]
                         - match:
                             prefix: '/agent'
+                            headers:
+                              - name: ":method"
+                                exact_match: "OPTIONS"
                           route:
                             cluster: agent_cluster
                             regex_rewrite:
                               pattern:
                                 regex: '^/agent(/.*)$'
                               substitution: '\1'
-                            timeout: 30s
+                            timeout: 5s
+                        - match:
+                            prefix: '/agent'
+                          route:
+                            cluster: agent_cluster
+                            regex_rewrite:
+                              pattern:
+                                regex: '^/agent(/.*)$'
+                              substitution: '\1'
+                            timeout: 0s
                             retry_policy:
                               retry_on: connect-failure,refused-stream,unavailable,cancelled,resource-exhausted,5xx
                               num_retries: 3
                               retriable_status_codes: [503]
                         - match:
                             prefix: '/api/inngest'
+                            headers:
+                              - name: ":method"
+                                exact_match: "OPTIONS"
                           route:
                             cluster: agent_cluster
-                            timeout: 30s
+                            timeout: 5s
+                        - match:
+                            prefix: '/api/inngest'
+                          route:
+                            cluster: agent_cluster
+                            timeout: 0s
                             retry_policy:
                               retry_on: connect-failure,refused-stream,unavailable,cancelled,resource-exhausted,5xx
                               num_retries: 3
@@ -94,11 +126,20 @@ static_resources:
                             path: '/health'
                         - match:
                             path: '/chat/api/health'
+                        # Skip JWT verification for OPTIONS requests
+                        - match:
+                            prefix: '/'
+                            headers:
+                              - name: ":method"
+                                exact_match: "OPTIONS"
                         # All other chat endpoints require JWT authentication
                         - match:
                             prefix: '/chat'
                           requires:
                             provider_name: privy_jwt
+                  - name: envoy.filters.http.cors
+                    typed_config:
+                      '@type': type.googleapis.com/envoy.extensions.filters.http.cors.v3.Cors
                   - name: envoy.filters.http.router
                     typed_config:
                       '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -172,6 +213,14 @@ static_resources:
       type: LOGICAL_DNS
       dns_lookup_family: AUTO
       lb_policy: ROUND_ROBIN
+      circuit_breakers:
+        thresholds:
+          - priority: DEFAULT
+            max_connections: 1000
+            max_pending_requests: 1000
+            max_requests: 10000
+            max_retries: 50
+            track_remaining: true
       load_assignment:
         cluster_name: agent_cluster
         endpoints:
