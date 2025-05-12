@@ -58,6 +58,15 @@ static_resources:
                               retry_on: connect-failure,refused-stream,unavailable,cancelled,resource-exhausted,5xx
                               num_retries: 3
                               retriable_status_codes: [503]
+                        - match:
+                            prefix: '/api/inngest'
+                          route:
+                            cluster: agent_cluster
+                            timeout: 30s
+                            retry_policy:
+                              retry_on: connect-failure,refused-stream,unavailable,cancelled,resource-exhausted,5xx
+                              num_retries: 3
+                              retriable_status_codes: [503]
                 http_filters:
                   - name: envoy.filters.http.jwt_authn
                     typed_config:

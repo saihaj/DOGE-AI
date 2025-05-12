@@ -31,6 +31,7 @@ fastify.register(cors, {
     'Authorization',
     'cf-authorization-token',
     'privy-token',
+    'Access-Control-Allow-Origin',
   ],
   methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
   origin: [

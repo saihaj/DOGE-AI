@@ -41,4 +41,4 @@ echo "Starting Envoy with config from ${CONFIG_FILE}"
 
 # Start Envoy with debug log levels
 exec envoy -c "${CONFIG_FILE}" \
-  --component-log-level health_checker:debug,http:debug,jwt:debug
+  --component-log-level health_checker:info,http:info,jwt:info
