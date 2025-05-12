@@ -233,8 +233,8 @@ export const executeInteractionTweets = inngest.createFunction(
       start: '15m',
     },
     throttle: {
-      limit: 65,
-      period: '15m',
+      limit: 1,
+      period: '15s',
     },
   },
   { event: 'tweet.execute.interaction' },

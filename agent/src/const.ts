@@ -134,6 +134,7 @@ export const CF_TEAM_DOMAIN = (() => {
   return process.env.CF_TEAM_DOMAIN;
 })();
 export const VECTOR_SEARCH_MATCH_THRESHOLD = 0.6;
+export const TWEET_EXTRACT_REGEX = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
 export const OPEN_ROUTER_API_KEY = (() => {
   if (!process.env.OPEN_ROUTER_API_KEY) {
     throw new Error('OPEN_ROUTER_API_KEY is not set in your .env');

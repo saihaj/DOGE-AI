@@ -67,21 +67,12 @@ function renderMessageParts(message: UseChatHelpers['messages'][0]) {
           // Handle different tool invocation states
           switch (toolInvocation.state) {
             case 'partial-call':
-              return (
-                <div key={index} className="animate-pulse rounded-md flex">
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="animate-spin h-4 w-4" />
-                    Preparing {toolInvocation.toolName} tool
-                  </div>
-                </div>
-              );
-
             case 'call':
               return (
                 <div key={index} className="animate-pulse rounded-md flex">
                   <div className="flex items-center gap-2">
                     <Loader2 className="animate-spin h-4 w-4" />
-                    Processing with {toolInvocation.toolName} tool
+                    Thinking...
                   </div>
                 </div>
               );
@@ -296,6 +287,7 @@ function Home() {
     handleSubmit,
     reload,
     status,
+    append,
     setMessages,
   } = useChat({
     api: `/api/chat`,
@@ -397,7 +389,21 @@ function Home() {
                             >
                               <PromptSuggestion
                                 key={i}
-                                onClick={() => setInput(value)}
+                                onClick={() => {
+                                  if (!authenticated) {
+                                    toast.error('Please login to continue', {
+                                      action: {
+                                        label: 'Login',
+                                        onClick: login,
+                                      },
+                                    });
+                                    return;
+                                  }
+                                  append({
+                                    content: value,
+                                    role: 'user',
+                                  });
+                                }}
                               >
                                 {value}
                               </PromptSuggestion>
