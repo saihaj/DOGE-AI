@@ -643,7 +643,7 @@ fastify.route({
   url: '/api/metrics',
 });
 
-fastify.listen({ host: '0.0.0.0', port: 3000 }, async function (err, address) {
+fastify.listen({ host: '::', port: 3000 }, async function (err, address) {
   logger.info({}, `Server listening on ${address}`);
   promClient.collectDefaultMetrics({
     labels: {
