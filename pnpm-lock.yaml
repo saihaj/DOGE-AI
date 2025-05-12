@@ -338,8 +338,8 @@ importers:
         specifier: ^22.10.2
         version: 22.10.7
       '@types/sanitize-html':
-        specifier: ^2.15.0
-        version: 2.15.0
+        specifier: ^2.16.0
+        version: 2.16.0
       esbuild:
         specifier: ^0.25.4
         version: 0.25.4
@@ -3200,8 +3200,8 @@ packages:
   '@types/retry@0.12.0':
     resolution: {integrity: sha512-wWKOClTTiizcZhXnPY4wikVAwmdYHp8q6DmC+EJUzAMsycb7HB32Kh9RN4+0gExjmPmZSAQjgURXIGATPegAvA==}
 
-  '@types/sanitize-html@2.15.0':
-    resolution: {integrity: sha512-71Z6PbYsVKfp4i6Jvr37s5ql6if1Q/iJQT80NbaSi7uGaG8CqBMXP0pk/EsURAOuGdk5IJCd/vnzKrR7S3Txsw==}
+  '@types/sanitize-html@2.16.0':
+    resolution: {integrity: sha512-l6rX1MUXje5ztPT0cAFtUayXF06DqPhRyfVXareEN5gGCFaP/iwsxIyKODr9XDhfxPpN6vXUFNfo5kZMXCxBtw==}
 
   '@types/stylis@4.2.5':
     resolution: {integrity: sha512-1Xve+NMN7FWjY14vLoY5tL3BVEQ/n42YLwaqJIPYhotZ9uBHt87VceMwWQpzmdEt2TNXIorIFG+YeCUUW7RInw==}
@@ -11003,7 +11003,7 @@ snapshots:
 
   '@types/retry@0.12.0': {}
 
-  '@types/sanitize-html@2.15.0':
+  '@types/sanitize-html@2.16.0':
     dependencies:
       htmlparser2: 8.0.2
 
