@@ -5,7 +5,7 @@ app = 'dogeai-envoy'
 primary_region = 'bos'
 
 [processes]
-web = "envoy -c /etc/envoy/envoy.yaml --component-log-level upstream:info,connection:info"
+web = "/etc/envoy/run_envoy.sh"
 
 [build]
 dockerfile = "./Dockerfile"

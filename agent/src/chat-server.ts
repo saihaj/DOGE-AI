@@ -264,7 +264,6 @@ fastify.route({
   method: 'GET',
   handler: async (request, reply) => {
     return reply.send({ status: 'ready' }).code(200);
-    readiness.set(1);
   },
   url: '/api/health',
 });

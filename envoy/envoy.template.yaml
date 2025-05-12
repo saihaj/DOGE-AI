@@ -46,6 +46,37 @@ static_resources:
                               num_retries: 3
                               retriable_status_codes: [503]
                 http_filters:
+                  - name: envoy.filters.http.jwt_authn
+                    typed_config:
+                      '@type': type.googleapis.com/envoy.extensions.filters.http.jwt_authn.v3.JwtAuthentication
+                      providers:
+                        privy_jwt:
+                          issuer: '${JWKS_ISSUER}'
+                          audiences:
+                            - '${JWKS_APP_ID}'
+                          remote_jwks:
+                            http_uri:
+                              uri: '${JWKS_REMOTE_URL}'
+                              cluster: jwks_cluster
+                              timeout: 5s
+                            cache_duration:
+                              seconds: 3600 # Cache JWKS for 1 hour
+                          from_headers:
+                            - name: privy-token
+                          forward: true
+                          forward_payload_header: 'x-jwt-payload'
+
+                      rules:
+                        # Health check endpoints excluded from JWT verification
+                        - match:
+                            path: '/health'
+                        - match:
+                            path: '/chat/api/health'
+                        # All other chat endpoints require JWT authentication
+                        - match:
+                            prefix: '/chat'
+                          requires:
+                            provider_name: privy_jwt
                   - name: envoy.filters.http.router
                     typed_config:
                       '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
@@ -113,3 +144,23 @@ static_resources:
             typed_config:
               '@type': type.googleapis.com/envoy.extensions.health_check.event_sinks.file.v3.HealthCheckEventFileSink
               event_log_path: /dev/stdout
+
+    - name: jwks_cluster
+      connect_timeout: 5s
+      type: LOGICAL_DNS
+      dns_lookup_family: AUTO
+      lb_policy: ROUND_ROBIN
+      load_assignment:
+        cluster_name: jwks_cluster
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: 'auth.privy.io'
+                      port_value: 443
+      transport_socket:
+        name: envoy.transport_sockets.tls
+        typed_config:
+          '@type': type.googleapis.com/envoy.extensions.transport_sockets.tls.v3.UpstreamTlsContext
+          sni: 'auth.privy.io'
