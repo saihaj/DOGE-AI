@@ -35,8 +35,8 @@ static_resources:
                         - match:
                             prefix: '/chat'
                             headers:
-                              - name: ":method"
-                                exact_match: "OPTIONS"
+                              - name: ':method'
+                                exact_match: 'OPTIONS'
                           route:
                             cluster: chat_cluster
                             regex_rewrite:
@@ -60,8 +60,8 @@ static_resources:
                         - match:
                             prefix: '/agent'
                             headers:
-                              - name: ":method"
-                                exact_match: "OPTIONS"
+                              - name: ':method'
+                                exact_match: 'OPTIONS'
                           route:
                             cluster: agent_cluster
                             regex_rewrite:
@@ -85,8 +85,8 @@ static_resources:
                         - match:
                             prefix: '/api/inngest'
                             headers:
-                              - name: ":method"
-                                exact_match: "OPTIONS"
+                              - name: ':method'
+                                exact_match: 'OPTIONS'
                           route:
                             cluster: agent_cluster
                             timeout: 5s
@@ -130,8 +130,8 @@ static_resources:
                         - match:
                             prefix: '/'
                             headers:
-                              - name: ":method"
-                                exact_match: "OPTIONS"
+                              - name: ':method'
+                                exact_match: 'OPTIONS'
                         # All other chat endpoints require JWT authentication
                         - match:
                             prefix: '/chat'
