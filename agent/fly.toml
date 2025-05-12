@@ -1,4 +1,3 @@
-# fly.toml app configuration file
 # See https://fly.io/docs/reference/configuration/ for information about how to use this file.
 
 app = 'dogeai-agent'
@@ -11,25 +10,26 @@ chat = "node ./chat-server.js"
 [build]
 dockerfile = "./Dockerfile"
 
-[http_service]
-processes = ["agent"]
+[[services]]
 internal_port = 3000
-force_https = true
+processes = ["agent"]
+protocol = "tcp"
 auto_stop_machines = 'off'
 auto_start_machines = true
 min_machines_running = 1
 
-[[http_service.checks]]
-grace_period = "30s"
+[[services.http_checks]]
 interval = "30s"
+grace_period = "30s"
 method = "GET"
-timeout = "10s"
 path = "/api/health"
+protocol = "http"
+timeout = "10s"
 
 [[metrics]]
+processes = ["agent"]
 port = 3000
 path = "/api/metrics"
-processes = ["agent"]
 
 [[services]]
 internal_port = 3001
@@ -53,9 +53,9 @@ port = 3001
 path = "/api/metrics"
 
 [[vm]]
-memory = '512mb'
+memory = '256mb'
 cpu_kind = 'shared'
-cpus = 2
+cpus = 1
 processes = ["agent"]
 
 [[vm]]
