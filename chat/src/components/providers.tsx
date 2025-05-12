@@ -5,27 +5,25 @@ import { PostHogProvider } from './PostHogProvider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <PostHogProvider>
-      <PrivyProvider
-        appId="cma5o9e5t00dric0opxjxfjuc"
-        clientId="client-WY6L6yXLaPvbM94Fo9arL3ncuWyRXL4vaTSJtQMCCH2Mv"
-        config={{
-          appearance: {
-            showWalletLoginFirst: false,
-            walletChainType: 'solana-only',
+    <PrivyProvider
+      appId="cma5o9e5t00dric0opxjxfjuc"
+      clientId="client-WY6L6yXLaPvbM94Fo9arL3ncuWyRXL4vaTSJtQMCCH2Mv"
+      config={{
+        appearance: {
+          showWalletLoginFirst: false,
+          walletChainType: 'solana-only',
+        },
+        loginMethods: ['wallet', 'twitter'],
+        embeddedWallets: {
+          solana: {
+            createOnLogin: 'all-users',
           },
-          loginMethods: ['wallet', 'twitter'],
-          embeddedWallets: {
-            solana: {
-              createOnLogin: 'all-users',
-            },
-          },
-          // @ts-ignore i don't want to deal with the types here right now.
-          externalWallets: { solana: { connectors: toSolanaWalletConnectors() } },
-        }}
-      >
-        {children}
-      </PrivyProvider>
-    </PostHogProvider>
+        },
+        // @ts-ignore i don't want to deal with the types here right now.
+        externalWallets: { solana: { connectors: toSolanaWalletConnectors() } },
+      }}
+    >
+      <PostHogProvider>{children}</PostHogProvider>
+    </PrivyProvider>
   );
 }
