@@ -12,7 +12,11 @@ import {
   PRIVY_JWKS,
   SEED,
   TEMPERATURE,
+  TWEET_EXTRACT_REGEX,
 } from './const';
+import { setStreamHeaders } from './utils/stream';
+import { getChatTools } from './utils/tools';
+import { extractAndProcessTweet } from './utils/message-processing';
 import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
 import {
@@ -27,10 +31,7 @@ import {
 import { ChatStreamInput, myProvider } from './api/chat';
 import { logger } from './logger';
 import { getKbContext } from './twitter/knowledge-base';
-import {
-  getTweetContentAsText,
-  mergeConsecutiveSameRole,
-} from './twitter/helpers';
+import { mergeConsecutiveSameRole } from './twitter/helpers';
 import { apiRequest, promClient, readiness } from './prom';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import { inngest } from './inngest';
@@ -44,10 +45,8 @@ import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import { createContext } from './trpc';
 import { appRouter } from './router';
 import { getSearchResult } from './twitter/web';
-import { z } from 'zod';
 import { UserChatStreamInput } from './api/user-chat';
 import { PROMPTS } from './twitter/prompts';
-import { bill, db, eq } from 'database';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -271,7 +270,6 @@ fastify.route<{ Body: ChatStreamInput }>({
       method: request.method,
       path: '/api/chat',
     });
-    const tweetExtractRegex = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
     const log = logger.child({ function: 'api-chat', requestId: request.id });
     // Create an AbortController for the backend
     const abortController = new AbortController();
@@ -308,40 +306,21 @@ fastify.route<{ Body: ChatStreamInput }>({
     });
 
     // Mark the response as a v1 data stream:
-    reply.header('Content-Type', 'text/plain; charset=utf-8');
-    reply.type('text/event-stream');
-    reply.header('X-Vercel-AI-Data-Stream', 'v1');
-    reply.header('Cache-Control', 'no-cache');
-    reply.header('Connection', 'keep-alive');
+    setStreamHeaders(reply);
 
     try {
       const stream = new StreamData();
 
-      const extractedTweetUrl = userMessageText.match(tweetExtractRegex);
+      // Process any tweet URLs in the message
+      const { messages: updatedMessages } = await extractAndProcessTweet(
+        messages,
+        userMessageText,
+        stream,
+        log,
+      );
 
-      let tweetUrl: string | null = null;
-      if (extractedTweetUrl) {
-        tweetUrl = extractedTweetUrl[0];
-        log.info({ url: tweetUrl }, 'extracted tweet');
-        const url = new URL(tweetUrl);
-        const tweetId = url.pathname.split('/').pop();
-        log.info({ tweetId }, 'tweetId');
-
-        if (tweetId) {
-          const tweetText = await getTweetContentAsText({ id: tweetId }, log);
-          stream.append({
-            role: 'tweet',
-            content: tweetText,
-          });
-          const updatedMessage = userMessageText.replace(
-            tweetExtractRegex,
-            `"${tweetText}"`,
-          );
-          log.info({ updatedMessage }, 'swap tweet url with extracted text');
-          messages.pop();
-          messages.push({ role: 'user', content: updatedMessage });
-        }
-      }
+      // Update messages with the processed result
+      messages = updatedMessages;
 
       if (billSearch || documentSearch || manualKbSearch || webSearch) {
         const latestMessage = messages[messages.length - 1];
@@ -505,7 +484,6 @@ fastify.route<{ Body: UserChatStreamInput }>({
       method: request.method,
       path: '/api/userchat',
     });
-    const tweetExtractRegex = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
     const log = logger.child({
       function: 'api-userchat',
       requestId: request.id,
@@ -534,40 +512,21 @@ fastify.route<{ Body: UserChatStreamInput }>({
     });
 
     // Mark the response as a v1 data stream:
-    reply.header('Content-Type', 'text/plain; charset=utf-8');
-    reply.type('text/event-stream');
-    reply.header('X-Vercel-AI-Data-Stream', 'v1');
-    reply.header('Cache-Control', 'no-cache');
-    reply.header('Connection', 'keep-alive');
+    setStreamHeaders(reply);
 
     try {
       const stream = new StreamData();
 
-      const extractedTweetUrl = userMessageText.match(tweetExtractRegex);
+      // Process any tweet URLs in the message
+      const { messages: updatedMessages } = await extractAndProcessTweet(
+        messages,
+        userMessageText,
+        stream,
+        log,
+      );
 
-      let tweetUrl: string | null = null;
-      if (extractedTweetUrl) {
-        tweetUrl = extractedTweetUrl[0];
-        log.info({ url: tweetUrl }, 'extracted tweet');
-        const url = new URL(tweetUrl);
-        const tweetId = url.pathname.split('/').pop();
-        log.info({ tweetId }, 'tweetId');
-
-        if (tweetId) {
-          const tweetText = await getTweetContentAsText({ id: tweetId }, log);
-          stream.append({
-            role: 'tweet',
-            content: tweetText,
-          });
-          const updatedMessage = userMessageText.replace(
-            tweetExtractRegex,
-            `"${tweetText}"`,
-          );
-          log.info({ updatedMessage }, 'swap tweet url with extracted text');
-          messages.pop();
-          messages.push({ role: 'user', content: updatedMessage });
-        }
-      }
+      // Update messages with the processed result
+      messages = updatedMessages;
 
       const kb = await getKbContext(
         {
@@ -612,130 +571,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
         experimental_transform: smoothStream({}),
         temperature: selectedChatModel.startsWith('o4') ? 1 : TEMPERATURE,
         seed: SEED,
-        tools: {
-          web: tool({
-            description: 'Browse the web',
-            parameters: z.object({
-              query: z.string(),
-            }),
-            execute: async ({ query }) => {
-              log.info({ query }, 'query for web tool call');
-              const webSearchResults = await getSearchResult(
-                {
-                  messages: [
-                    {
-                      role: 'user',
-                      content: query,
-                    },
-                  ],
-                },
-                log,
-              );
-
-              if (webSearchResults) {
-                const webResult = webSearchResults
-                  .map(
-                    result =>
-                      `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
-                  )
-                  .join('');
-                const urls = webSearchResults.map(result => result.url);
-
-                stream.append({ role: 'sources', content: urls });
-
-                return webResult;
-              }
-
-              return null;
-            },
-          }),
-          bill: tool({
-            description: 'Get Bill from Congress',
-            parameters: z.object({
-              query: z.string(),
-            }),
-            execute: async ({ query }) => {
-              const kb = await getKbContext(
-                {
-                  messages: messages,
-                  text: query,
-                  manualEntries: false,
-                  billEntries: true,
-                  documentEntries: false,
-                },
-                log,
-              );
-
-              if (kb?.bill) {
-                return kb.bill;
-              }
-
-              return null;
-            },
-          }),
-          latestBills: tool({
-            description: 'Get latest bills from Congress',
-            parameters: z.object({
-              count: z.number(),
-            }),
-            execute: async ({ count }) => {
-              log.info({ count }, 'latest bills tool call');
-              const _bills = await db.query.bill.findMany({
-                where: eq(bill.congress, ACTIVE_CONGRESS),
-                limit: count || 1,
-                orderBy: (bill, { desc }) => desc(bill.introducedDate),
-                columns: {
-                  id: true,
-                  title: true,
-                  content: true,
-                },
-              });
-
-              const bills = _bills.map(bill => ({
-                ...bill,
-                // @ts-expect-error ignore type
-                content: Buffer.from(bill.content).toString(),
-              }));
-
-              if (bills.length > 0) {
-                return bills;
-              }
-
-              return null;
-            },
-          }),
-          randomBills: tool({
-            description: 'Get random bills from active Congress',
-            parameters: z.object({
-              count: z.number(),
-            }),
-            execute: async ({ count }) => {
-              log.info({ count }, 'random bills tool call');
-              const _bills = await db.query.bill.findMany({
-                where: eq(bill.congress, ACTIVE_CONGRESS),
-                limit: count || 1,
-                orderBy: (_, { sql }) => sql`RANDOM()`,
-                columns: {
-                  id: true,
-                  title: true,
-                  content: true,
-                },
-              });
-
-              const bills = _bills.map(bill => ({
-                ...bill,
-                // @ts-expect-error ignore type
-                content: Buffer.from(bill.content).toString(),
-              }));
-
-              if (bills.length > 0) {
-                return bills;
-              }
-
-              return null;
-            },
-          }),
-        },
+        tools: getChatTools(messages, log, stream),
         maxSteps: 5,
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
@@ -807,7 +643,7 @@ fastify.route({
   url: '/api/metrics',
 });
 
-fastify.listen({ host: '0.0.0.0', port: 3000 }, async function (err, address) {
+fastify.listen({ host: '::', port: 3000 }, async function (err, address) {
   logger.info({}, `Server listening on ${address}`);
   promClient.collectDefaultMetrics({
     labels: {

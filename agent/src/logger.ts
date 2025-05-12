@@ -5,4 +5,9 @@ export const logger = pino({
   level: 'info',
 });
 
+export const chatLogger = pino({
+  name: 'chat',
+  level: 'info',
+});
+
 export type WithLogger = typeof logger;
