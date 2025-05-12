@@ -1,6 +1,7 @@
 'use client';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
+import { PostHogProvider } from './PostHogProvider';
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
@@ -22,7 +23,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         externalWallets: { solana: { connectors: toSolanaWalletConnectors() } },
       }}
     >
-      {children}
+      <PostHogProvider>{children}</PostHogProvider>
     </PrivyProvider>
   );
 }
