@@ -21,7 +21,7 @@
     "@types/node": "^22.10.2",
     "@types/sanitize-html": "^2.16.0",
     "esbuild": "^0.25.4",
-    "inngest-cli": "1.5.11"
+    "inngest-cli": "1.5.12"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.3.22",
