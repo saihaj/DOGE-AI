@@ -266,7 +266,7 @@ async function getReasonBillContext(
 	- "h.r. 8127" → "8127"
 	- "h.r 8127" → "8127"
        The bill number should always be extracted as a numeric string without prefixes or extra characters.
-      
+
       If no bill number is found, omit this field.
       Ensure accuracy in extracting bill names and keywords while maintaining the expected structured output.`,
       },
@@ -337,22 +337,22 @@ async function getReasonBillContext(
       messages: [
         {
           role: 'system',
-          content: `You are an AI that selects the most relevant bill from a given list based on conversation context.  
+          content: `You are an AI that selects the most relevant bill from a given list based on conversation context.
       Input:
-      - A list of bills, each with a "billId", title, summary introduced date.  
-      - The extracted bill number.  
-      - Relevant keywords and conversation context.  
-      
-      Task:  
-      - Analyze the provided bills and determine which "billId" best matches the conversation context and user intent. 
-      - Compare against the provided list of bills, looking for the best match by: 
+      - A list of bills, each with a "billId", title, summary introduced date.
+      - The extracted bill number.
+      - Relevant keywords and conversation context.
+
+      Task:
+      - Analyze the provided bills and determine which "billId" best matches the conversation context and user intent.
+      - Compare against the provided list of bills, looking for the best match by:
         - Relevance to the user's topics and keywords.
         - Alignment with the conversation context.
-        - Recency of introduction date, if multiple are equally relevant or if no close match is found. 
+        - Recency of introduction date, if multiple are equally relevant or if no close match is found.
       - If a clear contextual match exists, return the corresponding "billId".
       - If multiple matches are found, select the most relevant one, or choose the most recent bill if there is no clear contextual match. Return exactly one 'billId' in JSON.
       - If there there is no clear contextual match, return 'null'.
-      
+
       Expected Output:
       { "billId": "best_matching_bill_id" }
       `,
@@ -541,7 +541,7 @@ async function getReasonBillContext(
   });
 
   if (!relatedBills.billIds?.length) {
-    log.warn(messages, 'No bill related to tweet.');
+    log.warn({}, 'No bill related to tweet.');
     throw new Error(REJECTION_REASON.UNRELATED_BILL);
   }
 
