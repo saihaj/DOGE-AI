@@ -295,10 +295,10 @@ export const executeInteractionTweets = inngest.createFunction(
               messages: [
                 {
                   role: 'user',
-                  content: text,
+                  content: _text,
                 },
               ],
-              text,
+              text: _text,
               billEntries: true,
               documentEntries: true,
               manualEntries: 'agent',

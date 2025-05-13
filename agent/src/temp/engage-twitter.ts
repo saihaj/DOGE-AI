@@ -43,10 +43,10 @@ async function main() {
         messages: [
           {
             role: 'user',
-            content: userMessage,
+            content: content,
           },
         ],
-        text: userMessage,
+        text: content,
         billEntries: true,
         documentEntries: true,
         manualEntries: 'agent',

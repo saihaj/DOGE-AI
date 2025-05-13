@@ -38,10 +38,10 @@ export async function processTestEngageRequest({
       messages: [
         {
           role: 'user',
-          content: text,
+          content: _text,
         },
       ],
-      text,
+      text: _text,
       billEntries: true,
       documentEntries: true,
       manualEntries: 'agent',
