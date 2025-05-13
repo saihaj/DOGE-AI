@@ -56,9 +56,8 @@ async function getManualKbDocuments(
   const embeddingsQuery = await db
     .select({
       text: document.content,
-      documentId: billVector.document,
       title: document.title,
-      source: document.source,
+      documentId: billVector.document,
       distance: sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString}))`,
     })
     .from(billVector)
