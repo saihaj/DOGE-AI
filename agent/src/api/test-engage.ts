@@ -28,20 +28,17 @@ export async function processTestEngageRequest({
   bill: string;
 }> {
   const log = logger.child({ module: 'processTestEngageRequest', tweetId });
-  const _text = await getTweetContentAsText({ id: tweetId }, log);
-
-  const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
-  const text = `${REPLY_AS_DOGE_PREFIX} "${_text}"`;
+  const text = await getTweetContentAsText({ id: tweetId }, log);
 
   const kb = await getKbContext(
     {
       messages: [
         {
           role: 'user',
-          content: _text,
+          content: text,
         },
       ],
-      text: _text,
+      text,
       billEntries: true,
       documentEntries: true,
       manualEntries: 'agent',

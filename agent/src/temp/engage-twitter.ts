@@ -7,7 +7,6 @@ import {
 } from '../twitter/execute-interaction';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
-import { PROMPTS } from '../twitter/prompts';
 
 const log = logger.child({ module: 'cli-engage-twitter' });
 
@@ -34,9 +33,6 @@ async function main() {
     const content = await getTweetContentAsText({ id: tweetId }, log);
 
     await writeFile(`dev-test/apitweet.txt`, JSON.stringify(content));
-
-    const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
-    const userMessage = `${REPLY_AS_DOGE_PREFIX} "${content}"`;
 
     const kb = await getKbContext(
       {
@@ -80,7 +76,7 @@ async function main() {
     const { metadata, formatted, raw } = await getLongResponse(
       {
         summary,
-        text: userMessage,
+        text: content,
       },
       {
         log,

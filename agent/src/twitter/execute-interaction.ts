@@ -61,15 +61,21 @@ export async function getLongResponse(
     summary,
     text,
     systemPrompt,
+    prefixPrompt,
   }: {
     summary: string;
     text: string;
     systemPrompt?: string;
+    prefixPrompt?: string;
   },
   { method, log, action }: { log: WithLogger; method: string; action: string },
 ) {
   if (!systemPrompt) {
     systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE_KB();
+  }
+
+  if (!prefixPrompt) {
+    prefixPrompt = await PROMPTS.REPLY_AS_DOGE();
   }
 
   const webSearchResults = await getSearchResult(
@@ -118,7 +124,7 @@ export async function getLongResponse(
 
   messages.push({
     role: 'user',
-    content: text,
+    content: `${prefixPrompt} "${text}"`,
   });
 
   const { text: _responseLong, reasoning } = await generateText({
@@ -276,7 +282,7 @@ export const executeInteractionTweets = inngest.createFunction(
           throw new NonRetriableError(e);
         });
 
-        const _text = await getTweetContentAsText(
+        const text = await getTweetContentAsText(
           {
             id: event.data.tweetId,
           },
@@ -286,19 +292,16 @@ export const executeInteractionTweets = inngest.createFunction(
           throw new NonRetriableError(e);
         });
 
-        const REPLY_AS_DOGE_PREFIX = await PROMPTS.REPLY_AS_DOGE();
-        const text = `${REPLY_AS_DOGE_PREFIX} "${_text}"`;
-
         const reply = await step.run('generate-reply', async () => {
           const kb = await getKbContext(
             {
               messages: [
                 {
                   role: 'user',
-                  content: _text,
+                  content: text,
                 },
               ],
-              text: _text,
+              text,
               billEntries: true,
               documentEntries: true,
               manualEntries: 'agent',
