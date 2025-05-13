@@ -55,8 +55,6 @@ async function getManualKbDocuments(
 
   const embeddingsQuery = await db
     .select({
-      text: document.content,
-      title: document.title,
       documentId: billVector.document,
       distance: sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString}))`,
     })
@@ -71,7 +69,6 @@ async function getManualKbDocuments(
     .orderBy(
       sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
     )
-    .leftJoin(document, eq(document.id, billVector.document))
     .limit(LIMIT);
 
   if (embeddingsQuery.length === 0) {
@@ -81,7 +78,7 @@ async function getManualKbDocuments(
 
   // remove duplicates
   const uniqueDocumentIds = new Set<string>();
-  const uniqueEmbeddingsQuery = embeddingsQuery.filter(({ documentId }) => {
+  const _uniqueEmbeddingsQuery = embeddingsQuery.filter(({ documentId }) => {
     if (documentId === null) return false;
     if (uniqueDocumentIds.has(documentId)) return false;
     uniqueDocumentIds.add(documentId);
@@ -89,11 +86,20 @@ async function getManualKbDocuments(
   });
 
   log.info(
-    { all: embeddingsQuery.length, unique: uniqueEmbeddingsQuery.length },
+    { all: embeddingsQuery.length, unique: _uniqueEmbeddingsQuery.length },
     'removed duplicates',
   );
 
-  const baseText = uniqueEmbeddingsQuery
+  const docs = await db
+    .select({
+      text: document.content,
+      title: document.title,
+      documentId: document.id,
+    })
+    .from(document)
+    .where(inArray(document.id, Array.from(uniqueDocumentIds)));
+
+  const baseText = docs
     .map(({ title, text, documentId }) => {
       // @ts-expect-error - I know what I'm doing
       const content = Buffer.from(text).toString('utf-8');
