@@ -229,7 +229,7 @@ function Home() {
   });
 
   return (
-    <div className="flex w-full h-full" data-testid="global-drop">
+    <div className="flex w-full h-full">
       <div className="flex w-full h-full overflow-hidden @container/mainview">
         <main className="h-dvh flex-grow flex-shrink relative selection:bg-highlight w-0 @container isolate">
           <div className="relative flex flex-col items-center h-full @container/main">
