@@ -6,40 +6,22 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
-import {
-  Square,
-  ArrowUp,
-  Loader2,
-  User2Icon,
-  SquarePen,
-  UserIcon,
-  LogOut,
-} from 'lucide-react';
+import { Square, ArrowUp, Loader2, SquarePen } from 'lucide-react';
 import { Message, MessageContent } from '@/components/ui/message';
 import { Button } from '@/components/ui/button';
 import { ChatContainer } from '@/components/ui/chat-container';
-import { cn, shortenAddress } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { Logo } from '@/components/logo';
 import { PRIVY_COOKIE_NAME } from '@/lib/const';
 import { useChat, UseChatHelpers } from '@ai-sdk/react';
 import { toast } from 'sonner';
 import { usePrivy } from '@privy-io/react-auth';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useRef, useState } from 'react';
-import { useLocalStorage, useMediaQuery } from '@uidotdev/usehooks';
+import { useRef } from 'react';
+import { useLocalStorage } from '@uidotdev/usehooks';
 import { ClientOnly } from '@/components/client-only';
-import { SettingsDialog, SettingsDrawer } from './profile';
 import { PromptSuggestion } from '@/components/ui/prompt-suggestion';
 import { AnimatePresence, motion } from 'motion/react';
+import { LoginButton } from './login';
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -192,68 +174,6 @@ function Input({
         </PromptInputAction>
       </PromptInputActions>
     </PromptInput>
-  );
-}
-
-function LoginButton() {
-  const { login, ready, authenticated, user, logout, setWalletRecovery } =
-    usePrivy();
-  const [showProfile, setShowProfile] = useState(false);
-  const isMobile = useMediaQuery('only screen and (max-width : 768px)');
-
-  if (!ready) return null;
-
-  if (user) {
-    return (
-      <>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="ghost"
-              className="rounded-full h-10 w-10 text-black"
-            >
-              <Avatar>
-                <AvatarImage
-                  src={user?.twitter?.profilePictureUrl || ''}
-                  alt={`${user?.twitter?.name || ''} profile picture`}
-                />
-                <AvatarFallback>
-                  {user.twitter?.name?.charAt(0) || 'U'}
-                </AvatarFallback>
-              </Avatar>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuLabel>
-              {user.twitter?.name || shortenAddress(user.wallet?.address || '')}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem onClick={() => setShowProfile(true)}>
-                <UserIcon className="text-black" />
-                Profile
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={logout}>
-                <LogOut className="text-black" />
-                Log out
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
-        {isMobile ? (
-          <SettingsDrawer open={showProfile} onOpenChange={setShowProfile} />
-        ) : (
-          <SettingsDialog open={showProfile} onOpenChange={setShowProfile} />
-        )}
-      </>
-    );
-  }
-
-  return (
-    <Button onClick={login}>
-      <User2Icon />
-      <span>Login</span>
-    </Button>
   );
 }
 
