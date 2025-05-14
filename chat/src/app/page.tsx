@@ -261,9 +261,7 @@ function Home() {
                         <SquarePen />
                       </Button>
                     )}
-                    <ClientOnly>
-                      <LoginButton />
-                    </ClientOnly>
+                    <LoginButton />
                   </div>
                 </div>
               </header>
