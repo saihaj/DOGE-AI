@@ -16,6 +16,7 @@ export default function NotFound() {
           a correct URL or contact one of the admins if the issue persists.
         </p>
         <Link
+          prefetch
           href="/"
           className={cn(buttonVariants({ variant: 'default' }), 'no-underline')}
         >
