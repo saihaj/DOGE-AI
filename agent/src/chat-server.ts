@@ -58,6 +58,7 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
   const log = logger.child({
     requestId: request.id,
   });
+
   if (!IS_PROD) {
     log.warn({}, 'Running in non-prod mode, skipping auth');
     // Skip auth in non-prod environments
@@ -72,7 +73,7 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
   // Make sure that the incoming request has our JWT payload
   if (!token || typeof token !== 'string') {
     log.error({}, 'missing JWT payload');
-    return reply.status(403).send({
+    return reply.status(401).send({
       status: false,
       message: 'Missing JWT token',
     });
@@ -84,7 +85,7 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
 
   if (!parsedToken.success) {
     log.error({ error: parsedToken.error }, 'invalid JWT payload');
-    return reply.status(403).send({
+    return reply.status(401).send({
       message: 'invalid JWT token',
     });
   }
@@ -92,7 +93,7 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
   // check for expiry
   if (parsedToken.data.exp < Date.now() / 1000) {
     log.error({}, 'JWT token expired');
-    return reply.status(403).send({
+    return reply.status(401).send({
       message: 'JWT token expired',
     });
   }
@@ -100,7 +101,7 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
   // check for audience
   if (parsedToken.data.aud !== PRIVY_APP_ID) {
     log.error({}, 'invalid JWT audience');
-    return reply.status(403).send({
+    return reply.status(401).send({
       message: 'invalid JWT audience',
     });
   }
