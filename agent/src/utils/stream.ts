@@ -12,3 +12,15 @@ export function setStreamHeaders(reply: FastifyReply): void {
   reply.header('Cache-Control', 'no-cache');
   reply.header('Connection', 'keep-alive');
 }
+
+export function normalizeHeaderValue(
+  header: string | string[] | undefined,
+): string | undefined {
+  if (typeof header === 'string') {
+    return header;
+  }
+  if (Array.isArray(header)) {
+    return header[0]; // Take the first value if it's an array
+  }
+  return undefined; // Return undefined for missing or invalid headers
+}

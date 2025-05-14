@@ -2,37 +2,23 @@ import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { CoreMessage, smoothStream, StreamData, streamText } from 'ai';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
-import {
-  CF_TEAM_DOMAIN,
-  IS_PROD,
-  PRIVY_APP_ID,
-  PRIVY_JWKS,
-  SEED,
-  TEMPERATURE,
-} from './const';
-import { setStreamHeaders } from './utils/stream';
+import { IS_PROD, PRIVY_APP_ID, SEED, TEMPERATURE } from './const';
+import { normalizeHeaderValue, setStreamHeaders } from './utils/stream';
 import { getChatTools } from './utils/tools';
 import { extractAndProcessTweet } from './utils/message-processing';
-import { discordClient } from './discord/client';
 import { reportFailureToDiscord } from './discord/action';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { myProvider } from './api/chat';
 import { chatLogger, logger } from './logger';
 import { getKbContext } from './twitter/knowledge-base';
-import { apiRequest, promClient, readiness } from './prom';
+import { apiRequest, promClient } from './prom';
 import { UserChatStreamInput } from './api/user-chat';
 import { PROMPTS } from './twitter/prompts';
+import { z } from 'zod';
 
 const fastify = Fastify();
 
 fastify.register(cors, {
-  allowedHeaders: [
-    'Content-Type',
-    'Authorization',
-    'cf-authorization-token',
-    'privy-token',
-    'Access-Control-Allow-Origin',
-  ],
+  allowedHeaders: '*',
   methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
   origin: [
     'http://localhost:4321',
@@ -43,74 +29,86 @@ fastify.register(cors, {
   ],
 });
 
-const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
-  if (!IS_PROD) {
-    return;
+const jwtSchema = z.object({
+  sid: z.string(),
+  iss: z.string(),
+  iat: z.number(),
+  aud: z.string(),
+  sub: z.string(),
+  exp: z.number(),
+});
+
+// Interface for the auth object
+type AuthContext = {
+  userId: string;
+};
+
+// Extend FastifyRequest to include the auth property
+declare module 'fastify' {
+  interface FastifyRequest {
+    auth: AuthContext;
   }
+}
+
+const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
+  const requestId =
+    normalizeHeaderValue(request.headers['x-request-id']) || request.id;
+  request.id = requestId;
 
   const log = logger.child({
     requestId: request.id,
   });
-  const token = request.headers?.['cf-authorization-token'];
-  const privyToken = request.headers?.['privy-token'];
-
-  if (privyToken) {
-    const JWKS = createRemoteJWKSet(new URL(PRIVY_JWKS));
-
-    // Make sure that the incoming request has our token header
-    if (!privyToken || typeof privyToken !== 'string') {
-      log.error({}, 'missing required privy authorization token');
-      return reply.status(403).send({
-        status: false,
-        message: 'missing required privy token',
-      });
-    }
-
-    try {
-      const result = await jwtVerify(privyToken, JWKS, {
-        issuer: 'privy.io',
-        audience: PRIVY_APP_ID,
-      });
-      log.info(
-        { result: result.payload },
-        'privy authorization token verified',
-      );
-      return;
-    } catch (error) {
-      log.error({ error }, 'invalid privy token');
-      return reply.status(403).send({
-        status: false,
-        message: 'invalid privy token',
-      });
-    }
+  if (!IS_PROD) {
+    log.warn({}, 'Running in non-prod mode, skipping auth');
+    // Skip auth in non-prod environments
+    request.auth = {
+      userId: 'test-user',
+    };
+    return;
   }
 
-  // Your CF Access team domain
-  const CERTS_URL = `${CF_TEAM_DOMAIN}/cdn-cgi/access/certs`;
-  const JWKS = createRemoteJWKSet(new URL(CERTS_URL));
+  const token = request.headers?.['x-jwt-payload'];
 
-  // Make sure that the incoming request has our token header
+  // Make sure that the incoming request has our JWT payload
   if (!token || typeof token !== 'string') {
-    log.error({}, 'missing required cf authorization token');
+    log.error({}, 'missing JWT payload');
     return reply.status(403).send({
       status: false,
-      message: 'missing required cf authorization token',
+      message: 'Missing JWT token',
     });
   }
 
-  try {
-    const result = await jwtVerify(token, JWKS, {
-      issuer: CF_TEAM_DOMAIN,
-      // audience: CF_AUDIENCE, // TODO: need to find a better way for this
-    });
-    log.info({ result: result.payload }, 'cf authorization token verified');
-  } catch (error) {
-    log.error({ error }, 'invalid cf authorization token');
+  // convert the base64 token to a string and parse with zod
+  const decodedToken = Buffer.from(token, 'base64').toString('utf-8');
+  const parsedToken = jwtSchema.safeParse(JSON.parse(decodedToken));
+
+  if (!parsedToken.success) {
+    log.error({ error: parsedToken.error }, 'invalid JWT payload');
     return reply.status(403).send({
-      status: false,
-      message: 'invalid cf authorization token',
+      message: 'invalid JWT token',
     });
   }
+
+  // check for expiry
+  if (parsedToken.data.exp < Date.now() / 1000) {
+    log.error({}, 'JWT token expired');
+    return reply.status(403).send({
+      message: 'JWT token expired',
+    });
+  }
+
+  // check for audience
+  if (parsedToken.data.aud !== PRIVY_APP_ID) {
+    log.error({}, 'invalid JWT audience');
+    return reply.status(403).send({
+      message: 'invalid JWT audience',
+    });
+  }
+
+  log.info({ userId: parsedToken.data.sub }, 'valid JWT token');
+  request.auth = {
+    userId: parsedToken.data.sub,
+  };
 };
 
 fastify.route<{ Body: UserChatStreamInput }>({
@@ -128,6 +126,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
     const log = logger.child({
       function: 'api-userchat',
       requestId: request.id,
+      userId: request.auth.userId,
     });
     // Create an AbortController for the backend
     const abortController = new AbortController();
