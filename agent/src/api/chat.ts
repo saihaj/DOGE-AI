@@ -38,7 +38,7 @@ export const myProvider = customProvider({
     'sonar-reasoning': perplexity('sonar-reasoning'),
     'gpt-4o': openai('gpt-4o'),
     'gpt-4o-mini': openai('gpt-4o-mini'),
-    'gpt-4.1': openai('gpt-4.1'),
+    'gpt-4.1': openai.responses('gpt-4.1'),
     'gpt-4.1-mini': openai('gpt-4.1-mini'),
     'gpt-4.1-nano': openai('gpt-4.1-nano'),
     'o3-mini': openai('o3-mini'),
