@@ -51,12 +51,8 @@
           "name": "Chat_user_User_id_fk",
           "tableFrom": "Chat",
           "tableTo": "User",
-          "columnsFrom": [
-            "user"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -111,12 +107,8 @@
           "name": "Message_chat_id_Chat_id_fk",
           "tableFrom": "Message",
           "tableTo": "Chat",
-          "columnsFrom": [
-            "chat_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["chat_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -153,9 +145,7 @@
       "indexes": {
         "User_privy_id_unique": {
           "name": "User_privy_id_unique",
-          "columns": [
-            "privy_id"
-          ],
+          "columns": ["privy_id"],
           "isUnique": true
         }
       },
@@ -203,12 +193,8 @@
           "name": "Vote_chat_Chat_id_fk",
           "tableFrom": "Vote",
           "tableTo": "Chat",
-          "columnsFrom": [
-            "chat"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["chat"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -216,22 +202,15 @@
           "name": "Vote_message_Message_id_fk",
           "tableFrom": "Vote",
           "tableTo": "Message",
-          "columnsFrom": [
-            "message"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["message"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
         "Vote_chat_message_pk": {
-          "columns": [
-            "chat",
-            "message"
-          ],
+          "columns": ["chat", "message"],
           "name": "Vote_chat_message_pk"
         }
       },
