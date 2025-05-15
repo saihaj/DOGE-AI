@@ -109,7 +109,7 @@ export function getMessageByErrorCode(errorCode: ChatErrorCode): string {
   }
 }
 
-function getStatusCodeByType(type: ErrorType) {
+function getStatusCodeByType(type: ChatErrorType) {
   switch (type) {
     case 'bad_request':
       return 400;

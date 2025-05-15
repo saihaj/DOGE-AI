@@ -367,11 +367,9 @@ fastify.route<{ Body: UserChatStreamInput }>({
             const lastMessage = event.response.messages.at(-1);
 
             if (!lastMessage) {
-              return new ChatSDKError(
-                'bad_request:chat',
-                'unable to get message to save',
-                requestId,
-              ).toResponse();
+              log.error({}, 'unable to get message to save');
+              await stream.close();
+              return;
             }
 
             const [, assistantMessage] = appendResponseMessages({

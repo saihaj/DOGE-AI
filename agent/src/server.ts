@@ -313,6 +313,7 @@ fastify.route<{ Body: ChatStreamInput }>({
 
       // Process any tweet URLs in the message
       const { messages: updatedMessages } = await extractAndProcessTweet(
+        // @ts-expect-error - TODO: fix typings
         messages,
         userMessageText,
         stream,
@@ -320,6 +321,7 @@ fastify.route<{ Body: ChatStreamInput }>({
       );
 
       // Update messages with the processed result
+      // @ts-expect-error - TODO: fix typings
       messages = updatedMessages;
 
       if (billSearch || documentSearch || manualKbSearch || webSearch) {
@@ -519,6 +521,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
 
       // Process any tweet URLs in the message
       const { messages: updatedMessages } = await extractAndProcessTweet(
+        // @ts-expect-error - TODO: fix typings
         messages,
         userMessageText,
         stream,
@@ -526,6 +529,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
       );
 
       // Update messages with the processed result
+      // @ts-expect-error - TODO: fix typings
       messages = updatedMessages;
 
       const kb = await getKbContext(
@@ -571,6 +575,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
         experimental_transform: smoothStream({}),
         temperature: selectedChatModel.startsWith('o4') ? 1 : TEMPERATURE,
         seed: SEED,
+        // @ts-expect-error - TODO: fix typings
         tools: getChatTools(messages, log, stream),
         maxSteps: 5,
         experimental_generateMessageId: crypto.randomUUID,
