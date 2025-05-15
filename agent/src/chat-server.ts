@@ -1,23 +1,40 @@
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
-import { CoreMessage, smoothStream, StreamData, streamText } from 'ai';
+import {
+  appendClientMessage,
+  appendResponseMessages,
+  CoreMessage,
+  smoothStream,
+  StreamData,
+  streamText,
+  UIMessage,
+} from 'ai';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import { IS_PROD, PRIVY_APP_ID, SEED, TEMPERATURE } from './const';
 import { normalizeHeaderValue, setStreamHeaders } from './utils/stream';
 import { getChatTools } from './utils/tools';
-import { extractAndProcessTweet } from './utils/message-processing';
+import {
+  extractAndProcessTweet,
+  generateTitleFromUserMessage,
+} from './utils/message-processing';
 import { reportFailureToDiscord } from './discord/action';
 import { myProvider } from './api/chat';
-import { chatLogger } from './logger';
+import { chatLogger, logger } from './logger';
 import { getKbContext } from './twitter/knowledge-base';
 import { apiRequest, promClient } from './prom';
-import { UserChatStreamInput } from './api/user-chat';
 import { PROMPTS } from './twitter/prompts';
 import { z } from 'zod';
-import { ChatDbInstance } from './chat-api/queries';
+import {
+  ChatDbInstance,
+  getChatById,
+  getMessagesByChatId,
+  saveChat,
+  saveMessages,
+} from './chat-api/queries';
 import { eq, InferSelectModel } from 'drizzle-orm';
 import { ChatChatDb, UserChatDb } from './chat-api/schema';
 import { ChatSDKError } from './chat-api/errors';
+import { Static, Type } from '@sinclair/typebox';
 
 const fastify = Fastify();
 
@@ -168,6 +185,12 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
   };
 };
 
+const UserChatStreamInput = Type.Object({
+  id: Type.String(),
+  message: Type.Any(),
+});
+type UserChatStreamInput = Static<typeof UserChatStreamInput>;
+
 fastify.route<{ Body: UserChatStreamInput }>({
   method: 'post',
   bodyLimit: 10485760, // 10MB
@@ -176,6 +199,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
     body: UserChatStreamInput,
   },
   handler: async (request, reply) => {
+    const requestId = request.id;
     apiRequest.inc({
       method: request.method,
       path: '/api/chat',
@@ -185,21 +209,82 @@ fastify.route<{ Body: UserChatStreamInput }>({
       requestId: request.id,
       userId: request.auth.user.id,
     });
+
     // Create an AbortController for the backend
     const abortController = new AbortController();
-    let { messages, selectedChatModel } = request.body as {
-      messages: CoreMessage[];
-      selectedChatModel: string;
-    };
-    const userMessage = messages[messages.length - 1];
 
-    if (!userMessage) {
-      throw new Error('No user message');
+    let { message, id } = request.body as {
+      message: UIMessage;
+      id: string;
+    };
+
+    if (!message) {
+      return new ChatSDKError(
+        'bad_request:chat',
+        'no message provided',
+        requestId,
+      ).toResponse();
     }
 
-    const userMessageText = userMessage.content.toString();
+    const chat = await getChatById({
+      id,
+    });
 
-    log.info({ text: userMessageText }, 'User message');
+    if (!chat) {
+      try {
+        const title = await generateTitleFromUserMessage({ message });
+        await saveChat({
+          id,
+          title,
+          userId: request.auth.user.id,
+          visibility: 'private',
+        });
+      } catch (error) {
+        return new ChatSDKError(
+          'bad_request:chat',
+          'unable to save chat',
+          requestId,
+        ).toResponse();
+      }
+    } else {
+      if (chat.userId !== request.auth.user.id) {
+        return new ChatSDKError(
+          'forbidden:chat',
+          undefined,
+          requestId,
+        ).toResponse();
+      }
+    }
+
+    const userMessageText = message.content.toString();
+
+    const previousMessages = await getMessagesByChatId({ id });
+    log.info({ previousMessages }, 'hhhh');
+    let messages = appendClientMessage({
+      // @ts-expect-error -  TODO: satisfy them some other day
+      messages: previousMessages,
+      message,
+    });
+
+    try {
+      await saveMessages({
+        messages: [
+          {
+            chatId: id,
+            id: message.id,
+            role: 'user',
+            parts: message.parts,
+          },
+        ],
+      });
+    } catch (error) {
+      log.error({ error }, 'Error saving message');
+      return new ChatSDKError(
+        'bad_request:chat',
+        'unable to save message',
+        requestId,
+      ).toResponse();
+    }
 
     // Listen for the client disconnecting (abort)
     request.raw.on('close', () => {
@@ -227,6 +312,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
 
       const kb = await getKbContext(
         {
+          // @ts-expect-error - TODO: fix these types
           messages,
           // latest message
           text: messages[messages.length - 1].content.toString(),
@@ -245,6 +331,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
         messages.splice(messages.length - 1, 0, {
           role: 'user',
           content: result.trim(),
+          id: crypto.randomUUID(),
         });
         stream.appendMessageAnnotation({
           role: 'kb-entry-found',
@@ -258,15 +345,16 @@ fastify.route<{ Body: UserChatStreamInput }>({
         messages.unshift({
           role: 'system',
           content: `${prompt}.\nCurrent date: ${new Date().toUTCString()}`,
+          id: crypto.randomUUID(),
         });
       }
 
       const result = streamText({
-        model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
+        model: myProvider.languageModel('gpt-4.1'),
         abortSignal: abortController.signal,
         messages,
         experimental_transform: smoothStream({}),
-        temperature: selectedChatModel.startsWith('o4') ? 1 : TEMPERATURE,
+        temperature: 0,
         seed: SEED,
         tools: getChatTools(messages, log, stream),
         maxSteps: 5,
@@ -276,6 +364,34 @@ fastify.route<{ Body: UserChatStreamInput }>({
           log.error({ error }, 'Error in chat stream');
         },
         async onFinish(event) {
+          if (event.response) {
+            const lastMessage = event.response.messages.at(-1);
+
+            if (!lastMessage) {
+              return new ChatSDKError(
+                'bad_request:chat',
+                'unable to get message to save',
+                requestId,
+              ).toResponse();
+            }
+
+            const [, assistantMessage] = appendResponseMessages({
+              messages: [message],
+              responseMessages: event.response.messages,
+            });
+
+            await saveMessages({
+              messages: [
+                {
+                  chatId: id,
+                  parts: assistantMessage.parts,
+                  role: 'assistant',
+                  id: assistantMessage.id,
+                },
+              ],
+            });
+          }
+
           if (event.sources.length === 0) {
             await stream.close();
             log.info({}, 'stream closed');

@@ -59,16 +59,16 @@ export class ChatSDKError extends Error {
 
     const { message, cause, statusCode } = this;
 
-    if (visibility === 'log') {
-      this.log.error(
-        {
-          code,
-          message,
-          cause,
-        },
-        `ChatSDKError: ${code} - ${message}`,
-      );
+    this.log.error(
+      {
+        code,
+        message,
+        cause,
+      },
+      `ChatSDKError: ${code}`,
+    );
 
+    if (visibility === 'log') {
       return Response.json(
         { code: '', message: 'Something went wrong. Please try again later.' },
         { status: statusCode },

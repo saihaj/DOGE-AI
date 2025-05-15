@@ -291,12 +291,14 @@ function Home() {
     setMessages,
   } = useChat({
     api: `/api/chat`,
-    body: {
-      selectedChatModel: 'gpt-4.1',
-    },
     headers: {
       [PRIVY_COOKIE_NAME]: privyToken,
     },
+    // send the latest message
+    experimental_prepareRequestBody: body => ({
+      id: body.id,
+      message: body.messages.at(-1),
+    }),
     onError: error => {
       toast.error(error.message, {
         dismissible: false,

@@ -30,12 +30,16 @@ export async function saveChat({
   visibility,
 }: Omit<InferSelectModel<typeof schema.ChatChatDb>, 'createdAt'>) {
   try {
-    return await ChatDbInstance.insert(schema.ChatChatDb).values({
-      id,
-      title,
-      userId,
-      visibility,
-    });
+    const [chat] = await ChatDbInstance.insert(schema.ChatChatDb)
+      .values({
+        id,
+        title,
+        userId,
+        visibility,
+      })
+      .returning();
+
+    return chat;
   } catch (error) {
     throw new ChatSDKError('bad_request:database', 'Failed to save chat');
   }
@@ -55,21 +59,27 @@ export async function getChatById({ id }: { id: string }) {
 export async function saveMessages({
   messages,
 }: {
-  messages: Array<InferSelectModel<typeof schema.MessageChatDb>>;
+  messages: Array<
+    Omit<InferSelectModel<typeof schema.MessageChatDb>, 'createdAt'>
+  >;
 }) {
-  try {
-    return await ChatDbInstance.insert(schema.MessageChatDb).values(messages);
-  } catch (error) {
-    throw new ChatSDKError('bad_request:database', 'Failed to save messages');
-  }
+  return await ChatDbInstance.insert(schema.MessageChatDb).values(
+    messages.map(a => ({ ...a, parts: Buffer.from(JSON.stringify(a.parts)) })),
+  );
 }
 
 export async function getMessagesByChatId({ id }: { id: string }) {
   try {
-    return await ChatDbInstance.select()
+    const messages = await ChatDbInstance.select()
       .from(schema.MessageChatDb)
       .where(eq(schema.MessageChatDb.chatId, id))
       .orderBy(asc(schema.MessageChatDb.createdAt));
+
+    return messages.map(message => ({
+      ...message,
+      // @ts-expect-error - TODO: figure out best way to handle this
+      parts: JSON.parse(Buffer.from(message.parts).toString('utf-8')),
+    }));
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
