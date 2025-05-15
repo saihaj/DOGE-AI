@@ -8,7 +8,7 @@ import { getChatTools } from './utils/tools';
 import { extractAndProcessTweet } from './utils/message-processing';
 import { reportFailureToDiscord } from './discord/action';
 import { myProvider } from './api/chat';
-import { chatLogger, logger } from './logger';
+import { chatLogger } from './logger';
 import { getKbContext } from './twitter/knowledge-base';
 import { apiRequest, promClient } from './prom';
 import { UserChatStreamInput } from './api/user-chat';
@@ -55,7 +55,7 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     normalizeHeaderValue(request.headers['x-request-id']) || request.id;
   request.id = requestId;
 
-  const log = logger.child({
+  const log = chatLogger.child({
     requestId: request.id,
   });
 
@@ -124,7 +124,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
       method: request.method,
       path: '/api/chat',
     });
-    const log = logger.child({
+    const log = chatLogger.child({
       function: 'api-userchat',
       requestId: request.id,
       userId: request.auth.userId,
@@ -288,7 +288,7 @@ fastify.listen({ host: '::', port: 3001 }, async function (err, address) {
 
   if (err) {
     await reportFailureToDiscord({ message: 'Chat server crashed: ' + err });
-    logger.error(
+    chatLogger.error(
       {
         error: err,
       },
