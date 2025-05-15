@@ -14,6 +14,10 @@ import { apiRequest, promClient } from './prom';
 import { UserChatStreamInput } from './api/user-chat';
 import { PROMPTS } from './twitter/prompts';
 import { z } from 'zod';
+import { ChatDbInstance } from './chat-api/queries';
+import { eq, InferSelectModel } from 'drizzle-orm';
+import { ChatChatDb, UserChatDb } from './chat-api/schema';
+import { ChatSDKError } from './chat-api/errors';
 
 const fastify = Fastify();
 
@@ -40,13 +44,53 @@ const jwtSchema = z.object({
 
 // Interface for the auth object
 type AuthContext = {
-  userId: string;
+  privyUserId: string;
+  user: InferSelectModel<typeof UserChatDb>;
 };
 
 // Extend FastifyRequest to include the auth property
 declare module 'fastify' {
   interface FastifyRequest {
     auth: AuthContext;
+  }
+}
+
+async function contextUser({
+  privyId,
+  requestId,
+}: {
+  privyId: string;
+  requestId: string;
+}) {
+  // if user in DB return
+  try {
+    const user = await ChatDbInstance.query.UserChatDb.findFirst({
+      where: eq(UserChatDb.privyId, privyId),
+    });
+
+    if (user) return user;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'unable to query user',
+      requestId,
+    );
+  }
+
+  // else create user in DB
+  try {
+    const [newUser] = await ChatDbInstance.insert(UserChatDb)
+      .values({
+        privyId,
+      })
+      .returning();
+    return newUser;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      'unable to create user',
+      requestId,
+    );
   }
 }
 
@@ -61,9 +105,14 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
 
   if (!IS_PROD) {
     log.warn({}, 'Running in non-prod mode, skipping auth');
+    const user = await contextUser({
+      privyId: 'test-user',
+      requestId,
+    });
     // Skip auth in non-prod environments
     request.auth = {
-      userId: 'test-user',
+      privyUserId: 'test-user',
+      user,
     };
     return;
   }
@@ -107,8 +156,15 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
   }
 
   log.info({ userId: parsedToken.data.sub }, 'valid JWT token');
+  const privyId = parsedToken.data.sub;
+  const user = await contextUser({
+    privyId,
+    requestId,
+  });
+
   request.auth = {
-    userId: parsedToken.data.sub,
+    privyUserId: privyId,
+    user,
   };
 };
 
@@ -127,7 +183,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
     const log = chatLogger.child({
       function: 'api-userchat',
       requestId: request.id,
-      userId: request.auth.userId,
+      userId: request.auth.user.id,
     });
     // Create an AbortController for the backend
     const abortController = new AbortController();

@@ -1,4 +1,4 @@
-import { chatLogger } from '../logger';
+import { chatLogger, WithLogger } from '../logger';
 
 export type ChatErrorType =
   | 'bad_request'
@@ -31,16 +31,13 @@ export const visibilityBySurface: Record<ChatSurface, ChatErrorVisibility> = {
   vote: 'response',
 };
 
-const log = chatLogger.child({
-  module: 'ChatSDKError',
-});
-
 export class ChatSDKError extends Error {
   public type: ChatErrorType;
   public surface: ChatSurface;
   public statusCode: number;
+  private log: WithLogger;
 
-  constructor(errorCode: ChatErrorCode, cause?: string) {
+  constructor(errorCode: ChatErrorCode, cause?: string, requestId?: string) {
     super();
 
     const [type, surface] = errorCode.split(':');
@@ -50,6 +47,10 @@ export class ChatSDKError extends Error {
     this.surface = surface as ChatSurface;
     this.message = getMessageByErrorCode(errorCode);
     this.statusCode = getStatusCodeByType(this.type);
+    this.log = chatLogger.child({
+      module: 'ChatSDKError',
+      requestId,
+    });
   }
 
   public toResponse() {
@@ -59,7 +60,7 @@ export class ChatSDKError extends Error {
     const { message, cause, statusCode } = this;
 
     if (visibility === 'log') {
-      log.error(
+      this.log.error(
         {
           code,
           message,
