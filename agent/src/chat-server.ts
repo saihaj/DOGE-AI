@@ -1,29 +1,19 @@
-import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
+import cors from '@fastify/cors';
+import { Static, Type } from '@sinclair/typebox';
 import {
   appendClientMessage,
   appendResponseMessages,
-  CoreMessage,
   smoothStream,
   StreamData,
   streamText,
   UIMessage,
 } from 'ai';
+import { eq, InferSelectModel } from 'drizzle-orm';
+import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import * as crypto from 'node:crypto';
-import cors from '@fastify/cors';
-import { IS_PROD, PRIVY_APP_ID, SEED, TEMPERATURE } from './const';
-import { normalizeHeaderValue, setStreamHeaders } from './utils/stream';
-import { getChatTools } from './utils/tools';
-import {
-  extractAndProcessTweet,
-  generateTitleFromUserMessage,
-} from './utils/message-processing';
-import { reportFailureToDiscord } from './discord/action';
-import { myProvider } from './api/chat';
-import { chatLogger, logger } from './logger';
-import { getKbContext } from './twitter/knowledge-base';
-import { apiRequest, promClient } from './prom';
-import { PROMPTS } from './twitter/prompts';
 import { z } from 'zod';
+import { myProvider } from './api/chat';
+import { ChatSDKError } from './chat-api/errors';
 import {
   ChatDbInstance,
   getChatById,
@@ -31,10 +21,19 @@ import {
   saveChat,
   saveMessages,
 } from './chat-api/queries';
-import { eq, InferSelectModel } from 'drizzle-orm';
-import { ChatChatDb, UserChatDb } from './chat-api/schema';
-import { ChatSDKError } from './chat-api/errors';
-import { Static, Type } from '@sinclair/typebox';
+import { UserChatDb } from './chat-api/schema';
+import { IS_PROD, PRIVY_APP_ID, SEED } from './const';
+import { reportFailureToDiscord } from './discord/action';
+import { chatLogger } from './logger';
+import { apiRequest, promClient } from './prom';
+import { getKbContext } from './twitter/knowledge-base';
+import { PROMPTS } from './twitter/prompts';
+import {
+  extractAndProcessTweet,
+  generateTitleFromUserMessage,
+} from './utils/message-processing';
+import { normalizeHeaderValue, setStreamHeaders } from './utils/stream';
+import { getChatTools } from './utils/tools';
 
 const fastify = Fastify();
 
@@ -435,7 +434,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
 // So in fly.io, health should do both the health check and the readiness check
 fastify.route({
   method: 'GET',
-  handler: async (request, reply) => {
+  handler: async (_request, reply) => {
     return reply.send({ status: 'ready' }).code(200);
   },
   url: '/api/health',
