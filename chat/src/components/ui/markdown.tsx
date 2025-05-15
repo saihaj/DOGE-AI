@@ -105,7 +105,7 @@ const NonMemoizedMarkdown = ({
   className?: string;
 }) => {
   return (
-    <div className={cn('prose dark:prose-invert', className)}>
+    <div className={cn(className)}>
       <ReactMarkdown remarkPlugins={remarkPlugins} components={components}>
         {children}
       </ReactMarkdown>
