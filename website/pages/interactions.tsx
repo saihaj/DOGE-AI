@@ -68,6 +68,16 @@ export async function getStaticProps() {
   return { props: { tweets } };
 }
 
+// Fisher-Yates shuffle algorithm
+function shuffleArray<T>(array: Array<T>) {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
 export default function Page({ tweets }: { tweets: Array<Tweet> }) {
   const { isFallback } = useRouter();
   const [isClient, setIsClient] = useState(false);
@@ -76,16 +86,6 @@ export default function Page({ tweets }: { tweets: Array<Tweet> }) {
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  // Fisher-Yates shuffle algorithm
-  const shuffleArray = (array: Array<any>) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
-  };
 
   // Create shuffled tweets when on client side
   const shuffledTweets = useMemo(() => {
