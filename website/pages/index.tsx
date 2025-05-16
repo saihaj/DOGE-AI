@@ -7,6 +7,7 @@ import hero from '../public/images/hero.png';
 import { useCopyToClipboard } from '@uidotdev/usehooks';
 import { useEffect, useState } from 'react';
 import PayPalDonate from '@/components/donate';
+import { Navbar } from '@/components/nav';
 
 function CongressCard({
   number,
@@ -114,34 +115,7 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen container mx-auto px-4 py-5" role="main">
-        <header className="flex items-center justify-between" role="banner">
-          <nav className="flex items-center gap-4" aria-label="Home Navigation">
-            <Link href="/" className="flex items-center gap-4">
-              <Logo className="h-[50px] w-[50px] rounded-full" />
-              <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-america">
-                DOGEai
-              </span>
-            </Link>
-          </nav>
-
-          <nav className="flex items-center gap-3" aria-label="Social Links">
-            <p className="text-lg font-medium lg:block hidden">
-              Built by the community, for the community
-            </p>
-            <Button variant="outline" asChild size="sm">
-              <Link
-                href="https://x.com/dogeai_gov"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Follow us on X"
-              >
-                <RiTwitterXLine aria-label="X (formerly Twitter) Icon" />
-                <span className="md:block hidden">Follow</span>
-              </Link>
-            </Button>
-            <PayPalDonate />
-          </nav>
-        </header>
+        <Navbar />
 
         <main>
           <section
