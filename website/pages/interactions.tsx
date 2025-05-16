@@ -84,13 +84,13 @@ export default function Page({ tweets }: { tweets: Array<Tweet> }) {
   return (
     <div className="min-h-screen container mx-auto px-4 py-5" role="main">
       <Head>
-        <title>Join DOGEai Walkers</title>
+        <title>Loud, Clear, and Unignorable | DOGEai</title>
       </Head>
       <Navbar />
 
       <main className="container mx-auto px-2 py-4">
         <h1 className="text-balance text-3xl md:text-5xl text-center font-semibold mb-2 md:mb-8">
-          Join the thousands of DOGEai Walkers
+          Not Just Noticed. Recognized.
         </h1>
         <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
           {tweets.map((tweet, index) => (
