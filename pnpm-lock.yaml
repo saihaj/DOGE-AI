@@ -239,7 +239,7 @@ importers:
     devDependencies:
       '@cloudflare/next-on-pages':
         specifier: ^1.13.12
-        version: 1.13.12(bufferutil@4.0.9)(utf-8-validate@5.0.10)(vercel@41.7.6(encoding@0.1.13))(wrangler@4.13.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+        version: 1.13.12(bufferutil@4.0.9)(utf-8-validate@5.0.10)(vercel@41.7.8(encoding@0.1.13))(wrangler@4.13.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@eslint/eslintrc':
         specifier: ^3.3.1
         version: 3.3.1
@@ -277,8 +277,8 @@ importers:
         specifier: ^5.7.3
         version: 5.7.3
       vercel:
-        specifier: ^41.7.6
-        version: 41.7.6(encoding@0.1.13)
+        specifier: ^41.7.8
+        version: 41.7.8(encoding@0.1.13)
       wrangler:
         specifier: ^4.13.2
         version: 4.13.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -3340,8 +3340,8 @@ packages:
   '@vercel/redwood@2.3.1':
     resolution: {integrity: sha512-CCu/lb+W58gfFdxrF1U41vvUdc2zEXiks0l01qXzbHOHQCWOC7NXWwtieeT/SLqG0K5pkR66q1TpLRtGHT0dYg==}
 
-  '@vercel/remix-builder@5.4.5':
-    resolution: {integrity: sha512-fwUNSnAdMNFP9FSk9ZZwLg2uduqRRFaZYX+7GCsZfoRiJzDoEUM+22rhCP3N2A7Z4m07a+Wg1qCuKTeMijf44g==}
+  '@vercel/remix-builder@5.4.6':
+    resolution: {integrity: sha512-Yy51eFlORcPweYgVW81s7MhSH9MWl67QetrRB1J2wkDnoKZ3nE8t403oavEAbZPL/z0JQG1RHYRjnUfYCXtTKQ==}
 
   '@vercel/ruby@2.2.0':
     resolution: {integrity: sha512-FJF9gKVNHAljGOgV6zS5ou2N7ZgjOqMMtcPA5lsJEUI5/AZzVDWCmtcowTP80wEtHuupkd7d7M399FA082kXYQ==}
@@ -6720,6 +6720,7 @@ packages:
 
   path-match@1.2.4:
     resolution: {integrity: sha512-UWlehEdqu36jmh4h5CWJ7tARp1OEVKGHKm6+dg9qMq5RKUTV5WJrGgaZ3dN2m7WFAXDbjlHzvJvL/IUpy84Ktw==}
+    deprecated: This package is archived and no longer maintained. For support, visit https://github.com/expressjs/express/discussions
 
   path-parse@1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
@@ -8095,8 +8096,8 @@ packages:
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc
       react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0.0 || ^19.0.0-rc
 
-  vercel@41.7.6:
-    resolution: {integrity: sha512-jz+9T0TK5otqM2VMeIEiix4HjtQF/RYsdFjABWXOSCta0Fc1/+ReWAv+X8AolvJCak5kJ4czvfgwD+tBBiI54w==}
+  vercel@41.7.8:
+    resolution: {integrity: sha512-itUz44eMHFxjE/iSNIlQzyypQ2LfnD/LzTg4ptL+uq7bT3zjGZ+MCEUUy9y4XkRV4zMBKvKzDeXVXajKLn71sA==}
     engines: {node: '>= 18'}
     hasBin: true
 
@@ -8505,7 +8506,7 @@ snapshots:
     dependencies:
       mime: 3.0.0
 
-  '@cloudflare/next-on-pages@1.13.12(bufferutil@4.0.9)(utf-8-validate@5.0.10)(vercel@41.7.6(encoding@0.1.13))(wrangler@4.13.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
+  '@cloudflare/next-on-pages@1.13.12(bufferutil@4.0.9)(utf-8-validate@5.0.10)(vercel@41.7.8(encoding@0.1.13))(wrangler@4.13.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
       acorn: 8.14.0
       ast-types: 0.14.2
@@ -8519,7 +8520,7 @@ snapshots:
       package-manager-manager: 0.2.0
       pcre-to-regexp: 1.1.0
       semver: 7.7.1
-      vercel: 41.7.6(encoding@0.1.13)
+      vercel: 41.7.8(encoding@0.1.13)
       wrangler: 4.13.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
     transitivePeerDependencies:
       - bufferutil
@@ -11275,7 +11276,7 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/remix-builder@5.4.5(encoding@0.1.13)':
+  '@vercel/remix-builder@5.4.6(encoding@0.1.13)':
     dependencies:
       '@vercel/error-utils': 2.0.3
       '@vercel/nft': 0.29.2(encoding@0.1.13)
@@ -13787,7 +13788,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9)
+      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.0))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -15889,7 +15890,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9):
+  retry-axios@2.6.0(axios@1.7.9(debug@4.4.0)):
     dependencies:
       axios: 1.7.9(debug@4.4.0)
 
@@ -16904,7 +16905,7 @@ snapshots:
       - '@types/react'
       - '@types/react-dom'
 
-  vercel@41.7.6(encoding@0.1.13):
+  vercel@41.7.8(encoding@0.1.13):
     dependencies:
       '@vercel/build-utils': 10.5.1
       '@vercel/fun': 1.1.6(encoding@0.1.13)
@@ -16914,7 +16915,7 @@ snapshots:
       '@vercel/node': 5.1.16(encoding@0.1.13)
       '@vercel/python': 4.7.2
       '@vercel/redwood': 2.3.1(encoding@0.1.13)
-      '@vercel/remix-builder': 5.4.5(encoding@0.1.13)
+      '@vercel/remix-builder': 5.4.6(encoding@0.1.13)
       '@vercel/ruby': 2.2.0
       '@vercel/static-build': 2.7.7
       chokidar: 4.0.0
