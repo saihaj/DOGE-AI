@@ -60,14 +60,6 @@ const TWEETS = [
   '1922603797257375756',
 ];
 
-export async function getStaticProps() {
-  const tweets = await pMap(TWEETS, id => getTweet(id), {
-    concurrency: 10,
-  });
-
-  return { props: { tweets } };
-}
-
 // Fisher-Yates shuffle algorithm
 function shuffleArray<T>(array: Array<T>) {
   const shuffled = [...array];
@@ -78,32 +70,18 @@ function shuffleArray<T>(array: Array<T>) {
   return shuffled;
 }
 
+export async function getStaticProps() {
+  const tweets = await pMap(TWEETS, id => getTweet(id), {
+    concurrency: 10,
+  });
+
+  return {
+    props: { tweets: shuffleArray(tweets) },
+    revalidate: 60 * 60, // 1 hour
+  };
+}
+
 export default function Page({ tweets }: { tweets: Array<Tweet> }) {
-  const { isFallback } = useRouter();
-  const [isClient, setIsClient] = useState(false);
-
-  // This ensures hydration issues are avoided
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Create shuffled tweets when on client side
-  const shuffledTweets = useMemo(() => {
-    if (isClient) {
-      return shuffleArray(tweets);
-    }
-    return tweets;
-  }, [tweets, isClient]);
-
-  // If still loading or not yet client-side rendered, show a skeleton
-  if (isFallback || !isClient) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <TweetSkeleton />
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen container mx-auto px-4 py-5" role="main">
       <Head>
@@ -116,7 +94,7 @@ export default function Page({ tweets }: { tweets: Array<Tweet> }) {
           Join the thousands of DOGEai Walkers
         </h1>
         <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
-          {shuffledTweets.map((tweet, index) => (
+          {tweets.map((tweet, index) => (
             <div key={index} className="break-inside-avoid mb-2">
               <EmbeddedTweet tweet={tweet} />
             </div>
