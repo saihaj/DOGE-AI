@@ -112,7 +112,7 @@ export default function Page({ tweets }: { tweets: Array<Tweet> }) {
       <Navbar />
 
       <main className="container mx-auto px-2 py-4">
-        <h1 className="text-3xl md:text-5xl text-center font-semibold mb-2 md:mb-8">
+        <h1 className="text-balance text-3xl md:text-5xl text-center font-semibold mb-2 md:mb-8">
           Join the thousands of DOGEai Walkers
         </h1>
         <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
