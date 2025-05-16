@@ -1,10 +1,8 @@
 import { Footer } from '@/components/footer';
 import { Navbar } from '@/components/nav';
 import Head from 'next/head';
-import { useRouter } from 'next/router';
 import pMap from 'p-map';
-import { useEffect, useMemo, useState } from 'react';
-import { EmbeddedTweet, TweetSkeleton } from 'react-tweet';
+import { EmbeddedTweet } from 'react-tweet';
 import { getTweet, type Tweet } from 'react-tweet/api';
 
 const TWEETS = [
