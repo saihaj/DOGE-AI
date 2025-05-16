@@ -1,13 +1,11 @@
-import Link from 'next/link';
-import { RiGithubFill, RiTwitterXLine } from '@remixicon/react';
-import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/logo';
-import Image from 'next/image';
-import hero from '../public/images/hero.png';
-import { useCopyToClipboard } from '@uidotdev/usehooks';
-import { useEffect, useState } from 'react';
-import PayPalDonate from '@/components/donate';
 import { Navbar } from '@/components/nav';
+import { Button } from '@/components/ui/button';
+import { RiGithubFill, RiTwitterXLine } from '@remixicon/react';
+import { useCopyToClipboard } from '@uidotdev/usehooks';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import hero from '../public/images/hero.png';
 
 function CongressCard({
   number,
