@@ -1,11 +1,10 @@
-import { StreamData, tool } from 'ai';
+import { Message, StreamData, tool } from 'ai';
 import { z } from 'zod';
 import { ACTIVE_CONGRESS } from '../const';
 import { bill, db, eq } from 'database';
 import { getKbContext } from '../twitter/knowledge-base';
 import { getSearchResult } from '../twitter/web';
 import { WithLogger } from '../logger';
-import { CoreMessage } from 'ai';
 
 /**
  * Returns shared tools for chat interfaces
@@ -16,7 +15,7 @@ import { CoreMessage } from 'ai';
  * @returns Object containing tool definitions
  */
 export function getChatTools(
-  messages: CoreMessage[],
+  messages: Message[],
   log: WithLogger,
   stream?: StreamData,
 ) {
@@ -69,6 +68,7 @@ export function getChatTools(
       execute: async ({ query }) => {
         const kb = await getKbContext(
           {
+            // @ts-expect-error - TODO: satisfy some other day
             messages: messages,
             text: query,
             manualEntries: false,
