@@ -45,9 +45,7 @@ fastify.register(cors, {
   allowedHeaders: '*',
   methods: ['GET', 'POST', 'OPTIONS', 'DELETE'],
   origin: [
-    'http://localhost:4321',
     'http://localhost:4322',
-    'https://manage.dogeai.info',
     'https://dogeai.chat',
     /^https:\/\/([a-zA-Z0-9-]+\.)*dogeai-chat\.pages\.dev$/, // Matches dogeai-chat.pages.dev and subdomains
   ],
