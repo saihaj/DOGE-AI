@@ -34,8 +34,12 @@ import {
 } from './utils/message-processing';
 import { normalizeHeaderValue, setStreamHeaders } from './utils/stream';
 import { getChatTools } from './utils/tools';
+import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
+import { createContext } from './chat-api/trpc';
+import { appRouter } from './chat-api/router';
+import { contextUser, jwtSchema } from './chat-api/context';
 
-const fastify = Fastify();
+const fastify = Fastify({ maxParamLength: 5000 });
 
 fastify.register(cors, {
   allowedHeaders: '*',
@@ -49,15 +53,6 @@ fastify.register(cors, {
   ],
 });
 
-const jwtSchema = z.object({
-  sid: z.string(),
-  iss: z.string(),
-  iat: z.number(),
-  aud: z.string(),
-  sub: z.string(),
-  exp: z.number(),
-});
-
 // Interface for the auth object
 type AuthContext = {
   privyUserId: string;
@@ -68,45 +63,6 @@ type AuthContext = {
 declare module 'fastify' {
   interface FastifyRequest {
     auth: AuthContext;
-  }
-}
-
-async function contextUser({
-  privyId,
-  requestId,
-}: {
-  privyId: string;
-  requestId: string;
-}) {
-  // if user in DB return
-  try {
-    const user = await ChatDbInstance.query.UserChatDb.findFirst({
-      where: eq(UserChatDb.privyId, privyId),
-    });
-
-    if (user) return user;
-  } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'unable to query user',
-      requestId,
-    );
-  }
-
-  // else create user in DB
-  try {
-    const [newUser] = await ChatDbInstance.insert(UserChatDb)
-      .values({
-        privyId,
-      })
-      .returning();
-    return newUser;
-  } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'unable to create user',
-      requestId,
-    );
   }
 }
 
@@ -183,6 +139,23 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     user,
   };
 };
+
+fastify.register(fastifyTRPCPlugin, {
+  prefix: '/api/trpc',
+  preHandler: [authHandler],
+  trpcOptions: {
+    router: appRouter,
+    createContext,
+    onError({ path, error }) {
+      chatLogger.error(
+        {
+          error,
+        },
+        `Error in tRPC handler on path '${path}'`,
+      );
+    },
+  },
+});
 
 const UserChatStreamInput = Type.Object({
   id: Type.String(),
