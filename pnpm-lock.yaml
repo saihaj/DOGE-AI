@@ -44,8 +44,8 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0(@langchain/core@0.3.55(openai@4.80.1(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))
       '@openrouter/ai-sdk-provider':
-        specifier: ^0.4.5
-        version: 0.4.5(zod@3.24.4)
+        specifier: ^0.4.6
+        version: 0.4.6(zod@3.24.4)
       '@sinclair/typebox':
         specifier: ^0.34.33
         version: 0.34.33
@@ -2302,8 +2302,8 @@ packages:
     engines: {node: '>=10'}
     deprecated: This functionality has been moved to @npmcli/fs
 
-  '@openrouter/ai-sdk-provider@0.4.5':
-    resolution: {integrity: sha512-gbCOcSjNhyWlLHyYZX2rIFnpJi3C2RXNyyzJj+d6pMRfTS/mdvEEOsU66KxK9H8Qju2i9YRLOn/FdQT26K7bIQ==}
+  '@openrouter/ai-sdk-provider@0.4.6':
+    resolution: {integrity: sha512-oUa8xtssyUhiKEU/aW662lsZ0HUvIUTRk8vVIF3Ha3KI/DnqX54zmVIuzYnaDpermqhy18CHqblAY4dDt1JW3g==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.0.0
@@ -4960,10 +4960,6 @@ packages:
   events@3.3.0:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
-
-  eventsource-parser@3.0.0:
-    resolution: {integrity: sha512-T1C0XCUimhxVQzW4zFipdx0SficT651NnkR0ZSH3yQwh+mFMdLfgjABVi4YtMTtaL4s168593DaoaRLMqryavA==}
-    engines: {node: '>=18.0.0'}
 
   eventsource-parser@3.0.1:
     resolution: {integrity: sha512-VARTJ9CYeuQYb0pZEPbzi740OWFgpHe7AYJ2WFZVnUDUQp5Dk2yJUgF36YsZ81cOyxT0QxmXD2EQpapAouzWVA==}
@@ -8412,7 +8408,7 @@ snapshots:
   '@ai-sdk/provider-utils@2.1.10(zod@3.24.4)':
     dependencies:
       '@ai-sdk/provider': 1.0.9
-      eventsource-parser: 3.0.0
+      eventsource-parser: 3.0.1
       nanoid: 3.3.8
       secure-json-parse: 2.7.0
     optionalDependencies:
@@ -9805,7 +9801,7 @@ snapshots:
       rimraf: 3.0.2
     optional: true
 
-  '@openrouter/ai-sdk-provider@0.4.5(zod@3.24.4)':
+  '@openrouter/ai-sdk-provider@0.4.6(zod@3.24.4)':
     dependencies:
       '@ai-sdk/provider': 1.0.9
       '@ai-sdk/provider-utils': 2.1.10(zod@3.24.4)
@@ -13231,8 +13227,6 @@ snapshots:
 
   events@3.3.0: {}
 
-  eventsource-parser@3.0.0: {}
-
   eventsource-parser@3.0.1: {}
 
   eventsource@3.0.6:
@@ -13800,7 +13794,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.0))
+      retry-axios: 2.6.0(axios@1.7.9)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -15910,7 +15904,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9(debug@4.4.0)):
+  retry-axios@2.6.0(axios@1.7.9):
     dependencies:
       axios: 1.7.9(debug@4.4.0)
 
