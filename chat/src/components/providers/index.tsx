@@ -9,8 +9,7 @@ import {
   isServer,
 } from '@tanstack/react-query';
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
-import { useLocalStorage } from '@uidotdev/usehooks';
-import { useMemo } from 'react';
+import { ClientPrivyTokenProvider } from './ClientPrivyTokenProvider';
 import { PostHogProvider } from './PostHogProvider';
 
 function makeQueryClient() {
@@ -21,12 +20,6 @@ function makeQueryClient() {
       },
     },
   });
-}
-
-export function App() {
-  const queryClient = getQueryClient();
-
-  return <QueryClientProvider client={queryClient}></QueryClientProvider>;
 }
 
 let browserQueryClient: QueryClient | undefined = undefined;
@@ -45,26 +38,23 @@ function getQueryClient() {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
-  const [privyToken] = useLocalStorage('privy:token', '');
   // NOTE: Avoid useState when initializing the query client if you don't
   //       have a suspense boundary between this and the code that may
   //       suspend because React will throw away the client on the initial
   //       render if it suspends and there is no boundary
   const queryClient = getQueryClient();
 
-  // Create TRPC client with useMemo to react to token changes
-  const trpcClient = useMemo(() => {
-    return createTRPCClient<AppRouter>({
-      links: [
-        httpBatchLink({
-          url: `${API_URL}/api/trpc`,
-          headers: () => ({
-            [PRIVY_COOKIE_NAME]: privyToken || '', // Fallback to empty string if token is undefined
-          }),
+  // Fallback TRPC client for server-side rendering (no token)
+  const fallbackTrpcClient = createTRPCClient<AppRouter>({
+    links: [
+      httpBatchLink({
+        url: `${API_URL}/api/trpc`,
+        headers: () => ({
+          [PRIVY_COOKIE_NAME]: '',
         }),
-      ],
-    });
-  }, [privyToken]);
+      }),
+    ],
+  });
 
   return (
     <PrivyProvider
@@ -86,9 +76,18 @@ export function Providers({ children }: { children: React.ReactNode }) {
     >
       <PostHogProvider>
         <QueryClientProvider client={queryClient}>
-          <TRPCProvider trpcClient={trpcClient} queryClient={queryClient}>
-            {children}
-          </TRPCProvider>
+          {isServer ? (
+            <TRPCProvider
+              trpcClient={fallbackTrpcClient}
+              queryClient={queryClient}
+            >
+              {children}
+            </TRPCProvider>
+          ) : (
+            <ClientPrivyTokenProvider queryClient={queryClient}>
+              {children}
+            </ClientPrivyTokenProvider>
+          )}
         </QueryClientProvider>
       </PostHogProvider>
     </PrivyProvider>
