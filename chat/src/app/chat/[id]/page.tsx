@@ -347,3 +347,5 @@ export default function Page() {
     </ClientOnly>
   );
 }
+
+export const runtime = 'edge';
