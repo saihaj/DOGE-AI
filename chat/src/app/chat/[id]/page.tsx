@@ -211,8 +211,6 @@ function ChatPage() {
     ),
   );
 
-  console.log(error);
-
   const {
     messages,
     input,
