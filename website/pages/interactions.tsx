@@ -102,7 +102,7 @@ export default function Page({ tweets }: { tweets: Array<Tweet> }) {
         </h1>
         <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
           {tweets.map((tweet, index) => (
-            <div key={index} className="break-inside-avoid mb-2">
+            <div key={index} className="break-inside-avoid mb-2 [&>div]:!mt-0">
               <EmbeddedTweet tweet={tweet} />
             </div>
           ))}
