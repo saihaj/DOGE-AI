@@ -1,12 +1,11 @@
-import Link from 'next/link';
-import { RiGithubFill, RiTwitterXLine } from '@remixicon/react';
+import { Navbar } from '@/components/nav';
 import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/logo';
-import Image from 'next/image';
-import hero from '../public/images/hero.png';
+import { RiGithubFill, RiTwitterXLine } from '@remixicon/react';
 import { useCopyToClipboard } from '@uidotdev/usehooks';
+import Image from 'next/image';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import PayPalDonate from '@/components/donate';
+import hero from '../public/images/hero.png';
 
 function CongressCard({
   number,
@@ -114,34 +113,7 @@ export default function Home() {
   return (
     <>
       <div className="min-h-screen container mx-auto px-4 py-5" role="main">
-        <header className="flex items-center justify-between" role="banner">
-          <nav className="flex items-center gap-4" aria-label="Home Navigation">
-            <Link href="/" className="flex items-center gap-4">
-              <Logo className="h-[50px] w-[50px] rounded-full" />
-              <span className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-america">
-                DOGEai
-              </span>
-            </Link>
-          </nav>
-
-          <nav className="flex items-center gap-3" aria-label="Social Links">
-            <p className="text-lg font-medium lg:block hidden">
-              Built by the community, for the community
-            </p>
-            <Button variant="outline" asChild size="sm">
-              <Link
-                href="https://x.com/dogeai_gov"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Follow us on X"
-              >
-                <RiTwitterXLine aria-label="X (formerly Twitter) Icon" />
-                <span className="md:block hidden">Follow</span>
-              </Link>
-            </Button>
-            <PayPalDonate />
-          </nav>
-        </header>
+        <Navbar />
 
         <main>
           <section
@@ -298,10 +270,10 @@ export default function Home() {
                 borderRadius: '210px',
                 border: '1px solid #232A43',
               }}
-              dateTime="2025-05-12"
+              dateTime="2025-05-19"
             >
               <span className="text-[#839EFF]">Cutoff Date: </span>
-              <span className="font-semibold">May 12, 2025</span>
+              <span className="font-semibold">May 19, 2025</span>
             </time>
 
             <div className="grid md:grid-cols-2 gap-4 w-full">
@@ -313,9 +285,9 @@ export default function Home() {
               />
               <CongressCard
                 number={119}
-                total={4568}
-                senate={1521}
-                house={3047}
+                total={4847}
+                senate={1579}
+                house={3268}
               />
             </div>
           </section>
