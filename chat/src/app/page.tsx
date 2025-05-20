@@ -107,7 +107,9 @@ function Home() {
   // Start a new chat with a new ID
   const startNewChat = (messageContent: string) => {
     const newId = generateId();
-    router.push(`/chat/${newId}?message=${encodeURIComponent(messageContent)}`);
+    router.push(
+      `/chat/${newId}?message=${encodeURIComponent(messageContent)}&newChat=true`,
+    );
   };
 
   // Handle form submission

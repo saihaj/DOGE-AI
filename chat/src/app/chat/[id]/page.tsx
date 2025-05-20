@@ -197,13 +197,14 @@ function ChatPage() {
   const initialMessage = searchParams.get('message');
   const [hasProcessedInitialMessage, setHasProcessedInitialMessage] =
     useState(false);
+  const [isNewChat, setIsNewChat] = useState(searchParams.get('newChat'));
 
   const trpc = useTRPC();
   const { data, error } = useQuery(
     trpc.getUserChatMessages.queryOptions(
       { id: chatId },
       {
-        enabled: !!chatId && authenticated,
+        enabled: !!chatId && authenticated && !isNewChat,
         refetchOnWindowFocus: false,
         retry: false,
         throwOnError: false,
