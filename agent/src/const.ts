@@ -166,3 +166,15 @@ export const PRIVY_APP_ID = (() => {
   }
   return process.env.PRIVY_APP_ID;
 })();
+export const CHAT_TURSO_DATABASE_URL = (() => {
+  if (!process.env.CHAT_TURSO_DATABASE_URL) {
+    throw new Error('CHAT_TURSO_DATABASE_URL is not set in your .env');
+  }
+  return process.env.CHAT_TURSO_DATABASE_URL;
+})();
+export const CHAT_TURSO_AUTH_TOKEN = (() => {
+  if (!process.env.CHAT_TURSO_AUTH_TOKEN) {
+    throw new Error('CHAT_TURSO_AUTH_TOKEN is not set in your .env');
+  }
+  return process.env.CHAT_TURSO_AUTH_TOKEN;
+})();

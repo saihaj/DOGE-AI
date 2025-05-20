@@ -19,7 +19,8 @@
     "dev:chat": "tsx --watch --env-file=.env ./src/chat-server.ts | pino-pretty",
     "dev:server": "tsx --watch --env-file=.env ./src/server.ts | pino-pretty",
     "dev:inngest": "inngest dev -u http://localhost:3000/api/inngest",
-    "dev:agent": "pnpm run dev:server & pnpm run dev:inngest"
+    "dev:agent": "pnpm run dev:server & pnpm run dev:inngest",
+    "generate": "drizzle-kit generate"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.11",
@@ -30,6 +31,7 @@
     "@ai-sdk/xai": "^1.2.16",
     "@fastify/cors": "^10.0.2",
     "@langchain/textsplitters": "^0.1.0",
+    "@libsql/client": "^0.14.0",
     "@openrouter/ai-sdk-provider": "^0.4.6",
     "@sinclair/typebox": "^0.34.33",
     "@trpc/server": "^11.1.2",
@@ -40,8 +42,10 @@
     "dedent": "^1.5.3",
     "discord.js": "^14.17.3",
     "dotenv": "^16.4.7",
+    "drizzle-orm": "^0.38.4",
     "exa-js": "^1.5.13",
     "fastify": "5.3.3",
+    "fastify-plugin": "^5.0.1",
     "handlebars": "^4.7.8",
     "inngest": "^3.30.0",
     "jose": "^6.0.11",
@@ -61,6 +65,7 @@
   "devDependencies": {
     "@types/lodash-es": "^4.17.12",
     "@types/yargs": "^17.0.33",
+    "drizzle-kit": "^0.31.1",
     "esbuild": "^0.25.4",
     "inngest-cli": "1.5.13",
     "pino-pretty": "^13.0.0"
