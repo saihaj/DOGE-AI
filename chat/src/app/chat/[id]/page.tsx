@@ -1,29 +1,30 @@
 'use client';
-import 'ios-vibrator-pro-max';
+import { LoginButton } from '@/app/login';
+import { ClientOnly } from '@/components/client-only';
+import { Logo } from '@/components/logo';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { ChatContainer } from '@/components/ui/chat-container';
+import { Message, MessageContent } from '@/components/ui/message';
 import {
   PromptInput,
   PromptInputAction,
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
-import { Square, ArrowUp, Loader2, SquarePen } from 'lucide-react';
-import { Message, MessageContent } from '@/components/ui/message';
-import { Button } from '@/components/ui/button';
-import { ChatContainer } from '@/components/ui/chat-container';
-import { cn } from '@/lib/utils';
-import { Logo } from '@/components/logo';
 import { PRIVY_COOKIE_NAME } from '@/lib/const';
-import { useChat, UseChatHelpers } from '@ai-sdk/react';
-import { toast } from 'sonner';
-import { usePrivy } from '@privy-io/react-auth';
-import { useRef, useState } from 'react';
-import { useLocalStorage } from '@uidotdev/usehooks';
-import { ClientOnly } from '@/components/client-only';
-import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { LoginButton } from '@/app/login';
 import { useTRPC } from '@/lib/trpc';
+import { cn } from '@/lib/utils';
+import { useChat, UseChatHelpers } from '@ai-sdk/react';
+import { usePrivy } from '@privy-io/react-auth';
 import { useQuery } from '@tanstack/react-query';
+import { useLocalStorage } from '@uidotdev/usehooks';
 import { UIMessage } from 'ai';
+import 'ios-vibrator-pro-max';
+import { ArrowUp, Loader2, Square, SquarePen } from 'lucide-react';
+import Link from 'next/link';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useRef, useState } from 'react';
+import { toast } from 'sonner';
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -198,16 +199,19 @@ function ChatPage() {
     useState(false);
 
   const trpc = useTRPC();
-  const { data } = useQuery(
+  const { data, error } = useQuery(
     trpc.getUserChatMessages.queryOptions(
       { id: chatId },
       {
         enabled: !!chatId && authenticated,
         refetchOnWindowFocus: false,
         retry: false,
+        throwOnError: false,
       },
     ),
   );
+
+  console.log(error);
 
   const {
     messages,
@@ -285,54 +289,96 @@ function ChatPage() {
                     </span>
                   </div>
                   <div className="flex gap-2 items-center">
-                    <Button onClick={startNewChat} variant="outline">
-                      <SquarePen />
-                    </Button>
+                    {messages.length > 0 && (
+                      <Button onClick={startNewChat} variant="outline">
+                        <SquarePen />
+                      </Button>
+                    )}
                     <LoginButton />
                   </div>
                 </div>
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">
-                <div className="w-full max-w-3xl flex flex-col">
-                  <ChatWithCustomScroll
-                    ref={containerRef}
-                    status={status}
-                    messages={messages}
-                  />
-                </div>
+                {privyToken ? (
+                  <>
+                    {error ? (
+                      <div className="relative w-full flex flex-col items-center pt-4 pb-4 mt-40">
+                        <div className="flex-1 prose flex flex-col items-center justify-center">
+                          <h1 className="mb-2 text-center">{error.message}</h1>
+                          <p className="text-center">
+                            There was an error loading this page. Please verify
+                            that you are using a correct URL or contact one of
+                            the admins if the issue persists.
+                          </p>
+                          <Link
+                            prefetch
+                            href="/"
+                            className={cn(
+                              buttonVariants({ variant: 'default' }),
+                              'no-underline',
+                            )}
+                          >
+                            Return Home
+                          </Link>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="w-full max-w-3xl flex flex-col">
+                        <ChatWithCustomScroll
+                          ref={containerRef}
+                          status={status}
+                          messages={messages}
+                        />
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="relative w-full flex flex-col items-center pt-4 pb-4 mt-40">
+                    <div className="flex-1 prose flex flex-col items-center justify-center">
+                      <h1 className="mb-2">Login to continue</h1>
+                      <p>
+                        This is a private chat. Please login to access your
+                        messages.
+                      </p>
+                      <LoginButton />
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="absolute bottom-0 mx-auto inset-x-0 max-w-(--breakpoint-md) z-40">
-              <div className="relative z-40 flex flex-col items-center w-full">
-                <div style={{ opacity: 1, transform: 'none' }} />
-                <div className="relative w-full sm:px-5 px-2 pb-2 sm:pb-4">
-                  <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
-                    <Input
-                      input={input}
-                      isLoading={
-                        status === 'streaming' || status === 'submitted'
-                      }
-                      handleSubmit={e => {
-                        if (!authenticated) {
-                          toast.error('Please login to continue', {
-                            action: {
-                              label: 'Login',
-                              onClick: login,
-                            },
-                          });
-                          return;
+            {privyToken && !error && (
+              <div className="absolute bottom-0 mx-auto inset-x-0 max-w-(--breakpoint-md) z-40">
+                <div className="relative z-40 flex flex-col items-center w-full">
+                  <div style={{ opacity: 1, transform: 'none' }} />
+                  <div className="relative w-full sm:px-5 px-2 pb-2 sm:pb-4">
+                    <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
+                      <Input
+                        input={input}
+                        isLoading={
+                          status === 'streaming' || status === 'submitted'
                         }
-                        handleSubmit(e);
-                      }}
-                      setInput={setInput}
-                      stop={stop}
-                    />
+                        handleSubmit={e => {
+                          if (!authenticated) {
+                            toast.error('Please login to continue', {
+                              action: {
+                                label: 'Login',
+                                onClick: login,
+                              },
+                            });
+                            return;
+                          }
+                          handleSubmit(e);
+                        }}
+                        setInput={setInput}
+                        stop={stop}
+                      />
+                    </div>
+                    <div className="absolute bottom-0 w-[calc(100%-2rem)] h-full rounded-t-[40px] bg-background" />
                   </div>
-                  <div className="absolute bottom-0 w-[calc(100%-2rem)] h-full rounded-t-[40px] bg-background" />
                 </div>
               </div>
-            </div>
+            )}
           </div>
         </main>
       </div>
