@@ -6,6 +6,7 @@ import { EmbeddedTweet } from 'react-tweet';
 import { getTweet, type Tweet } from 'react-tweet/api';
 
 const TWEETS = [
+  '1918588031587516895',
   '1889399538739302452',
   '1921973751383519676',
   '1918068004585197643',
@@ -17,7 +18,6 @@ const TWEETS = [
   '1892997409828933650',
   '1919541866606825816',
   '1892670508702773476',
-  '1918588031587516895',
   '1906758034048827427',
   '1920571416522391788',
   '1909281762724753558',
@@ -57,6 +57,12 @@ const TWEETS = [
   '1922027790255173760',
   '1922607848665567700',
   '1922603797257375756',
+  '1924449263938941349',
+  '1924634437695754751',
+  '1924528077121462310',
+  '1924482831314464969',
+  '1886589756794089731',
+  '1923443524374000098',
 ];
 
 // Fisher-Yates shuffle algorithm
@@ -74,8 +80,10 @@ export async function getStaticProps() {
     concurrency: 10,
   });
 
+  const pop = tweets.reverse().pop();
+
   return {
-    props: { tweets: shuffleArray(tweets) },
+    props: { tweets: [pop, ...shuffleArray(tweets)] },
     revalidate: 60 * 60, // 1 hour
   };
 }
