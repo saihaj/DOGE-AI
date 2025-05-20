@@ -196,15 +196,17 @@ fastify.route<{ Body: UserChatStreamInput }>({
       ).toResponse();
     }
 
+    const chatId = id;
+
     const chat = await getChatById({
-      id,
+      id: chatId,
     });
 
     if (!chat) {
       try {
         const title = await generateTitleFromUserMessage({ message });
         await saveChat({
-          id,
+          id: chatId,
           title,
           userId: request.auth.user.id,
           visibility: 'private',
@@ -228,8 +230,8 @@ fastify.route<{ Body: UserChatStreamInput }>({
 
     const userMessageText = message.content.toString();
 
-    const previousMessages = await getMessagesByChatId({ id });
-    log.info({ previousMessages }, 'hhhh');
+    const previousMessages = await getMessagesByChatId({ id: chatId });
+
     let messages = appendClientMessage({
       // @ts-expect-error -  TODO: satisfy them some other day
       messages: previousMessages,
@@ -240,7 +242,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
       await saveMessages({
         messages: [
           {
-            chatId: id,
+            chatId,
             id: message.id,
             role: 'user',
             parts: message.parts,
@@ -351,7 +353,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
             await saveMessages({
               messages: [
                 {
-                  chatId: id,
+                  chatId,
                   parts: assistantMessage.parts,
                   role: 'assistant',
                   id: assistantMessage.id,

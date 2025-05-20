@@ -78,7 +78,7 @@ export async function generateTitleFromUserMessage({
   message: Message;
 }) {
   const { text: title } = await generateText({
-    model: openai('gpt-4.1'),
+    model: openai('gpt-4.1-nano'),
     messages: [
       {
         role: 'system',

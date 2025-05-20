@@ -41,19 +41,23 @@ export async function saveChat({
 
     return chat;
   } catch (error) {
-    throw new ChatSDKError('bad_request:database', 'Failed to save chat');
+    throw new ChatSDKError(
+      'bad_request:database',
+      `Failed to save chat: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
 export async function getChatById({ id }: { id: string }) {
-  try {
-    const [selectedChat] = await ChatDbInstance.select()
-      .from(schema.ChatChatDb)
-      .where(eq(schema.ChatChatDb.id, id));
-    return selectedChat;
-  } catch (error) {
-    throw new ChatSDKError('bad_request:database', 'Failed to get chat by id');
-  }
+  const chat = await ChatDbInstance.select()
+    .from(schema.ChatChatDb)
+    .where(eq(schema.ChatChatDb.id, id));
+
+  const selectedChat = chat?.[0];
+
+  if (selectedChat) return selectedChat;
+
+  return null;
 }
 
 export async function saveMessages({
