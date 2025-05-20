@@ -11,7 +11,7 @@
     "push": "drizzle-kit push"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.15.19",
     "drizzle-kit": "^0.31.1",
     "tsx": "^4.19.4"
   },
