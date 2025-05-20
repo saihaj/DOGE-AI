@@ -159,8 +159,8 @@ importers:
         specifier: ^1.2.12
         version: 1.2.12(react@19.1.0)(zod@3.24.4)
       '@privy-io/react-auth':
-        specifier: ^2.12.0
-        version: 2.12.0(@solana/spl-token@0.4.13(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(@types/react@19.1.4)(bs58@6.0.0)(bufferutil@4.0.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.7.3)(use-sync-external-store@1.5.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.24.4)
+        specifier: ^2.13.2
+        version: 2.13.2(@solana/spl-token@0.4.13(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(@types/react@19.1.4)(bs58@6.0.0)(bufferutil@4.0.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.7.3)(use-sync-external-store@1.5.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.24.4)
       '@radix-ui/react-avatar':
         specifier: ^1.1.9
         version: 1.1.9(@types/react-dom@19.1.5(@types/react@19.1.4))(@types/react@19.1.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -684,8 +684,8 @@ packages:
   '@cloudflare/workers-types@4.20240614.0':
     resolution: {integrity: sha512-fnV3uXD1Hpq5EWnY7XYb+smPcjzIoUFiZpTSV/Tk8qKL3H+w6IqcngZwXQBZ/2U/DwYkDilXHW3FfPhnyD7FZA==}
 
-  '@coinbase/wallet-sdk@4.3.0':
-    resolution: {integrity: sha512-T3+SNmiCw4HzDm4we9wCHCxlP0pqCiwKe4sOwPH3YAK2KSKjxPRydKu6UQJrdONFVLG7ujXvbd/6ZqmvJb8rkw==}
+  '@coinbase/wallet-sdk@4.3.2':
+    resolution: {integrity: sha512-hOLA2YONq8Z9n8f6oVP6N//FEEHOen7nq+adG/cReol6juFTHUelVN5GnA5zTIxiLFMDcrhDwwgCA6Tdb5jubw==}
 
   '@corex/deepmerge@4.0.43':
     resolution: {integrity: sha512-N8uEMrMPL0cu/bdboEWpQYb/0i2K5Qn8eCsxzOmxSggJbbQte7ljMRoXm917AbntqTGOzdTu+vP3KOOzoC70HQ==}
@@ -2129,10 +2129,6 @@ packages:
     resolution: {integrity: sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==}
     engines: {node: '>= 16'}
 
-  '@noble/hashes@1.6.1':
-    resolution: {integrity: sha512-pq5D8h10hHBjyqX+cfBm0i8JUXJ0UhczFc4r74zbuT9XgewFo2E3J1cOaGtdZynILNmQ685YWGzGE1Zv6io50w==}
-    engines: {node: ^14.21.3 || >=16}
-
   '@noble/hashes@1.7.0':
     resolution: {integrity: sha512-HXydb0DgzTpDPwbVeDGCG1gIu7X6+AuU6Zl6av/E/KG8LMsvPntvq+w17CHRpKBmN6Ybdrt1eP3k4cj8DJa78w==}
     engines: {node: ^14.21.3 || >=16}
@@ -2235,15 +2231,20 @@ packages:
   '@prisma/get-platform@6.2.1':
     resolution: {integrity: sha512-zp53yvroPl5m5/gXYLz7tGCNG33bhG+JYCm74ohxOq1pPnrL47VQYFfF3RbTZ7TzGWCrR3EtoiYMywUBw7UK6Q==}
 
-  '@privy-io/api-base@1.5.0':
-    resolution: {integrity: sha512-XPC8asaR9NnTl3KJ6T9Vcgn8K7mLiI0nnTUjq93ny23yVN73a9tNAVFsRLpSACTrpFnZXNUAXYBKgMcm1DxHFA==}
+  '@privy-io/api-base@1.5.1':
+    resolution: {integrity: sha512-UokueOxl2hoW+kfFTzwV8uqwCNajSaJJEGSWHpsuKvdDQ8ePwXe53Gr5ptnKznaZlMLivc25mrv92bVEJbclfQ==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
 
   '@privy-io/chains@0.0.1':
     resolution: {integrity: sha512-UVRK4iSCmMx1kPt2b6Dolu4dBzesB7DvwEFMFaYggDCVlKXYtuRB7QxeHcKsLpeU9swluiBDAw4r5udG1xCpNg==}
 
-  '@privy-io/js-sdk-core@0.49.0':
-    resolution: {integrity: sha512-LN/ROFLb+9QBWC3rNZbheqDwn72tBnQ54rHejcvrRQwPqoZI7MHsrF7s9BPfiWaVQCKpHlH1uWlJDs+A/ooFug==}
+  '@privy-io/ethereum@0.0.1':
+    resolution: {integrity: sha512-w4GcEZM1JzQs0thG+JneU0LbYIR0EmIMDSCNJVOU29q89Fg7i9z1AXluQrCJXhd9qGG05eoXeyWwUF8/0xNMMw==}
+    peerDependencies:
+      viem: ^2.21.36
+
+  '@privy-io/js-sdk-core@0.50.2':
+    resolution: {integrity: sha512-SuYKrNnyoRxkBjuM/z3NZGN8MestDEdZVqwjytod7MQ+CPHX218QlRgCTP3AbNN+IShWhvGyFOOwXKF4eas3nQ==}
     peerDependencies:
       permissionless: ^0.2.10
       viem: ^2.21.36
@@ -2253,12 +2254,12 @@ packages:
       viem:
         optional: true
 
-  '@privy-io/public-api@2.24.0':
-    resolution: {integrity: sha512-ynmU8dlgxDO4fp1EVi6qYxZgmmiiolW+g7qDiHiUcIF3UHaU6fQ7UdxXX2SXz/++N7+IDwcAb4mau22GY8h1yQ==}
+  '@privy-io/public-api@2.26.0':
+    resolution: {integrity: sha512-WD041xz6ax4Vqfldgw2dy+4Whj+tRPv/PXGOxGeYLHHHw/ArzUYSW8rpBmfnGtoo1xnP9nBK6ck2NIaqE7fJLA==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
 
-  '@privy-io/react-auth@2.12.0':
-    resolution: {integrity: sha512-LuTXr0cyclZ6a+8mF5J9IimPW/ouyohi/xBMJn49ihVeW7m8av+XaAHJye4iQOfNoTSKgmT9yyCWDH7M+JXrkw==}
+  '@privy-io/react-auth@2.13.2':
+    resolution: {integrity: sha512-D/AuCQgZryV8iXRciqXvH3R/3ercdKYYRFRNV9am8RtCqAvI2DHxWwarqyzSMGcIxNv5O2UVBQ1GKtI5ETs6fQ==}
     peerDependencies:
       '@abstract-foundation/agw-client': ^1.0.0
       '@solana/spl-token': ^0.4.9
@@ -5774,6 +5775,7 @@ packages:
 
   libsql@0.4.7:
     resolution: {integrity: sha512-T9eIRCs6b0J1SHKYIvD8+KCJMcWZ900iZyxdnSCdqxN12Z1ijzT+jY5nrk72Jw4B0HGzms2NgpryArlJqvc3Lw==}
+    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   light-my-request@6.5.1:
@@ -8470,9 +8472,9 @@ snapshots:
   '@cloudflare/workers-types@4.20240614.0':
     optional: true
 
-  '@coinbase/wallet-sdk@4.3.0':
+  '@coinbase/wallet-sdk@4.3.2':
     dependencies:
-      '@noble/hashes': 1.6.1
+      '@noble/hashes': 1.8.0
       clsx: 1.2.1
       eventemitter3: 5.0.1
       preact: 10.26.5
@@ -9587,8 +9589,6 @@ snapshots:
 
   '@noble/hashes@1.4.0': {}
 
-  '@noble/hashes@1.6.1': {}
-
   '@noble/hashes@1.7.0': {}
 
   '@noble/hashes@1.7.1': {}
@@ -9697,13 +9697,17 @@ snapshots:
       '@prisma/debug': 6.2.1
     optional: true
 
-  '@privy-io/api-base@1.5.0':
+  '@privy-io/api-base@1.5.1':
     dependencies:
       zod: 3.24.4
 
   '@privy-io/chains@0.0.1': {}
 
-  '@privy-io/js-sdk-core@0.49.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4))':
+  '@privy-io/ethereum@0.0.1(viem@2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4))':
+    dependencies:
+      viem: 2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4)
+
+  '@privy-io/js-sdk-core@0.50.2(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4))':
     dependencies:
       '@ethersproject/abstract-signer': 5.8.0
       '@ethersproject/bignumber': 5.8.0
@@ -9711,9 +9715,9 @@ snapshots:
       '@ethersproject/providers': 5.8.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@ethersproject/transactions': 5.8.0
       '@ethersproject/units': 5.8.0
-      '@privy-io/api-base': 1.5.0
+      '@privy-io/api-base': 1.5.1
       '@privy-io/chains': 0.0.1
-      '@privy-io/public-api': 2.24.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)
+      '@privy-io/public-api': 2.26.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)
       canonicalize: 2.1.0
       eventemitter3: 5.0.1
       fetch-retry: 6.0.0
@@ -9729,9 +9733,9 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@privy-io/public-api@2.24.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)':
+  '@privy-io/public-api@2.26.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)':
     dependencies:
-      '@privy-io/api-base': 1.5.0
+      '@privy-io/api-base': 1.5.1
       bs58: 5.0.0
       libphonenumber-js: 1.12.7
       viem: 2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4)
@@ -9741,16 +9745,17 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@privy-io/react-auth@2.12.0(@solana/spl-token@0.4.13(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(@types/react@19.1.4)(bs58@6.0.0)(bufferutil@4.0.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.7.3)(use-sync-external-store@1.5.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.24.4)':
+  '@privy-io/react-auth@2.13.2(@solana/spl-token@0.4.13(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(@types/react@19.1.4)(bs58@6.0.0)(bufferutil@4.0.9)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.7.3)(use-sync-external-store@1.5.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.24.4)':
     dependencies:
-      '@coinbase/wallet-sdk': 4.3.0
+      '@coinbase/wallet-sdk': 4.3.2
       '@floating-ui/react': 0.26.28(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@headlessui/react': 2.2.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@heroicons/react': 2.2.0(react@19.1.0)
       '@marsidev/react-turnstile': 0.4.1(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@metamask/eth-sig-util': 6.0.2
       '@privy-io/chains': 0.0.1
-      '@privy-io/js-sdk-core': 0.49.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4))
+      '@privy-io/ethereum': 0.0.1(viem@2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4))
+      '@privy-io/js-sdk-core': 0.50.2(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4))
       '@reown/appkit': 1.7.3(@types/react@19.1.4)(bufferutil@4.0.9)(encoding@0.1.13)(react@19.1.0)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4)
       '@scure/base': 1.2.5
       '@simplewebauthn/browser': 9.0.1
