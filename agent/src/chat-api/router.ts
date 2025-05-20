@@ -16,10 +16,8 @@ const getUserChatMessages = protectedProcedure
     const chat = await getChatById({ id: input.id });
 
     if (!chat) {
-      throw new TRPCError({
-        code: 'NOT_FOUND',
-        message: 'Chat not found',
-      });
+      // it is possible that the chat does not exist yet because user has just started it
+      return [];
     }
 
     if (ctx.user?.id !== chat?.userId) {
