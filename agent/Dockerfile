@@ -1,4 +1,4 @@
-ARG NODE_VERSION=22.12.0
+ARG NODE_VERSION=22.15.1
 FROM node:${NODE_VERSION}-slim
 
 RUN apt-get update && apt-get install -y ca-certificates openssl && rm -rf /var/lib/apt/lists/*
