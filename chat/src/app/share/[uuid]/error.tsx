@@ -24,21 +24,15 @@ export default function Error({
         <Logo height={40} width={40} className="rounded-full" />
       </header>
       <div className="flex-1 prose flex flex-col items-center justify-center">
-        <h1 className="mb-2">Something went wrong</h1>
-        <p>
-          We encountered an error while trying to load this shared conversation.
-          This may be because the conversation has expired or was deleted.
-        </p>
+        <h1 className="mb-2">{error.message || 'Something went wrong'}</h1>
+        {!error.message && (
+          <p>
+            We encountered an error while trying to load this shared
+            conversation. This may be because the conversation has expired or
+            was deleted.
+          </p>
+        )}
         <div className="flex gap-4 mt-4">
-          <button
-            onClick={reset}
-            className={cn(
-              buttonVariants({ variant: 'default' }),
-              'no-underline',
-            )}
-          >
-            Try again
-          </button>
           <Link
             prefetch
             href="/"

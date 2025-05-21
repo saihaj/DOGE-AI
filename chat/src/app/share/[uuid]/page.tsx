@@ -68,7 +68,7 @@ export default async function SharedConversationPage({
   params: Promise<{ uuid: string }>;
 }) {
   const { uuid } = await params;
-  const messages = await trpcServerClient.getUserChatMessages.query({
+  const messages = await trpcServerClient.getPublicChatMessages.query({
     id: uuid,
   });
 
