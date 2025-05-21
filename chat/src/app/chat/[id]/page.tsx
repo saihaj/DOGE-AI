@@ -11,10 +11,10 @@ import { useTRPC } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { useChat } from '@ai-sdk/react';
 import { usePrivy } from '@privy-io/react-auth';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useLocalStorage } from '@uidotdev/usehooks';
 import { UIMessage } from 'ai';
-import { SquarePen } from 'lucide-react';
+import { Share, SquarePen } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState } from 'react';
@@ -44,6 +44,10 @@ function ChatPage() {
         throwOnError: false,
       },
     ),
+  );
+
+  const { mutateAsync: makeChatPublic } = useMutation(
+    trpc.makeChatPublic.mutationOptions(),
   );
 
   const {
@@ -96,6 +100,24 @@ function ChatPage() {
     window.history.replaceState({}, '', url);
   }
 
+  const shareChat = () => {
+    if ('vibrate' in navigator) {
+      navigator.vibrate(50);
+    }
+
+    toast.promise(makeChatPublic({ id: chatId }), {
+      loading: 'Creating shareable link...',
+      success: data => {
+        const url = `${window.location.origin}/share/${data.id}`;
+        navigator.clipboard.writeText(url);
+        return 'Link copied to clipboard!';
+      },
+      error: error => {
+        return error.message;
+      },
+    });
+  };
+
   const startNewChat = () => {
     if ('vibrate' in navigator) {
       navigator.vibrate(50);
@@ -123,9 +145,14 @@ function ChatPage() {
                   </div>
                   <div className="flex gap-2 items-center">
                     {messages.length > 0 && (
-                      <Button onClick={startNewChat} variant="outline">
-                        <SquarePen />
-                      </Button>
+                      <>
+                        <Button onClick={shareChat} variant="outline">
+                          <Share />
+                        </Button>
+                        <Button onClick={startNewChat} variant="outline">
+                          <SquarePen />
+                        </Button>
+                      </>
                     )}
                     <LoginButton />
                   </div>
