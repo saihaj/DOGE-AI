@@ -1,6 +1,7 @@
 'use client';
 import { API_URL, PRIVY_COOKIE_NAME } from '@/lib/const';
-import { AppRouter, TRPCProvider } from '@/lib/trpc';
+import { AppRouter, TRPCProvider } from '@/lib/trpc/client';
+import { makeQueryClient } from '@/lib/trpc/query-client';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
 import {
@@ -12,20 +13,9 @@ import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { ClientPrivyTokenProvider } from './ClientPrivyTokenProvider';
 import { PostHogProvider } from './PostHogProvider';
 
-function makeQueryClient() {
-  return new QueryClient({
-    defaultOptions: {
-      queries: {
-        staleTime: 60 * 1000,
-      },
-    },
-  });
-}
-
 let browserQueryClient: QueryClient | undefined = undefined;
 function getQueryClient() {
   if (isServer) {
-    // Server: always make a new query client
     return makeQueryClient();
   } else {
     // Browser: make a new query client if we don't already have one

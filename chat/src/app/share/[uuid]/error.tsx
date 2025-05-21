@@ -1,5 +1,5 @@
 'use client';
-
+import React from 'react';
 import { useEffect } from 'react';
 import { Logo } from '@/components/logo';
 import { buttonVariants } from '@/components/ui/button';
@@ -32,14 +32,20 @@ export default function Error({
         <div className="flex gap-4 mt-4">
           <button
             onClick={reset}
-            className={cn(buttonVariants({ variant: 'default' }), 'no-underline')}
+            className={cn(
+              buttonVariants({ variant: 'default' }),
+              'no-underline',
+            )}
           >
             Try again
           </button>
           <Link
             prefetch
             href="/"
-            className={cn(buttonVariants({ variant: 'outline' }), 'no-underline')}
+            className={cn(
+              buttonVariants({ variant: 'outline' }),
+              'no-underline',
+            )}
           >
             Return Home
           </Link>

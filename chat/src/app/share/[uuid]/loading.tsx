@@ -1,3 +1,4 @@
+import React from 'react';
 import { Logo } from '@/components/logo';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ChatContainer } from '@/components/ui/chat-container';
@@ -40,14 +41,14 @@ export default function Loading() {
                     autoScroll={false}
                     className="relative group flex flex-col justify-center w-full max-w-3xl md:px-4 pb-2 gap-2 items-end"
                   >
-                    {mockMessages.map((message) => (
+                    {mockMessages.map(message => (
                       <Message
                         key={message.id}
                         className={cn(
                           message.isUser
                             ? 'justify-end'
                             : 'justify-start max-w-none w-full',
-                          'py-2'
+                          'py-2',
                         )}
                       >
                         <Skeleton
@@ -55,7 +56,7 @@ export default function Loading() {
                             'h-24',
                             message.isUser
                               ? 'w-80 ml-auto'
-                              : 'w-full max-w-3xl'
+                              : 'w-full max-w-3xl',
                           )}
                         />
                       </Message>

@@ -1,4 +1,4 @@
-import type { AppRouter } from '../../../agent/src/chat-api/router';
+import type { AppRouter } from '../../../../agent/src/chat-api/router';
 import { QueryClient } from '@tanstack/react-query';
 import { createTRPCContext } from '@trpc/tanstack-react-query';
 

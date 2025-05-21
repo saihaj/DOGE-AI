@@ -1,3 +1,4 @@
+import React from 'react';
 import { Logo } from '@/components/logo';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -12,8 +13,8 @@ export default function NotFound() {
       <div className="flex-1 prose flex flex-col items-center justify-center">
         <h1 className="mb-2">Conversation Not Found</h1>
         <p>
-          The shared conversation you're looking for doesn't exist or may have expired.
-          Please check the URL and try again.
+          The shared conversation you're looking for doesn't exist or may have
+          expired. Please check the URL and try again.
         </p>
         <Link
           prefetch
