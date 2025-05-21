@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
     if (!privyToken) {
       return NextResponse.json(
         { error: 'Authentication required' },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return NextResponse.json(
         { error: 'Valid messages are required' },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -48,9 +48,12 @@ export async function POST(request: NextRequest) {
     sharedConversations.set(id, shareData);
 
     // Set an expiration (in a real app, this would be handled by the database)
-    setTimeout(() => {
-      sharedConversations.delete(id);
-    }, 1000 * 60 * 60 * 24 * 7); // Expire after 7 days
+    setTimeout(
+      () => {
+        sharedConversations.delete(id);
+      },
+      1000 * 60 * 60 * 24 * 7,
+    ); // Expire after 7 days
 
     // Return the ID to the client
     return NextResponse.json({ id }, { status: 201 });
@@ -58,7 +61,7 @@ export async function POST(request: NextRequest) {
     console.error('Error creating share:', error);
     return NextResponse.json(
       { error: 'Failed to create share link' },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -71,12 +74,12 @@ export async function GET(request: NextRequest) {
   if (!privyToken) {
     return NextResponse.json(
       { error: 'Authentication required' },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
   // Return only IDs, not full conversation data
   const shares = Array.from(sharedConversations.keys()).map(id => ({ id }));
-  
+
   return NextResponse.json({ shares }, { status: 200 });
 }
