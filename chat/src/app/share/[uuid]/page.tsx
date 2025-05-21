@@ -2,6 +2,7 @@ import { ChatWithCustomScroll } from '@/components/chat-scroll';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { trpcServerClient } from '@/lib/trpc/server';
+import { UIMessage } from 'ai';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import React from 'react';
@@ -100,7 +101,11 @@ export default async function SharedConversationPage({
               </header>
 
               <div className="w-full max-w-3xl flex flex-col">
-                <ChatWithCustomScroll status="ready" messages={messages} />
+                <ChatWithCustomScroll
+                  status="ready"
+                  // TODO: improve this
+                  messages={messages as unknown as UIMessage[]}
+                />
               </div>
 
               <footer className="sticky bottom-0 w-full max-w-3xl mt-auto py-4 text-center border-t">
