@@ -33,6 +33,31 @@ static_resources:
                             body:
                               inline_string: 'OK'
                         - match:
+                            prefix: '/chat/api/trpc'
+                            headers:
+                              - name: ':method'
+                                exact_match: 'OPTIONS'
+                          route:
+                            cluster: chat_cluster
+                            regex_rewrite:
+                              pattern:
+                                regex: '^/chat(/.*)$'
+                              substitution: '\1'
+                            timeout: 5s
+                        - match:
+                            prefix: '/chat/api/trpc'
+                          route:
+                            cluster: chat_cluster
+                            regex_rewrite:
+                              pattern:
+                                regex: '^/chat(/.*)$'
+                              substitution: '\1'
+                            timeout: 30s
+                            retry_policy:
+                              retry_on: connect-failure,refused-stream,unavailable,cancelled,resource-exhausted,5xx
+                              num_retries: 3
+                              retriable_status_codes: [503]
+                        - match:
                             prefix: '/chat'
                             headers:
                               - name: ':method'
@@ -114,12 +139,11 @@ static_resources:
                               cluster: jwks_cluster
                               timeout: 5s
                             cache_duration:
-                              seconds: 3600 # Cache JWKS for 1 hour
+                              seconds: 3600
                           from_headers:
                             - name: privy-token
                           forward: true
                           forward_payload_header: 'x-jwt-payload'
-
                       rules:
                         # Health check endpoints excluded from JWT verification
                         - match:
@@ -132,6 +156,10 @@ static_resources:
                             headers:
                               - name: ':method'
                                 exact_match: 'OPTIONS'
+                        # Allow /chat/api/trpc without JWT, but process JWT if privy-token header is present
+                        - match:
+                            prefix: '/chat/api/trpc'
+                          requires: {}
                         # All other chat endpoints require JWT authentication
                         - match:
                             prefix: '/chat'
@@ -170,11 +198,9 @@ static_resources:
                 http_protocol_options:
                   accept_http_10: true
                   enable_trailers: true
-
                 normalize_path: true
                 merge_slashes: true
                 path_with_escaped_slashes_action: UNESCAPE_AND_REDIRECT
-
   clusters:
     - name: chat_cluster
       connect_timeout: 5s
@@ -207,7 +233,6 @@ static_resources:
             typed_config:
               '@type': type.googleapis.com/envoy.extensions.health_check.event_sinks.file.v3.HealthCheckEventFileSink
               event_log_path: /dev/stdout
-
     - name: agent_cluster
       connect_timeout: 5s
       type: LOGICAL_DNS
@@ -247,7 +272,6 @@ static_resources:
             typed_config:
               '@type': type.googleapis.com/envoy.extensions.health_check.event_sinks.file.v3.HealthCheckEventFileSink
               event_log_path: /dev/stdout
-
     - name: jwks_cluster
       connect_timeout: 5s
       type: LOGICAL_DNS
