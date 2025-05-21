@@ -123,16 +123,23 @@ export default async function SharedConversationPage({
                 />
               </div>
 
-              <footer className="sticky bottom-0 w-full max-w-3xl mt-auto py-4 text-center border-t">
-                <p className="text-sm text-muted-foreground">
-                  This is a read-only view of a shared DOGEai conversation.{' '}
-                  <Link
-                    href="/"
-                    className="text-primary underline underline-offset-4"
-                  >
-                    Start your own conversation
-                  </Link>
-                </p>
+              <footer className="absolute bottom-0 mx-auto inset-x-0 max-w-(--breakpoint-md) z-40">
+                <div className="relative z-40 flex flex-col items-center w-full">
+                  <div style={{ opacity: 1, transform: 'none' }} />
+                  <div className="relative w-full sm:px-5 px-2 py-2">
+                    <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
+                      <p className="text-sm text-muted-foreground">
+                        This conversation is shared publicly.{' '}
+                        <Link
+                          href="/"
+                          className="text-primary underline underline-offset-4"
+                        >
+                          Start your own conversation
+                        </Link>
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </footer>
             </div>
           </div>
