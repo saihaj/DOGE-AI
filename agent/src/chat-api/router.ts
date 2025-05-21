@@ -45,7 +45,7 @@ const getPublicChatMessages = publicProcedure
     if (!chat) {
       throw new TRPCError({
         code: 'NOT_FOUND',
-        message: 'Chat not found',
+        message: `Chat not found: ${input.id}`,
       });
     }
 
