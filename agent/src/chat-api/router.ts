@@ -56,9 +56,15 @@ const getPublicChatMessages = publicProcedure
       });
     }
 
-    return getMessagesByChatId({ id: chat.id });
+    return {
+      chat,
+      messages: await getMessagesByChatId({ id: chat.id }),
+    };
   });
 
-export const appRouter = router({ getUserChatMessages, getPublicChatMessages });
+export const appRouter = router({
+  getUserChatMessages,
+  getPublicChatMessages,
+});
 
 export type AppRouter = typeof appRouter;

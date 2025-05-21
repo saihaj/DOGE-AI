@@ -3,65 +3,80 @@ import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { trpcServerClient } from '@/lib/trpc/server';
 import { UIMessage } from 'ai';
+import { Metadata, ResolvingMetadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { NextResponse } from 'next/server';
 import React from 'react';
+import removeMarkdown from 'markdown-to-text';
 
 // Generate metadata for SEO
-// export async function generateMetadata(
-//   { params }: { params: { uuid: string } },
-//   parent: ResolvingMetadata,
-// ): Promise<Metadata> {
-//   const uuid = params.uuid;
+export async function generateMetadata(
+  { params }: { params: Promise<{ uuid: string }> },
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const { uuid } = await params;
 
-//   // Fetch the conversation data
-//   const conversation = await getSharedConversation(uuid);
+  const { chat, messages } = await trpcServerClient.getPublicChatMessages.query(
+    {
+      id: uuid,
+    },
+  );
 
-//   // If no conversation found, use default metadata
-//   if (!conversation) {
-//     return {
-//       title: 'Shared Conversation - DOGEai Chat',
-//       description: 'View a shared conversation from DOGEai Chat.',
-//     };
-//   }
+  // If no conversation found, use default metadata
+  if (!chat) {
+    return {
+      title: 'Shared Conversation - DOGEai Chat',
+      description: 'View a shared conversation from DOGEai Chat.',
+    };
+  }
 
-//   // Get the first few messages to create a description
-//   const firstFewMessages = conversation.messages
-//     .slice(0, 2)
-//     .map(msg => msg.content)
-//     .join(' - ');
+  // Get the first few messages to create a description
+  const firstFewMessages = removeMarkdown(
+    messages
+      .filter(m => m.role === 'assistant')
+      .flatMap(m => m.parts)
+      .filter(m => m.type === 'text')
+      .map(m => m.text)
+      .slice(0, 3)
+      .join('\n\n'),
+  )
+    .replace(/\n/g, ' ')
+    .trim();
 
-//   const description =
-//     firstFewMessages.length > 160
-//       ? `${firstFewMessages.substring(0, 157)}...`
-//       : firstFewMessages;
+  const description =
+    firstFewMessages.length > 160
+      ? `${firstFewMessages.substring(0, 157)}...`
+      : firstFewMessages;
 
-//   return {
-//     title: `Shared Conversation - DOGEai Chat`,
-//     description,
-//     openGraph: {
-//       title: `DOGEai Chat - Shared Conversation`,
-//       description,
-//       images: [
-//         {
-//           url: 'https://dogeai.info/images/hero.png',
-//           alt: 'DOGEai Chat',
-//         },
-//       ],
-//     },
-//     twitter: {
-//       card: 'summary_large_image',
-//       title: `DOGEai Chat - Shared Conversation`,
-//       description,
-//       images: [
-//         {
-//           url: 'https://dogeai.info/images/hero.png',
-//           alt: 'DOGEai Chat',
-//         },
-//       ],
-//     },
-//   };
-// }
+  const title = `${chat.title} - DOGEai Chat`;
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [
+        {
+          url: 'https://dogeai.info/images/hero.png',
+          alt: 'DOGEai Chat',
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: [
+        {
+          url: 'https://dogeai.info/images/hero.png',
+          alt: 'DOGEai Chat',
+        },
+      ],
+    },
+  };
+}
 
 export default async function SharedConversationPage({
   params,
@@ -69,7 +84,7 @@ export default async function SharedConversationPage({
   params: Promise<{ uuid: string }>;
 }) {
   const { uuid } = await params;
-  const messages = await trpcServerClient.getPublicChatMessages.query({
+  const { messages } = await trpcServerClient.getPublicChatMessages.query({
     id: uuid,
   });
 
