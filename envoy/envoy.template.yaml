@@ -135,7 +135,11 @@ static_resources:
                         # Allow /chat/api/trpc without JWT, but process JWT if privy-token header is present
                         - match:
                             prefix: '/chat/api/trpc'
-                          requires: {}
+                          requires:
+                            requires_any:
+                              requirements:
+                                - provider_name: privy_jwt
+                                - allow_missing: {}
                         # All other chat endpoints require JWT authentication
                         - match:
                             prefix: '/chat'
@@ -255,7 +259,7 @@ static_resources:
     - name: jwks_cluster
       connect_timeout: 5s
       type: LOGICAL_DNS
-      dns_lookup_family: AUTO
+      dns_lookup_family: V4_ONLY
       lb_policy: ROUND_ROBIN
       load_assignment:
         cluster_name: jwks_cluster
