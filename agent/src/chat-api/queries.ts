@@ -70,13 +70,11 @@ export async function updateChatVisibility({
 }
 
 export async function getChatById({ id }: { id: string }) {
-  const chat = await ChatDbInstance.select()
-    .from(schema.ChatChatDb)
-    .where(eq(schema.ChatChatDb.id, id));
+  const chat = await ChatDbInstance.query.ChatChatDb.findFirst({
+    where: eq(schema.ChatChatDb.id, id),
+  });
 
-  const selectedChat = chat?.[0];
-
-  if (selectedChat) return selectedChat;
+  if (chat) return chat;
 
   return null;
 }
