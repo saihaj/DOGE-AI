@@ -48,6 +48,27 @@ export async function saveChat({
   }
 }
 
+export async function updateChatVisibility({
+  id,
+  visibility,
+}: Pick<InferSelectModel<typeof schema.ChatChatDb>, 'visibility' | 'id'>) {
+  try {
+    const [chat] = await ChatDbInstance.update(schema.ChatChatDb)
+      .set({
+        visibility,
+      })
+      .where(eq(schema.ChatChatDb.id, id))
+      .returning();
+
+    return chat;
+  } catch (error) {
+    throw new ChatSDKError(
+      'bad_request:database',
+      `Failed to update chat visibility: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
+
 export async function getChatById({ id }: { id: string }) {
   const chat = await ChatDbInstance.select()
     .from(schema.ChatChatDb)

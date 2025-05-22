@@ -9,7 +9,7 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
   const requestId = normalizeHeaderValue(req.headers['x-request-id']) || req.id;
 
   const log = chatLogger.child({
-    requestId: req.id,
+    requestId,
   });
 
   if (!IS_PROD) {
@@ -30,7 +30,7 @@ export async function createContext({ req }: CreateFastifyContextOptions) {
 
   // Make sure that the incoming request has our JWT payload
   if (!token || typeof token !== 'string') {
-    log.error({}, 'missing JWT payload');
+    log.warn({}, 'missing JWT payload');
     return {
       privyUserId: null,
       user: null,
