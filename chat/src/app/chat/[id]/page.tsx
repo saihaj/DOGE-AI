@@ -123,22 +123,20 @@ function ChatPage() {
     window.history.replaceState({}, '', url);
   }
 
-  const shareChat = () => {
+  const shareChat = async () => {
     if ('vibrate' in navigator) {
       navigator.vibrate(50);
     }
 
-    toast.promise(makeChatPublic({ id: chatId }), {
-      loading: 'Creating shareable link...',
-      success: () => {
-        return 'Link copied to clipboard!';
-      },
-      error: error => {
-        return error.message;
-      },
-    });
+    const t = toast.loading('Creating shareable link...');
 
-    copyToClipboard(`${window.location.origin}/share/${chatId}`);
+    try {
+      await makeChatPublic({ id: chatId });
+      toast.success('Link copied to clipboard!', { id: t });
+      copyToClipboard(`${window.location.origin}/share/${chatId}`);
+    } catch {
+      toast.error('Failed to create shareable link', { id: t });
+    }
   };
 
   const startNewChat = () => {
