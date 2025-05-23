@@ -75,18 +75,22 @@ function createRateLimiter({
   userId: string;
   perDayLimit: number;
 }) {
+  // This way we can ensure that rate limit reset every night at 00:00 UTC
+  const todayDateUTC = new Date(Date.now()).toISOString().split('T')[0];
+
   if (perDayLimit === DAILY_MESSAGE_LIMIT_DEFUALT) {
     return new RateLimiterRedis({
       storeClient: redisClient,
       points: perDayLimit,
-      keyPrefix: `tmd`,
+
+      keyPrefix: `tmd:${todayDateUTC}`,
       duration: DURATION,
     });
   }
   return new RateLimiterRedis({
     storeClient: redisClient,
     points: perDayLimit,
-    keyPrefix: `tuser-${userId}`,
+    keyPrefix: `tuser:${todayDateUTC}:${userId}`,
     duration: DURATION,
   });
 }
