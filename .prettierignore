@@ -4,6 +4,7 @@ website/public/**
 chat/public/**
 chat/.next/**
 chat/out/**
+chat/.vercel/**
 crawler/data/**
 pnpm-lock.yaml
 database/src/meta/**

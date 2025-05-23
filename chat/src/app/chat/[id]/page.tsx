@@ -234,10 +234,15 @@ function ChatPage() {
                     <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
                       <ChatInput
                         input={input}
+                        rateLimited={reachedLimitForTheDay}
                         isLoading={
                           status === 'streaming' || status === 'submitted'
                         }
                         handleSubmit={e => {
+                          if (reachedLimitForTheDay) {
+                            return;
+                          }
+
                           if (!authenticated) {
                             toast.error('Please login to continue', {
                               action: {
