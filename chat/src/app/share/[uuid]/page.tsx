@@ -126,7 +126,7 @@ export default async function SharedConversationPage({
               <footer className="absolute bottom-0 mx-auto inset-x-0 max-w-(--breakpoint-md) z-40">
                 <div className="relative z-40 flex flex-col items-center w-full">
                   <div style={{ opacity: 1, transform: 'none' }} />
-                  <div className="relative w-full sm:px-5 px-2 py-2">
+                  <div className="relative w-full sm:px-5 px-2 py-2 bg-white">
                     <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
                       <p className="text-sm text-muted-foreground">
                         This conversation is shared publicly.{' '}
