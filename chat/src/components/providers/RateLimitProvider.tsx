@@ -6,7 +6,9 @@ interface RateLimitContextType {
   setReachedLimitForTheDay: (reached: boolean) => void;
 }
 
-const RateLimitContext = createContext<RateLimitContextType | undefined>(undefined);
+const RateLimitContext = createContext<RateLimitContextType | undefined>(
+  undefined,
+);
 
 export function RateLimitProvider({ children }: { children: ReactNode }) {
   const [reachedLimitForTheDay, setReachedLimitForTheDay] = useState(false);
@@ -15,7 +17,7 @@ export function RateLimitProvider({ children }: { children: ReactNode }) {
     <RateLimitContext.Provider
       value={{
         reachedLimitForTheDay,
-        setReachedLimitForTheDay
+        setReachedLimitForTheDay,
       }}
     >
       {children}
