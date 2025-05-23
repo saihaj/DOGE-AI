@@ -14,14 +14,52 @@ export const jwtSchema = z.object({
 });
 
 export const DAILY_MESSAGE_LIMIT_DEFUALT = 20;
-export const userMeta = z
-  .object({
-    perDayLimit: z.number().optional().default(DAILY_MESSAGE_LIMIT_DEFUALT),
-  })
-  .optional()
-  .default({
-    perDayLimit: DAILY_MESSAGE_LIMIT_DEFUALT,
-  });
+export const userMeta = z.preprocess(
+  input => {
+    // If input is null/undefined, return undefined (schema's .optional() will handle default)
+    if (input == null) {
+      return undefined;
+    }
+
+    // handle buffer input
+    if (input instanceof Buffer) {
+      try {
+        const parsed = JSON.parse(input.toString());
+        return parsed;
+      } catch (error) {
+        console.warn('Failed to parse Buffer input:', error);
+        return undefined; // Fallback to schema's default
+      }
+    }
+
+    // If input is already an object, return it (avoids unnecessary parsing)
+    if (typeof input === 'object') {
+      return input;
+    }
+
+    // If input is a string, try to parse it as JSON
+    if (typeof input === 'string') {
+      try {
+        return JSON.parse(input);
+      } catch (error) {
+        console.warn('Failed to parse JSON:', error);
+        return undefined; // Fallback to schema's default
+      }
+    }
+
+    // For any other type, return undefined
+    console.warn('Invalid input type for userMeta:', typeof input);
+    return undefined;
+  },
+  z
+    .object({
+      perDayLimit: z.number().optional().default(DAILY_MESSAGE_LIMIT_DEFUALT),
+    })
+    .optional()
+    .default({
+      perDayLimit: DAILY_MESSAGE_LIMIT_DEFUALT,
+    }),
+);
 
 export async function contextUser({
   privyId,

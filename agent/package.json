@@ -11,6 +11,7 @@
     "deploy": "fly deploy",
     "prompt:update": "tsx --watch ./src/temp/update-prompt-db.ts",
     "prompt:migrate": "tsx --watch --env-file=.env ./src/temp/migrate-prompts.ts",
+    "terminal:userlimit": "tsx --watch --env-file=.env ./src/temp/update-user-chat-limit.ts",
     "twitter:thread": "tsx src/temp/generate-thread.ts",
     "twitter:replies": "tsx --watch --env-file=.env ./src/temp/reply-testing.ts",
     "twitter:reply": "tsx --watch --env-file=.env ./src/temp/reply-twitter.ts",
