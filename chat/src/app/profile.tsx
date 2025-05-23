@@ -100,6 +100,7 @@ function AccountSettings() {
     user,
     setWalletRecovery,
     linkTwitter,
+    linkGoogle,
   } = usePrivy();
 
   if (!user || !ready || !authenticated) {
@@ -131,12 +132,20 @@ function AccountSettings() {
               @{user.twitter?.username}
             </p>
           )}
-          {!user.twitter && (
-            <Button variant="outline" onClick={linkTwitter}>
-              <PlusIcon className="text-black h-4 w-4" />
-              Link Twitter
-            </Button>
-          )}
+          <div className="flex gap-2">
+            {!user.twitter && (
+              <Button variant="outline" onClick={linkTwitter}>
+                <PlusIcon className="text-black h-4 w-4" />
+                Link Twitter
+              </Button>
+            )}
+            {!user.google && (
+              <Button variant="outline" onClick={linkGoogle}>
+                <PlusIcon className="text-black h-4 w-4" />
+                Link Google
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
