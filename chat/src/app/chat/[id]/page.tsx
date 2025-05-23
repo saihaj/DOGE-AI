@@ -230,7 +230,7 @@ function ChatPage() {
               <div className="absolute bottom-0 mx-auto inset-x-0 max-w-(--breakpoint-md) z-40">
                 <div className="relative z-40 flex flex-col items-center w-full">
                   <div style={{ opacity: 1, transform: 'none' }} />
-                  <div className="relative w-full sm:px-5 px-2 pb-2 sm:pb-4">
+                  <div className="relative w-full px-5 md:px-4 pb-2 sm:pb-4">
                     <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
                       <ChatInput
                         input={input}
@@ -258,7 +258,7 @@ function ChatPage() {
                         stop={stop}
                       />
                     </div>
-                    <div className="absolute bottom-0 w-[calc(100%-2rem)] h-full rounded-t-[40px] bg-background" />
+                    <div className="absolute bottom-0 w-[calc(100%-2rem)] h-full bg-background" />
                   </div>
                 </div>
               </div>

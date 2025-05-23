@@ -110,7 +110,7 @@ export function ChatWithCustomScroll({
           </div>
         </Message>
       )}
-      <div style={{ paddingBottom: '80px', width: '100%' }} />
+      <div style={{ paddingBottom: '100px', width: '100%' }} />
     </ChatContainer>
   );
 }
