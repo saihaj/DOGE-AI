@@ -5,6 +5,7 @@ import { ChatInput } from '@/components/chat-input';
 import { ChatWithCustomScroll } from '@/components/chat-scroll';
 import { ClientOnly } from '@/components/client-only';
 import { Logo } from '@/components/logo';
+import { useRateLimit } from '@/components/providers';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { API_URL, PRIVY_COOKIE_NAME } from '@/lib/const';
 import { useTRPC } from '@/lib/trpc/client';
@@ -12,14 +13,14 @@ import { cn } from '@/lib/utils';
 import { useChat } from '@ai-sdk/react';
 import { usePrivy } from '@privy-io/react-auth';
 import { useMutation, useQuery } from '@tanstack/react-query';
-import { useLocalStorage } from '@uidotdev/usehooks';
+import { useCopyToClipboard, useLocalStorage } from '@uidotdev/usehooks';
 import { UIMessage } from 'ai';
+import 'ios-vibrator-pro-max';
 import { Share, SquarePen } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { useRateLimit } from '@/components/providers';
 
 function ChatPage() {
   const [privyToken] = useLocalStorage('privy:token', '');
@@ -31,6 +32,8 @@ function ChatPage() {
   const chatId = params.id as string;
   const initialMessage = searchParams.get('message');
   const { reachedLimitForTheDay, setReachedLimitForTheDay } = useRateLimit();
+  const [, copyToClipboard] = useCopyToClipboard();
+
   const [hasProcessedInitialMessage, setHasProcessedInitialMessage] =
     useState(false);
   const [isNewChat, setIsNewChat] = useState(searchParams.get('newChat'));
@@ -127,9 +130,9 @@ function ChatPage() {
 
     toast.promise(makeChatPublic({ id: chatId }), {
       loading: 'Creating shareable link...',
-      success: data => {
+      success: async data => {
         const url = `${window.location.origin}/share/${data.id}`;
-        navigator.clipboard.writeText(url);
+        await copyToClipboard(url);
         return 'Link copied to clipboard!';
       },
       error: error => {
