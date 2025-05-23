@@ -28,7 +28,7 @@
     "@langchain/community": "^0.3.44",
     "@langchain/core": "^0.3.57",
     "@langchain/textsplitters": "^0.1.0",
-    "@mendable/firecrawl-js": "^1.17.0",
+    "@mendable/firecrawl-js": "^1.25.1",
     "ai": "^4.3.16",
     "database": "workspace:*",
     "date-fns": "^4.1.0",
