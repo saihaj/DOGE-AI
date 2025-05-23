@@ -151,6 +151,8 @@ static_resources:
                   - name: envoy.filters.http.router
                     typed_config:
                       '@type': type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+                always_set_request_id_in_response: true
+                add_user_agent: true
                 access_log:
                   - name: envoy.access_loggers.file
                     typed_config:
