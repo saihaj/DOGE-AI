@@ -18,6 +18,8 @@ import { PromptSuggestion } from '@/components/ui/prompt-suggestion';
 import { AnimatePresence, motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { LoginButton } from './login';
+import { useRateLimit } from '@/components/providers';
+import { Badge } from '@/components/ui/badge';
 
 function Input({
   input,
@@ -103,18 +105,14 @@ function Home() {
   const router = useRouter();
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const { reachedLimitForTheDay } = useRateLimit();
 
   // Start a new chat with a new ID
   const startNewChat = (messageContent: string) => {
-    const newId = generateId();
-    router.push(
-      `/chat/${newId}?message=${encodeURIComponent(messageContent)}&newChat=true`,
-    );
-  };
-
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e?.preventDefault();
+    if (reachedLimitForTheDay) {
+      toast.error('You have reached your daily message limit.');
+      return;
+    }
 
     if (!authenticated) {
       toast.error('Please login to continue', {
@@ -125,6 +123,16 @@ function Home() {
       });
       return;
     }
+
+    const newId = generateId();
+    router.push(
+      `/chat/${newId}?message=${encodeURIComponent(messageContent)}&newChat=true`,
+    );
+  };
+
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e?.preventDefault();
 
     if (input.trim()) {
       setIsLoading(true);
@@ -161,6 +169,11 @@ function Home() {
               </header>
               <div className="relative w-full flex flex-col items-center pt-4 pb-4">
                 <div className="w-full max-w-3xl flex flex-col items-center">
+                  {reachedLimitForTheDay && (
+                    <Badge className="bg-red-700">
+                      You have reached your daily message limit.
+                    </Badge>
+                  )}
                   <div className="flex flex-col items-center justify-center min-h-[60vh]">
                     <h1 className="text-4xl font-bold mb-8 gradient-america text-transparent bg-clip-text">
                       How can I help you?

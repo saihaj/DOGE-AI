@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useRateLimit } from '@/components/providers';
 
 function ChatPage() {
   const [privyToken] = useLocalStorage('privy:token', '');
@@ -29,7 +30,7 @@ function ChatPage() {
   const searchParams = useSearchParams();
   const chatId = params.id as string;
   const initialMessage = searchParams.get('message');
-  const [reachedLimitForTheDay, setReachedLimitForTheDay] = useState(false);
+  const { reachedLimitForTheDay, setReachedLimitForTheDay } = useRateLimit();
   const [hasProcessedInitialMessage, setHasProcessedInitialMessage] =
     useState(false);
   const [isNewChat, setIsNewChat] = useState(searchParams.get('newChat'));
