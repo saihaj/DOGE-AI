@@ -6,7 +6,7 @@ import { ChatWithCustomScroll } from '@/components/chat-scroll';
 import { ClientOnly } from '@/components/client-only';
 import { Logo } from '@/components/logo';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { PRIVY_COOKIE_NAME } from '@/lib/const';
+import { API_URL, PRIVY_COOKIE_NAME } from '@/lib/const';
 import { useTRPC } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { useChat } from '@ai-sdk/react';
@@ -29,6 +29,7 @@ function ChatPage() {
   const searchParams = useSearchParams();
   const chatId = params.id as string;
   const initialMessage = searchParams.get('message');
+  const [reachedLimitForTheDay, setReachedLimitForTheDay] = useState(false);
   const [hasProcessedInitialMessage, setHasProcessedInitialMessage] =
     useState(false);
   const [isNewChat, setIsNewChat] = useState(searchParams.get('newChat'));
@@ -69,7 +70,7 @@ function ChatPage() {
         role: message.role as UIMessage['role'],
       })) || undefined,
     id: chatId,
-    api: `/api/chat`,
+    api: `${API_URL}/api/userchat`,
     headers: {
       [PRIVY_COOKIE_NAME]: privyToken,
     },
@@ -77,7 +78,25 @@ function ChatPage() {
       id: body.id,
       message: body.messages.at(-1),
     }),
+    onResponse: async response => {
+      if (response.status === 429) {
+        setReachedLimitForTheDay(true);
+      }
+    },
     onError: error => {
+      const safeParsedError = (() => {
+        try {
+          return JSON.parse(error.message);
+        } catch (e) {
+          return null;
+        }
+      })();
+      if (safeParsedError) {
+        return toast.error(safeParsedError.error, {
+          description: safeParsedError.message,
+        });
+      }
+
       toast.error(error.message, {
         dismissible: false,
         action: {

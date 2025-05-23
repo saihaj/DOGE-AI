@@ -13,6 +13,16 @@ export const jwtSchema = z.object({
   exp: z.number(),
 });
 
+export const DAILY_MESSAGE_LIMIT_DEFUALT = 1;
+export const userMeta = z
+  .object({
+    perDayLimit: z.number().optional().default(DAILY_MESSAGE_LIMIT_DEFUALT),
+  })
+  .optional()
+  .default({
+    perDayLimit: DAILY_MESSAGE_LIMIT_DEFUALT,
+  });
+
 export async function contextUser({
   privyId,
   requestId,
@@ -26,7 +36,8 @@ export async function contextUser({
       where: eq(UserChatDb.privyId, privyId),
     });
 
-    if (user) return user;
+    const meta = userMeta.parse(user?.meta || {});
+    if (user) return { ...user, meta };
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',
@@ -42,7 +53,8 @@ export async function contextUser({
         privyId,
       })
       .returning();
-    return newUser;
+    const meta = userMeta.parse(newUser?.meta || {});
+    return { ...newUser, meta };
   } catch (error) {
     throw new ChatSDKError(
       'bad_request:database',

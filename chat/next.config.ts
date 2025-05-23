@@ -51,15 +51,6 @@ const nextConfig: NextConfig = {
     config.externals['@solana/spl-token'] = 'commonjs @solana/spl-token';
     return config;
   },
-  redirects: async () => {
-    return [
-      {
-        source: '/api/chat',
-        destination: `${API_URL}/api/userchat`,
-        permanent: false,
-      },
-    ];
-  },
 };
 
 export default nextConfig;

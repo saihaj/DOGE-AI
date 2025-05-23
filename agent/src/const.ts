@@ -178,3 +178,9 @@ export const CHAT_TURSO_AUTH_TOKEN = (() => {
   }
   return process.env.CHAT_TURSO_AUTH_TOKEN;
 })();
+export const CHAT_REDIS_URL = (() => {
+  if (!process.env.CHAT_REDIS_URL) {
+    throw new Error('CHAT_REDIS_URL is not set in your .env');
+  }
+  return process.env.CHAT_REDIS_URL;
+})();
