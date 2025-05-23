@@ -31,7 +31,12 @@ import { createContext } from './chat-api/trpc';
 import { CHAT_REDIS_URL, IS_PROD, PRIVY_APP_ID, SEED } from './const';
 import { reportFailureToDiscord } from './discord/action';
 import { chatLogger } from './logger';
-import { apiRequest, promClient } from './prom';
+import {
+  apiRequest,
+  promClient,
+  userMessageRateLimitHits,
+  userMessageUsage,
+} from './prom';
 import { getKbContext } from './twitter/knowledge-base';
 import { PROMPTS } from './twitter/prompts';
 import {
@@ -220,6 +225,10 @@ fastify.route<{ Body: UserChatStreamInput }>({
       method: request.method,
       path: '/api/chat',
     });
+    userMessageUsage.inc({
+      user: request.auth.user.id,
+      per_day_limit: request.auth.user.meta.perDayLimit,
+    });
     const log = chatLogger.child({
       function: 'api-userchat',
       requestId: request.id,
@@ -251,6 +260,10 @@ fastify.route<{ Body: UserChatStreamInput }>({
         },
         'Rate limit exceeded',
       );
+      userMessageRateLimitHits.inc({
+        user: request.auth.user.id,
+        per_day_limit: request.auth.user.meta.perDayLimit,
+      });
       setRateLimitHeaders({
         reply,
         limiterRes: error as RateLimiterRes,
