@@ -3,6 +3,7 @@ import { ChatSDKError } from './errors';
 import { ChatDbInstance } from './queries';
 import { UserChatDb } from './schema';
 import { eq } from 'drizzle-orm';
+import { bento } from '../cache';
 
 export const jwtSchema = z.object({
   sid: z.string(),
@@ -61,6 +62,26 @@ export const userMeta = z.preprocess(
     }),
 );
 
+function getUser({ privyId }: { privyId: string }) {
+  return bento.getOrSet(
+    `getPrivyUser_${privyId}`,
+    async () => {
+      const user = await ChatDbInstance.query.UserChatDb.findFirst({
+        where: eq(UserChatDb.privyId, privyId),
+      });
+
+      if (!user) {
+        throw new Error('User not found');
+      }
+
+      const meta = userMeta.parse(user?.meta || {});
+
+      return { ...user, meta };
+    },
+    { ttl: '1h' },
+  );
+}
+
 export async function contextUser({
   privyId,
   requestId,
@@ -70,13 +91,10 @@ export async function contextUser({
 }) {
   // if user in DB return
   try {
-    const user = await ChatDbInstance.query.UserChatDb.findFirst({
-      where: eq(UserChatDb.privyId, privyId),
-    });
-
-    const meta = userMeta.parse(user?.meta || {});
-    if (user) return { ...user, meta };
+    const user = await getUser({ privyId });
+    return user;
   } catch (error) {
+    console.log('user not found in db', error);
     throw new ChatSDKError(
       'bad_request:database',
       'unable to query user',
