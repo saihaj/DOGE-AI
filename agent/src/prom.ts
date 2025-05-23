@@ -61,3 +61,15 @@ export const apiRequest = new promClient.Counter({
   help: 'Number of API requests',
   labelNames: ['method', 'path'],
 });
+
+export const userMessageRateLimitHits = new promClient.Counter({
+  name: 'user_chat_message_rate_limit_hits',
+  help: 'Number of times users hit the rate limit',
+  labelNames: ['user', 'per_day_limit'],
+});
+
+export const userMessageUsage = new promClient.Gauge({
+  name: 'user_chat_message_usage',
+  help: 'Current number of messages sent by user within the day',
+  labelNames: ['user', 'per_day_limit'],
+});

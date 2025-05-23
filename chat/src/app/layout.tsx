@@ -103,7 +103,7 @@ export default function RootLayout({
           <ClientOnly>
             <PwaInstallBanner />
           </ClientOnly>
-          <Toaster />
+          <Toaster theme="light" richColors />
         </Providers>
       </body>
     </html>

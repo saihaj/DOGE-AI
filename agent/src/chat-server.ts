@@ -1,5 +1,6 @@
 import cors from '@fastify/cors';
 import { Static, Type } from '@sinclair/typebox';
+import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import {
   appendClientMessage,
   appendResponseMessages,
@@ -8,38 +9,50 @@ import {
   streamText,
   UIMessage,
 } from 'ai';
-import { eq, InferSelectModel } from 'drizzle-orm';
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
+import { Redis } from 'ioredis';
 import * as crypto from 'node:crypto';
-import { z } from 'zod';
+import { RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
 import { myProvider } from './api/chat';
+import {
+  contextUser,
+  DAILY_MESSAGE_LIMIT_DEFUALT,
+  jwtSchema,
+} from './chat-api/context';
 import { ChatSDKError } from './chat-api/errors';
 import {
-  ChatDbInstance,
   getChatById,
   getMessagesByChatId,
   saveChat,
   saveMessages,
 } from './chat-api/queries';
-import { UserChatDb } from './chat-api/schema';
-import { IS_PROD, PRIVY_APP_ID, SEED } from './const';
+import { appRouter } from './chat-api/router';
+import { createContext } from './chat-api/trpc';
+import { CHAT_REDIS_URL, IS_PROD, PRIVY_APP_ID, SEED } from './const';
 import { reportFailureToDiscord } from './discord/action';
 import { chatLogger } from './logger';
-import { apiRequest, promClient } from './prom';
+import {
+  apiRequest,
+  promClient,
+  userMessageRateLimitHits,
+  userMessageUsage,
+} from './prom';
 import { getKbContext } from './twitter/knowledge-base';
 import { PROMPTS } from './twitter/prompts';
 import {
   extractAndProcessTweet,
   generateTitleFromUserMessage,
 } from './utils/message-processing';
-import { normalizeHeaderValue, setStreamHeaders } from './utils/stream';
+import {
+  normalizeHeaderValue,
+  setRateLimitHeaders,
+  setStreamHeaders,
+} from './utils/stream';
 import { getChatTools } from './utils/tools';
-import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
-import { createContext } from './chat-api/trpc';
-import { appRouter } from './chat-api/router';
-import { contextUser, jwtSchema } from './chat-api/context';
 
 const fastify = Fastify({ maxParamLength: 5000 });
+
+let redisClient: Redis;
 
 fastify.register(cors, {
   allowedHeaders: '*',
@@ -54,8 +67,38 @@ fastify.register(cors, {
 // Interface for the auth object
 type AuthContext = {
   privyUserId: string;
-  user: InferSelectModel<typeof UserChatDb>;
+  user: Awaited<ReturnType<typeof contextUser>>;
+  rateLimiter: InstanceType<typeof RateLimiterRedis>;
 };
+
+const DURATION = 24 * 60 * 60; // 24 hours
+
+function createRateLimiter({
+  userId,
+  perDayLimit,
+}: {
+  userId: string;
+  perDayLimit: number;
+}) {
+  // This way we can ensure that rate limit reset every night at 00:00 UTC
+  const todayDateUTC = new Date(Date.now()).toISOString().split('T')[0];
+
+  if (perDayLimit === DAILY_MESSAGE_LIMIT_DEFUALT) {
+    return new RateLimiterRedis({
+      storeClient: redisClient,
+      points: perDayLimit,
+
+      keyPrefix: `tmd:${todayDateUTC}`,
+      duration: DURATION,
+    });
+  }
+  return new RateLimiterRedis({
+    storeClient: redisClient,
+    points: perDayLimit,
+    keyPrefix: `tuser:${todayDateUTC}:${userId}`,
+    duration: DURATION,
+  });
+}
 
 // Extend FastifyRequest to include the auth property
 declare module 'fastify' {
@@ -81,8 +124,12 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     });
     // Skip auth in non-prod environments
     request.auth = {
-      privyUserId: 'test-user',
+      privyUserId: user.privyId,
       user,
+      rateLimiter: createRateLimiter({
+        userId: user.id,
+        perDayLimit: user.meta.perDayLimit,
+      }),
     };
     return;
   }
@@ -135,6 +182,10 @@ const authHandler = async (request: FastifyRequest, reply: FastifyReply) => {
   request.auth = {
     privyUserId: privyId,
     user,
+    rateLimiter: createRateLimiter({
+      userId: user.id,
+      perDayLimit: user.meta.perDayLimit,
+    }),
   };
 };
 
@@ -174,6 +225,10 @@ fastify.route<{ Body: UserChatStreamInput }>({
       method: request.method,
       path: '/api/chat',
     });
+    userMessageUsage.inc({
+      user: request.auth.user.id,
+      per_day_limit: request.auth.user.meta.perDayLimit,
+    });
     const log = chatLogger.child({
       function: 'api-userchat',
       requestId: request.id,
@@ -187,6 +242,39 @@ fastify.route<{ Body: UserChatStreamInput }>({
       message: UIMessage;
       id: string;
     };
+
+    try {
+      const limiterRes = await request.auth.rateLimiter.consume(
+        request.auth.user.id,
+        1,
+      );
+      setRateLimitHeaders({
+        reply,
+        limiterRes,
+        userLimit: request.auth.user.meta.perDayLimit,
+      });
+    } catch (error) {
+      log.error(
+        {
+          error,
+        },
+        'Rate limit exceeded',
+      );
+      userMessageRateLimitHits.inc({
+        user: request.auth.user.id,
+        per_day_limit: request.auth.user.meta.perDayLimit,
+      });
+      setRateLimitHeaders({
+        reply,
+        limiterRes: error as RateLimiterRes,
+        userLimit: request.auth.user.meta.perDayLimit,
+      });
+      throw new ChatSDKError(
+        'rate_limit:chat',
+        'Rate limit exceeded',
+        requestId,
+      );
+    }
 
     if (!message) {
       return new ChatSDKError(
@@ -421,6 +509,9 @@ fastify.route({
 });
 
 fastify.listen({ host: '::', port: 3001 }, async function (err, address) {
+  // Initialize Redis client on server startup
+  redisClient = new Redis(CHAT_REDIS_URL);
+
   chatLogger.info({}, `Server listening on ${address}`);
   promClient.collectDefaultMetrics({
     labels: {
@@ -429,7 +520,11 @@ fastify.listen({ host: '::', port: 3001 }, async function (err, address) {
   });
 
   if (err) {
-    await reportFailureToDiscord({ message: 'Chat server crashed: ' + err });
+    await Promise.all([
+      reportFailureToDiscord({ message: 'Chat server crashed: ' + err }),
+      redisClient.shutdown(),
+    ]);
+
     chatLogger.error(
       {
         error: err,

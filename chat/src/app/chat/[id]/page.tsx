@@ -6,7 +6,7 @@ import { ChatWithCustomScroll } from '@/components/chat-scroll';
 import { ClientOnly } from '@/components/client-only';
 import { Logo } from '@/components/logo';
 import { Button, buttonVariants } from '@/components/ui/button';
-import { PRIVY_COOKIE_NAME } from '@/lib/const';
+import { API_URL, PRIVY_COOKIE_NAME } from '@/lib/const';
 import { useTRPC } from '@/lib/trpc/client';
 import { cn } from '@/lib/utils';
 import { useChat } from '@ai-sdk/react';
@@ -19,6 +19,7 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useRateLimit } from '@/components/providers';
 
 function ChatPage() {
   const [privyToken] = useLocalStorage('privy:token', '');
@@ -29,6 +30,7 @@ function ChatPage() {
   const searchParams = useSearchParams();
   const chatId = params.id as string;
   const initialMessage = searchParams.get('message');
+  const { reachedLimitForTheDay, setReachedLimitForTheDay } = useRateLimit();
   const [hasProcessedInitialMessage, setHasProcessedInitialMessage] =
     useState(false);
   const [isNewChat, setIsNewChat] = useState(searchParams.get('newChat'));
@@ -69,7 +71,7 @@ function ChatPage() {
         role: message.role as UIMessage['role'],
       })) || undefined,
     id: chatId,
-    api: `/api/chat`,
+    api: `${API_URL}/api/userchat`,
     headers: {
       [PRIVY_COOKIE_NAME]: privyToken,
     },
@@ -77,7 +79,25 @@ function ChatPage() {
       id: body.id,
       message: body.messages.at(-1),
     }),
+    onResponse: async response => {
+      if (response.status === 429) {
+        setReachedLimitForTheDay(true);
+      }
+    },
     onError: error => {
+      const safeParsedError = (() => {
+        try {
+          return JSON.parse(error.message);
+        } catch (e) {
+          return null;
+        }
+      })();
+      if (safeParsedError) {
+        return toast.error(safeParsedError.error, {
+          description: safeParsedError.message,
+        });
+      }
+
       toast.error(error.message, {
         dismissible: false,
         action: {
@@ -211,14 +231,19 @@ function ChatPage() {
               <div className="absolute bottom-0 mx-auto inset-x-0 max-w-(--breakpoint-md) z-40">
                 <div className="relative z-40 flex flex-col items-center w-full">
                   <div style={{ opacity: 1, transform: 'none' }} />
-                  <div className="relative w-full sm:px-5 px-2 pb-2 sm:pb-4">
+                  <div className="relative w-full px-5 md:px-4 pb-2 sm:pb-4">
                     <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
                       <ChatInput
                         input={input}
+                        rateLimited={reachedLimitForTheDay}
                         isLoading={
                           status === 'streaming' || status === 'submitted'
                         }
                         handleSubmit={e => {
+                          if (reachedLimitForTheDay) {
+                            return;
+                          }
+
                           if (!authenticated) {
                             toast.error('Please login to continue', {
                               action: {
@@ -234,7 +259,7 @@ function ChatPage() {
                         stop={stop}
                       />
                     </div>
-                    <div className="absolute bottom-0 w-[calc(100%-2rem)] h-full rounded-t-[40px] bg-background" />
+                    <div className="absolute bottom-0 w-[calc(100%-2rem)] h-full bg-background" />
                   </div>
                 </div>
               </div>

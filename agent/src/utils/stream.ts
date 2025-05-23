@@ -1,4 +1,5 @@
 import { FastifyReply } from 'fastify';
+import { RateLimiterRes } from 'rate-limiter-flexible';
 
 /**
  * Sets the standard headers required for server-sent events (SSE) streaming responses.
@@ -23,4 +24,22 @@ export function normalizeHeaderValue(
     return header[0]; // Take the first value if it's an array
   }
   return undefined; // Return undefined for missing or invalid headers
+}
+
+export function setRateLimitHeaders({
+  reply,
+  userLimit,
+  limiterRes,
+}: {
+  reply: FastifyReply;
+  limiterRes: RateLimiterRes;
+  userLimit: number;
+}) {
+  reply.header('Retry-After', limiterRes.msBeforeNext / 1000);
+  reply.header('X-RateLimit-Limit', userLimit);
+  reply.header('X-RateLimit-Remaining', limiterRes.remainingPoints);
+  reply.header(
+    'X-RateLimit-Reset',
+    Math.ceil((Date.now() + limiterRes.msBeforeNext) / 1000),
+  );
 }

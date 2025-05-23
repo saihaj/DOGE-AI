@@ -12,6 +12,7 @@ import {
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { ClientPrivyTokenProvider } from './ClientPrivyTokenProvider';
 import { PostHogProvider } from './PostHogProvider';
+import { RateLimitProvider, useRateLimit } from './RateLimitProvider';
 
 let browserQueryClient: QueryClient | undefined = undefined;
 function getQueryClient() {
@@ -64,22 +65,26 @@ export function Providers({ children }: { children: React.ReactNode }) {
         externalWallets: { solana: { connectors: toSolanaWalletConnectors() } },
       }}
     >
-      <PostHogProvider>
-        <QueryClientProvider client={queryClient}>
-          {isServer ? (
-            <TRPCProvider
-              trpcClient={fallbackTrpcClient}
-              queryClient={queryClient}
-            >
-              {children}
-            </TRPCProvider>
-          ) : (
-            <ClientPrivyTokenProvider queryClient={queryClient}>
-              {children}
-            </ClientPrivyTokenProvider>
-          )}
-        </QueryClientProvider>
-      </PostHogProvider>
+      <RateLimitProvider>
+        <PostHogProvider>
+          <QueryClientProvider client={queryClient}>
+            {isServer ? (
+              <TRPCProvider
+                trpcClient={fallbackTrpcClient}
+                queryClient={queryClient}
+              >
+                {children}
+              </TRPCProvider>
+            ) : (
+              <ClientPrivyTokenProvider queryClient={queryClient}>
+                {children}
+              </ClientPrivyTokenProvider>
+            )}
+          </QueryClientProvider>
+        </PostHogProvider>
+      </RateLimitProvider>
     </PrivyProvider>
   );
 }
+
+export { useRateLimit };
