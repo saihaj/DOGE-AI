@@ -510,7 +510,9 @@ fastify.route({
 
 fastify.listen({ host: '::', port: 3001 }, async function (err, address) {
   // Initialize Redis client on server startup
-  redisClient = new Redis(CHAT_REDIS_URL);
+  redisClient = new Redis(CHAT_REDIS_URL, {
+    family: 6,
+  });
 
   chatLogger.info({}, `Server listening on ${address}`);
   promClient.collectDefaultMetrics({
