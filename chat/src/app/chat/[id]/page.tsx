@@ -130,14 +130,15 @@ function ChatPage() {
 
     toast.promise(makeChatPublic({ id: chatId }), {
       loading: 'Creating shareable link...',
-      success: async data => {
-        await copyToClipboard(`${window.location.origin}/share/${data.id}`);
+      success: () => {
         return 'Link copied to clipboard!';
       },
       error: error => {
         return error.message;
       },
     });
+
+    copyToClipboard(`${window.location.origin}/share/${chatId}`);
   };
 
   const startNewChat = () => {
