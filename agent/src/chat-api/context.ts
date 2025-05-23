@@ -13,7 +13,7 @@ export const jwtSchema = z.object({
   exp: z.number(),
 });
 
-export const DAILY_MESSAGE_LIMIT_DEFUALT = 1;
+export const DAILY_MESSAGE_LIMIT_DEFUALT = 20;
 export const userMeta = z
   .object({
     perDayLimit: z.number().optional().default(DAILY_MESSAGE_LIMIT_DEFUALT),
