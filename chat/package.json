@@ -8,12 +8,14 @@
     "start": "next start",
     "lint": "next lint",
     "check:types": "tsc --noEmit",
-    "pages:build": "npx @cloudflare/next-on-pages",
-    "preview": "npm run pages:build && wrangler pages dev",
-    "deploy": "npm run pages:build && wrangler pages deploy"
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
+    "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.12",
+    "@opennextjs/cloudflare": "^1.0.4",
     "@privy-io/react-auth": "^2.13.2",
     "@radix-ui/react-avatar": "^1.1.9",
     "@radix-ui/react-dialog": "^1.1.13",
@@ -52,10 +54,10 @@
     "zod": "^3.24.4"
   },
   "devDependencies": {
-    "@cloudflare/next-on-pages": "^1.13.12",
     "@eslint/eslintrc": "^3.3.1",
     "@tailwindcss/postcss": "^4.1.7",
     "@tailwindcss/typography": "^0.5.16",
+    "esbuild": "0.24.2",
     "@types/node": "^22.15.19",
     "@types/react": "^19.1.5",
     "@types/react-dom": "^19.1.5",

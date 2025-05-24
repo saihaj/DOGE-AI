@@ -1,12 +1,11 @@
 import { ChatWithCustomScroll } from '@/components/chat-scroll';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
-import { trpcServerClient } from '@/lib/trpc/server';
+import { createTrpcServerClient } from '@/lib/trpc/server';
 import { UIMessage } from 'ai';
 import { Metadata, ResolvingMetadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { NextResponse } from 'next/server';
 import React from 'react';
 import removeMarkdown from 'markdown-to-text';
 
@@ -16,12 +15,10 @@ export async function generateMetadata(
   parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const { uuid } = await params;
-
-  const { chat, messages } = await trpcServerClient.getPublicChatMessages.query(
-    {
-      id: uuid,
-    },
-  );
+  const trpc = createTrpcServerClient();
+  const { chat, messages } = await trpc.getPublicChatMessages.query({
+    id: uuid,
+  });
 
   // If no conversation found, use default metadata
   if (!chat) {
@@ -84,7 +81,8 @@ export default async function SharedConversationPage({
   params: Promise<{ uuid: string }>;
 }) {
   const { uuid } = await params;
-  const { messages } = await trpcServerClient.getPublicChatMessages.query({
+  const trpc = createTrpcServerClient();
+  const { messages } = await trpc.getPublicChatMessages.query({
     id: uuid,
   });
 
@@ -148,5 +146,3 @@ export default async function SharedConversationPage({
     </div>
   );
 }
-
-export const runtime = 'edge';
