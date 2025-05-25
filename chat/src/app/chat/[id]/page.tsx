@@ -36,7 +36,7 @@ function ChatPage() {
 
   const [hasProcessedInitialMessage, setHasProcessedInitialMessage] =
     useState(false);
-  const [isNewChat, setIsNewChat] = useState(searchParams.get('newChat'));
+  const [isNewChat] = useState(searchParams.get('newChat'));
 
   const trpc = useTRPC();
   const { data, error } = useQuery(
@@ -45,13 +45,22 @@ function ChatPage() {
       {
         enabled: !!chatId && authenticated && !isNewChat,
         refetchOnWindowFocus: false,
-        retry: false,
-        throwOnError: false,
+        retry: (count, error) => {
+          // Chat not found
+          if (error.data?.code === 'NOT_FOUND') {
+            return false;
+          }
+
+          // at most 3 retries
+          if (count > 3) return false;
+
+          return true;
+        },
       },
     ),
   );
 
-  const { mutateAsync: makeChatPublic } = useMutation(
+  const { mutate: makeChatPublic } = useMutation(
     trpc.makeChatPublic.mutationOptions(),
   );
 
@@ -127,16 +136,19 @@ function ChatPage() {
     if ('vibrate' in navigator) {
       navigator.vibrate(50);
     }
+    copyToClipboard(`${window.location.origin}/share/${chatId}`);
 
-    const t = toast.loading('Creating shareable link...');
-
-    try {
-      await makeChatPublic({ id: chatId });
-      toast.success('Link copied to clipboard!', { id: t });
-      await copyToClipboard(`${window.location.origin}/share/${chatId}`);
-    } catch {
-      toast.error('Failed to create shareable link', { id: t });
-    }
+    makeChatPublic(
+      { id: chatId },
+      {
+        onSuccess: () => {
+          toast.success('Link copied to clipboard');
+        },
+        onError: () => {
+          toast.error('Failed to make chat public');
+        },
+      },
+    );
   };
 
   const startNewChat = () => {
