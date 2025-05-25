@@ -212,6 +212,7 @@ function Home() {
                             }}
                           >
                             <PromptSuggestion
+                              className="md:py-2 py-0 md:px-4 px-2 text-xs md:text-sm"
                               key={i}
                               onClick={() => {
                                 if (!authenticated) {
