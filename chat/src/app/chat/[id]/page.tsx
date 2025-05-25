@@ -45,10 +45,15 @@ function ChatPage() {
       {
         enabled: !!chatId && authenticated && !isNewChat,
         refetchOnWindowFocus: false,
-        retry: (_, error) => {
+        retry: (count, error) => {
+          // Chat not found
           if (error.data?.code === 'NOT_FOUND') {
             return false;
           }
+
+          // at most 3 retries
+          if (count > 3) return false;
+
           return true;
         },
       },
@@ -138,6 +143,9 @@ function ChatPage() {
       {
         onSuccess: () => {
           toast.success('Link copied to clipboard');
+        },
+        onError: () => {
+          toast.error('Failed to make chat public');
         },
       },
     );
