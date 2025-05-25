@@ -55,7 +55,7 @@ function ChatPage() {
     ),
   );
 
-  const { mutateAsync: makeChatPublic } = useMutation(
+  const { mutate: makeChatPublic } = useMutation(
     trpc.makeChatPublic.mutationOptions(),
   );
 
@@ -132,16 +132,15 @@ function ChatPage() {
       navigator.vibrate(50);
     }
 
-    const t = toast.loading('Creating shareable link...');
-
-    try {
-      await makeChatPublic({ id: chatId });
-      toast.success('Link copied to clipboard!', { id: t });
-      await copyToClipboard(`${window.location.origin}/share/${chatId}`);
-    } catch (err) {
-      console.log('Error creating shareable link:', err);
-      toast.error('Failed to create shareable link', { id: t });
-    }
+    makeChatPublic(
+      { id: chatId },
+      {
+        onSuccess: () => {
+          copyToClipboard(`${window.location.origin}/share/${chatId}`);
+          toast.success('Link copied to clipboard');
+        },
+      },
+    );
   };
 
   const startNewChat = () => {
