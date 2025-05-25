@@ -25,6 +25,20 @@ static_resources:
                   virtual_hosts:
                     - name: chat_service
                       domains: ['*']
+                      typed_per_filter_config:
+                        envoy.filters.http.cors:
+                          '@type': type.googleapis.com/envoy.extensions.filters.http.cors.v3.CorsPolicy
+                          allow_origin_string_match:
+                            - safe_regex:
+                                regex: '.*'
+                          allow_methods:
+                            'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+                          allow_headers: '*'
+                          expose_headers: '*'
+                          allow_credentials:
+                            value: true
+                          forward_not_matching_preflights:
+                            value: true
                       routes:
                         - match:
                             path: '/health'
