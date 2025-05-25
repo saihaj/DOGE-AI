@@ -131,12 +131,12 @@ function ChatPage() {
     if ('vibrate' in navigator) {
       navigator.vibrate(50);
     }
+    copyToClipboard(`${window.location.origin}/share/${chatId}`);
 
     makeChatPublic(
       { id: chatId },
       {
         onSuccess: () => {
-          copyToClipboard(`${window.location.origin}/share/${chatId}`);
           toast.success('Link copied to clipboard');
         },
       },
