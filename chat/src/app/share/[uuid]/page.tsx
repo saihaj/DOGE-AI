@@ -126,7 +126,7 @@ export default async function SharedConversationPage({
                   <div style={{ opacity: 1, transform: 'none' }} />
                   <div className="relative w-full sm:px-5 px-2 py-2 bg-white">
                     <div className="bottom-0 mb-[env(safe-area-inset-bottom)] w-full text-base flex flex-col gap-2 items-center justify-center relative z-10">
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs md:text-sm text-muted-foreground">
                         This conversation is shared publicly.{' '}
                         <Link
                           href="/"
