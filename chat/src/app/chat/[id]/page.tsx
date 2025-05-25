@@ -36,7 +36,7 @@ function ChatPage() {
 
   const [hasProcessedInitialMessage, setHasProcessedInitialMessage] =
     useState(false);
-  const [isNewChat, setIsNewChat] = useState(searchParams.get('newChat'));
+  const [isNewChat] = useState(searchParams.get('newChat'));
 
   const trpc = useTRPC();
   const { data, error } = useQuery(
@@ -45,8 +45,12 @@ function ChatPage() {
       {
         enabled: !!chatId && authenticated && !isNewChat,
         refetchOnWindowFocus: false,
-        retry: false,
-        throwOnError: false,
+        retry: (_, error) => {
+          if (error.data?.code === 'NOT_FOUND') {
+            return false;
+          }
+          return true;
+        },
       },
     ),
   );
