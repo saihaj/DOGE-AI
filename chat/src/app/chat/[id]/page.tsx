@@ -133,7 +133,7 @@ function ChatPage() {
     try {
       await makeChatPublic({ id: chatId });
       toast.success('Link copied to clipboard!', { id: t });
-      copyToClipboard(`${window.location.origin}/share/${chatId}`);
+      await copyToClipboard(`${window.location.origin}/share/${chatId}`);
     } catch {
       toast.error('Failed to create shareable link', { id: t });
     }
