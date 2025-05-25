@@ -62,6 +62,7 @@ fastify.register(cors, {
     'http://localhost:8787',
     'https://dogeai.chat',
     /^https:\/\/([a-zA-Z0-9-]+\.)*dogeai-chat\.pages\.dev$/, // Matches dogeai-chat.pages.dev and subdomains
+    /^https:\/\/([a-zA-Z0-9-]+\.)*dogeai-terminal\.saihaj\.workers\.dev$/, // Matches dogeai-terminal.saihaj.workers.dev and subdomains
   ],
 });
 
