@@ -60,8 +60,10 @@ function ChatPage() {
     ),
   );
 
-  const { mutate: makeChatPublic } = useMutation(
-    trpc.makeChatPublic.mutationOptions(),
+  const { mutateAsync: makeChatPublic } = useMutation(
+    trpc.makeChatPublic.mutationOptions({
+      retry: 3,
+    }),
   );
 
   const {
@@ -138,17 +140,11 @@ function ChatPage() {
     }
     copyToClipboard(`${window.location.origin}/share/${chatId}`);
 
-    makeChatPublic(
-      { id: chatId },
-      {
-        onSuccess: () => {
-          toast.success('Link copied to clipboard');
-        },
-        onError: () => {
-          toast.error('Failed to make chat public');
-        },
-      },
-    );
+    toast.promise(makeChatPublic({ id: chatId }), {
+      loading: `Creating public link...`,
+      success: () => `Chat link copied to clipboard!`,
+      error: () => 'Failed to share chat',
+    });
   };
 
   const startNewChat = () => {
