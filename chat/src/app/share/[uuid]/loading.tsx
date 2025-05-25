@@ -26,12 +26,6 @@ export default function Loading() {
                       DOGEai
                     </span>
                   </div>
-                  <div className="flex gap-2 items-center">
-                    <Skeleton className="h-9 w-32" />
-                  </div>
-                </div>
-                <div className="w-full text-center mt-4">
-                  <Skeleton className="h-7 w-48 mx-auto rounded-full" />
                 </div>
               </header>
 
