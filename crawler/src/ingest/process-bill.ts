@@ -3,8 +3,8 @@ import { inngest } from './client';
 import { z } from 'zod';
 import { generateObject } from 'ai';
 import { NonRetriableError } from 'inngest';
-import { db, bill as billDbSchema, eq, and } from 'database';
-import { openai } from '@ai-sdk/openai';
+import { db, bill as billDbSchema } from 'database';
+import { google } from '@ai-sdk/google';
 
 const billInfoResponse = z.object({
   request: z.object({
@@ -214,7 +214,7 @@ export const processBill = inngest.createFunction(
       const fetchBillText = data;
 
       const { object: summarizeBill } = await generateObject({
-        model: openai('gpt-4o'),
+        model: google('gemini-1.5-flash-8b'),
         schema: z.object({
           summary: z.string(),
           impact: z.string(),
