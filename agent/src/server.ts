@@ -4,15 +4,14 @@ import { CoreMessage, smoothStream, StreamData, streamText, tool } from 'ai';
 import * as crypto from 'node:crypto';
 import cors from '@fastify/cors';
 import {
-  ACTIVE_CONGRESS,
   CF_TEAM_DOMAIN,
   DISCORD_TOKEN,
   IS_PROD,
+  OPENAI_API_KEY,
   PRIVY_APP_ID,
   PRIVY_JWKS,
   SEED,
   TEMPERATURE,
-  TWEET_EXTRACT_REGEX,
 } from './const';
 import { setStreamHeaders } from './utils/stream';
 import { getChatTools } from './utils/tools';
@@ -337,6 +336,7 @@ fastify.route<{ Body: ChatStreamInput }>({
             manualEntries: 'agent',
             billEntries: billSearch,
             documentEntries: documentSearch,
+            openaiApiKey: OPENAI_API_KEY,
           },
           log,
         );
@@ -540,6 +540,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
           manualEntries: 'chat',
           billEntries: false,
           documentEntries: false,
+          openaiApiKey: OPENAI_API_KEY,
         },
         log,
       );

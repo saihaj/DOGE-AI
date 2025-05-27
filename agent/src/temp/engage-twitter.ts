@@ -7,6 +7,7 @@ import {
 } from '../twitter/execute-interaction';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
+import { OPENAI_API_KEY } from '../const';
 
 const log = logger.child({ module: 'cli-engage-twitter' });
 
@@ -46,6 +47,7 @@ async function main() {
         billEntries: true,
         documentEntries: true,
         manualEntries: 'agent',
+        openaiApiKey: OPENAI_API_KEY,
       },
       log,
     );

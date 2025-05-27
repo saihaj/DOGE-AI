@@ -4,7 +4,7 @@ import { getShortResponse } from '../twitter/execute-interaction';
 import { Static, Type } from '@sinclair/typebox';
 import { PROMPTS } from '../twitter/prompts';
 import Handlebars from 'handlebars';
-import { REJECTION_REASON } from '../const';
+import { OPENAI_API_KEY, REJECTION_REASON } from '../const';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
 import { questionExtractor } from '../twitter/helpers';
@@ -55,6 +55,7 @@ export async function processTestReplyRequest({
       billEntries: true,
       documentEntries: true,
       manualEntries: false,
+      openaiApiKey: OPENAI_API_KEY,
     },
     log,
   );

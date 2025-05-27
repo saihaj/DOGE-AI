@@ -13,7 +13,7 @@ import {
   inArray,
   desc,
 } from 'database';
-import { openai } from '@ai-sdk/openai';
+import { createOpenAI } from '@ai-sdk/openai';
 import {
   ACTIVE_CONGRESS,
   MANUAL_KB_AGENT_SOURCE,
@@ -118,9 +118,11 @@ async function getDocumentContext(
   {
     messages,
     termEmbeddingString,
+    openaiApiKey,
   }: {
     messages: CoreMessage[];
     termEmbeddingString: string;
+    openaiApiKey: string;
   },
   logger: WithLogger,
 ) {
@@ -183,6 +185,11 @@ async function getDocumentContext(
     })
     .join('\n\n');
 
+  const openai = createOpenAI({
+    apiKey: openaiApiKey,
+    compatibility: 'strict',
+  });
+
   const { object: relatedDocuments } = await generateObject({
     model: openai('gpt-4o-mini'),
     seed: SEED,
@@ -238,8 +245,10 @@ async function getDocumentContext(
 async function getReasonBillContext(
   {
     messages,
+    openaiApiKey,
   }: {
     messages: CoreMessage[];
+    openaiApiKey: string;
   },
   logger: WithLogger,
 ) {
@@ -247,6 +256,11 @@ async function getReasonBillContext(
     method: 'getReasonBillContext',
   });
   const LIMIT = 5;
+
+  const openai = createOpenAI({
+    apiKey: openaiApiKey,
+    compatibility: 'strict',
+  });
 
   const { object: billTitleResult } = await generateObject({
     model: openai('gpt-4o-mini', {
@@ -681,6 +695,7 @@ export async function getKbContext(
     manualEntries,
     documentEntries,
     billEntries,
+    openaiApiKey,
   }: {
     messages: CoreMessage[];
     text: string;
@@ -690,6 +705,7 @@ export async function getKbContext(
     documentEntries: boolean;
     /** Should we search for bills scraped? */
     billEntries: boolean;
+    openaiApiKey: string;
   },
   logger: WithLogger,
 ) {
@@ -703,12 +719,15 @@ export async function getKbContext(
       ).catch(_ => null)
     : null;
   const documents = documentEntries
-    ? await getDocumentContext({ messages, termEmbeddingString }, logger).catch(
-        _ => null,
-      )
+    ? await getDocumentContext(
+        { messages, termEmbeddingString, openaiApiKey },
+        logger,
+      ).catch(_ => null)
     : null;
   const bill = billEntries
-    ? await getReasonBillContext({ messages }, logger).catch(_ => null)
+    ? await getReasonBillContext({ messages, openaiApiKey }, logger).catch(
+        _ => null,
+      )
     : null;
 
   return {

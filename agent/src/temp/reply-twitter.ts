@@ -1,6 +1,6 @@
 import * as readline from 'node:readline/promises';
 import { CoreMessage } from 'ai';
-import { REJECTION_REASON } from '../const';
+import { OPENAI_API_KEY, REJECTION_REASON } from '../const';
 import { PROMPTS } from '../twitter/prompts';
 import { generateReply, getTweetContext } from '../twitter/execute';
 import { logger } from '../logger';
@@ -56,6 +56,7 @@ async function main() {
         billEntries: true,
         documentEntries: true,
         manualEntries: false,
+        openaiApiKey: OPENAI_API_KEY,
       },
       log,
     );
