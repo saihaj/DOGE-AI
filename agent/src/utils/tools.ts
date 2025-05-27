@@ -1,6 +1,6 @@
 import { Message, StreamData, tool } from 'ai';
 import { z } from 'zod';
-import { ACTIVE_CONGRESS } from '../const';
+import { ACTIVE_CONGRESS, CHAT_OPENAI_API_KEY } from '../const';
 import { bill, db, eq } from 'database';
 import { getKbContext } from '../twitter/knowledge-base';
 import { getSearchResult } from '../twitter/web';
@@ -29,6 +29,7 @@ export function getChatTools(
         log.info({ query }, 'query for web tool call');
         const webSearchResults = await getSearchResult(
           {
+            type: 'chat',
             messages: [
               {
                 role: 'user',
@@ -74,6 +75,7 @@ export function getChatTools(
             manualEntries: false,
             billEntries: true,
             documentEntries: false,
+            openaiApiKey: CHAT_OPENAI_API_KEY,
           },
           log,
         );

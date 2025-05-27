@@ -13,7 +13,6 @@ import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { Redis } from 'ioredis';
 import * as crypto from 'node:crypto';
 import { RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
-import { myProvider } from './api/chat';
 import {
   contextUser,
   DAILY_MESSAGE_LIMIT_DEFUALT,
@@ -28,7 +27,13 @@ import {
 } from './chat-api/queries';
 import { appRouter } from './chat-api/router';
 import { createContext } from './chat-api/trpc';
-import { CHAT_REDIS_URL, IS_PROD, PRIVY_APP_ID, SEED } from './const';
+import {
+  CHAT_OPENAI_API_KEY,
+  CHAT_REDIS_URL,
+  IS_PROD,
+  PRIVY_APP_ID,
+  SEED,
+} from './const';
 import { reportFailureToDiscord } from './discord/action';
 import { chatLogger } from './logger';
 import {
@@ -49,10 +54,16 @@ import {
   setStreamHeaders,
 } from './utils/stream';
 import { getChatTools } from './utils/tools';
+import { createOpenAI } from '@ai-sdk/openai';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
 let redisClient: Redis;
+
+const openai = createOpenAI({
+  apiKey: CHAT_OPENAI_API_KEY,
+  compatibility: 'strict',
+});
 
 fastify.register(cors, {
   allowedHeaders: '*',
@@ -411,7 +422,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
       }
 
       const result = streamText({
-        model: myProvider.languageModel('gpt-4.1'),
+        model: openai('gpt-4.1'),
         abortSignal: abortController.signal,
         messages,
         experimental_transform: smoothStream({}),

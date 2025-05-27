@@ -7,7 +7,7 @@ import Handlebars from 'handlebars';
 import { Static, Type } from '@sinclair/typebox';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
-import { PROMPTS } from '../twitter/prompts';
+import { OPENAI_API_KEY } from '../const';
 
 export const ProcessTestEngageRequestInput = Type.Object({
   tweetId: Type.String(),
@@ -42,6 +42,7 @@ export async function processTestEngageRequest({
       billEntries: true,
       documentEntries: true,
       manualEntries: 'agent',
+      openaiApiKey: OPENAI_API_KEY,
     },
     log,
   );

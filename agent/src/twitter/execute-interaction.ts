@@ -1,6 +1,7 @@
 import {
   DEEPINFRA_API_KEY,
   IS_PROD,
+  OPENAI_API_KEY,
   REJECTION_REASON,
   SEED,
   TEMPERATURE,
@@ -301,6 +302,7 @@ export const executeInteractionTweets = inngest.createFunction(
               billEntries: true,
               documentEntries: true,
               manualEntries: 'agent',
+              openaiApiKey: OPENAI_API_KEY,
             },
             log,
           );

@@ -1,4 +1,9 @@
-import { IS_PROD, REJECTION_REASON, TEMPERATURE } from '../const';
+import {
+  IS_PROD,
+  OPENAI_API_KEY,
+  REJECTION_REASON,
+  TEMPERATURE,
+} from '../const';
 import { inngest } from '../inngest';
 import { NonRetriableError } from 'inngest';
 import {
@@ -255,6 +260,7 @@ export const executeTweets = inngest.createFunction(
                 billEntries: true,
                 documentEntries: true,
                 manualEntries: false,
+                openaiApiKey: OPENAI_API_KEY,
               },
               log,
             );
@@ -358,6 +364,7 @@ export const executeTweets = inngest.createFunction(
                 billEntries: true,
                 documentEntries: true,
                 manualEntries: false,
+                openaiApiKey: OPENAI_API_KEY,
               },
               log,
             );

@@ -3,7 +3,7 @@ import { CoreMessage, generateText } from 'ai';
 import { PROMPTS } from '../twitter/prompts';
 import { logger } from '../logger';
 import { mergeConsecutiveSameRole } from '../twitter/helpers';
-import { TEMPERATURE } from '../const';
+import { OPENAI_API_KEY, TEMPERATURE } from '../const';
 import { openai } from '@ai-sdk/openai';
 import { getKbContext } from '../twitter/knowledge-base';
 
@@ -34,6 +34,7 @@ async function main() {
         billEntries: true,
         documentEntries: true,
         manualEntries: false,
+        openaiApiKey: OPENAI_API_KEY,
       },
       log,
     );

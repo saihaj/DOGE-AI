@@ -7,9 +7,12 @@ if (!process.env.ANTHROPIC_API_KEY) {
 if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
   throw new Error('GOOGLE_GENERATIVE_AI_API_KEY is not set in your .env');
 }
-if (!process.env.OPENAI_API_KEY) {
-  throw new Error('OPENAI_API_KEY is required');
-}
+export const OPENAI_API_KEY = (() => {
+  if (!process.env.OPENAI_API_KEY) {
+    throw new Error('OPENAI_API_KEY is not set in your .env');
+  }
+  return process.env.OPENAI_API_KEY;
+})();
 export const TWITTER_API_KEY = (() => {
   if (!process.env.TWITTER_IO_API_KEY) {
     throw new Error('TWITTER_IO_API_KEY is required');
@@ -183,4 +186,16 @@ export const CHAT_REDIS_URL = (() => {
     throw new Error('CHAT_REDIS_URL is not set in your .env');
   }
   return process.env.CHAT_REDIS_URL;
+})();
+export const CHAT_OPENAI_API_KEY = (() => {
+  if (!process.env.CHAT_OPENAI_API_KEY) {
+    throw new Error('CHAT_OPENAI_API_KEY is not set in your .env');
+  }
+  return process.env.CHAT_OPENAI_API_KEY;
+})();
+export const CHAT_EXA_API_KEY = (() => {
+  if (!process.env.CHAT_EXA_API_KEY) {
+    throw new Error('CHAT_EXA_API_KEY is not set in your .env');
+  }
+  return process.env.CHAT_EXA_API_KEY;
 })();
