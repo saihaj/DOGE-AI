@@ -4,6 +4,7 @@ import { ChatDbInstance } from './queries';
 import { UserChatDb } from './schema';
 import { eq } from 'drizzle-orm';
 import { bento } from '../cache';
+import { chatLogger } from '../logger';
 
 export const jwtSchema = z.object({
   sid: z.string(),
@@ -71,7 +72,13 @@ function getUser({ privyId }: { privyId: string }) {
       });
 
       if (!user) {
-        throw new Error('User not found');
+        const [newUser] = await ChatDbInstance.insert(UserChatDb)
+          .values({
+            privyId,
+          })
+          .returning();
+
+        return { ...newUser, meta: userMeta.parse(newUser.meta || {}) };
       }
 
       const meta = userMeta.parse(user?.meta || {});
@@ -94,27 +101,10 @@ export async function contextUser({
     const user = await getUser({ privyId });
     return user;
   } catch (error) {
-    console.log('user not found in db', error);
+    chatLogger.error({ error }, 'context user');
     throw new ChatSDKError(
       'bad_request:database',
       'unable to query user',
-      requestId,
-    );
-  }
-
-  // else create user in DB
-  try {
-    const [newUser] = await ChatDbInstance.insert(UserChatDb)
-      .values({
-        privyId,
-      })
-      .returning();
-    const meta = userMeta.parse(newUser?.meta || {});
-    return { ...newUser, meta };
-  } catch (error) {
-    throw new ChatSDKError(
-      'bad_request:database',
-      'unable to create user',
       requestId,
     );
   }
