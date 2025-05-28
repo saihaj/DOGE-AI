@@ -199,3 +199,10 @@ export const CHAT_EXA_API_KEY = (() => {
   }
   return process.env.CHAT_EXA_API_KEY;
 })();
+/**
+ * Should be more than enough for most the bills.
+ * We use this to use summary for really large bills so we don't waste too much time in our search like H.R. 1 (2025)
+ *
+ * more context: https://grok.com/share/bGVnYWN5_6d2794ed-0293-4402-8ec6-3d921de392aa
+ */
+export const LARGE_BILL_LENGTH_THRESHOLD = 200_000;

@@ -16,6 +16,7 @@ import {
 import { createOpenAI } from '@ai-sdk/openai';
 import {
   ACTIVE_CONGRESS,
+  LARGE_BILL_LENGTH_THRESHOLD,
   MANUAL_KB_AGENT_SOURCE,
   MANUAL_KB_CHAT_SOURCE,
   REJECTION_REASON,
@@ -352,7 +353,8 @@ async function getReasonBillContext(
           const content = Buffer.from(text).toString('utf-8');
 
           // we just use summary if the bill is too big
-          const textContent = content.length > 500_000 ? summary : content;
+          const textContent =
+            content.length > LARGE_BILL_LENGTH_THRESHOLD ? summary : content;
 
           return `"billId": ${billId} "congress": ${congress} "number": ${type} ${number} "title": ${title} "introducedDate": ${introducedDate} "summary": ${textContent}`;
         },

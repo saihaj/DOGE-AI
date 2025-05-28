@@ -1,6 +1,10 @@
 import { Message, StreamData, tool } from 'ai';
 import { z } from 'zod';
-import { ACTIVE_CONGRESS, CHAT_OPENAI_API_KEY } from '../const';
+import {
+  ACTIVE_CONGRESS,
+  CHAT_OPENAI_API_KEY,
+  LARGE_BILL_LENGTH_THRESHOLD,
+} from '../const';
 import { bill, db, eq } from 'database';
 import { getKbContext } from '../twitter/knowledge-base';
 import { getSearchResult } from '../twitter/web';
@@ -107,14 +111,24 @@ export function getChatTools(
             id: true,
             title: true,
             content: true,
+            summary: true,
           },
         });
 
-        const bills = _bills.map(bill => ({
-          ...bill,
+        const bills = _bills.map(bill => {
           // @ts-expect-error ignore type
-          content: Buffer.from(bill.content).toString(),
-        }));
+          const contentBufferAsString = Buffer.from(bill.content).toString();
+
+          const textContent =
+            contentBufferAsString.length > LARGE_BILL_LENGTH_THRESHOLD
+              ? bill.summary
+              : contentBufferAsString;
+
+          return {
+            ...bill,
+            content: textContent,
+          };
+        });
 
         if (bills.length > 0) {
           return bills;
