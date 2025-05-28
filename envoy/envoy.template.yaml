@@ -182,7 +182,6 @@ static_resources:
                         bytes_sent: '%BYTES_SENT%'
                         duration: '%DURATION%'
                         upstream_service_time: '%RESP(X-ENVOY-UPSTREAM-SERVICE-TIME)%'
-                        forwarded_for: '%REQ(X-FORWARDED-FOR)%'
                         user_agent: '%REQ(USER-AGENT)%'
                         request_id: '%REQ(X-REQUEST-ID)%'
                         authority: '%REQ(:AUTHORITY)%'
