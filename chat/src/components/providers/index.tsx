@@ -13,6 +13,7 @@ import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { ClientPrivyTokenProvider } from './ClientPrivyTokenProvider';
 import { PostHogProvider } from './PostHogProvider';
 import { RateLimitProvider, useRateLimit } from './RateLimitProvider';
+import { ClientOnly } from '../client-only';
 
 let browserQueryClient: QueryClient | undefined = undefined;
 function getQueryClient() {
@@ -76,9 +77,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
                 {children}
               </TRPCProvider>
             ) : (
-              <ClientPrivyTokenProvider queryClient={queryClient}>
-                {children}
-              </ClientPrivyTokenProvider>
+              <ClientOnly>
+                <ClientPrivyTokenProvider queryClient={queryClient}>
+                  {children}
+                </ClientPrivyTokenProvider>
+              </ClientOnly>
             )}
           </QueryClientProvider>
         </PostHogProvider>
