@@ -52,6 +52,11 @@ function ChatPage() {
             return false;
           }
 
+          // Do not have access to the chat
+          if (error.data?.code === 'FORBIDDEN') {
+            return false;
+          }
+
           // at most 3 retries
           if (count > 3) {
             posthog.captureException(error);
@@ -68,7 +73,9 @@ function ChatPage() {
     trpc.makeChatPublic.mutationOptions({
       retry: 3,
       onError: error => {
-        posthog.captureException(error);
+        posthog.captureException(error, {
+          chatId,
+        });
       },
     }),
   );
