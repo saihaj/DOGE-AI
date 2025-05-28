@@ -241,11 +241,6 @@ fastify.route<{ Body: UserChatStreamInput }>({
       user: request.auth.user.id,
       per_day_limit: request.auth.user.meta.perDayLimit,
     });
-    const log = chatLogger.child({
-      function: 'api-userchat',
-      requestId: request.id,
-      userId: request.auth.user.id,
-    });
 
     // Create an AbortController for the backend
     const abortController = new AbortController();
@@ -254,6 +249,13 @@ fastify.route<{ Body: UserChatStreamInput }>({
       message: UIMessage;
       id: string;
     };
+
+    const log = chatLogger.child({
+      function: 'api-userchat',
+      requestId: request.id,
+      userId: request.auth.user.id,
+      chatId: id,
+    });
 
     try {
       const limiterRes = await request.auth.rateLimiter.consume(
@@ -358,18 +360,30 @@ fastify.route<{ Body: UserChatStreamInput }>({
       ).toResponse();
     }
 
-    // Listen for the client disconnecting (abort)
-    request.raw.on('close', () => {
-      if (request.raw.aborted) {
-        abortController.abort();
-      }
-    });
-
     // Mark the response as a v1 data stream:
     setStreamHeaders(reply);
 
+    let stream: StreamData | null = null;
+
     try {
-      const stream = new StreamData();
+      stream = new StreamData();
+
+      // Listen for the client disconnecting (abort)
+      request.raw.on('close', () => {
+        if (request.raw.aborted) {
+          log.info({}, 'Client disconnected, aborting stream');
+          abortController.abort();
+          // Clean up the stream on client disconnect
+          if (stream) {
+            stream.close().catch(closeError => {
+              log.error(
+                { closeError },
+                'Error closing stream after client disconnect',
+              );
+            });
+          }
+        }
+      });
 
       // Process any tweet URLs in the message
       const { messages: updatedMessages } = await extractAndProcessTweet(
@@ -405,9 +419,6 @@ fastify.route<{ Body: UserChatStreamInput }>({
           content: result.trim(),
           id: crypto.randomUUID(),
         });
-        stream.appendMessageAnnotation({
-          role: 'kb-entry-found',
-        });
       }
 
       const systemPrompt = messages.find(message => message.role === 'system');
@@ -433,7 +444,23 @@ fastify.route<{ Body: UserChatStreamInput }>({
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
         onError(error) {
-          log.error({ error }, 'Error in chat stream');
+          log.error(
+            {
+              error,
+              aborted: abortController.signal.aborted,
+            },
+            'Error in chat stream',
+          );
+
+          // Close the stream on error to prevent further issues
+          if (stream) {
+            stream.close().catch(closeError => {
+              log.error(
+                { closeError },
+                'Error closing stream after stream error',
+              );
+            });
+          }
         },
         async onFinish(event) {
           if (event.response) {
@@ -441,7 +468,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
 
             if (!lastMessage) {
               log.error({}, 'unable to get message to save');
-              await stream.close();
+              await stream?.close();
               return;
             }
 
@@ -463,8 +490,8 @@ fastify.route<{ Body: UserChatStreamInput }>({
           }
 
           if (event.sources.length === 0) {
-            await stream.close();
-            log.info({}, 'stream closed');
+            await stream?.close();
+            log.info({}, 'no sources found, stream closed');
             return;
           }
           const sources = event.sources;
@@ -473,10 +500,10 @@ fastify.route<{ Body: UserChatStreamInput }>({
           const urls = sources.map(source => source.url);
 
           if (urls) {
-            stream.append({ role: 'sources', content: urls });
+            stream?.append({ role: 'sources', content: urls });
           }
-          log.info({}, 'stream closed');
-          await stream.close();
+          log.info({}, 'appended sources to stream');
+          await stream?.close();
         },
       });
 
@@ -489,14 +516,36 @@ fastify.route<{ Body: UserChatStreamInput }>({
 
       return response;
     } catch (error) {
-      log.error({ error }, 'Error in chat stream');
+      log.error(
+        {
+          error,
+          aborted: abortController.signal.aborted,
+        },
+        'Error in chat stream',
+      );
+
+      // Ensure stream is closed on any error
+      try {
+        await stream?.close();
+      } catch (closeError) {
+        log.error(
+          { closeError, chatId },
+          'Error closing stream after main error',
+        );
+      }
+
       if (abortController.signal.aborted) {
         // Handle the abort gracefully
         reply.status(204).send(); // No Content
         return;
       }
 
-      throw error; // Other errors should be handled as usual
+      // Return a proper error response instead of throwing
+      return new ChatSDKError(
+        'bad_request:chat',
+        'An error occurred while processing your message',
+        requestId,
+      ).toResponse();
     }
   },
   url: '/api/userchat',

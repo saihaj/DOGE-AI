@@ -100,13 +100,24 @@ function ChatPage() {
       id: body.id,
       message: body.messages.at(-1),
     }),
+    fetch: (url, options) => {
+      return fetch(url, {
+        ...options,
+        signal: AbortSignal.timeout(300),
+      });
+    },
     onResponse: async response => {
       if (response.status === 429) {
         setReachedLimitForTheDay(true);
       }
     },
     onError: error => {
-      posthog.captureException(error);
+      posthog.captureException(error, {
+        chatId,
+        messageCount: messages.length,
+        lastMessageId: messages.at(-1)?.id,
+      });
+
       const safeParsedError = (() => {
         try {
           return JSON.parse(error.message);
@@ -114,6 +125,7 @@ function ChatPage() {
           return null;
         }
       })();
+
       if (safeParsedError) {
         return toast.error(safeParsedError.error, {
           description: safeParsedError.message,
