@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
+import posthog from 'posthog-js';
 
 function ChatPage() {
   const [privyToken] = useLocalStorage('privy:token', '');
@@ -52,7 +53,10 @@ function ChatPage() {
           }
 
           // at most 3 retries
-          if (count > 3) return false;
+          if (count > 3) {
+            posthog.captureException(error);
+            return false;
+          }
 
           return true;
         },
@@ -63,6 +67,9 @@ function ChatPage() {
   const { mutateAsync: makeChatPublic } = useMutation(
     trpc.makeChatPublic.mutationOptions({
       retry: 3,
+      onError: error => {
+        posthog.captureException(error);
+      },
     }),
   );
 
@@ -99,6 +106,7 @@ function ChatPage() {
       }
     },
     onError: error => {
+      posthog.captureException(error);
       const safeParsedError = (() => {
         try {
           return JSON.parse(error.message);

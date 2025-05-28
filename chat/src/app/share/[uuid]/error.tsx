@@ -5,17 +5,15 @@ import { Logo } from '@/components/logo';
 import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import posthog from 'posthog-js';
 
 export default function Error({
   error,
-  reset,
 }: {
   error: Error & { digest?: string };
-  reset: () => void;
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
-    console.error(error);
+    posthog.captureException(error);
   }, [error]);
 
   return (
@@ -25,13 +23,10 @@ export default function Error({
       </header>
       <div className="flex-1 prose flex flex-col items-center justify-center">
         <h1 className="mb-2">{error.message || 'Something went wrong'}</h1>
-        {!error.message && (
-          <p>
-            We encountered an error while trying to load this shared
-            conversation. This may be because the conversation has expired or
-            was deleted.
-          </p>
-        )}
+        <p>
+          We encountered an error while trying to load this shared conversation.
+          This may be because the conversation has expired or was deleted.
+        </p>
         <div className="flex gap-4 mt-4">
           <Link
             prefetch
