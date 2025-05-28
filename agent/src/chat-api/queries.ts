@@ -86,9 +86,16 @@ export async function saveMessages({
     Omit<InferSelectModel<typeof schema.MessageChatDb>, 'createdAt'>
   >;
 }) {
-  return await ChatDbInstance.insert(schema.MessageChatDb).values(
-    messages.map(a => ({ ...a, parts: Buffer.from(JSON.stringify(a.parts)) })),
-  );
+  return await ChatDbInstance.insert(schema.MessageChatDb)
+    .values(
+      messages.map(a => ({
+        ...a,
+        parts: Buffer.from(JSON.stringify(a.parts)),
+      })),
+    )
+    .onConflictDoNothing({
+      target: schema.MessageChatDb.id,
+    });
 }
 
 export async function getMessagesByChatId({ id }: { id: string }) {
