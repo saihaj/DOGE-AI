@@ -100,12 +100,6 @@ function ChatPage() {
       id: body.id,
       message: body.messages.at(-1),
     }),
-    fetch: (url, options) => {
-      return fetch(url, {
-        ...options,
-        signal: AbortSignal.timeout(300),
-      });
-    },
     onResponse: async response => {
       if (response.status === 429) {
         setReachedLimitForTheDay(true);
