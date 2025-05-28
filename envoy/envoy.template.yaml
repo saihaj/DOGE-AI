@@ -66,7 +66,7 @@ static_resources:
                               pattern:
                                 regex: '^/chat(/.*)$'
                               substitution: '\1'
-                            timeout: 30s
+                            timeout: 0s # we are streaming responses from downstream
                             retry_policy:
                               retry_on: connect-failure,refused-stream,unavailable,cancelled,resource-exhausted,5xx
                               num_retries: 3
