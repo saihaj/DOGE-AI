@@ -67,10 +67,15 @@ export function getChatTools(
         query: z.string(),
       }),
       execute: async ({ query }) => {
+        log.info({ query }, 'query for bill tool call');
         const kb = await getKbContext(
           {
-            // @ts-expect-error - TODO: satisfy some other day
-            messages: messages,
+            messages: [
+              // @ts-expect-error - TODO: satisfy some other day
+              ...messages.filter(m => m.role !== 'system'),
+              // @ts-expect-error - TODO: satisfy some other day
+              { role: 'user', content: query },
+            ],
             text: query,
             manualEntries: false,
             billEntries: true,

@@ -326,6 +326,7 @@ async function getReasonBillContext(
         type: billDbSchema.type,
         congress: billDbSchema.congress,
         introducedDate: billDbSchema.introducedDate,
+        summary: billDbSchema.summary,
       })
       .from(billDbSchema)
       .where(eq(billDbSchema.number, billTitleResult.billNumber))
@@ -337,11 +338,23 @@ async function getReasonBillContext(
 
     const billsText = billFromNumbers
       .map(
-        ({ title, text, introducedDate, billId, congress, type, number }) => {
+        ({
+          title,
+          text,
+          introducedDate,
+          billId,
+          congress,
+          type,
+          number,
+          summary,
+        }) => {
           // @ts-expect-error - I know what I'm doing
           const content = Buffer.from(text).toString('utf-8');
 
-          return `"billId": ${billId} "congress": ${congress} "number": ${type} ${number} "title": ${title} "introducedDate": ${introducedDate} "summary": ${content}`;
+          // we just use summary if the bill is too big
+          const textContent = content.length > 500_000 ? summary : content;
+
+          return `"billId": ${billId} "congress": ${congress} "number": ${type} ${number} "title": ${title} "introducedDate": ${introducedDate} "summary": ${textContent}`;
         },
       )
       .join('\n\n');
@@ -395,7 +408,15 @@ async function getReasonBillContext(
     log.info(relevantBill, 'relevant bill found');
 
     const bill = await db.query.bill.findFirst({
-      columns: { id: true, title: true, content: true },
+      columns: {
+        id: true,
+        title: true,
+        content: true,
+        number: true,
+        congress: true,
+        type: true,
+        introducedDate: true,
+      },
       where: eq(billDbSchema.id, relevantBill.billId),
     });
 
@@ -449,6 +470,10 @@ async function getReasonBillContext(
         id: billDbSchema.id,
         title: billDbSchema.title,
         content: billDbSchema.content,
+        number: billDbSchema.number,
+        congress: billDbSchema.congress,
+        type: billDbSchema.type,
+        introducedDate: billDbSchema.introducedDate,
       })
       .from(billDbSchema)
       .where(inArray(billDbSchema.id, billIds))
@@ -572,7 +597,15 @@ async function getReasonBillContext(
   // just got one bill return that
   if (relatedBills.billIds.length === 1) {
     const bill = await db.query.bill.findFirst({
-      columns: { id: true, title: true, content: true },
+      columns: {
+        id: true,
+        title: true,
+        content: true,
+        number: true,
+        congress: true,
+        type: true,
+        introducedDate: true,
+      },
       where: eq(billDbSchema.id, relatedBills.billIds[0]),
     });
 
@@ -665,7 +698,15 @@ async function getReasonBillContext(
   }
 
   const bill = await db.query.bill.findFirst({
-    columns: { id: true, title: true, content: true },
+    columns: {
+      id: true,
+      title: true,
+      content: true,
+      number: true,
+      congress: true,
+      type: true,
+      introducedDate: true,
+    },
     where: eq(billDbSchema.id, finalBillId),
   });
 

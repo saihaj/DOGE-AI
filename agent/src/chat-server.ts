@@ -33,6 +33,7 @@ import {
   IS_PROD,
   PRIVY_APP_ID,
   SEED,
+  TEMPERATURE,
 } from './const';
 import { reportFailureToDiscord } from './discord/action';
 import { chatLogger } from './logger';
@@ -399,7 +400,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
       const kb = await getKbContext(
         {
           // @ts-expect-error - TODO: fix these types
-          messages,
+          messages: [...messages.filter(m => m.role !== 'system')],
           // latest message
           text: messages[messages.length - 1].content.toString(),
           manualEntries: 'chat',
@@ -437,7 +438,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
         abortSignal: abortController.signal,
         messages,
         experimental_transform: smoothStream({}),
-        temperature: 0,
+        temperature: TEMPERATURE,
         seed: SEED,
         tools: getChatTools(messages, log, stream),
         maxSteps: 5,
