@@ -38,8 +38,8 @@ importers:
         specifier: ^1.2.16
         version: 1.2.16(zod@3.24.4)
       '@fastify/cors':
-        specifier: ^10.1.0
-        version: 10.1.0
+        specifier: ^11.0.1
+        version: 11.0.1
       '@langchain/textsplitters':
         specifier: ^0.1.0
         version: 0.1.0(@langchain/core@0.3.57(openai@4.80.1(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))
@@ -1809,8 +1809,8 @@ packages:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
 
-  '@fastify/cors@10.1.0':
-    resolution: {integrity: sha512-MZyBCBJtII60CU9Xme/iE4aEy8G7QpzGR8zkdXZkDFt7ElEMachbE61tfhAG/bvSaULlqlf0huMT12T7iqEmdQ==}
+  '@fastify/cors@11.0.1':
+    resolution: {integrity: sha512-dmZaE7M1f4SM8ZZuk5RhSsDJ+ezTgI7v3HHRj8Ow9CneczsPLZV6+2j2uwdaSLn8zhTv6QV0F4ZRcqdalGx1pQ==}
 
   '@fastify/error@4.0.0':
     resolution: {integrity: sha512-OO/SA8As24JtT1usTUTKgGH7uLvhfwZPwlptRi2Dp5P4KKmJI3gvsZ8MIHnNwDs4sLf/aai5LzTyl66xr7qMxA==}
@@ -6851,7 +6851,6 @@ packages:
 
   libsql@0.4.7:
     resolution: {integrity: sha512-T9eIRCs6b0J1SHKYIvD8+KCJMcWZ900iZyxdnSCdqxN12Z1ijzT+jY5nrk72Jw4B0HGzms2NgpryArlJqvc3Lw==}
-    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   light-my-request@6.5.1:
@@ -7345,9 +7344,6 @@ packages:
   mnemonist@0.38.3:
     resolution: {integrity: sha512-2K9QYubXx/NAjv4VLq1d1Ly8pWNC5L3BrixtdkyTegXWJIqY+zLNDhhX/A+ZwWt70tB1S8H4BE8FLYEFyNoOBw==}
 
-  mnemonist@0.40.0:
-    resolution: {integrity: sha512-kdd8AFNig2AD5Rkih7EPCXhu/iMvwevQFX/uEiGhZyPZi7fHqOoF4V4kHLpCfysxXMgQ4B52kdPMCwARshKvEg==}
-
   motion-dom@12.10.5:
     resolution: {integrity: sha512-F7XKmhxXEH/y3aWWf0N2w69wNSN+6PcJ1seqR1WolClmXpPhj+xwzs9j5CpsMFzeHR1D7irl3JcWMToPRwX6Hg==}
 
@@ -7592,9 +7588,6 @@ packages:
 
   obliterator@1.6.1:
     resolution: {integrity: sha512-9WXswnqINnnhOG/5SLimUlzuU1hFJUc8zkwyD59Sd+dPOMf05PmnYG/d6Q7HZ+KmgkZJa1PxRso6QdM3sTNHig==}
-
-  obliterator@2.0.5:
-    resolution: {integrity: sha512-42CPE9AhahZRsMNslczq0ctAEtqk8Eka26QofnqC346BZdHDySk3LWka23LI7ULIw11NmltpiLagIq8gBozxTw==}
 
   ofetch@1.4.1:
     resolution: {integrity: sha512-QZj2DfGplQAr2oj9KzceK9Hwz6Whxazmn85yYeVuS3u9XTMOGMRx0kO95MQ+vLsj/S/NwBDMMLU5hpxvI6Tklw==}
@@ -11280,10 +11273,10 @@ snapshots:
 
   '@fastify/busboy@2.1.1': {}
 
-  '@fastify/cors@10.1.0':
+  '@fastify/cors@11.0.1':
     dependencies:
       fastify-plugin: 5.0.1
-      mnemonist: 0.40.0
+      toad-cache: 3.7.0
 
   '@fastify/error@4.0.0': {}
 
@@ -17879,10 +17872,6 @@ snapshots:
     dependencies:
       obliterator: 1.6.1
 
-  mnemonist@0.40.0:
-    dependencies:
-      obliterator: 2.0.5
-
   motion-dom@12.10.5:
     dependencies:
       motion-utils: 12.9.4
@@ -18127,8 +18116,6 @@ snapshots:
       es-object-atoms: 1.1.1
 
   obliterator@1.6.1: {}
-
-  obliterator@2.0.5: {}
 
   ofetch@1.4.1:
     dependencies:
