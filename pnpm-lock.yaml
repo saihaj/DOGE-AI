@@ -168,8 +168,8 @@ importers:
         specifier: ^1.0.4
         version: 1.0.4(wrangler@4.15.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@privy-io/react-auth':
-        specifier: ^2.13.3
-        version: 2.13.3(@solana/spl-token@0.4.13(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(@types/react@19.1.6)(aws4fetch@1.0.20)(bs58@6.0.0)(bufferutil@4.0.9)(ioredis@5.6.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.7.3)(use-sync-external-store@1.5.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.24.4)
+        specifier: ^2.13.4
+        version: 2.13.4(@solana/spl-token@0.4.13(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(@types/react@19.1.6)(aws4fetch@1.0.20)(bs58@6.0.0)(bufferutil@4.0.9)(ioredis@5.6.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.7.3)(use-sync-external-store@1.5.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.24.4)
       '@radix-ui/react-avatar':
         specifier: ^1.1.10
         version: 1.1.10(@types/react-dom@19.1.5(@types/react@19.1.6))(@types/react@19.1.6)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -2916,8 +2916,8 @@ packages:
     peerDependencies:
       viem: ^2.21.36
 
-  '@privy-io/js-sdk-core@0.50.3':
-    resolution: {integrity: sha512-1hqBrqUvb8//GzTF26wFn+QWNP8S0Wyb+ALcxRYd4I86FkwJ9n3V+4lqJwHP91hQBhi9pULMcZ0VBNuuk46zqg==}
+  '@privy-io/js-sdk-core@0.50.4':
+    resolution: {integrity: sha512-mLrwdqVBYwc183anW79/182Y3CVfu9z6mDRiWUNEebyUKMbcRfPWfD7ZfYIrZhUFE3AfivD8SFsY2SnhwZ/DQg==}
     peerDependencies:
       permissionless: ^0.2.10
       viem: ^2.21.36
@@ -2927,12 +2927,12 @@ packages:
       viem:
         optional: true
 
-  '@privy-io/public-api@2.27.0':
-    resolution: {integrity: sha512-okGGX29I1Z/HviVMBnVGD5oEB3PhNxebgyvqzjMAJOV/KCXu7xJdMVoxtIsgKTsEHJPtbBqfL7nuV/9UULpTKw==}
+  '@privy-io/public-api@2.28.0':
+    resolution: {integrity: sha512-9OXzrgPF0At1Xa/q+Y+TlnhaN0yB92bjB54CgqbmxkiIZIiC3oxPULgMqCuwKRfDQmzmeFYeeVeFm18PYSJwmQ==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
 
-  '@privy-io/react-auth@2.13.3':
-    resolution: {integrity: sha512-ipXjFyKEaDgnbqPpwhsPY/D0IdXXkey/HRyTh1lGW3BW8oLpjCKO1owNVGKkJoEhvv+WPfA2nULtecQ56pZ+BA==}
+  '@privy-io/react-auth@2.13.4':
+    resolution: {integrity: sha512-4HUXY3zXLbrA6eAcK+VnsJ4EL/Y6JjJj/rl9umXDvn9YojgF7KROYllN2H9F0ZMBorUCeA2irI4OQufYVhDFug==}
     peerDependencies:
       '@abstract-foundation/agw-client': ^1.0.0
       '@solana/spl-token': ^0.4.9
@@ -12099,7 +12099,7 @@ snapshots:
     dependencies:
       viem: 2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4)
 
-  '@privy-io/js-sdk-core@0.50.3(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4))':
+  '@privy-io/js-sdk-core@0.50.4(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4))':
     dependencies:
       '@ethersproject/abstract-signer': 5.8.0
       '@ethersproject/bignumber': 5.8.0
@@ -12109,7 +12109,7 @@ snapshots:
       '@ethersproject/units': 5.8.0
       '@privy-io/api-base': 1.5.1
       '@privy-io/chains': 0.0.1
-      '@privy-io/public-api': 2.27.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)
+      '@privy-io/public-api': 2.28.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)
       canonicalize: 2.1.0
       eventemitter3: 5.0.1
       fetch-retry: 6.0.0
@@ -12125,7 +12125,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@privy-io/public-api@2.27.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)':
+  '@privy-io/public-api@2.28.0(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)':
     dependencies:
       '@privy-io/api-base': 1.5.1
       bs58: 5.0.0
@@ -12137,7 +12137,7 @@ snapshots:
       - typescript
       - utf-8-validate
 
-  '@privy-io/react-auth@2.13.3(@solana/spl-token@0.4.13(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(@types/react@19.1.6)(aws4fetch@1.0.20)(bs58@6.0.0)(bufferutil@4.0.9)(ioredis@5.6.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.7.3)(use-sync-external-store@1.5.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.24.4)':
+  '@privy-io/react-auth@2.13.4(@solana/spl-token@0.4.13(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(@types/react@19.1.6)(aws4fetch@1.0.20)(bs58@6.0.0)(bufferutil@4.0.9)(ioredis@5.6.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.7.3)(use-sync-external-store@1.5.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.24.4)':
     dependencies:
       '@coinbase/wallet-sdk': 4.3.2
       '@floating-ui/react': 0.26.28(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -12147,7 +12147,7 @@ snapshots:
       '@metamask/eth-sig-util': 6.0.2
       '@privy-io/chains': 0.0.1
       '@privy-io/ethereum': 0.0.1(viem@2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4))
-      '@privy-io/js-sdk-core': 0.50.3(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4))
+      '@privy-io/js-sdk-core': 0.50.4(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(viem@2.28.1(bufferutil@4.0.9)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4))
       '@reown/appkit': 1.7.3(@types/react@19.1.6)(aws4fetch@1.0.20)(bufferutil@4.0.9)(encoding@0.1.13)(ioredis@5.6.1)(react@19.1.0)(typescript@5.7.3)(utf-8-validate@5.0.10)(zod@3.24.4)
       '@scure/base': 1.2.5
       '@simplewebauthn/browser': 9.0.1
