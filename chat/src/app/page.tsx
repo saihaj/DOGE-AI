@@ -20,6 +20,7 @@ import { useRouter } from 'next/navigation';
 import { LoginButton } from './login';
 import { useRateLimit } from '@/components/providers';
 import { Badge } from '@/components/ui/badge';
+import { TextLoop } from '@/components/ui/text-loop';
 
 function Input({
   input,
@@ -175,9 +176,26 @@ function Home() {
                     </Badge>
                   )}
                   <div className="flex flex-col items-center justify-center min-h-[60vh]">
-                    <h1 className="text-4xl font-bold mb-8 gradient-america text-transparent bg-clip-text">
-                      How can I help you?
-                    </h1>
+                    <TextLoop
+                      interval={5}
+                      className="text-2xl md:text-4xl font-bold mb-8 text-balance"
+                    >
+                      <span className="gradient-america text-transparent bg-clip-text">
+                        What do you want exposed?
+                      </span>
+                      <span className="gradient-america text-transparent bg-clip-text">
+                        What are we digging into today?
+                      </span>
+                      <span className="gradient-america text-transparent bg-clip-text">
+                        What needs investigating?
+                      </span>
+                      <span className="gradient-america text-transparent bg-clip-text">
+                        Ask it. I’ll show you the receipts.
+                      </span>
+                      <span className="gradient-america text-transparent bg-clip-text">
+                        You ask. I find the waste.
+                      </span>
+                    </TextLoop>
                   </div>
                 </div>
               </div>
