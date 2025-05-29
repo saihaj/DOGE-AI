@@ -54,23 +54,11 @@ export async function generateMetadata(
     openGraph: {
       title,
       description,
-      images: [
-        {
-          url: 'https://dogeai.info/images/hero.png',
-          alt: 'DOGEai Chat',
-        },
-      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
-      images: [
-        {
-          url: 'https://dogeai.info/images/hero.png',
-          alt: 'DOGEai Chat',
-        },
-      ],
     },
   };
 }
