@@ -20,6 +20,9 @@ export async function generateMetadata(
     id: uuid,
   });
 
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:4322';
+  const ogImageUrl = `${baseUrl}/share/${uuid}/opengraph-image`;
+
   // If no conversation found, use default metadata
   if (!chat) {
     return {
@@ -54,11 +57,27 @@ export async function generateMetadata(
     openGraph: {
       title,
       description,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: 'DOGEai Chat Open Graph Image',
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: 'DOGEai Chat Open Graph Image',
+        },
+      ],
     },
   };
 }
