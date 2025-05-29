@@ -1,6 +1,4 @@
 'use client';
-import { API_URL, PRIVY_COOKIE_NAME } from '@/lib/const';
-import { AppRouter, TRPCProvider } from '@/lib/trpc/client';
 import { makeQueryClient } from '@/lib/trpc/query-client';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { toSolanaWalletConnectors } from '@privy-io/react-auth/solana';
@@ -9,7 +7,6 @@ import {
   QueryClientProvider,
   isServer,
 } from '@tanstack/react-query';
-import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { ClientPrivyTokenProvider } from './ClientPrivyTokenProvider';
 import { PostHogProvider } from './PostHogProvider';
 import { RateLimitProvider, useRateLimit } from './RateLimitProvider';
@@ -36,18 +33,6 @@ export function Providers({ children }: { children: React.ReactNode }) {
   //       render if it suspends and there is no boundary
   const queryClient = getQueryClient();
 
-  // Fallback TRPC client for server-side rendering (no token)
-  const fallbackTrpcClient = createTRPCClient<AppRouter>({
-    links: [
-      httpBatchLink({
-        url: `${API_URL}/api/trpc`,
-        headers: () => ({
-          [PRIVY_COOKIE_NAME]: '',
-        }),
-      }),
-    ],
-  });
-
   return (
     <PrivyProvider
       appId="cma5o9e5t00dric0opxjxfjuc"
@@ -69,20 +54,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <RateLimitProvider>
         <PostHogProvider>
           <QueryClientProvider client={queryClient}>
-            {isServer ? (
-              <TRPCProvider
-                trpcClient={fallbackTrpcClient}
-                queryClient={queryClient}
-              >
+            <ClientOnly>
+              <ClientPrivyTokenProvider queryClient={queryClient}>
                 {children}
-              </TRPCProvider>
-            ) : (
-              <ClientOnly>
-                <ClientPrivyTokenProvider queryClient={queryClient}>
-                  {children}
-                </ClientPrivyTokenProvider>
-              </ClientOnly>
-            )}
+              </ClientPrivyTokenProvider>
+            </ClientOnly>
           </QueryClientProvider>
         </PostHogProvider>
       </RateLimitProvider>
