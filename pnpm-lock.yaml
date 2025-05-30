@@ -331,8 +331,8 @@ importers:
         specifier: ^1.3.22
         version: 1.3.22(zod@3.24.4)
       '@langchain/community':
-        specifier: ^0.3.44
-        version: 0.3.44(oqpblvzyim25ikb3qcr6umu2ri)
+        specifier: ^0.3.45
+        version: 0.3.45(oqpblvzyim25ikb3qcr6umu2ri)
       '@langchain/core':
         specifier: ^0.3.57
         version: 0.3.57(openai@4.80.1(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4))
@@ -2157,8 +2157,8 @@ packages:
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
 
-  '@langchain/community@0.3.44':
-    resolution: {integrity: sha512-lOA7rw0lC6WCRO/xoacx4Gpbx1ncscAilYn9LVjyiBxJw47d01iq8hdkGdBW5OFISub/wCK4FmHih2S4WJicAg==}
+  '@langchain/community@0.3.45':
+    resolution: {integrity: sha512-KkAGmnP+w5tozLYsj/kGKwyfuPnCcA6MyDXfNF7oDo7L1TxhUgdEKhvNsY7ooLXz6Xh/LV5Kqp2B8U0jfYCQKQ==}
     engines: {node: '>=18'}
     peerDependencies:
       '@arcjet/redact': ^v1.0.0-alpha.23
@@ -6902,6 +6902,7 @@ packages:
 
   libsql@0.4.7:
     resolution: {integrity: sha512-T9eIRCs6b0J1SHKYIvD8+KCJMcWZ900iZyxdnSCdqxN12Z1ijzT+jY5nrk72Jw4B0HGzms2NgpryArlJqvc3Lw==}
+    cpu: [x64, arm64, wasm32]
     os: [darwin, linux, win32]
 
   light-my-request@6.5.1:
@@ -11655,7 +11656,7 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@langchain/community@0.3.44(oqpblvzyim25ikb3qcr6umu2ri)':
+  '@langchain/community@0.3.45(oqpblvzyim25ikb3qcr6umu2ri)':
     dependencies:
       '@browserbasehq/stagehand': 1.11.0(@playwright/test@1.50.1)(bufferutil@4.0.9)(deepmerge@4.3.1)(dotenv@16.5.0)(encoding@0.1.13)(openai@4.80.1(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4))(utf-8-validate@5.0.10)(zod@3.24.4)
       '@ibm-cloud/watsonx-ai': 1.4.0(@langchain/core@0.3.57(openai@4.80.1(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))
