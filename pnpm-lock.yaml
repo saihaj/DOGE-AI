@@ -44,8 +44,8 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0(@langchain/core@0.3.57(openai@4.80.1(encoding@0.1.13)(ws@8.18.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))
       '@libsql/client':
-        specifier: ^0.14.0
-        version: 0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^0.15.8
+        version: 0.15.8(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@openrouter/ai-sdk-provider':
         specifier: ^0.4.6
         version: 0.4.6(zod@3.24.4)
@@ -78,7 +78,7 @@ importers:
         version: 16.4.7
       drizzle-orm:
         specifier: ^0.38.4
-        version: 0.38.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/react@19.1.6)(better-sqlite3@11.6.0)(prisma@6.2.1)(react@19.1.0)(sqlite3@5.1.7)
+        version: 0.38.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.15.8(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/react@19.1.6)(better-sqlite3@11.6.0)(prisma@6.2.1)(react@19.1.0)(sqlite3@5.1.7)
       exa-js:
         specifier: ^1.5.13
         version: 1.5.13(encoding@0.1.13)
@@ -401,14 +401,14 @@ importers:
   database:
     dependencies:
       '@libsql/client':
-        specifier: ^0.14.0
-        version: 0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^0.15.8
+        version: 0.15.8(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       dotenv:
         specifier: ^16.4.7
         version: 16.4.7
       drizzle-orm:
         specifier: ^0.38.4
-        version: 0.38.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/react@19.1.6)(better-sqlite3@11.6.0)(prisma@6.2.1)(react@19.1.0)(sqlite3@5.1.7)
+        version: 0.38.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.15.8(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/react@19.1.6)(better-sqlite3@11.6.0)(prisma@6.2.1)(react@19.1.0)(sqlite3@5.1.7)
     devDependencies:
       '@types/node':
         specifier: ^22.15.19
@@ -2565,16 +2565,32 @@ packages:
   '@libsql/client@0.14.0':
     resolution: {integrity: sha512-/9HEKfn6fwXB5aTEEoMeFh4CtG0ZzbncBb1e++OCdVpgKZ/xyMsIVYXm0w7Pv4RUel803vE6LwniB3PqD72R0Q==}
 
+  '@libsql/client@0.15.8':
+    resolution: {integrity: sha512-TskygwF+ToZeWhPPT0WennyGrP3tmkKraaKopT2YwUjqD6DWDRm6SG5iy0VqnaO+HC9FNBCDX0oQPODU3gqqPQ==}
+
   '@libsql/core@0.14.0':
     resolution: {integrity: sha512-nhbuXf7GP3PSZgdCY2Ecj8vz187ptHlZQ0VRc751oB2C1W8jQUXKKklvt7t1LJiUTQBVJuadF628eUk+3cRi4Q==}
+
+  '@libsql/core@0.15.8':
+    resolution: {integrity: sha512-oX2fQqDbZkaBUvFMGvJq1Jh+mVzJrgNbEwK6Wzvp91z3uMe9iaIIXgO8yxB72RpUf7BqzjiKHjEiRXytfTdbUw==}
 
   '@libsql/darwin-arm64@0.4.7':
     resolution: {integrity: sha512-yOL742IfWUlUevnI5PdnIT4fryY3LYTdLm56bnY0wXBw7dhFcnjuA7jrH3oSVz2mjZTHujxoITgAE7V6Z+eAbg==}
     cpu: [arm64]
     os: [darwin]
 
+  '@libsql/darwin-arm64@0.5.12':
+    resolution: {integrity: sha512-RDA87qaCWPE+uJWY91A0Is8KU9x43xDWMH8VNlj330CLFT9rC6jDypqadg0mzu1FEL2leG6BRdX6EcfM6NM3pw==}
+    cpu: [arm64]
+    os: [darwin]
+
   '@libsql/darwin-x64@0.4.7':
     resolution: {integrity: sha512-ezc7V75+eoyyH07BO9tIyJdqXXcRfZMbKcLCeF8+qWK5nP8wWuMcfOVywecsXGRbT99zc5eNra4NEx6z5PkSsA==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@libsql/darwin-x64@0.5.12':
+    resolution: {integrity: sha512-6Ufip8uxQkLOFCsGd07miDt1w+Rx5VIJdDI6mSRBlVaEXWuWx1R8D7gfeCS0k73vDd+oh39pYF/R8nVFkwiOcg==}
     cpu: [x64]
     os: [darwin]
 
@@ -2588,8 +2604,23 @@ packages:
   '@libsql/isomorphic-ws@0.1.5':
     resolution: {integrity: sha512-DtLWIH29onUYR00i0GlQ3UdcTRC6EP4u9w/h9LxpUZJWRMARk6dQwZ6Jkd+QdwVpuAOrdxt18v0K2uIYR3fwFg==}
 
+  '@libsql/linux-arm-gnueabihf@0.5.12':
+    resolution: {integrity: sha512-I+4K++7byiOjYJNRGcrCBlIXjP6MwUta2GxPGZMoH2kAv6AintO4dvritu6vDe9LyRPXTjRJl30k+ThXR0RWxQ==}
+    cpu: [arm]
+    os: [linux]
+
+  '@libsql/linux-arm-musleabihf@0.5.12':
+    resolution: {integrity: sha512-87C3A5ozNEdOnI5VZq9lHpPJ3Ncl3p+qB5roDluVKflx9kKH1hEc8MpwkvU3qeIWppvgHowXlO9CfS572V10OA==}
+    cpu: [arm]
+    os: [linux]
+
   '@libsql/linux-arm64-gnu@0.4.7':
     resolution: {integrity: sha512-WlX2VYB5diM4kFfNaYcyhw5y+UJAI3xcMkEUJZPtRDEIu85SsSFrQ+gvoKfcVh76B//ztSeEX2wl9yrjF7BBCA==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@libsql/linux-arm64-gnu@0.5.12':
+    resolution: {integrity: sha512-0jpcuD7nHGD4XVTbId44SaY/JcqURKpxkXUcW4FsQ1qmkG5PsUy5l2Ob29P8HwGRBhDBomFWA4PvwJGrP/2pMA==}
     cpu: [arm64]
     os: [linux]
 
@@ -2598,8 +2629,18 @@ packages:
     cpu: [arm64]
     os: [linux]
 
+  '@libsql/linux-arm64-musl@0.5.12':
+    resolution: {integrity: sha512-ic5bHp9OTCNgmvqojqkxWfuPm4Y8CKfpUe/AqmXrstzqlE9EKg1qD9KZIjso2g4pX15KPWJGPSd29OXxHkzsog==}
+    cpu: [arm64]
+    os: [linux]
+
   '@libsql/linux-x64-gnu@0.4.7':
     resolution: {integrity: sha512-CMnNRCmlWQqqzlTw6NeaZXzLWI8bydaXDke63JTUCvu8R+fj/ENsLrVBtPDlxQ0wGsYdXGlrUCH8Qi9gJep0yQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@libsql/linux-x64-gnu@0.5.12':
+    resolution: {integrity: sha512-9zDtahCw2q0WJ54c/0vq142JtzI16OB8/U0bVCrpxF9DmLFyKBrAtEvoYdvKtFmvcvNn7YA5LEytr2g2q+xl1g==}
     cpu: [x64]
     os: [linux]
 
@@ -2608,8 +2649,18 @@ packages:
     cpu: [x64]
     os: [linux]
 
+  '@libsql/linux-x64-musl@0.5.12':
+    resolution: {integrity: sha512-+fisSpE+2yK1N88shPtB7bEB8d+fF3CQmy1KnbJ4Oned8cw5uBfU46A1ICG+49RFaKxmoIQimHVAxfGV9NFQ3w==}
+    cpu: [x64]
+    os: [linux]
+
   '@libsql/win32-x64-msvc@0.4.7':
     resolution: {integrity: sha512-7pJzOWzPm6oJUxml+PCDRzYQ4A1hTMHAciTAHfFK4fkbDZX33nWPVG7Y3vqdKtslcwAzwmrNDc6sXy2nwWnbiw==}
+    cpu: [x64]
+    os: [win32]
+
+  '@libsql/win32-x64-msvc@0.5.12':
+    resolution: {integrity: sha512-upNJCcgMgpAFXlL//rRVwlPgMT8uG1LoilHgCEpAp+GEjgBjoDgGW6iOkktuJC8paZh5kt9dCPh3r3jF3HWQjg==}
     cpu: [x64]
     os: [win32]
 
@@ -6903,6 +6954,11 @@ packages:
   libsql@0.4.7:
     resolution: {integrity: sha512-T9eIRCs6b0J1SHKYIvD8+KCJMcWZ900iZyxdnSCdqxN12Z1ijzT+jY5nrk72Jw4B0HGzms2NgpryArlJqvc3Lw==}
     cpu: [x64, arm64, wasm32]
+    os: [darwin, linux, win32]
+
+  libsql@0.5.12:
+    resolution: {integrity: sha512-TikiQZ1j4TwFEqVdJdTM9ZTti28is/ytGEvn0S2MocOj69UKQetWACe/qd8KAD5VeNnQSVd6Nlm2AJx0DFW9Ag==}
+    cpu: [x64, arm64, wasm32, arm]
     os: [darwin, linux, win32]
 
   light-my-request@6.5.1:
@@ -11767,15 +11823,38 @@ snapshots:
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
+    optional: true
+
+  '@libsql/client@0.15.8(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
+    dependencies:
+      '@libsql/core': 0.15.8
+      '@libsql/hrana-client': 0.7.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      js-base64: 3.7.7
+      libsql: 0.5.12
+      promise-limit: 2.7.0
+    transitivePeerDependencies:
+      - bufferutil
+      - utf-8-validate
 
   '@libsql/core@0.14.0':
+    dependencies:
+      js-base64: 3.7.7
+    optional: true
+
+  '@libsql/core@0.15.8':
     dependencies:
       js-base64: 3.7.7
 
   '@libsql/darwin-arm64@0.4.7':
     optional: true
 
+  '@libsql/darwin-arm64@0.5.12':
+    optional: true
+
   '@libsql/darwin-x64@0.4.7':
+    optional: true
+
+  '@libsql/darwin-x64@0.5.12':
     optional: true
 
   '@libsql/hrana-client@0.7.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)':
@@ -11798,19 +11877,40 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
+  '@libsql/linux-arm-gnueabihf@0.5.12':
+    optional: true
+
+  '@libsql/linux-arm-musleabihf@0.5.12':
+    optional: true
+
   '@libsql/linux-arm64-gnu@0.4.7':
+    optional: true
+
+  '@libsql/linux-arm64-gnu@0.5.12':
     optional: true
 
   '@libsql/linux-arm64-musl@0.4.7':
     optional: true
 
+  '@libsql/linux-arm64-musl@0.5.12':
+    optional: true
+
   '@libsql/linux-x64-gnu@0.4.7':
+    optional: true
+
+  '@libsql/linux-x64-gnu@0.5.12':
     optional: true
 
   '@libsql/linux-x64-musl@0.4.7':
     optional: true
 
+  '@libsql/linux-x64-musl@0.5.12':
+    optional: true
+
   '@libsql/win32-x64-msvc@0.4.7':
+    optional: true
+
+  '@libsql/win32-x64-msvc@0.5.12':
     optional: true
 
   '@lit-labs/ssr-dom-shim@1.3.0': {}
@@ -15488,10 +15588,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.38.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/react@19.1.6)(better-sqlite3@11.6.0)(prisma@6.2.1)(react@19.1.0)(sqlite3@5.1.7):
+  drizzle-orm@0.38.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.15.8(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/react@19.1.6)(better-sqlite3@11.6.0)(prisma@6.2.1)(react@19.1.0)(sqlite3@5.1.7):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20240614.0
-      '@libsql/client': 0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      '@libsql/client': 0.15.8(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       '@opentelemetry/api': 1.9.0
       '@prisma/client': 6.2.1(prisma@6.2.1)
       '@types/better-sqlite3': 7.6.12
@@ -17291,6 +17391,22 @@ snapshots:
       '@libsql/linux-x64-gnu': 0.4.7
       '@libsql/linux-x64-musl': 0.4.7
       '@libsql/win32-x64-msvc': 0.4.7
+    optional: true
+
+  libsql@0.5.12:
+    dependencies:
+      '@neon-rs/load': 0.0.4
+      detect-libc: 2.0.2
+    optionalDependencies:
+      '@libsql/darwin-arm64': 0.5.12
+      '@libsql/darwin-x64': 0.5.12
+      '@libsql/linux-arm-gnueabihf': 0.5.12
+      '@libsql/linux-arm-musleabihf': 0.5.12
+      '@libsql/linux-arm64-gnu': 0.5.12
+      '@libsql/linux-arm64-musl': 0.5.12
+      '@libsql/linux-x64-gnu': 0.5.12
+      '@libsql/linux-x64-musl': 0.5.12
+      '@libsql/win32-x64-msvc': 0.5.12
 
   light-my-request@6.5.1:
     dependencies:
