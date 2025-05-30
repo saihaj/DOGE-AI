@@ -177,7 +177,7 @@ function Home() {
                   )}
                   <div className="flex flex-col items-center justify-center min-h-[60vh]">
                     <TextLoop
-                      interval={5}
+                      interval={3}
                       className="text-2xl md:text-4xl font-bold mb-8 text-balance"
                     >
                       <span className="gradient-america text-transparent bg-clip-text">
