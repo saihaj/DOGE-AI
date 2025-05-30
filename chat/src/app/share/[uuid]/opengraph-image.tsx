@@ -76,6 +76,10 @@ export default async function Image({
                 textAlign: 'center',
                 marginBottom: '30px',
                 lineHeight: '1.1',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                maxWidth: '100%',
               }}
             >
               {firstMessage.parts
