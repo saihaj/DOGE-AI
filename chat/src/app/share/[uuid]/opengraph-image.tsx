@@ -105,7 +105,7 @@ export default async function Image({
             <h1
               style={{
                 fontWeight: 700,
-                fontSize: '78px',
+                fontSize: '48px',
                 textAlign: 'center',
                 marginBottom: '30px',
                 lineHeight: '1.1',
@@ -164,7 +164,7 @@ export default async function Image({
                 style={{
                   display: 'flex',
                   position: 'absolute',
-                  bottom: '20px',
+                  bottom: 0,
                   left: '50%',
                   transform: 'translateX(-50%)',
                 }}
