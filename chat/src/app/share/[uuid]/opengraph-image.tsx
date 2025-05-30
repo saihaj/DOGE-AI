@@ -10,6 +10,39 @@ export const size = {
 };
 export const contentType = 'image/png';
 
+async function loadGoogleFont(font: string, weight: string | number = '400') {
+  // Encode font name (e.g., replace spaces with "+")
+  const fontEncoded = font.replace(/\s+/g, '+');
+  // Include weight in the Google Fonts URL
+  const url = `https://fonts.googleapis.com/css2?family=${fontEncoded}:wght@${weight}`;
+  const css = await (await fetch(url)).text();
+
+  // Match all @font-face rules
+  const fontFaceRegex = /@font-face\s*{([^}]+)}/g;
+  const fontFaces = css.matchAll(fontFaceRegex);
+
+  for (const face of fontFaces) {
+    const declarations = face[1];
+    // Check if the font-weight matches
+    const weightMatch = declarations.match(/font-weight:\s*(\d+)/);
+    if (weightMatch && weightMatch[1] === weight.toString()) {
+      // Extract the src URL
+      const srcMatch = declarations.match(
+        /src: url\((.+)\) format\('(woff2|opentype|truetype)'\)/,
+      );
+      if (srcMatch) {
+        const fontUrl = srcMatch[1];
+        const response = await fetch(fontUrl);
+        if (response.status === 200) {
+          return await response.arrayBuffer();
+        }
+      }
+    }
+  }
+
+  throw new Error(`Failed to load font data for ${font} (weight: ${weight})`);
+}
+
 export default async function Image({
   params,
 }: {
@@ -33,7 +66,7 @@ export default async function Image({
   )
     .replace(/\n/g, ' ')
     .trim()
-    .slice(0, 700);
+    .slice(0, 800);
 
   return new ImageResponse(
     (
@@ -53,10 +86,10 @@ export default async function Image({
           src="https://dogeai.info/logo.jpg"
           alt="DOGEai Logo"
           style={{
-            width: 100,
-            height: 100,
+            width: 110,
+            height: 110,
             borderRadius: 9999,
-            marginBottom: '20px',
+            marginBottom: '10px',
           }}
         />
         {firstMessage ? (
@@ -65,14 +98,14 @@ export default async function Image({
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              maxWidth: '800px',
+              maxWidth: '1180px',
               width: '100%',
             }}
           >
             <h1
               style={{
-                fontWeight: 900,
-                fontSize: '60px',
+                fontWeight: 700,
+                fontSize: '78px',
                 textAlign: 'center',
                 marginBottom: '30px',
                 lineHeight: '1.1',
@@ -104,7 +137,7 @@ export default async function Image({
             >
               <p
                 style={{
-                  fontSize: '18px',
+                  fontSize: '26px',
                   lineHeight: '1.6',
                   margin: 0,
                 }}
@@ -142,7 +175,7 @@ export default async function Image({
                     color: 'white',
                     padding: '12px 24px',
                     borderRadius: '8px',
-                    fontSize: '22px',
+                    fontSize: '58px',
                     fontWeight: 700,
                     border: 'none',
                     cursor: 'pointer',
@@ -177,7 +210,7 @@ export default async function Image({
                 color: 'white',
                 padding: '12px 24px',
                 borderRadius: '8px',
-                fontSize: '22px',
+                fontSize: '58px',
                 fontWeight: 700,
                 border: 'none',
                 cursor: 'pointer',
@@ -192,6 +225,20 @@ export default async function Image({
     ),
     {
       ...size,
+      fonts: [
+        {
+          name: 'Geist',
+          data: await loadGoogleFont('Geist', 400),
+          style: 'normal',
+          weight: 400,
+        },
+        {
+          name: 'Geist',
+          data: await loadGoogleFont('Geist', 700),
+          style: 'normal',
+          weight: 700,
+        },
+      ],
     },
   );
 }
