@@ -310,8 +310,8 @@ importers:
         specifier: ^4.1.8
         version: 4.1.8
       tw-animate-css:
-        specifier: ^1.3.2
-        version: 1.3.2
+        specifier: ^1.3.3
+        version: 1.3.3
       typescript:
         specifier: ^5.7.3
         version: 5.7.3
@@ -8960,8 +8960,8 @@ packages:
   tunnel-agent@0.6.0:
     resolution: {integrity: sha512-McnNiV1l8RYeY8tBgEpuodCC1mLUdbSN+CYBL7kJsJNInOP8UjDDEwdk6Mw60vdLLrr5NHKZhMAOSrR2NZuQ+w==}
 
-  tw-animate-css@1.3.2:
-    resolution: {integrity: sha512-khGYcg4sHWFWcjpiWvy0KN0Bd6yVy6Ecc4r9ZP2u7FV+n4/Fp8MQscCWJkM0KMIRvrpGyKpIQnIbEd1hrewdeg==}
+  tw-animate-css@1.3.3:
+    resolution: {integrity: sha512-tXE2TRWrskc4TU3RDd7T8n8Np/wCfoeH9gz22c7PzYqNPQ9FBGFbWWzwL0JyHcFp+jHozmF76tbHfPAx22ua2Q==}
 
   tweetnacl-util@0.15.1:
     resolution: {integrity: sha512-RKJBIj8lySrShN4w6i/BonWp2Z/uxwC3h4y7xsRrpP59ZboCd0GpEVsOnMDYLMmKBpYhb5TgHzZXy7wTfYFBRw==}
@@ -19823,7 +19823,7 @@ snapshots:
     dependencies:
       safe-buffer: 5.2.1
 
-  tw-animate-css@1.3.2: {}
+  tw-animate-css@1.3.3: {}
 
   tweetnacl-util@0.15.1: {}
 
