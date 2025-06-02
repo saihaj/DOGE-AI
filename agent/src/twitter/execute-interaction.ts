@@ -1,14 +1,42 @@
+import { anthropic } from '@ai-sdk/anthropic';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import {
-  DEEPINFRA_API_KEY,
+  CoreMessage,
+  extractReasoningMiddleware,
+  generateText,
+  wrapLanguageModel,
+} from 'ai';
+import {
+  chat as chatDbSchema,
+  db,
+  eq,
+  message as messageDbSchema,
+} from 'database';
+import { NonRetriableError } from 'inngest';
+import * as crypto from 'node:crypto';
+import {
   IS_PROD,
+  OPEN_ROUTER_API_KEY,
   OPENAI_API_KEY,
   REJECTION_REASON,
   SEED,
   TEMPERATURE,
 } from '../const';
+import {
+  approvedTweetEngagement,
+  rejectedTweet,
+  reportFailureToDiscord,
+  sendDevTweet,
+} from '../discord/action.ts';
 import { inngest } from '../inngest';
-import { NonRetriableError } from 'inngest';
-import * as crypto from 'node:crypto';
+import { logger, WithLogger } from '../logger.ts';
+import {
+  tweetProcessingTime,
+  tweetPublishFailed,
+  tweetsProcessingRejected,
+  tweetsPublished,
+} from '../prom.ts';
+import { twitterClient } from './client.ts';
 import {
   getTimeInSecondsElapsedSinceTweetCreated,
   getTweet,
@@ -18,40 +46,12 @@ import {
   upsertChat,
   upsertUser,
 } from './helpers.ts';
-import {
-  CoreMessage,
-  extractReasoningMiddleware,
-  generateText,
-  wrapLanguageModel,
-} from 'ai';
-import { anthropic } from '@ai-sdk/anthropic';
-import { PROMPTS } from './prompts';
-import {
-  chat as chatDbSchema,
-  db,
-  eq,
-  message as messageDbSchema,
-} from 'database';
-import {
-  approvedTweetEngagement,
-  rejectedTweet,
-  reportFailureToDiscord,
-  sendDevTweet,
-} from '../discord/action.ts';
-import { twitterClient } from './client.ts';
-import { logger, WithLogger } from '../logger.ts';
 import { getKbContext } from './knowledge-base.ts';
-import {
-  tweetProcessingTime,
-  tweetPublishFailed,
-  tweetsProcessingRejected,
-  tweetsPublished,
-} from '../prom.ts';
+import { PROMPTS } from './prompts';
 import { getSearchResult } from './web.ts';
-import { createDeepInfra } from '@ai-sdk/deepinfra';
 
-const deepinfra = createDeepInfra({
-  apiKey: DEEPINFRA_API_KEY,
+const openrouter = createOpenRouter({
+  apiKey: OPEN_ROUTER_API_KEY,
 });
 
 /**
@@ -132,7 +132,11 @@ export async function getLongResponse(
     temperature: TEMPERATURE,
     seed: SEED,
     model: wrapLanguageModel({
-      model: deepinfra('deepseek-ai/DeepSeek-R1'),
+      model: openrouter.chat('deepseek/deepseek-r1', {
+        reasoning: {
+          effort: 'high',
+        },
+      }),
       middleware: [
         extractReasoningMiddleware({
           tagName: 'think',
