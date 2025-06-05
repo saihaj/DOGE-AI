@@ -29,7 +29,7 @@ export const createKbEntry = protectedProcedure
   .input(
     z.object({
       title: z.string(),
-      type: z.enum(['agent', 'chat']),
+      type: z.enum(['agent', 'chat', 'custom1']),
       content: z.string(),
     }),
   )
@@ -41,8 +41,18 @@ export const createKbEntry = protectedProcedure
       type,
     });
 
-    const source =
-      type === 'agent' ? MANUAL_KB_AGENT_SOURCE : MANUAL_KB_CHAT_SOURCE;
+    const source = (() => {
+      switch (type) {
+        case 'agent':
+          return MANUAL_KB_AGENT_SOURCE;
+        case 'chat':
+          return MANUAL_KB_CHAT_SOURCE;
+        case 'custom1':
+          return `manual-kb-${type}` as const;
+        default:
+          throw new Error('Invalid type');
+      }
+    })();
 
     const documentDbEntry = await db
       .insert(documentDbSchema)
@@ -97,7 +107,7 @@ export const editKbEntry = protectedProcedure
       id: z.string().uuid(),
       title: z.string(),
       content: z.string(),
-      type: z.enum(['agent', 'chat']),
+      type: z.enum(['agent', 'chat', 'custom1']),
     }),
   )
   .mutation(async opts => {
@@ -109,8 +119,18 @@ export const editKbEntry = protectedProcedure
       type,
     });
 
-    const source =
-      type === 'agent' ? MANUAL_KB_AGENT_SOURCE : MANUAL_KB_CHAT_SOURCE;
+    const source = (() => {
+      switch (type) {
+        case 'agent':
+          return MANUAL_KB_AGENT_SOURCE;
+        case 'chat':
+          return MANUAL_KB_CHAT_SOURCE;
+        case 'custom1':
+          return `manual-kb-${type}` as const;
+        default:
+          throw new Error('Invalid type');
+      }
+    })();
 
     // search for the document
     const doc = await db.query.document.findFirst({
@@ -187,15 +207,25 @@ export const getKbEntries = protectedProcedure
     z.object({
       cursor: z.string().optional(),
       limit: z.number(),
-      type: z.enum(['agent', 'chat']),
+      type: z.enum(['agent', 'chat', 'custom1']),
       query: z.string().optional(),
     }),
   )
   .query(async opts => {
     const { limit, cursor, query, type } = opts.input;
 
-    const source =
-      type === 'agent' ? MANUAL_KB_AGENT_SOURCE : MANUAL_KB_CHAT_SOURCE;
+    const source = (() => {
+      switch (type) {
+        case 'agent':
+          return MANUAL_KB_AGENT_SOURCE;
+        case 'chat':
+          return MANUAL_KB_CHAT_SOURCE;
+        case 'custom1':
+          return `manual-kb-${type}` as const;
+        default:
+          throw new Error('Invalid type');
+      }
+    })();
 
     if (!query) {
       const documents = await db.query.document.findMany({
@@ -279,11 +309,27 @@ export const getKbEntries = protectedProcedure
   });
 
 export const deleteKbEntry = protectedProcedure
-  .input(z.object({ id: z.string().uuid(), type: z.enum(['agent', 'chat']) }))
+  .input(
+    z.object({
+      id: z.string().uuid(),
+      type: z.enum(['agent', 'chat', 'custom1']),
+    }),
+  )
   .mutation(async opts => {
     const { id, type } = opts.input;
-    const source =
-      type === 'agent' ? MANUAL_KB_AGENT_SOURCE : MANUAL_KB_CHAT_SOURCE;
+
+    const source = (() => {
+      switch (type) {
+        case 'agent':
+          return MANUAL_KB_AGENT_SOURCE;
+        case 'chat':
+          return MANUAL_KB_CHAT_SOURCE;
+        case 'custom1':
+          return `manual-kb-${type}` as const;
+        default:
+          throw new Error('Invalid type');
+      }
+    })();
 
     const log = logger.child({
       function: 'deleteKbEntry',

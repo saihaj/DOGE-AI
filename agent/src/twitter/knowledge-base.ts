@@ -41,7 +41,7 @@ async function getManualKbDocuments(
     kbSourceType,
   }: {
     termEmbeddingString: string;
-    kbSourceType: 'agent' | 'chat';
+    kbSourceType: 'agent' | 'chat' | 'custom1';
   },
   logger: WithLogger,
 ) {
@@ -51,8 +51,18 @@ async function getManualKbDocuments(
   });
   const LIMIT = 5;
 
-  const source =
-    kbSourceType === 'agent' ? MANUAL_KB_AGENT_SOURCE : MANUAL_KB_CHAT_SOURCE;
+  const source = (() => {
+    switch (kbSourceType) {
+      case 'agent':
+        return MANUAL_KB_AGENT_SOURCE;
+      case 'chat':
+        return MANUAL_KB_CHAT_SOURCE;
+      case 'custom1':
+        return `manual-kb-${kbSourceType}` as const;
+      default:
+        throw new Error('Invalid type');
+    }
+  })();
 
   const embeddingsQuery = await db
     .select({
@@ -743,7 +753,7 @@ export async function getKbContext(
     messages: CoreMessage[];
     text: string;
     /** Should we search for manual entries from Web UI? */
-    manualEntries: false | 'agent' | 'chat';
+    manualEntries: false | 'agent' | 'chat' | 'custom1';
     /** Should we search for web pages scraped? */
     documentEntries: boolean;
     /** Should we search for bills scraped? */

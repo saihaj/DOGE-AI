@@ -27,6 +27,10 @@ const values = [
     value: 'chat',
     label: 'Chat',
   },
+  {
+    value: 'custom1',
+    label: 'CT 1',
+  },
 ] as const;
 
 type Values = (typeof values)[number]['value'];

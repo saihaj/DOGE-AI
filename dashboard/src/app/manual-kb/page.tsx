@@ -43,7 +43,7 @@ function EntryUi({
   kbType,
 }: {
   mutate: () => void;
-  kbType: 'agent' | 'chat';
+  kbType: 'agent' | 'chat' | 'custom1';
 }) {
   const { open, setOpen, state, type, openDrawer } = useDrawerStore();
 
@@ -211,7 +211,7 @@ export default function ManualKB() {
   );
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery.trim(), 300);
-  const [type, setType] = useState<'agent' | 'chat'>('agent');
+  const [type, setType] = useState<'agent' | 'chat' | 'custom1'>('agent');
 
   const { data, error, isLoading, refetch, fetchNextPage, hasNextPage } =
     useInfiniteQuery(

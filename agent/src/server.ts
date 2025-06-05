@@ -492,8 +492,9 @@ fastify.route<{ Body: UserChatStreamInput }>({
     });
     // Create an AbortController for the backend
     const abortController = new AbortController();
-    let { messages, selectedChatModel } = request.body as {
+    let { messages, selectedChatModel, selectedKb } = request.body as {
       messages: CoreMessage[];
+      selectedKb: 'custom1' | 'chat' | 'agent';
       selectedChatModel: string;
     };
     const userMessage = messages[messages.length - 1];
@@ -537,7 +538,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
           messages,
           // latest message
           text: messages[messages.length - 1].content.toString(),
-          manualEntries: 'chat',
+          manualEntries: selectedKb,
           billEntries: false,
           documentEntries: false,
           openaiApiKey: OPENAI_API_KEY,

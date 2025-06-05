@@ -31,6 +31,7 @@ import {
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
+import { TypeSelector } from '../manual-kb/type-selector';
 
 interface MessageWithMeta extends Message {
   sources?: string[];
@@ -198,6 +199,10 @@ export function UserChat() {
     'userChatSelectedChatModel',
     'gpt-4.1-nano',
   );
+  const [kb, setKbType] = useLocalStorage<'agent' | 'chat' | 'custom1'>(
+    'userChatSelectedKb',
+    'chat',
+  );
   const [systemPrompt, setSystemPrompt] = useLocalStorage(
     'userChatSystemPrompt',
     PLACEHOLDER_PROMPT,
@@ -231,6 +236,7 @@ export function UserChat() {
     api: `${API_URL}/api/userchat`,
     body: {
       selectedChatModel: model,
+      selectedKb: kb,
     },
     headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
     onError: error => {
@@ -353,6 +359,7 @@ export function UserChat() {
         className="print:hidden"
         right={
           <div className="flex gap-2">
+            <TypeSelector value={kb} setValue={setKbType} />
             <ModelSelector value={model} setValue={setModel} />
             <Button
               variant="outline"
