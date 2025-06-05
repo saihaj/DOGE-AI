@@ -14,6 +14,10 @@ export default {
         serif: ['var(--font-main)'],
       },
       colors: {
+        theme: {
+          blue: '#0B1D55',
+          red: '#C52C25',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
