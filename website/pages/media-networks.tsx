@@ -1,7 +1,5 @@
 import { BenefitsGrid } from '@/components/benefits-grid/BenefitsGrid';
-import { Footer } from '@/components/footer';
 import { Logo } from '@/components/logo';
-import { ExpandableNavBar } from '@/components/navigation/ExpandableNavBar';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Stats } from '@/components/stats/Stats';
 import { Button } from '@/components/ui/button';
@@ -105,21 +103,19 @@ const CARDS: CardType[] = [
 
 export default function Home() {
   return (
-    <main className="overflow-hidden">
-      <ExpandableNavBar>
-        <section className="relative flex flex-col items-center justify-center px-12 py-12 md:py-24">
-          <h1 className="max-w-4xl text-center text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
-            A Truth Engine, Built for the Fight.
-          </h1>
-          <p className="mx-auto my-4 max-w-3xl text-center text-base leading-relaxed md:my-6 md:text-2xl md:leading-relaxed">
-            This isn&apos;t another polite chatbot. It&apos;s an autonomous
-            surrogate that never sleeps, never goes off message, and always
-            delivers facts with receipts. The white-label AI solution designed
-            to control your narrative in a world of misinformation.
-          </p>
-          <Button variant="secondary">Try Demo Today!</Button>
-        </section>
-      </ExpandableNavBar>
+    <>
+      <section className="relative flex flex-col items-center justify-center px-12 py-12 md:py-24">
+        <h1 className="max-w-4xl text-center text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
+          A Truth Engine, Built for the Fight.
+        </h1>
+        <p className="mx-auto my-4 max-w-3xl text-center text-base leading-relaxed md:my-6 md:text-2xl md:leading-relaxed">
+          This isn&apos;t another polite chatbot. It&apos;s an autonomous
+          surrogate that never sleeps, never goes off message, and always
+          delivers facts with receipts. The white-label AI solution designed to
+          control your narrative in a world of misinformation.
+        </p>
+        <Button variant="secondary">Try Demo Today!</Button>
+      </section>
       <StickyCards />
       <div className="space-y-36 bg-zinc-50 pb-24 pt-24 md:pt-32">
         <BenefitsGrid />
@@ -147,7 +143,6 @@ export default function Home() {
           </Button>
         </div>
       </section>
-      <Footer />
-    </main>
+    </>
   );
 }

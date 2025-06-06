@@ -27,7 +27,9 @@ const FlipNav = () => {
 const NavLeft = () => {
   return (
     <div className="flex items-center gap-6">
-      <Logo className="h-[50px] w-[50px] rounded-full" />
+      <Link href="/">
+        <Logo className="h-[50px] w-[50px] rounded-full" />
+      </Link>
       <NavLink text="Stories" href="/interactions" />
       <NavLink text="Your DOGEai" href="/media-networks" />
     </div>
