@@ -327,7 +327,7 @@ export default function Home() {
             >
               <p className="text-sm flex flex-row items-center gap-1">
                 <span className="select-none text-white">Token: </span>
-                <span className="md:hidden block select-text text-white font-bold">
+                <span className="md:hidden select-none block text-white font-bold">
                   {truncateToken(TOKEN)}
                 </span>
                 <span className="hidden md:block select-text text-white font-bold">
