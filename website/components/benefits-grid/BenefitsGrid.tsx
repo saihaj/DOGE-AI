@@ -1,10 +1,8 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { CollaborateBlock } from './CollaborateBlock';
 import { HighlighBlocks } from './HighlighBlocks';
 import { SectionHeading } from '../shared/SectionHeading';
 import { SectionSubheading } from '../shared/SectionSubheading';
-import { Button } from '../shared/Button';
 
 export const BenefitsGrid = () => {
   return (
@@ -17,19 +15,13 @@ export const BenefitsGrid = () => {
       className="relative mx-auto grid max-w-6xl grid-cols-3 gap-4 px-2 md:px-4"
     >
       <div className="col-span-3">
-        <SectionHeading>The clear benefits of X</SectionHeading>
+        <SectionHeading>Why Your Campaign Needs Us?</SectionHeading>
         <SectionSubheading>
-          Features are good, benefits are even better! Here's a made up list for
-          reference.
+          Most bots play it safe. Most AI hedges. Most comms tools react. DOGEai
+          preempts, fact-checks, and controls the narrative.
         </SectionSubheading>
       </div>
-      <CollaborateBlock />
       <HighlighBlocks />
-      <div className="col-span-3 mt-6 flex justify-center">
-        <Button intent="outline">
-          <span className="font-bold">Get started - </span> no CC required
-        </Button>
-      </div>
     </motion.section>
   );
 };

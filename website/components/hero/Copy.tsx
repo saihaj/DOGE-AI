@@ -15,9 +15,7 @@ export const Copy = () => {
         receipts. The white-label AI solution designed to control your narrative
         in a world of misinformation.
       </p>
-      <Button variant="outline">
-        <span className="font-bold">Get started</span>
-      </Button>
+      <Button variant="secondary">Try Demo Today!</Button>
     </>
   );
 };

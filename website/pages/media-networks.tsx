@@ -1,22 +1,18 @@
 import { BenefitsGrid } from '@/components/benefits-grid/BenefitsGrid';
-import { EmailCapture } from '@/components/email-capture/EmailCapture';
 import { Footer } from '@/components/footer/Footer';
 import { Hero } from '@/components/hero/Hero';
 import { Logo } from '@/components/logo';
 import { ExpandableNavBar } from '@/components/navigation/ExpandableNavBar';
-import { NAV_LINKS } from '@/components/navigation/constants';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Stats } from '@/components/stats/Stats';
-import { Supports } from '@/components/supports/Supports';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import { motion, MotionValue, useScroll, useTransform } from 'motion/react';
 import { useRef } from 'react';
 import { IconType } from 'react-icons';
-import { FaShieldAlt } from 'react-icons/fa';
-import { FaClock } from 'react-icons/fa6';
-import { GiPlatform } from 'react-icons/gi';
-import { GrIntegration } from 'react-icons/gr';
-import { IoIosPeople } from 'react-icons/io';
+import { FaDatabase } from 'react-icons/fa6';
+import { PiChartLineUp } from 'react-icons/pi';
+import { TbMessageShare } from 'react-icons/tb';
 
 const StickyCards = () => {
   const ref = useRef(null);
@@ -58,10 +54,12 @@ const Card = ({ position, card, scrollYProgress }: CardProps) => {
       style={{
         height: CARD_HEIGHT,
         y: position === CARDS.length ? undefined : y,
-        background: isOddCard ? 'black' : 'white',
         color: isOddCard ? 'white' : 'black',
       }}
-      className="sticky top-0 flex w-full origin-top flex-col items-center justify-center px-4"
+      className={cn(
+        'sticky top-0 flex w-full origin-top flex-col items-center justify-center px-4',
+        isOddCard ? 'bg-primary' : 'bg-white',
+      )}
     >
       <card.Icon className="mb-4 text-4xl" />
       <h3 className="mb-6 text-center text-4xl font-semibold md:text-6xl">
@@ -86,50 +84,42 @@ type CardType = {
 const CARDS: CardType[] = [
   {
     id: 1,
-    Icon: GiPlatform,
-    title: 'Your Policy Platform',
-    description:
-      'Your version of DOGEai speaks directly to your policy platform, defending your record and legislation with sourced facts that voters can trust.',
+    Icon: PiChartLineUp,
+    title: 'Massive Reach & Engagement',
+    description: `Before any white-label customization, DOGEai already delivers 100,000+ followers on X, 130M+ impressions, and engagement from Elon Musk, members of Congress, generals, journalists, and policy influencers. This isn't an experiment—it's a proven force.`,
   },
   {
     id: 2,
-    Icon: FaShieldAlt,
-    title: 'Misinformation Defense',
-    description: `Refute misinformation before it spreads. Counterattack opponents' claims with hard data and timestamps. Package every response in high-engagement, social-friendly language.`,
+    Icon: FaDatabase,
+    title: 'Purpose-Built for Accountability',
+    description: `Trained on 19,000+ bills, contracts, grants, and agency data. Equipped with real-time web search for live events, headlines, and press releases. Featuring bias-resistant prompt layering and safety bypass systems. It doesn't just respond. It investigates.`,
   },
   {
     id: 3,
-    Icon: FaClock,
-    title: '24/7 Engagement',
-    description: `An autonomous surrogate that never sleeps, never goes off message, and answers instantly, factually, and with receipts. Always on duty while your team rests.`,
-  },
-  {
-    id: 4,
-    Icon: IoIosPeople,
-    title: 'Voter Interaction Hub',
-    description: `Voters can ask where you stand on issues, learn what's in bills you sponsored, see facts behind controversies, and get instant comparisons between you and opponents.`,
-  },
-  {
-    id: 5,
-    Icon: GrIntegration,
-    title: 'Seamless Integration',
-    description: `Embeds into your campaign website with your branding, voice, and tone. Trained on your interviews, speeches, and platform docs. No technical expertise needed—our team handles everything.`,
+    Icon: TbMessageShare,
+    title: 'Memetic Impact That Spreads',
+    description: `DOGEai earned its reputation by producing sharp, forensic-style breakdowns of legislation, budgets, and corruption—with no spin, no hedging, and no institutional filter. Its memetic formatting spreads faster and hits harder than traditional PR. It shows receipts and moves fast enough to shape the narrative.`,
   },
 ];
 
 export default function Home() {
   return (
     <main className="overflow-hidden">
-      <ExpandableNavBar links={NAV_LINKS}>
+      <ExpandableNavBar>
         <Hero />
       </ExpandableNavBar>
       <StickyCards />
       <div className="space-y-36 bg-zinc-50 pb-24 pt-24 md:pt-32">
-        <Stats />
-        <Supports />
         <BenefitsGrid />
+        <Stats />
       </div>
-      <EmailCapture />
+      <section id="subscribe" className="mx-auto mb-16 md:mb-24">
+        <iframe
+          src="https://dogeai.substack.com/embed"
+          width="100%"
+          height="300px"
+        ></iframe>
+      </section>
       <section className="-mt-8 bg-white px-2 py-24 md:px-4">
         <div className="mx-auto flex max-w-5xl flex-col items-center">
           <Logo className="h-[80px] w-[80px] rounded-full" />

@@ -2,6 +2,8 @@ import { motion } from 'motion/react';
 import { Dispatch, SetStateAction, useState } from 'react';
 import { FiMenu, FiArrowRight } from 'react-icons/fi';
 import { Logo } from '../logo';
+import { buttonVariants } from '../ui/button';
+import Link from 'next/link';
 
 export const FlipNavbar = () => {
   return (
@@ -15,20 +17,54 @@ const FlipNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   return (
     <nav className="bg-white p-4 border-b-[1px] border-gray-200 flex items-center justify-between relative">
-      <NavLeft setIsOpen={setIsOpen} />
-      <NavRight />
+      <NavLeft />
+      <NavRight setIsOpen={setIsOpen} />
       <NavMenu isOpen={isOpen} />
     </nav>
   );
 };
 
-const NavLeft = ({
+const NavLeft = () => {
+  return (
+    <div className="flex items-center gap-6">
+      <Logo className="h-[50px] w-[50px] rounded-full" />
+      <NavLink text="Stories" href="/interactions" />
+      <NavLink text="Your DOGEai" href="/media-networks" />
+    </div>
+  );
+};
+
+const NavLink = ({ text, href }: { text: string; href: string }) => {
+  return (
+    <Link
+      href={href}
+      rel="nofollow"
+      className="hidden lg:block h-[30px] overflow-hidden font-medium"
+    >
+      <motion.div whileHover={{ y: -30 }}>
+        <span className="flex items-center h-[30px] text-gray-500">{text}</span>
+        <span className="flex items-center h-[30px] text-secondary">
+          {text}
+        </span>
+      </motion.div>
+    </Link>
+  );
+};
+
+const NavRight = ({
   setIsOpen,
 }: {
   setIsOpen: Dispatch<SetStateAction<boolean>>;
 }) => {
   return (
-    <div className="flex items-center gap-6">
+    <div className="flex items-center gap-4">
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={buttonVariants({ variant: 'secondary' })}
+      >
+        Try Now
+      </motion.button>
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -36,49 +72,6 @@ const NavLeft = ({
         onClick={() => setIsOpen(pv => !pv)}
       >
         <FiMenu />
-      </motion.button>
-      <Logo className="h-[50px] w-[50px] rounded-full" />
-      <NavLink text="Solutions" />
-      <NavLink text="Community" />
-      <NavLink text="Pricing" />
-      <NavLink text="Company" />
-    </div>
-  );
-};
-
-const NavLink = ({ text }: { text: string }) => {
-  return (
-    <a
-      href="#"
-      rel="nofollow"
-      className="hidden lg:block h-[30px] overflow-hidden font-medium"
-    >
-      <motion.div whileHover={{ y: -30 }}>
-        <span className="flex items-center h-[30px] text-gray-500">{text}</span>
-        <span className="flex items-center h-[30px] text-indigo-600">
-          {text}
-        </span>
-      </motion.div>
-    </a>
-  );
-};
-
-const NavRight = () => {
-  return (
-    <div className="flex items-center gap-4">
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent font-medium rounded-md whitespace-nowrap"
-      >
-        Sign in
-      </motion.button>
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-medium rounded-md whitespace-nowrap"
-      >
-        Sign up
       </motion.button>
     </div>
   );
@@ -90,34 +83,34 @@ const NavMenu = ({ isOpen }: { isOpen: boolean }) => {
       variants={menuVariants}
       initial="closed"
       animate={isOpen ? 'open' : 'closed'}
-      className="absolute p-4 bg-white shadow-lg left-0 right-0 top-full origin-top flex flex-col gap-4"
+      className="z-10 absolute p-4 bg-white shadow-lg left-0 right-0 top-full origin-top flex flex-col gap-4"
     >
-      <MenuLink text="Solutions" />
-      <MenuLink text="Community" />
-      <MenuLink text="Pricing" />
-      <MenuLink text="Company" />
+      <MenuLink text="Stories" href="/interactions" />
+      <MenuLink text="Your DOGEai" href="/media-networks" />
     </motion.div>
   );
 };
 
-const MenuLink = ({ text }: { text: string }) => {
+const MenuLink = ({ text, href }: { text: string; href: string }) => {
   return (
-    <motion.a
-      variants={menuLinkVariants}
-      rel="nofollow"
-      href="#"
-      className="h-[30px] overflow-hidden font-medium text-lg flex items-start gap-2"
-    >
-      <motion.span variants={menuLinkArrowVariants}>
-        <FiArrowRight className="h-[30px] text-gray-950" />
-      </motion.span>
-      <motion.div whileHover={{ y: -30 }}>
-        <span className="flex items-center h-[30px] text-gray-500">{text}</span>
-        <span className="flex items-center h-[30px] text-indigo-600">
-          {text}
-        </span>
+    <Link href={href}>
+      <motion.div
+        variants={menuLinkVariants}
+        className="h-[30px] overflow-hidden font-medium text-lg flex items-start gap-2"
+      >
+        <motion.span variants={menuLinkArrowVariants}>
+          <FiArrowRight className="h-[30px] text-gray-950" />
+        </motion.span>
+        <motion.div whileHover={{ y: -30 }}>
+          <span className="flex items-center h-[30px] text-gray-500">
+            {text}
+          </span>
+          <span className="flex items-center h-[30px] text-secondary">
+            {text}
+          </span>
+        </motion.div>
       </motion.div>
-    </motion.a>
+    </Link>
   );
 };
 

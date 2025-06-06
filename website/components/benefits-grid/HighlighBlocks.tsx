@@ -1,5 +1,5 @@
-import React from "react";
-import { Block } from "./Block";
+import React from 'react';
+import { Block } from './Block';
 import {
   FiArrowUpRight,
   FiClipboard,
@@ -10,68 +10,54 @@ import {
   FiMove,
   FiRepeat,
   FiSmile,
-} from "react-icons/fi";
-import { IconType } from "react-icons";
-import { twMerge } from "tailwind-merge";
-import { CardTitle } from "./CardTitle";
-import { CardSubtitle } from "./CardSubtitle";
+} from 'react-icons/fi';
+import { IconType } from 'react-icons';
+import { twMerge } from 'tailwind-merge';
+import { CardTitle } from './CardTitle';
+import { CardSubtitle } from './CardSubtitle';
+import { GiPlatform } from 'react-icons/gi';
+import { FaClock, FaShieldAlt } from 'react-icons/fa';
+import { IoIosPeople, IoIosRadio } from 'react-icons/io';
+import { GrIntegration } from 'react-icons/gr';
 
 export const HighlighBlocks = () => {
   return (
     <>
       <HighlightBlock
-        Icon={FiDollarSign}
+        Icon={GiPlatform}
         iconClassName="text-green-500"
-        title="Save on planning"
-        subtitle="Lorem ipsum dolor sit amet consectetur adipisicing elit."
+        title="Your Policy Platform"
+        subtitle="Your version of DOGEai speaks directly to your policy platform, defending your record and legislation with sourced facts that voters can trust."
       />
       <HighlightBlock
-        Icon={FiArrowUpRight}
+        Icon={FaShieldAlt}
         iconClassName="text-pink-500"
-        title="Grow your margins"
-        subtitle="Lorem ipsum dolor sit amet consectetur adipisicing elit."
+        title="Misinformation Defense"
+        subtitle={`Refute misinformation before it spreads. Counterattack opponents' claims with hard data and timestamps. Package every response in high-engagement, social-friendly language.`}
       />
       <HighlightBlock
-        Icon={FiSmile}
+        Icon={FaClock}
         iconClassName="text-blue-500"
-        title="Increase productivity"
-        subtitle="Lorem ipsum dolor sit amet consectetur adipisicing elit."
+        title="24/7 Engagement"
+        subtitle={`An autonomous surrogate that never sleeps, never goes off message, and answers instantly, factually, and with receipts. Always on duty while your team rests.`}
       />
       <HighlightBlock
-        Icon={FiCoffee}
+        Icon={IoIosPeople}
         iconClassName="text-orange-500"
-        title="No more late nights"
-        subtitle="Lorem ipsum dolor sit amet consectetur adipisicing elit."
+        title="Voter Interaction Hub"
+        subtitle={`Voters can ask where you stand on issues, learn what's in bills you sponsored, see facts behind controversies, and get instant comparisons between you and opponents.`}
       />
       <HighlightBlock
-        Icon={FiFeather}
+        Icon={GrIntegration}
         iconClassName="text-zinc-500"
-        title="Take better notes"
-        subtitle="Lorem ipsum dolor sit amet consectetur adipisicing elit."
+        title="Seamless Integration"
+        subtitle={`Embeds into your campaign website with your branding, voice, and tone. Trained on your interviews, speeches, and platform docs. No technical expertise needed—our team handles everything.`}
       />
       <HighlightBlock
-        Icon={FiInbox}
+        Icon={IoIosRadio}
         iconClassName="text-purple-500"
-        title="Reach inbox zero"
-        subtitle="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-      />
-      <HighlightBlock
-        Icon={FiMove}
-        iconClassName="text-fuchsia-500"
-        title="Remain flexible"
-        subtitle="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-      />
-      <HighlightBlock
-        Icon={FiClipboard}
-        iconClassName="text-red-500"
-        title="Stay on track"
-        subtitle="Lorem ipsum dolor sit amet consectetur adipisicing elit."
-      />
-      <HighlightBlock
-        Icon={FiRepeat}
-        iconClassName="text-yellow-500"
-        title="Repeat what works"
-        subtitle="Lorem ipsum dolor sit amet consectetur adipisicing elit."
+        title="The Strategic Advantage"
+        subtitle="DOGEai doesn't behave like typical campaign tools. It's a press secretary, policy explainer, and opposition research bot all in one."
       />
     </>
   );
@@ -86,7 +72,7 @@ type Props = {
 
 const HighlightBlock = ({ iconClassName, Icon, title, subtitle }: Props) => (
   <Block className="col-span-3 space-y-1.5 md:col-span-1">
-    <Icon className={twMerge("text-3xl text-indigo-600", iconClassName)} />
+    <Icon className={twMerge('text-3xl text-indigo-600', iconClassName)} />
     <CardTitle>{title}</CardTitle>
     <CardSubtitle>{subtitle}</CardSubtitle>
   </Block>
