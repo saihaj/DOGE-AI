@@ -355,7 +355,8 @@ export const executeInteractionTweets = inngest.createFunction(
             );
 
             // 90% of the time we return the long output, 10% of the time we return the short output
-            const returnLong = Math.random() > 0.1;
+            // const returnLong = Math.random() > 0.1;
+            const returnLong = true;
 
             if (returnLong) {
               log.info({}, 'returning long');
