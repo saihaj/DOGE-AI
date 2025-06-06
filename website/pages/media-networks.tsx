@@ -1,6 +1,5 @@
 import { BenefitsGrid } from '@/components/benefits-grid/BenefitsGrid';
-import { Footer } from '@/components/footer/Footer';
-import { Hero } from '@/components/hero/Hero';
+import { Footer } from '@/components/footer';
 import { Logo } from '@/components/logo';
 import { ExpandableNavBar } from '@/components/navigation/ExpandableNavBar';
 import { SectionHeading } from '@/components/shared/SectionHeading';
@@ -37,13 +36,15 @@ const StickyCards = () => {
   );
 };
 
-interface CardProps {
+const Card = ({
+  position,
+  card,
+  scrollYProgress,
+}: {
   position: number;
   card: CardType;
   scrollYProgress: MotionValue;
-}
-
-const Card = ({ position, card, scrollYProgress }: CardProps) => {
+}) => {
   const scaleFromPct = (position - 1) / CARDS.length;
   const y = useTransform(scrollYProgress, [scaleFromPct, 1], [0, -CARD_HEIGHT]);
 
@@ -106,7 +107,18 @@ export default function Home() {
   return (
     <main className="overflow-hidden">
       <ExpandableNavBar>
-        <Hero />
+        <section className="relative flex flex-col items-center justify-center px-12 py-12 md:py-24">
+          <h1 className="max-w-4xl text-center text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
+            A Truth Engine, Built for the Fight.
+          </h1>
+          <p className="mx-auto my-4 max-w-3xl text-center text-base leading-relaxed md:my-6 md:text-2xl md:leading-relaxed">
+            This isn&apos;t another polite chatbot. It&apos;s an autonomous
+            surrogate that never sleeps, never goes off message, and always
+            delivers facts with receipts. The white-label AI solution designed
+            to control your narrative in a world of misinformation.
+          </p>
+          <Button variant="secondary">Try Demo Today!</Button>
+        </section>
       </ExpandableNavBar>
       <StickyCards />
       <div className="space-y-36 bg-zinc-50 pb-24 pt-24 md:pt-32">
@@ -123,12 +135,12 @@ export default function Home() {
       <section className="-mt-8 bg-white px-2 py-24 md:px-4">
         <div className="mx-auto flex max-w-5xl flex-col items-center">
           <Logo className="h-[80px] w-[80px] rounded-full" />
-          <SectionHeading>Let's Build Your Version</SectionHeading>
+          <SectionHeading>Let&apos;s Build Your Version</SectionHeading>
           <p className="mx-auto mb-8 text-center text-base leading-relaxed md:text-xl md:leading-relaxed">
-            We'll build, train, and launch your custom DOGEai—all aligned to
-            your message, priorities, and policies. You control the voice. We
+            We&apos;ll build, train, and launch your custom DOGEai—all aligned
+            to your message, priorities, and policies. You control the voice. We
             provide the engine. Your voters get the truth.{' '}
-            <strong>It's time to build your digital war room.</strong>
+            <strong>It&apos;s time to build your digital war room.</strong>
           </p>
           <Button>
             <span className="font-bold">Get your White-Label DOGEai</span>

@@ -1,16 +1,5 @@
 import React from 'react';
 import { Block } from './Block';
-import {
-  FiArrowUpRight,
-  FiClipboard,
-  FiCoffee,
-  FiDollarSign,
-  FiFeather,
-  FiInbox,
-  FiMove,
-  FiRepeat,
-  FiSmile,
-} from 'react-icons/fi';
 import { IconType } from 'react-icons';
 import { twMerge } from 'tailwind-merge';
 import { CardTitle } from './CardTitle';
