@@ -8,7 +8,7 @@ export const FinalCTA = () => {
     <section className="-mt-8 bg-white px-2 py-24 md:px-4">
       <div className="mx-auto flex max-w-5xl flex-col items-center">
         <Logo className="h-[80px] w-[80px] rounded-full" />
-        <SectionHeading>Ready to go?</SectionHeading>
+        <SectionHeading>Let's Build Your Version</SectionHeading>
         <p className="mx-auto mb-8 text-center text-base leading-relaxed md:text-xl md:leading-relaxed">
           Lorem ipsum dolor sit amet consectetur adipisicing elit. Saepe,
           blanditiis?
