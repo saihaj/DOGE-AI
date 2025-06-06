@@ -29,7 +29,7 @@ const FlipNav = () => {
 const NavLeft = () => {
   return (
     <div className="flex items-center gap-6">
-      <Link href="/">
+      <Link prefetch href="/">
         <Logo className="h-[50px] w-[50px] rounded-full" />
       </Link>
       <NavLink text="Stories" href="/interactions" />
@@ -41,6 +41,7 @@ const NavLeft = () => {
 const NavLink = ({ text, href }: { text: string; href: string }) => {
   return (
     <Link
+      prefetch
       href={href}
       rel="nofollow"
       className="hidden lg:block h-[30px] overflow-hidden font-medium"
@@ -62,13 +63,15 @@ const NavRight = ({
 }) => {
   return (
     <div className="flex items-center gap-4">
-      <motion.button
+      <motion.a
+        target="_blank"
+        href="https://dogeai.chat?utm_source=dogeai&utm_medium=navbar&utm_campaign=try_now"
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         className={buttonVariants({ variant: 'secondary' })}
       >
         Try Now
-      </motion.button>
+      </motion.a>
       <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
@@ -97,7 +100,7 @@ const NavMenu = ({ isOpen }: { isOpen: boolean }) => {
 
 const MenuLink = ({ text, href }: { text: string; href: string }) => {
   return (
-    <Link href={href}>
+    <Link href={href} prefetch>
       <motion.div
         variants={menuLinkVariants}
         className="h-[30px] overflow-hidden font-medium text-lg flex items-start gap-2"

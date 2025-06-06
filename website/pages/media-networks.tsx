@@ -3,7 +3,7 @@ import { Logo } from '@/components/logo';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Stats } from '@/components/stats/Stats';
 import { CardType, StickyCards } from '@/components/sticky-cards';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { FaDatabase } from 'react-icons/fa6';
 import { PiChartLineUp } from 'react-icons/pi';
 import { TbMessageShare } from 'react-icons/tb';
@@ -42,7 +42,13 @@ export default function Home() {
           delivers facts with receipts. The white-label AI solution designed to
           control your narrative in a world of misinformation.
         </p>
-        <Button variant="secondary">Try Demo Today!</Button>
+        <a
+          target="_blank"
+          href="https://dogeai.chat?utm_source=dogeai&utm_medium=media_networks&utm_campaign=demo_cta"
+          className={buttonVariants({ variant: 'secondary' })}
+        >
+          Try Demo Today!
+        </a>
       </section>
       <StickyCards cards={CARDS} />
       <div className="space-y-36 bg-zinc-50 pb-24 pt-24 md:pt-32">
@@ -66,9 +72,12 @@ export default function Home() {
             provide the engine. Your voters get the truth.{' '}
             <strong>It&apos;s time to build your digital war room.</strong>
           </p>
-          <Button>
+          <a
+            href="mailto:dev@dogeai.info?subject=White-Label DOGEai Inquiry"
+            className={buttonVariants({})}
+          >
             <span className="font-bold">Get your White-Label DOGEai</span>
-          </Button>
+          </a>
         </div>
       </section>
     </>
