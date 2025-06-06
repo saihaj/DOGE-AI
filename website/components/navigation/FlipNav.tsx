@@ -7,8 +7,10 @@ import Link from 'next/link';
 
 export const FlipNavbar = () => {
   return (
-    <div className="rounded-t-2xl bg-white">
-      <FlipNav />
+    <div className="rounded-t-2xl bg-white  border-b-[1px] border-gray-200">
+      <div className="container mx-auto">
+        <FlipNav />
+      </div>
     </div>
   );
 };
@@ -16,7 +18,7 @@ export const FlipNavbar = () => {
 const FlipNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <nav className="bg-white p-4 border-b-[1px] border-gray-200 flex items-center justify-between relative">
+    <nav className="bg-white p-4 flex items-center justify-between relative">
       <NavLeft />
       <NavRight setIsOpen={setIsOpen} />
       <NavMenu isOpen={isOpen} />
