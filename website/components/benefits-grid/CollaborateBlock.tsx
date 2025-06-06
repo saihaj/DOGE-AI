@@ -1,10 +1,10 @@
-import React from "react";
-import { FiEdit } from "react-icons/fi";
-import { BsFillCursorFill } from "react-icons/bs";
-import { Block } from "./Block";
-import { twMerge } from "tailwind-merge";
-import { CardTitle } from "./CardTitle";
-import { CardSubtitle } from "./CardSubtitle";
+import React from 'react';
+import { FiEdit } from 'react-icons/fi';
+import { BsFillCursorFill } from 'react-icons/bs';
+import { Block } from './Block';
+import { twMerge } from 'tailwind-merge';
+import { CardTitle } from './CardTitle';
+import { CardSubtitle } from './CardSubtitle';
 
 export const CollaborateBlock = () => (
   <Block className="col-span-3 overflow-hidden md:col-span-1">
@@ -58,17 +58,17 @@ const Cursor = ({
   nameText,
 }: CursorProps) => {
   return (
-    <div className={twMerge("absolute left-[60%] top-[60%]", wrapperClassName)}>
+    <div className={twMerge('absolute left-[60%] top-[60%]', wrapperClassName)}>
       <BsFillCursorFill
         className={twMerge(
-          "-rotate-90 text-4xl text-pink-500",
-          cursorClassName
+          '-rotate-90 text-4xl text-pink-500',
+          cursorClassName,
         )}
       />
       <span
         className={twMerge(
-          "block translate-x-1/2 whitespace-nowrap rounded border border-pink-900 bg-pink-200 px-1.5 py-0.5 text-xs text-pink-900",
-          nameClassName
+          'block translate-x-1/2 whitespace-nowrap rounded border border-pink-900 bg-pink-200 px-1.5 py-0.5 text-xs text-pink-900',
+          nameClassName,
         )}
       >
         {nameText}
