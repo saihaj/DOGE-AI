@@ -3,7 +3,7 @@ import { Logo } from '@/components/logo';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Stats } from '@/components/stats/Stats';
 import { CardType, StickyCards } from '@/components/sticky-cards';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { FaDatabase } from 'react-icons/fa6';
 import { PiChartLineUp } from 'react-icons/pi';
 import { TbMessageShare } from 'react-icons/tb';
