@@ -1,9 +1,6 @@
-import { Navbar } from '@/components/nav';
 import { Button } from '@/components/ui/button';
-import { RiGithubFill, RiTwitterXLine } from '@remixicon/react';
 import { useCopyToClipboard } from '@uidotdev/usehooks';
 import Image from 'next/image';
-import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import hero from '../public/images/hero.png';
 
