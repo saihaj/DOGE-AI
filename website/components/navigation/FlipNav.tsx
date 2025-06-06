@@ -21,7 +21,7 @@ const FlipNav = () => {
     <nav className="bg-white p-4 flex items-center justify-between relative">
       <NavLeft />
       <NavRight setIsOpen={setIsOpen} />
-      <NavMenu isOpen={isOpen} />
+      <NavMenu isOpen={isOpen} setIsOpen={setIsOpen} />
     </nav>
   );
 };
@@ -84,7 +84,13 @@ const NavRight = ({
   );
 };
 
-const NavMenu = ({ isOpen }: { isOpen: boolean }) => {
+const NavMenu = ({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+}) => {
   return (
     <motion.div
       variants={menuVariants}
@@ -92,15 +98,27 @@ const NavMenu = ({ isOpen }: { isOpen: boolean }) => {
       animate={isOpen ? 'open' : 'closed'}
       className="z-10 absolute p-4 bg-white shadow-lg left-0 right-0 top-full origin-top flex flex-col gap-4"
     >
-      <MenuLink text="Stories" href="/interactions" />
-      <MenuLink text="Your DOGEai" href="/media-networks" />
+      <MenuLink setIsOpen={setIsOpen} text="Stories" href="/interactions" />
+      <MenuLink
+        setIsOpen={setIsOpen}
+        text="Your DOGEai"
+        href="/media-networks"
+      />
     </motion.div>
   );
 };
 
-const MenuLink = ({ text, href }: { text: string; href: string }) => {
+const MenuLink = ({
+  text,
+  href,
+  setIsOpen,
+}: {
+  text: string;
+  href: string;
+  setIsOpen: Dispatch<SetStateAction<boolean>>;
+}) => {
   return (
-    <Link href={href} prefetch>
+    <Link href={href} prefetch onClick={() => setIsOpen(pv => !pv)}>
       <motion.div
         variants={menuLinkVariants}
         className="h-[30px] overflow-hidden font-medium text-lg flex items-start gap-2"
