@@ -13,7 +13,7 @@ const mainFont = Funnel_Display({
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <div className={`${mainFont.variable} font-serif text-black`}>
-      <main className="overflow-hidden">
+      <main>
         <ExpandableNavBar />
         <Component {...pageProps} />
         <Footer />
