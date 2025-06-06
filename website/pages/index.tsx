@@ -148,9 +148,9 @@ const VelocityHero = () => {
 
   return (
     <section ref={targetRef} className="h-[400vh]">
-      <div className="sticky top-0 flex h-screen flex-col justify-between overflow-hidden -mt-24 md:mt-0">
+      <div className="sticky top-0 flex h-screen flex-col justify-between overflow-hidden">
         <div className="relative flex w-full justify-between p-6" />
-        <div className="flex items-center justify-center px-4">
+        <div className="flex items-center justify-center pb-24 md:pb-0 px-4">
           <h1 className="font-bold text-neutral-400 text-5xl md:text-7xl">
             Forget Tools. <br />
             Forget Platforms.
