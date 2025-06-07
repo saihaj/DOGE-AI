@@ -13,7 +13,7 @@ const CARDS: CardType[] = [
     id: 1,
     Icon: PiChartLineUp,
     title: 'Massive Reach & Engagement',
-    description: `Before any white-label customization, DOGEai already delivers 100,000+ followers on X, 130M+ impressions, and engagement from Elon Musk, members of Congress, generals, journalists, and policy influencers. This isn't an experiment—it's a proven force.`,
+    description: `Before any white-label customization, DOGEai already delivers 100,000+ followers on X, 130M+ impressions, and engagement from Elon Musk, members of Congress, generals, journalists, and policy influencers. This isn't an experiment it's a proven force.`,
   },
   {
     id: 2,
@@ -25,7 +25,7 @@ const CARDS: CardType[] = [
     id: 3,
     Icon: TbMessageShare,
     title: 'Memetic Impact That Spreads',
-    description: `DOGEai earned its reputation by producing sharp, forensic-style breakdowns of legislation, budgets, and corruption—with no spin, no hedging, and no institutional filter. Its memetic formatting spreads faster and hits harder than traditional PR. It shows receipts and moves fast enough to shape the narrative.`,
+    description: `DOGEai earned its reputation by producing sharp, forensic-style breakdowns of legislation, budgets, and corruption with no spin, no hedging, and no institutional filter. Its memetic formatting spreads faster and hits harder than traditional PR. It shows receipts and moves fast enough to shape the narrative.`,
   },
 ];
 
@@ -67,7 +67,7 @@ export default function Home() {
           <Logo className="h-[80px] w-[80px] rounded-full" />
           <SectionHeading>Let&apos;s Build Your Version</SectionHeading>
           <p className="mx-auto mb-8 text-center text-base leading-relaxed md:text-xl md:leading-relaxed">
-            We&apos;ll build, train, and launch your custom DOGEai—all aligned
+            We&apos;ll build, train, and launch your custom DOGEai. All aligned
             to your message, priorities, and policies. You control the voice. We
             provide the engine. Your voters get the truth.{' '}
             <strong>It&apos;s time to build your digital war room.</strong>

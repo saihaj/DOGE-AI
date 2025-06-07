@@ -15,7 +15,7 @@ export const BenefitsGrid = () => {
       className="relative mx-auto grid max-w-6xl grid-cols-3 gap-4 px-2 md:px-4"
     >
       <div className="col-span-3">
-        <SectionHeading>Why Your Campaign Needs Us?</SectionHeading>
+        <SectionHeading>Why you need us?</SectionHeading>
         <SectionSubheading>
           Most bots play it safe. Most AI hedges. Most comms tools react. DOGEai
           preempts, fact-checks, and controls the narrative.
