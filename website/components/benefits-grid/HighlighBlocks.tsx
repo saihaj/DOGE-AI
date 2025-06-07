@@ -4,8 +4,7 @@ import { IconType } from 'react-icons';
 import { twMerge } from 'tailwind-merge';
 import { CardTitle } from './CardTitle';
 import { CardSubtitle } from './CardSubtitle';
-import { GiPlatform } from 'react-icons/gi';
-import { FaClock, FaShieldAlt } from 'react-icons/fa';
+import { FaClock, FaLock, FaShieldAlt } from 'react-icons/fa';
 import { IoIosPeople, IoIosRadio } from 'react-icons/io';
 import { GrIntegration } from 'react-icons/gr';
 
@@ -13,40 +12,40 @@ export const HighlighBlocks = () => {
   return (
     <>
       <HighlightBlock
-        Icon={GiPlatform}
+        Icon={FaLock}
         iconClassName="text-green-500"
-        title="Your Policy Platform"
-        subtitle="Your version of DOGEai speaks directly to your policy platform, defending your record and legislation with sourced facts that voters can trust."
+        title="Policy-Locked AI"
+        subtitle="Speaks directly to your priorities. It defends your record, reinforces your message, and delivers sourced facts your supporters and stakeholders can trust."
       />
       <HighlightBlock
         Icon={FaShieldAlt}
         iconClassName="text-pink-500"
-        title="Misinformation Defense"
-        subtitle={`Refute misinformation before it spreads. Counterattack opponents' claims with hard data and timestamps. Package every response in high-engagement, social-friendly language.`}
+        title="Misinformation Countermeasures"
+        subtitle="Get ahead of falsehoods before they spread. DOGEai responds instantly with data, timestamps, and source links. Every reply is formatted for engagement and built to spread."
       />
       <HighlightBlock
         Icon={FaClock}
         iconClassName="text-blue-500"
-        title="24/7 Engagement"
-        subtitle={`An autonomous surrogate that never sleeps, never goes off message, and answers instantly, factually, and with receipts. Always on duty while your team rests.`}
+        title="24/7 Surrogate"
+        subtitle="The platform never sleeps, never strays off message, and always responds with receipts. While your team rests, DOGEai stays active and aligned."
       />
       <HighlightBlock
         Icon={IoIosPeople}
         iconClassName="text-orange-500"
-        title="Voter Interaction Hub"
-        subtitle={`Voters can ask where you stand on issues, learn what's in bills you sponsored, see facts behind controversies, and get instant comparisons between you and opponents.`}
+        title="Supporter Interaction Engine"
+        subtitle="Let voters, donors, and advocates ask questions, explore your stance, understand your track record, and compare your position to others in real time."
       />
       <HighlightBlock
         Icon={GrIntegration}
         iconClassName="text-zinc-500"
-        title="Seamless Integration"
-        subtitle={`Embeds into your campaign website with your branding, voice, and tone. Trained on your interviews, speeches, and platform docs. No technical expertise needed—our team handles everything.`}
+        title="Seamless Deployment"
+        subtitle="Integrates into your site with full control over branding, tone, and content. No technical lift required. Our team handles setup, training, and refinement."
       />
       <HighlightBlock
         Icon={IoIosRadio}
         iconClassName="text-purple-500"
-        title="The Strategic Advantage"
-        subtitle="DOGEai doesn't behave like typical campaign tools. It's a press secretary, policy explainer, and opposition research bot all in one."
+        title="Your Strategic Edge"
+        subtitle="It operates as your press secretary, policy explainer, and opposition response engine. Fully aligned. Always on. Built to win the narrative."
       />
     </>
   );

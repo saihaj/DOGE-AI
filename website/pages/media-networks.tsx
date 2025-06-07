@@ -4,28 +4,175 @@ import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Stats } from '@/components/stats/Stats';
 import { CardType, StickyCards } from '@/components/sticky-cards';
 import { buttonVariants } from '@/components/ui/button';
+import { Calendar, TrendingUp, Users, Zap } from 'lucide-react';
+import { motion } from 'motion/react';
 import { FaDatabase } from 'react-icons/fa6';
 import { PiChartLineUp } from 'react-icons/pi';
 import { TbMessageShare } from 'react-icons/tb';
+
+const timelineEvents = [
+  {
+    year: '2008',
+    title: 'The Facebook Revolution',
+    description:
+      'Obama activated millions through Facebook, pioneering social media campaigning and changing political engagement forever.',
+    icon: Users,
+    color: 'bg-blue-500',
+  },
+  {
+    year: '2016',
+    title: 'Bypassing Traditional Media',
+    description:
+      'Trump bypassed the media entirely with X (Twitter), demonstrating the power of direct-to-voter communication.',
+    icon: Zap,
+    color: 'bg-purple-500',
+  },
+  {
+    year: '2020',
+    title: 'Social Platforms as Battleground',
+    description:
+      'Social platforms became the primary battleground for political discourse. COVID accelerated the digital shift.',
+    icon: TrendingUp,
+    color: 'bg-green-500',
+  },
+  {
+    year: '2025',
+    title: 'Digital Dominance',
+    description:
+      'Digital political ad spend is up 156% from 2020. The old media cycle is gone - speed and message control are everything.',
+    icon: Calendar,
+    color: 'bg-orange-500',
+  },
+];
+
+function PoliticsTimeline() {
+  return (
+    <section>
+      {/* Header */}
+      <div className="text-center mb-12">
+        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+          The Shift Already Happened
+        </h1>
+        <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          Campaigns aren&apos;t evolving. They&apos;ve evolved. Since 2008,
+          every cycle has moved away from traditional media and deeper into
+          real-time digital.
+        </p>
+      </div>
+
+      {/* Timeline */}
+      <div className="relative">
+        {/* Timeline line */}
+        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 to-orange-500"></div>
+
+        {/* Timeline events */}
+        <div className="space-y-12">
+          {timelineEvents.map(event => {
+            const IconComponent = event.icon;
+            return (
+              <div key={event.year} className="relative flex items-start">
+                {/* Icon */}
+                <div
+                  className={`${event.color} rounded-full p-3 z-10 shadow-lg`}
+                >
+                  <IconComponent className="w-6 h-6 text-white" />
+                </div>
+
+                {/* Content */}
+                <div className="ml-8 flex-1">
+                  <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex items-center gap-3 mb-3">
+                      <span className="text-2xl font-bold text-gray-900">
+                        {event.year}
+                      </span>
+                      <h3 className="text-xl font-semibold text-gray-900">
+                        {event.title}
+                      </h3>
+                    </div>
+
+                    <p className="text-gray-600 leading-relaxed">
+                      {event.description}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Key Statistics */}
+      <div className="my-16 bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 text-white">
+        <div className="grid md:grid-cols-2 gap-8 items-center">
+          <div>
+            <h2 className="text-3xl font-bold mb-4">
+              The Numbers Don&apos;t Lie
+            </h2>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+                <span className="text-lg">
+                  <span className="font-bold">156% increase</span> in digital
+                  political ad spend since 2020.
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+                <span className="text-lg">
+                  Voters move fast, narratives shift faster.
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-2 bg-white rounded-full"></div>
+                <span className="text-lg">The old media cycle is gone.</span>
+              </div>
+            </div>
+          </div>
+          <div className="text-center md:text-right">
+            <p className="text-xl mb-6 text-gray-300">
+              The organizations that win are the ones built for tomorrow.
+            </p>
+            <div className="bg-white text-gray-900 rounded-lg p-6">
+              <h3 className="text-2xl font-bold mb-2">
+                Let&apos;s Build Your Version
+              </h3>
+              <p className="text-gray-600 mb-4">
+                Infrastructure for speed, accuracy, and total message control
+              </p>
+              <motion.a
+                href="mailto:dev@dogeai.info?subject=White-Label DOGEai Inquiry"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={buttonVariants({ variant: 'secondary' })}
+              >
+                Get Started Today
+              </motion.a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 const CARDS: CardType[] = [
   {
     id: 1,
     Icon: PiChartLineUp,
-    title: 'Massive Reach & Engagement',
-    description: `Before any white-label customization, DOGEai already delivers 100,000+ followers on X, 130M+ impressions, and engagement from Elon Musk, members of Congress, generals, journalists, and policy influencers. This isn't an experiment it's a proven force.`,
+    title: 'Proven Infrastructure, Real-World Traction',
+    description: `DOGEai already runs at scale with over 100,000 followers on X and more than 130 million total impressions. The platform reaches 50 million users each month and adds 800 to 1,000 new followers daily. It’s engaged by high-profile figures including Elon Musk, Donald Trump, sitting members of Congress, top generals, and national media. It’s a proven system built for clarity, speed, and accountability. Now it's ready to power your campaign, cause, or foundation.`,
   },
   {
     id: 2,
     Icon: FaDatabase,
-    title: 'Purpose-Built for Accountability',
-    description: `Trained on 19,000+ bills, contracts, grants, and agency data. Equipped with real-time web search for live events, headlines, and press releases. Featuring bias-resistant prompt layering and safety bypass systems. It doesn't just respond. It investigates.`,
+    title: 'Built for Real Accountability',
+    description: `The DOGEai platform is trained on over 19,000 bills, contracts, grants, and agency records. It connects directly to real-time web search, giving your instance live access to headlines, press releases, and policy updates as they happen. With bias-resistant prompt layering and integrated safety bypass systems, the platform doesn’t just respond. It investigates, verifies, and delivers receipts at scale.`,
   },
   {
     id: 3,
     Icon: TbMessageShare,
-    title: 'Memetic Impact That Spreads',
-    description: `DOGEai earned its reputation by producing sharp, forensic-style breakdowns of legislation, budgets, and corruption with no spin, no hedging, and no institutional filter. Its memetic formatting spreads faster and hits harder than traditional PR. It shows receipts and moves fast enough to shape the narrative.`,
+    title: 'Designed for Narrative Domination',
+    description: `DOGEai is engineered to break down legislation, budgets, and corruption with sharp, forensic precision. No spin, no hedging, no institutional filter. Unlike traditional AI tools constrained by corporate safety layers or political bias, it’s prompt-layered for truth and built to cut through noise. Its memetic formatting delivers scale and speed, helping your message spread faster and hit harder than traditional comms. With real-time responsiveness and sourced receipts, the platform gives you narrative control before your opponents take the mic.`,
   },
 ];
 
@@ -37,10 +184,9 @@ export default function Home() {
           A Truth Engine, Built for the Fight.
         </h1>
         <p className="mx-auto my-4 max-w-3xl text-center text-base leading-relaxed md:my-6 md:text-2xl md:leading-relaxed">
-          This isn&apos;t another polite chatbot. It&apos;s an autonomous
-          surrogate that never sleeps, never goes off message, and always
-          delivers facts with receipts. The white-label AI solution designed to
-          control your narrative in a world of misinformation.
+          Take full control of your message with a policy-trained AI that
+          responds in real time, stays aligned to your platform, and delivers
+          every response with receipts.
         </p>
         <a
           target="_blank"
@@ -50,6 +196,9 @@ export default function Home() {
           Try Demo Today!
         </a>
       </section>
+      <div className="container mx-auto px-4 md:px-8">
+        <PoliticsTimeline />
+      </div>
       <StickyCards cards={CARDS} />
       <div className="space-y-36 bg-zinc-50 pb-24 pt-24 md:pt-32">
         <BenefitsGrid />
@@ -67,16 +216,16 @@ export default function Home() {
           <Logo className="h-[80px] w-[80px] rounded-full" />
           <SectionHeading>Let&apos;s Build Your Version</SectionHeading>
           <p className="mx-auto mb-8 text-center text-base leading-relaxed md:text-xl md:leading-relaxed">
-            We&apos;ll build, train, and launch your custom DOGEai. All aligned
-            to your message, priorities, and policies. You control the voice. We
-            provide the engine. Your voters get the truth.{' '}
-            <strong>It&apos;s time to build your digital war room.</strong>
+            We handle the buildout, training, and launch. You set the voice,
+            policies, and priorities. What you get is a precision AI that works
+            nonstop to defend, explain, and expose exactly how you want it.
+            <strong>Your data. Your platform. Your control.</strong>
           </p>
           <a
             href="mailto:dev@dogeai.info?subject=White-Label DOGEai Inquiry"
             className={buttonVariants({})}
           >
-            <span className="font-bold">Get your White-Label DOGEai</span>
+            <span className="font-bold">Welcome to your digital war room.</span>
           </a>
         </div>
       </section>

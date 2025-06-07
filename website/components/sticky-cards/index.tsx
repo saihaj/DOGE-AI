@@ -63,7 +63,7 @@ const Card = ({
       )}
     >
       <card.Icon className="mb-4 text-4xl" />
-      <h3 className="mb-6 text-center text-4xl font-semibold md:text-6xl">
+      <h3 className="mb-6 text-center text-balance max-w-5xl text-4xl font-semibold md:text-6xl">
         {card.title}
       </h3>
       <p className="mb-8 max-w-lg text-center text-sm md:text-base">
