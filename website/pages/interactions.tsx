@@ -6,6 +6,7 @@ import { EmbeddedTweet } from 'react-tweet';
 import { getTweet, type Tweet } from 'react-tweet/api';
 
 const TWEETS = [
+  '1931117062472315145',
   '1894470350261686693',
   '1918588031587516895',
   '1889399538739302452',
