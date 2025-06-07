@@ -1,5 +1,3 @@
-import { Footer } from '@/components/footer';
-import { Navbar } from '@/components/nav';
 import Head from 'next/head';
 import pMap from 'p-map';
 import { EmbeddedTweet } from 'react-tweet';
@@ -104,13 +102,11 @@ export default function Page({ tweets }: { tweets: Array<Tweet> }) {
       <Head>
         <title>Loud, Clear, and Unignorable | DOGEai</title>
       </Head>
-      <Navbar />
-
       <main className="container mx-auto px-2 py-4">
         <h1 className="text-balance text-3xl md:text-5xl text-center font-semibold mb-2 md:mb-8">
           Not Just Noticed. Recognized.
         </h1>
-        <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
+        <div className="columns-1 sm:columns-2 md:columns-3 gap-4 light">
           {tweets.map((tweet, index) => (
             <div key={index} className="break-inside-avoid mb-2 [&>div]:!mt-0">
               <EmbeddedTweet tweet={tweet} />
@@ -118,8 +114,6 @@ export default function Page({ tweets }: { tweets: Array<Tweet> }) {
           ))}
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
