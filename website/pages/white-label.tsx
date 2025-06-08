@@ -17,7 +17,7 @@ const timelineEvents = [
     description:
       'Obama activated millions through Facebook, pioneering social media campaigning and changing political engagement forever.',
     icon: Users,
-    color: 'bg-blue-500',
+    color: 'bg-secondary',
   },
   {
     year: '2016',
@@ -51,12 +51,12 @@ function PoliticsTimeline() {
       {/* Header */}
       <div className="text-center mb-12">
         <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-          The Shift Already Happened
+          Campaigns Have Evolved
         </h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-          Campaigns aren&apos;t evolving. They&apos;ve evolved. Since 2008,
-          every cycle has moved away from traditional media and deeper into
-          real-time digital.
+          Campaigns aren&apos;t evolving. The shift has already happened. Since
+          2008, every cycle has moved away from traditional media and deeper
+          into real-time digital.
         </p>
       </div>
 
@@ -137,7 +137,8 @@ function PoliticsTimeline() {
                 Let&apos;s Build Your Version
               </h3>
               <p className="text-gray-600 mb-4">
-                Infrastructure for speed, accuracy, and total message control
+                White Label gives you the infrastructure to move with speed,
+                accuracy, and total message control.
               </p>
               <motion.a
                 href="mailto:dev@dogeai.info?subject=White-Label DOGEai Inquiry"
@@ -145,7 +146,7 @@ function PoliticsTimeline() {
                 whileTap={{ scale: 0.95 }}
                 className={buttonVariants({ variant: 'secondary' })}
               >
-                Get Started Today
+                Request a Quote
               </motion.a>
             </div>
           </div>
@@ -172,7 +173,7 @@ const CARDS: CardType[] = [
     id: 3,
     Icon: TbMessageShare,
     title: 'Designed for Narrative Domination',
-    description: `DOGEai is engineered to break down legislation, budgets, and corruption with sharp, forensic precision. No spin, no hedging, no institutional filter. Unlike traditional AI tools constrained by corporate safety layers or political bias, it’s prompt-layered for truth and built to cut through noise. Its memetic formatting delivers scale and speed, helping your message spread faster and hit harder than traditional comms. With real-time responsiveness and sourced receipts, the platform gives you narrative control before your opponents take the mic.`,
+    description: `The DOGEai platform is engineered to break down legislation, budgets, and corruption with sharp, forensic precision. No spin, no hedging, no institutional filter. Unlike traditional AI tools constrained by corporate safety layers or political bias, it’s prompt-layered for truth and built to cut through noise. Its memetic formatting delivers scale and speed, helping your message spread faster and hit harder than traditional comms. We customize your instance of DOGEai to match your tone, your policies, and your priorities. Every response reflects what you stand for. Fact-based, on-message, and unmistakably yours. With real-time responsiveness and sourced receipts, the platform puts you in control before your opponents take the mic.`,
   },
 ];
 
@@ -181,20 +182,31 @@ export default function Home() {
     <>
       <section className="relative flex flex-col items-center justify-center px-12 py-12 md:py-24">
         <h1 className="max-w-4xl text-center text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
-          A Truth Engine, Built for the Fight.
+          A Truth Engine, Built for the Fight
         </h1>
         <p className="mx-auto my-4 max-w-3xl text-center text-base leading-relaxed md:my-6 md:text-2xl md:leading-relaxed">
           Take full control of your message with a policy-trained AI that
           responds in real time, stays aligned to your platform, and delivers
-          every response with receipts.
+          every response with receipts. Backed by a proven track record of viral
+          accuracy and real-time impact, White Label aligns with your voice,
+          your data, and your goals. Move faster, stay sharper, and keep the
+          narrative fully in your control.
         </p>
-        <a
-          target="_blank"
-          href="https://dogeai.chat?utm_source=dogeai&utm_medium=media_networks&utm_campaign=demo_cta"
-          className={buttonVariants({ variant: 'secondary' })}
-        >
-          Try Demo Today!
-        </a>
+        <div className="flex gap-4">
+          <a
+            target="_blank"
+            href="https://dogeai.chat?utm_source=dogeai&utm_medium=media_networks&utm_campaign=demo_cta"
+            className={buttonVariants({ variant: 'secondary' })}
+          >
+            Live Demo
+          </a>
+          <a
+            href="mailto:dev@dogeai.info?subject=White-Label DOGEai Inquiry"
+            className={buttonVariants({ variant: 'outline' })}
+          >
+            Request a Quote
+          </a>
+        </div>
       </section>
       <div className="container mx-auto px-4 md:px-8">
         <PoliticsTimeline />
@@ -220,12 +232,14 @@ export default function Home() {
             policies, and priorities. What you get is a precision AI that works
             nonstop to defend, explain, and expose exactly how you want it.
             <strong>Your data. Your platform. Your control.</strong>
+            <br />
+            Welcome to your digital war room.
           </p>
           <a
             href="mailto:dev@dogeai.info?subject=White-Label DOGEai Inquiry"
             className={buttonVariants({})}
           >
-            <span className="font-bold">Welcome to your digital war room.</span>
+            <span className="font-bold">Request a Quote</span>
           </a>
         </div>
       </section>

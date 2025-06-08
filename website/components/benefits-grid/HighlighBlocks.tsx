@@ -15,7 +15,7 @@ export const HighlighBlocks = () => {
         Icon={FaLock}
         iconClassName="text-green-500"
         title="Policy-Locked AI"
-        subtitle="Speaks directly to your priorities. It defends your record, reinforces your message, and delivers sourced facts your supporters and stakeholders can trust."
+        subtitle="The platform speaks directly to your priorities. It defends your record, reinforces your message, and delivers sourced facts your supporters and stakeholders can trust."
       />
       <HighlightBlock
         Icon={FaShieldAlt}
@@ -45,7 +45,7 @@ export const HighlighBlocks = () => {
         Icon={IoIosRadio}
         iconClassName="text-purple-500"
         title="Your Strategic Edge"
-        subtitle="It operates as your press secretary, policy explainer, and opposition response engine. Fully aligned. Always on. Built to win the narrative."
+        subtitle="It is more than a tool. It operates as your press secretary, policy explainer, and opposition response engine. Fully aligned. Always on. Built to win the narrative."
       />
     </>
   );

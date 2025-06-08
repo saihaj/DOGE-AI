@@ -32,8 +32,8 @@ const NavLeft = () => {
       <Link prefetch href="/">
         <Logo className="h-[50px] w-[50px] rounded-full" />
       </Link>
-      <NavLink text="Stories" href="/interactions" />
-      <NavLink text="Your DOGEai" href="/white-label" />
+      <NavLink text="Recognition" href="/interactions" />
+      <NavLink text="White Label" href="/white-label" />
     </div>
   );
 };
@@ -70,7 +70,7 @@ const NavRight = ({
         whileTap={{ scale: 0.95 }}
         className={buttonVariants({ variant: 'secondary' })}
       >
-        Try Now
+        Live Demo
       </motion.a>
       <motion.button
         whileHover={{ scale: 1.05 }}
@@ -98,8 +98,8 @@ const NavMenu = ({
       animate={isOpen ? 'open' : 'closed'}
       className="z-10 absolute p-4 bg-white shadow-lg left-0 right-0 top-full origin-top flex flex-col gap-4"
     >
-      <MenuLink setIsOpen={setIsOpen} text="Stories" href="/interactions" />
-      <MenuLink setIsOpen={setIsOpen} text="Your DOGEai" href="/white-label" />
+      <MenuLink setIsOpen={setIsOpen} text="Recognition" href="/interactions" />
+      <MenuLink setIsOpen={setIsOpen} text="White Label" href="/white-label" />
     </motion.div>
   );
 };
