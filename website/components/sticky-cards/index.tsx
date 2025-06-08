@@ -66,7 +66,7 @@ const Card = ({
       <h3 className="mb-6 text-center text-balance max-w-5xl text-4xl font-semibold md:text-6xl">
         {card.title}
       </h3>
-      <p className="mb-8 max-w-lg text-center text-sm md:text-base">
+      <p className="mb-8 max-w-2xl text-center text-sm md:text-base">
         {card.description}
       </p>
     </motion.div>
