@@ -63,7 +63,7 @@ function PoliticsTimeline() {
       {/* Timeline */}
       <div className="relative">
         {/* Timeline line */}
-        <div className="absolute left-6 top-0 bottom-0 w-0.5 bg-gradient-to-b from-blue-500 to-orange-500"></div>
+        <div className="absolute left-6 top-0 bottom-36 md:bottom-20 w-0.5 bg-gradient-to-b from-blue-500 to-orange-500"></div>
 
         {/* Timeline events */}
         <div className="space-y-12">
