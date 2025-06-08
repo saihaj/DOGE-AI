@@ -33,7 +33,7 @@ const NavLeft = () => {
         <Logo className="h-[50px] w-[50px] rounded-full" />
       </Link>
       <NavLink text="Stories" href="/interactions" />
-      <NavLink text="Your DOGEai" href="/media-networks" />
+      <NavLink text="Your DOGEai" href="/white-label" />
     </div>
   );
 };
@@ -99,11 +99,7 @@ const NavMenu = ({
       className="z-10 absolute p-4 bg-white shadow-lg left-0 right-0 top-full origin-top flex flex-col gap-4"
     >
       <MenuLink setIsOpen={setIsOpen} text="Stories" href="/interactions" />
-      <MenuLink
-        setIsOpen={setIsOpen}
-        text="Your DOGEai"
-        href="/media-networks"
-      />
+      <MenuLink setIsOpen={setIsOpen} text="Your DOGEai" href="/white-label" />
     </motion.div>
   );
 };
