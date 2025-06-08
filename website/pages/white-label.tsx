@@ -81,8 +81,8 @@ function PoliticsTimeline() {
                 {/* Content */}
                 <div className="ml-8 flex-1">
                   <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-300">
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-2xl font-bold text-gray-900">
+                    <div className="flex items-start gap-3 mb-3">
+                      <span className="text-xl text-gray-900">
                         {event.year}
                       </span>
                       <h3 className="text-xl font-semibold text-gray-900">
