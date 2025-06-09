@@ -18,7 +18,7 @@ export const FlipNavbar = () => {
 const FlipNav = () => {
   const [isOpen, setIsOpen] = useState(false);
   return (
-    <nav className="bg-white p-4 flex items-center justify-between relative">
+    <nav className="bg-white py-4 px-2 md:px-0 flex items-center justify-between relative">
       <NavLeft />
       <NavRight setIsOpen={setIsOpen} />
       <NavMenu isOpen={isOpen} setIsOpen={setIsOpen} />

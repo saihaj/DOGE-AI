@@ -18,6 +18,7 @@ import {
 import { FiTarget, FiZap } from 'react-icons/fi';
 import { RiTwitterXLine } from 'react-icons/ri';
 import { TbFocus2, TbTrendingUp } from 'react-icons/tb';
+import Image from 'next/image';
 
 function CongressCard({
   number,
@@ -140,52 +141,62 @@ export default function Home() {
   return (
     <main>
       <Seo />
-      <section className="relative flex flex-col items-center justify-center md:px-12 px-6 py-20 md:py-24">
-        <h1 className="max-w-4xl text-center text-balance text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
-          Forget Tools. Forget Platforms.
-        </h1>
+      <section className="container md:px-0 px-2 py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 items-center gap-8 mx-auto">
+        <div className="relative flex flex-col items-start justify-center">
+          <h1 className="max-w-4xl text-left text-pretty text-4xl font-black md:text-6xl">
+            Forget Tools. Forget Platforms.
+          </h1>
 
-        <h2 className="font-semibold text-2xl text-center md:text-3xl my-2 md:my-6">
-          Meet{' '}
-          <span className="bg-gradient-america bg-clip-text text-transparent">
-            DOGEai
-          </span>
-          . Your Weapon.
-        </h2>
+          <h2 className="font-semibold text-2xl text-center md:text-3xl my-2 md:my-6">
+            Meet{' '}
+            <span className="bg-gradient-america bg-clip-text text-transparent">
+              DOGEai
+            </span>
+            . Your Weapon.
+          </h2>
 
-        <p className="mx-auto max-w-2xl text-center md:text-2xl text-md mb-4 md:mb-6">
-          This isn&apos;t another polite chatbot. It&apos;s the autonomous
-          watchdog built to rip the mask off DC&apos;s dysfunction. Fueled by
-          raw data, engineered for truth, and ready to expose the rot. Get ready
-          to interrogate the system.
-        </p>
-        <div className="flex gap-4">
-          <a
-            target="_blank"
-            href="https://x.com/dogeai_gov"
-            className={buttonVariants({ variant: 'secondary' })}
-            onClick={() =>
-              sendGAEvent('event', 'button_clicked', {
-                value: 'X Follow',
-                screen: 'homepage',
-              })
-            }
-          >
-            Follow on <RiTwitterXLine className="-ml-1" />
-          </a>
-          <a
-            target="_blank"
-            href="https://dogeai.chat?utm_source=dogeai&utm_medium=homepage&utm_campaign=chat"
-            className={buttonVariants({ variant: 'outline' })}
-            onClick={() =>
-              sendGAEvent('event', 'button_clicked', {
-                value: 'demo',
-                screen: 'homepage',
-              })
-            }
-          >
-            Live Demo
-          </a>
+          <p className="max-w-2xl text-left md:text-2xl text-md mb-4 md:mb-6">
+            This isn&apos;t another polite chatbot. It&apos;s the autonomous
+            watchdog built to rip the mask off DC&apos;s dysfunction. Fueled by
+            raw data, engineered for truth, and ready to expose the rot. Get
+            ready to interrogate the system.
+          </p>
+          <div className="flex gap-4">
+            <a
+              target="_blank"
+              href="https://x.com/dogeai_gov"
+              className={buttonVariants({ variant: 'secondary' })}
+              onClick={() =>
+                sendGAEvent('event', 'button_clicked', {
+                  value: 'X Follow',
+                  screen: 'homepage',
+                })
+              }
+            >
+              Follow on <RiTwitterXLine className="-ml-1" />
+            </a>
+            <a
+              target="_blank"
+              href="https://dogeai.chat?utm_source=dogeai&utm_medium=homepage&utm_campaign=chat"
+              className={buttonVariants({ variant: 'outline' })}
+              onClick={() =>
+                sendGAEvent('event', 'button_clicked', {
+                  value: 'demo',
+                  screen: 'homepage',
+                })
+              }
+            >
+              Live Demo
+            </a>
+          </div>
+        </div>
+        <div className="relative mx-auto w-full h-[420px] md:w-full md:h-[520px]">
+          <Image
+            alt="hero image"
+            src="/images/hero-2.jpeg"
+            fill
+            loading="eager"
+          />
         </div>
       </section>
 
