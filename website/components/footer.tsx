@@ -2,6 +2,7 @@ import { RiGithubFill, RiTwitterXLine } from '@remixicon/react';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { sendGAEvent } from '@next/third-parties/google';
+import PayPalDonate from './donate';
 
 export function Footer() {
   return (
@@ -30,6 +31,7 @@ export function Footer() {
               <span className="md:block hidden">Follow</span>
             </Link>
           </Button>
+
           <Button variant="outline" asChild size="sm">
             <Link
               target="_blank"
@@ -47,6 +49,7 @@ export function Footer() {
               <span className="md:block hidden">Contribute</span>
             </Link>
           </Button>
+          <PayPalDonate />
         </div>
       </div>
     </footer>
