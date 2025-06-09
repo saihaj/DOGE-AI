@@ -4,14 +4,8 @@ import { SectionSubheading } from '@/components/shared/SectionSubheading';
 import { CardType, StickyCards } from '@/components/sticky-cards';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { useCopyToClipboard } from '@uidotdev/usehooks';
-import {
-  motion,
-  useScroll,
-  useSpring,
-  useTransform,
-  useVelocity,
-} from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { motion } from 'motion/react';
+import { useEffect, useState } from 'react';
 import {
   FaAnchor,
   FaClock,
@@ -19,7 +13,7 @@ import {
   FaShieldAlt,
   FaTerminal,
 } from 'react-icons/fa';
-import { FiArrowDown, FiTarget, FiZap } from 'react-icons/fi';
+import { FiTarget, FiZap } from 'react-icons/fi';
 import { TbFocus2, TbTrendingUp } from 'react-icons/tb';
 
 function CongressCard({
