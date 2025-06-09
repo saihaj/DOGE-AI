@@ -1,5 +1,4 @@
 import { Seo } from '@/components/seo';
-import Head from 'next/head';
 import pMap from 'p-map';
 import { EmbeddedTweet } from 'react-tweet';
 import { getTweet, type Tweet } from 'react-tweet/api';
