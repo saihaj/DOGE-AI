@@ -225,7 +225,7 @@ export default function Home() {
         <PoliticsTimeline />
       </div>
       <StickyCards cards={CARDS} />
-      <div className="space-y-36 bg-zinc-50 pb-24 pt-24 md:pt-32">
+      <div className="md:space-y-32 space-y-20 bg-zinc-50 py-20 md:py-32">
         <BenefitsGrid />
         <Stats />
       </div>
