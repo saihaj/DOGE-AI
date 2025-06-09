@@ -84,19 +84,19 @@ function Input({
 
 const SUGGESTED_PROMPTS = [
   {
-    value: `What's in H.R. 4671?`,
-  },
-  {
-    value: 'Which agencies are giving out the most duplicative grants',
+    value: `What's in H.R. 1?`,
   },
   {
     value: 'Give me 3 recent bills',
   },
   {
-    value: 'What is the save act?',
+    value: 'Will DOGE cuts be permanent?',
   },
   {
-    value: 'How much has DOGE saved so far?',
+    value: "What is the current status of Trump's Tariffs?",
+  },
+  {
+    value: 'Why are federal judges blocking Trump?',
   },
 ];
 
