@@ -64,7 +64,7 @@ function PoliticsTimeline() {
         <div className="absolute left-6 top-0 bottom-36 md:bottom-20 w-0.5 bg-secondary"></div>
 
         {/* Timeline events */}
-        <div className="space-y-12">
+        <div className="space-y-6 md:space-y-10">
           {timelineEvents.map(event => {
             const IconComponent = event.icon;
             return (
@@ -75,9 +75,9 @@ function PoliticsTimeline() {
                 </div>
 
                 {/* Content */}
-                <div className="ml-8 flex-1">
-                  <div className="bg-white rounded-lg shadow-md border border-gray-200 p-6 hover:shadow-lg transition-shadow duration-300">
-                    <div className="flex items-start gap-3 mb-3">
+                <div className="ml-4 md:ml-8 flex-1">
+                  <div className="bg-white rounded-lg shadow-md border border-gray-200 p-4 md:p-6 hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex items-start gap-2 mb-2">
                       <span className="text-xl text-gray-900">
                         {event.year}
                       </span>
