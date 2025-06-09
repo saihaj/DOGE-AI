@@ -161,19 +161,19 @@ const CARDS: CardType[] = [
     id: 1,
     Icon: PiChartLineUp,
     title: 'Proven Infrastructure, Real-World Traction',
-    description: `DOGEai already runs at scale with over 100,000 followers on X and more than 130 million total impressions. The platform reaches 50 million users each month and adds 800 to 1,000 new followers daily. It’s engaged by high-profile figures including Elon Musk, Donald Trump, sitting members of Congress, top generals, and national media. It’s a proven system built for clarity, speed, and accountability. Now it's ready to power your campaign, cause, or foundation.`,
+    description: `DOGEai already runs at scale with over 110,000 followers on X and more than 175 million total impressions. It reaches 50 million users each month and adds 800 to 1,000 new followers daily. The platform drives engagement from high-profile figures including Elon Musk, Donald Trump, sitting members of Congress, top generals, and national media. White Label is built on that same proven system and is ready to power your campaign, cause, foundation, or mission.`,
   },
   {
     id: 2,
     Icon: FaDatabase,
     title: 'Built for Real Accountability',
-    description: `The DOGEai platform is trained on over 19,000 bills, contracts, grants, and agency records. It connects directly to real-time web search, giving your instance live access to headlines, press releases, and policy updates as they happen. With bias-resistant prompt layering and integrated safety bypass systems, the platform doesn’t just respond. It investigates, verifies, and delivers receipts at scale.`,
+    description: `White Label is trained on over 19,000 bills, contracts, grants, and agency records. It connects directly to real-time web search, giving your AI live access to headlines, press releases, and policy updates as they happen. With bias-resistant prompt layering and safety bypass systems, the platform doesn’t just respond. It investigates, verifies, and delivers receipts at scale.`,
   },
   {
     id: 3,
     Icon: TbMessageShare,
     title: 'Designed for Narrative Domination',
-    description: `The DOGEai platform is engineered to break down legislation, budgets, and corruption with sharp, forensic precision. No spin, no hedging, no institutional filter. Unlike traditional AI tools constrained by corporate safety layers or political bias, it’s prompt-layered for truth and built to cut through noise. Its memetic formatting delivers scale and speed, helping your message spread faster and hit harder than traditional comms. We customize your instance of DOGEai to match your tone, your policies, and your priorities. Every response reflects what you stand for. Fact-based, on-message, and unmistakably yours. With real-time responsiveness and sourced receipts, the platform puts you in control before your opponents take the mic.`,
+    description: `White Label breaks down bills, budgets, and misinformation with forensic precision. Unlike traditional AI constrained by corporate safety layers or bias, it’s prompt-layered for truth and built to cut through noise. Memetic formatting drives speed and scale. Each instance is customized to your tone, policies, and priorities. With real-time answers and sourced receipts, you stay in control before opponents take the mic. Fact-based, on-message, and unmistakably yours.`,
   },
 ];
 
@@ -185,12 +185,9 @@ export default function Home() {
           A Truth Engine, Built for the Fight
         </h1>
         <p className="mx-auto my-4 max-w-3xl text-center text-base leading-relaxed md:my-6 md:text-2xl md:leading-relaxed">
-          Take full control of your message with a policy-trained AI that
-          responds in real time, stays aligned to your platform, and delivers
-          every response with receipts. Backed by a proven track record of viral
-          accuracy and real-time impact, White Label aligns with your voice,
-          your data, and your goals. Move faster, stay sharper, and keep the
-          narrative fully in your control.
+          Take control of your message with White Label, a real-time,
+          policy-trained AI that stays on-message, delivers receipts, and aligns
+          with your platform. Your voice, your data, your narrative.
         </p>
         <div className="flex gap-4">
           <a
@@ -229,8 +226,9 @@ export default function Home() {
           <SectionHeading>Let&apos;s Build Your Version</SectionHeading>
           <p className="mx-auto mb-8 text-center text-base leading-relaxed md:text-xl md:leading-relaxed">
             We handle the buildout, training, and launch. You set the voice,
-            policies, and priorities. What you get is a precision AI that works
-            nonstop to defend, explain, and expose exactly how you want it.
+            policies, and priorities. What you get is a precision AI that
+            defends, explains, and exposes - nonstop, on-message, and exactly
+            how you want it.{' '}
             <strong>Your data. Your platform. Your control.</strong>
             <br />
             Welcome to your digital war room.

@@ -15,19 +15,19 @@ export const HighlighBlocks = () => {
         Icon={FaLock}
         iconClassName="text-green-500"
         title="Policy-Locked AI"
-        subtitle="The platform speaks directly to your priorities. It defends your record, reinforces your message, and delivers sourced facts your supporters and stakeholders can trust."
+        subtitle="The White Label platform speaks directly to your priorities. It defends your record, reinforces your message, and delivers sourced facts your supporters and stakeholders can trust."
       />
       <HighlightBlock
         Icon={FaShieldAlt}
         iconClassName="text-pink-500"
         title="Misinformation Countermeasures"
-        subtitle="Get ahead of falsehoods before they spread. DOGEai responds instantly with data, timestamps, and source links. Every reply is formatted for engagement and built to spread."
+        subtitle="Get ahead of falsehoods before they spread. White Label responds instantly with data, timestamps, and source links. Every reply is formatted for engagement and built to spread."
       />
       <HighlightBlock
         Icon={FaClock}
         iconClassName="text-blue-500"
         title="24/7 Surrogate"
-        subtitle="The platform never sleeps, never strays off message, and always responds with receipts. While your team rests, DOGEai stays active and aligned."
+        subtitle="The platform never sleeps, never strays off message, and always responds with receipts. While your team rests, White Label stays active and aligned."
       />
       <HighlightBlock
         Icon={IoIosPeople}
@@ -39,13 +39,13 @@ export const HighlighBlocks = () => {
         Icon={GrIntegration}
         iconClassName="text-zinc-500"
         title="Seamless Deployment"
-        subtitle="Integrates into your site with full control over branding, tone, and content. No technical lift required. Our team handles setup, training, and refinement."
+        subtitle="White Label integrates into your site with full control over branding, tone, and content. No technical lift required. Our team handles setup, training, and refinement."
       />
       <HighlightBlock
         Icon={IoIosRadio}
         iconClassName="text-purple-500"
         title="Your Strategic Edge"
-        subtitle="It is more than a tool. It operates as your press secretary, policy explainer, and opposition response engine. Fully aligned. Always on. Built to win the narrative."
+        subtitle="White Label is more than a tool. It serves as your press secretary, policy explainer, and opposition-response engine. Always aligned. Always on. Built to win the narrative."
       />
     </>
   );

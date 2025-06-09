@@ -15,12 +15,11 @@ export const BenefitsGrid = () => {
       className="relative mx-auto grid max-w-6xl grid-cols-3 gap-4 px-2 md:px-4"
     >
       <div className="col-span-3">
-        <SectionHeading>
-          Why the DOGEai Platform Belongs in Your Stack
-        </SectionHeading>
+        <SectionHeading>Why White Label Belongs in Your Stack</SectionHeading>
         <SectionSubheading>
-          Most tools play it safe. DOGEai doesn’t. It preempts, verifies, and
-          holds the line so you control the narrative before it’s even written.
+          Most tools play it safe. White Label doesn’t. It preempts, verifies,
+          and holds the line so you control the narrative before it’s even
+          written.
         </SectionSubheading>
       </div>
       <HighlighBlocks />
