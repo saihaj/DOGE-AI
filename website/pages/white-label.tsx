@@ -1,5 +1,6 @@
 import { BenefitsGrid } from '@/components/benefits-grid/BenefitsGrid';
 import { Logo } from '@/components/logo';
+import { Seo } from '@/components/seo';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Stats } from '@/components/stats/Stats';
 import { CardType, StickyCards } from '@/components/sticky-cards';
@@ -172,6 +173,10 @@ const CARDS: CardType[] = [
 export default function Home() {
   return (
     <>
+      <Seo
+        title="Win the digital fight | DOGEai"
+        description="Real-time AI for narrative control. Custom, policy-trained, counters misinformation."
+      />
       <section className="relative flex flex-col items-center justify-center px-12 py-12 md:py-24">
         <h1 className="max-w-4xl text-center text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
           A Truth Engine, Built for the Fight

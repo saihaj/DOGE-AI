@@ -1,4 +1,5 @@
 import { HighlightBlock } from '@/components/benefits-grid/HighlighBlocks';
+import { Seo } from '@/components/seo';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { SectionSubheading } from '@/components/shared/SectionSubheading';
 import { CardType, StickyCards } from '@/components/sticky-cards';
@@ -136,6 +137,7 @@ export default function Home() {
 
   return (
     <main>
+      <Seo />
       <section className="relative flex flex-col items-center justify-center px-12 py-12 md:py-24">
         <h1 className="max-w-4xl text-center text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
           Forget Tools. Forget Platforms.

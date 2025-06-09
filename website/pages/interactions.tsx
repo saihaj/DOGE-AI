@@ -1,3 +1,4 @@
+import { Seo } from '@/components/seo';
 import Head from 'next/head';
 import pMap from 'p-map';
 import { EmbeddedTweet } from 'react-tweet';
@@ -99,9 +100,10 @@ export async function getStaticProps() {
 export default function Page({ tweets }: { tweets: Array<Tweet> }) {
   return (
     <div className="min-h-screen container mx-auto px-4 py-5" role="main">
-      <Head>
-        <title>Loud, Clear, and Unignorable | DOGEai</title>
-      </Head>
+      <Seo
+        title="Loud, Clear, and Unignorable | DOGEai"
+        description="DOGEai is not just noticed, but recognized. Explore the impact of DOGEai across the world with our curated collection of tweets."
+      />
       <main className="container mx-auto px-2 py-4">
         <h1 className="text-balance text-3xl md:text-5xl text-center font-semibold mb-2 md:mb-8">
           Not Just Noticed. Recognized.
