@@ -261,7 +261,7 @@ export default function Home() {
           <span className="font-semibold">June 02, 2025</span>
         </time>
 
-        <div className="grid md:grid-cols-2 gap-4 w-full mb-10">
+        <div className="grid md:grid-cols-2 gap-4 w-full mb-10 px-2 md:px-4">
           <CongressCard
             number={118}
             total={15746}

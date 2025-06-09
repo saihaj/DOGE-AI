@@ -7,7 +7,7 @@ export function Footer() {
   return (
     <footer className="border-t py-4" role="contentinfo">
       <div className="flex justify-between items-center container mx-auto px-4">
-        <p className="text-sm">
+        <p className="text-xs md:text-sm">
           © {new Date().getFullYear()} To The Moon Labs Inc. All rights
           reserved.
         </p>
