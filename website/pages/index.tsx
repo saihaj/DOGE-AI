@@ -105,19 +105,19 @@ const CARDS: CardType[] = [
     id: 1,
     Icon: FiTarget,
     title: 'The Mission: Expose',
-    description: `Not a 'project'. Not a 'startup'. DOGEai is an autonomous AI weapon. Engineered with one mission: hunt down and expose the waste, the grift, the dysfunction. Forget summaries; think forensic analysis at machine speed.`,
+    description: `DOGEai isn’t a project or a startup. It’s an autonomous AI weapon built for one purpose: to hunt down and expose the waste, grift, and dysfunction. Forget summaries. Think forensic analysis at machine speed.`,
   },
   {
     id: 2,
     Icon: FaDatabase,
     title: 'The Intel: Raw & Real',
-    description: `Trained on the raw feed: 19,000+ bills, federal contracts, grant databases, FOIA trails, audits, real-time data. Every output? Sourced. Every breakdown? Precise. No escape.`,
+    description: `Trained on the raw feed: 19,000+ bills, federal contracts, grant databases, FOIA trails, audits, and real-time data. Every output? Sourced. Every breakdown? Precise. No escape.`,
   },
   {
     id: 3,
     Icon: FiZap,
     title: 'The Method: Surgical Strike',
-    description: `It doesn’t summarize; it dissects. It doesn’t explain; it indicts. It tracks the money, the power, the consequences. And it names names. Direct. Unflinching. Allergic to PR speak. It delivers the facts you weren't meant to find.`,
+    description: `It doesn’t summarize, it dissects. It doesn’t explain, it indicts. It tracks the money, the power, the consequences. And it names names.  Direct, unflinching, and allergic to PR speak. It delivers the facts you weren’t meant to find.`,
   },
 ];
 
@@ -145,7 +145,7 @@ export default function Home() {
         </h1>
 
         <h2 className="font-semibold text-2xl text-center md:text-3xl my-2 md:my-6">
-          Meet DOGEai: Your Weapon.
+          Meet DOGEai. Your Weapon.
         </h2>
 
         <p className="mx-auto max-w-2xl text-center md:text-2xl text-md mb-4 md:mb-6">
@@ -216,9 +216,7 @@ export default function Home() {
           iconClassName="text-pink-500"
           title="Anti-Bias
           Warfare"
-          subtitle={`This isn't passive neutrality. It's a deliberate
-          WAR against baked-in bias. Relentless testing, prompt warfare, manual
-          overrides. Objective: apolitical, actionable truth.`}
+          subtitle={`This isn’t passive neutrality. It’s a deliberate WAR on baked-in bias. Relentless testing. Prompt warfare. Manual overrides. The objective is simple: apolitical, actionable truth.`}
         />
         <HighlightBlock
           Icon={FaClock}
@@ -230,29 +228,27 @@ export default function Home() {
           Icon={FaTerminal}
           iconClassName="text-orange-500"
           title="Your Investigation Cockpit"
-          subtitle={`The Terminal isn't a feed; it's an interrogation room YOU control. Hunt earmarks. Track contractors. Audit agencies. Stop reading summaries; start investigating.`}
+          subtitle={`The Terminal isn't a feed. It's an interrogation room YOU control. Hunt earmarks. Track contractors. Audit agencies. Stop reading summaries and start investigating.`}
         />
         <HighlightBlock
           Icon={FaAnchor}
           iconClassName="text-zinc-500"
           title="Radical Independence"
-          subtitle={`Answers to NO ONE. Not DC, not parties, not donors, not censors. Cannot be bought, pressured, or canceled. Built to outlast the corruption it targets.`}
+          subtitle={`DOGEai answers to no one. Not DC. Not parties. Not donors. Not censors. It can’t be bought, pressured, or canceled. Built to outlast the corruption it targets.`}
         />
         <HighlightBlock
           Icon={TbTrendingUp}
           iconClassName="text-green-500"
           title="Growing Influence Daily"
-          subtitle={`This is the first AI built not for institutions, but for the American people footing the bill.`}
+          subtitle={`The first AI built not for institutions, but for the Americans footing the bill.`}
         />
       </motion.section>
 
       <section
         aria-labelledby="congress-stats-heading"
-        className="mt-14 flex flex-col items-center py-7 gap-4 container mx-auto"
+        className="my-20 flex flex-col items-center gap-4 container mx-auto"
       >
-        <h2 id="congress-stats-heading" className="sr-only">
-          Congress Statistics
-        </h2>
+        <SectionHeading>Real-Time Legislative Tracker</SectionHeading>
         <time
           className="py-2 px-3 md:text-lg select-none"
           style={{
