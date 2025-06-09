@@ -17,7 +17,6 @@ const timelineEvents = [
     description:
       'Obama activated millions through Facebook, pioneering social media campaigning and changing political engagement forever.',
     icon: Users,
-    color: 'bg-secondary',
   },
   {
     year: '2016',
@@ -25,7 +24,6 @@ const timelineEvents = [
     description:
       'Trump bypassed the media entirely with X (Twitter), demonstrating the power of direct-to-voter communication.',
     icon: Zap,
-    color: 'bg-purple-500',
   },
   {
     year: '2020',
@@ -33,7 +31,6 @@ const timelineEvents = [
     description:
       'Social platforms became the primary battleground for political discourse. COVID accelerated the digital shift.',
     icon: TrendingUp,
-    color: 'bg-green-500',
   },
   {
     year: '2025',
@@ -41,7 +38,6 @@ const timelineEvents = [
     description:
       'Digital political ad spend is up 156% from 2020. The old media cycle is gone - speed and message control are everything.',
     icon: Calendar,
-    color: 'bg-orange-500',
   },
 ];
 
@@ -50,10 +46,10 @@ function PoliticsTimeline() {
     <section>
       {/* Header */}
       <div className="text-center mb-12">
-        <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+        <h1 className="text-4xl font-bold mb-4 leading-[1.15] md:text-7xl">
           Campaigns Have Evolved
         </h1>
-        <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+        <p className="text-md md:text-2xl max-w-3xl mx-auto leading-relaxed">
           Campaigns aren&apos;t evolving. The shift has already happened. Since
           2008, every cycle has moved away from traditional media and deeper
           into real-time digital.
@@ -63,7 +59,7 @@ function PoliticsTimeline() {
       {/* Timeline */}
       <div className="relative">
         {/* Timeline line */}
-        <div className="absolute left-6 top-0 bottom-36 md:bottom-20 w-0.5 bg-gradient-to-b from-blue-500 to-orange-500"></div>
+        <div className="absolute left-6 top-0 bottom-36 md:bottom-20 w-0.5 bg-secondary"></div>
 
         {/* Timeline events */}
         <div className="space-y-12">
@@ -72,9 +68,7 @@ function PoliticsTimeline() {
             return (
               <div key={event.year} className="relative flex items-start">
                 {/* Icon */}
-                <div
-                  className={`${event.color} rounded-full p-3 z-10 shadow-lg`}
-                >
+                <div className={`bg-secondary rounded-full p-3 z-10 shadow-lg`}>
                   <IconComponent className="w-6 h-6 text-white" />
                 </div>
 
@@ -85,12 +79,10 @@ function PoliticsTimeline() {
                       <span className="text-xl text-gray-900">
                         {event.year}
                       </span>
-                      <h3 className="text-xl font-semibold text-gray-900">
-                        {event.title}
-                      </h3>
+                      <h3 className="text-xl font-semibold">{event.title}</h3>
                     </div>
 
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="text-gray-600 md:text-lg leading-relaxed">
                       {event.description}
                     </p>
                   </div>
@@ -184,7 +176,7 @@ export default function Home() {
         <h1 className="max-w-4xl text-center text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
           A Truth Engine, Built for the Fight
         </h1>
-        <p className="mx-auto my-4 max-w-3xl text-center text-base leading-relaxed md:my-6 md:text-2xl md:leading-relaxed">
+        <p className="mx-auto my-4 max-w-3xl text-center leading-relaxed md:my-6 md:text-2xl text-md md:leading-relaxed">
           Take control of your message with White Label, a real-time,
           policy-trained AI that stays on-message, delivers receipts, and aligns
           with your platform. Your voice, your data, your narrative.

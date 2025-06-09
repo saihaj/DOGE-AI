@@ -62,11 +62,11 @@ const Card = ({
         isOddCard ? 'bg-primary' : 'bg-white',
       )}
     >
-      <card.Icon className="mb-4 text-4xl" />
-      <h3 className="mb-6 text-center text-balance max-w-5xl text-4xl font-semibold md:text-6xl">
+      <card.Icon className="mb-4 text-6xl" />
+      <h3 className="mb-6 text-center text-balance max-w-5xl text-3xl font-semibold md:text-5xl">
         {card.title}
       </h3>
-      <p className="mb-8 max-w-2xl text-center text-sm md:text-base">
+      <p className="mb-8 max-w-3xl text-center text-md md:text-lg">
         {card.description}
       </p>
     </motion.div>
