@@ -1,4 +1,5 @@
 import { HighlightBlock } from '@/components/benefits-grid/HighlighBlocks';
+import { Logo } from '@/components/logo';
 import { Seo } from '@/components/seo';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { SectionSubheading } from '@/components/shared/SectionSubheading';
@@ -145,7 +146,11 @@ export default function Home() {
         </h1>
 
         <h2 className="font-semibold text-2xl text-center md:text-3xl my-2 md:my-6">
-          Meet DOGEai. Your Weapon.
+          Meet{' '}
+          <span className="bg-gradient-america bg-clip-text text-transparent">
+            DOGEai
+          </span>
+          . Your Weapon.
         </h2>
 
         <p className="mx-auto max-w-2xl text-center md:text-2xl text-md mb-4 md:mb-6">

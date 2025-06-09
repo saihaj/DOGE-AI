@@ -30,7 +30,12 @@ const NavLeft = () => {
   return (
     <div className="flex items-center gap-6">
       <Link prefetch href="/">
-        <Logo className="h-[50px] w-[50px] rounded-full" />
+        <div className="flex items-center">
+          <Logo height={40} width={40} className="rounded-full" />
+          <span className="text-2xl ml-2 font-bold bg-gradient-america text-transparent bg-clip-text">
+            DOGEai
+          </span>
+        </div>
       </Link>
       <NavLink text="Recognition" href="/interactions" />
       <NavLink text="White Label" href="/white-label" />

@@ -96,7 +96,7 @@ function PoliticsTimeline() {
       </div>
 
       {/* Key Statistics */}
-      <div className="my-16 bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 text-white">
+      <div className="mt-16 bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 text-white">
         <div className="grid md:grid-cols-2 gap-8 items-center">
           <div>
             <h2 className="text-3xl font-bold mb-4">
@@ -123,9 +123,6 @@ function PoliticsTimeline() {
             </div>
           </div>
           <div className="text-center md:text-right">
-            <p className="text-xl mb-6 text-gray-300">
-              The organizations that win are the ones built for tomorrow.
-            </p>
             <div className="bg-white text-gray-900 rounded-lg p-6">
               <h3 className="text-2xl font-bold mb-2">
                 Let&apos;s Build Your Version
@@ -152,6 +149,10 @@ function PoliticsTimeline() {
           </div>
         </div>
       </div>
+      <blockquote className="text-2xl italic font-semibold text-center my-10">
+        &ldquo;The organizations that win are the ones built for
+        tomorrow.&rdquo;
+      </blockquote>
     </section>
   );
 }
@@ -160,7 +161,7 @@ const CARDS: CardType[] = [
   {
     id: 1,
     Icon: PiChartLineUp,
-    title: 'Proven Infrastructure, Real-World Traction',
+    title: 'Proven Infrastructure. Real-World Traction.',
     description: `DOGEai already runs at scale with over 110,000 followers on X and more than 175 million total impressions. It reaches 50 million users each month and adds 800 to 1,000 new followers daily. The platform drives engagement from high-profile figures including Elon Musk, Donald Trump, sitting members of Congress, top generals, and national media. White Label is built on that same proven system and is ready to power your campaign, cause, foundation, or mission.`,
   },
   {
@@ -185,8 +186,8 @@ export default function Home() {
         description="Real-time AI for narrative control. Custom, policy-trained, counters misinformation."
       />
       <section className="relative flex flex-col items-center justify-center px-6 md:px-12 py-20 md:py-24">
-        <h1 className="max-w-4xl text-center text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
-          A Truth Engine, Built for the Fight
+        <h1 className="max-w-4xl text-center text-balance text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
+          A Truth Engine. Built for the Fight.
         </h1>
         <p className="mx-auto my-4 max-w-3xl text-center leading-relaxed md:my-6 md:text-2xl text-md md:leading-relaxed">
           Take control of your message with White Label, a real-time,
@@ -240,14 +241,15 @@ export default function Home() {
         <div className="mx-auto flex max-w-5xl flex-col items-center">
           <Logo className="h-[80px] w-[80px] rounded-full" />
           <SectionHeading>Let&apos;s Build Your Version</SectionHeading>
-          <p className="mx-auto mb-8 text-center text-base leading-relaxed md:text-xl md:leading-relaxed">
+          <p className="mx-auto mb-8 flex gap-2 flex-col max-w-2xl text-pretty text-center text-base leading-relaxed md:text-xl md:leading-relaxed">
             We handle the buildout, training, and launch. You set the voice,
             policies, and priorities. What you get is a precision AI that
             defends, explains, and exposes - nonstop, on-message, and exactly
-            how you want it.{' '}
-            <strong>Your data. Your platform. Your control.</strong>
-            <br />
-            Welcome to your digital war room.
+            how you want it.
+            <div className="font-bold text-2xl">
+              Your data. Your platform. Your control.
+            </div>
+            <div>Welcome to your digital war room.</div>
           </p>
           <a
             href="mailto:dev@dogeai.info?subject=White-Label DOGEai Inquiry"

@@ -103,10 +103,12 @@ export default function Page({ tweets }: { tweets: Array<Tweet> }) {
         title="Loud, Clear, and Unignorable | DOGEai"
         description="DOGEai is not just noticed, but recognized. Explore the impact of DOGEai across the world with our curated collection of tweets."
       />
-      <main className="container mx-auto px-2 py-4">
-        <h1 className="text-balance text-3xl md:text-5xl text-center font-semibold mb-2 md:mb-8">
+      <section className="relative flex flex-col items-center justify-center md:px-12 px-6 py-16 md:py-20">
+        <h1 className="max-w-4xl text-center text-balance text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
           Not Just Noticed. Recognized.
         </h1>
+      </section>
+      <main className="container mx-auto px-2">
         <div className="columns-1 sm:columns-2 md:columns-3 gap-4 light">
           {tweets.map((tweet, index) => (
             <div key={index} className="break-inside-avoid mb-2 [&>div]:!mt-0">
