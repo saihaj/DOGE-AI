@@ -165,8 +165,8 @@ importers:
         specifier: ^1.2.12
         version: 1.2.12(react@19.1.0)(zod@3.24.4)
       '@opennextjs/cloudflare':
-        specifier: ^1.0.4
-        version: 1.0.4(wrangler@4.17.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+        specifier: ^1.2.1
+        version: 1.2.1(wrangler@4.17.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@privy-io/react-auth':
         specifier: ^2.14.0
         version: 2.14.0(@solana/spl-token@0.4.13(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.7.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.2(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.7.3)(utf-8-validate@5.0.10))(@types/react@19.1.6)(aws4fetch@1.0.20)(bs58@6.0.0)(bufferutil@4.0.9)(ioredis@5.6.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(typescript@5.7.3)(use-sync-external-store@1.5.0(react@19.1.0))(utf-8-validate@5.0.10)(zod@3.24.4)
@@ -2870,15 +2870,15 @@ packages:
     engines: {node: '>=10'}
     deprecated: This functionality has been moved to @npmcli/fs
 
-  '@opennextjs/aws@3.6.2':
-    resolution: {integrity: sha512-26/3GSoj7mKN7XpQFikYM2Lrwal5jlMc4fJO//QAdd5bCSnBaWBAkzr7+VvXAFVIC6eBeDLdtlWiQuUQVEAPZQ==}
+  '@opennextjs/aws@3.6.5':
+    resolution: {integrity: sha512-wni+CWlRCyWfhNfekQBBPPkrDDnaGdZLN9hMybKI0wKOKTO+zhPOqR65Eh3V0pzWAi84Sureb5mdMuLwCxAAcw==}
     hasBin: true
 
-  '@opennextjs/cloudflare@1.0.4':
-    resolution: {integrity: sha512-DVudGpOSJ91ruPiBJ0kuFmPhEQbXIXLTbvUjAx1OlbwFskG2gvdNIAmF3ZXV6z1VGDO7Q/u2W2ybMZLf7avlrA==}
+  '@opennextjs/cloudflare@1.2.1':
+    resolution: {integrity: sha512-cOco+nHwlo/PLB1bThF8IIvaS8PgAT9MEI5ZttFO/qt6spgvr2lUaPkpjgSIQmI3sBIEG2cLUykvQ2nbbZEcVw==}
     hasBin: true
     peerDependencies:
-      wrangler: ^4.14.0
+      wrangler: ^4.19.1
 
   '@openrouter/ai-sdk-provider@0.7.1':
     resolution: {integrity: sha512-jppCJErJ13KKnr0rOJrElmrlGul+0G5OO45Tqn1II2uIVcJLjyuzyS1hkCWD3fmlKVAuwVbyumTh6JQsS4e+4g==}
@@ -9699,7 +9699,7 @@ snapshots:
       '@aws-crypto/sha256-js': 3.0.0
       '@aws-crypto/supports-web-crypto': 3.0.0
       '@aws-crypto/util': 3.0.0
-      '@aws-sdk/types': 3.398.0
+      '@aws-sdk/types': 3.804.0
       '@aws-sdk/util-locate-window': 3.804.0
       '@aws-sdk/util-utf8-browser': 3.259.0
       tslib: 1.14.1
@@ -9717,7 +9717,7 @@ snapshots:
   '@aws-crypto/sha256-js@3.0.0':
     dependencies:
       '@aws-crypto/util': 3.0.0
-      '@aws-sdk/types': 3.398.0
+      '@aws-sdk/types': 3.804.0
       tslib: 1.14.1
 
   '@aws-crypto/sha256-js@5.2.0':
@@ -9736,7 +9736,7 @@ snapshots:
 
   '@aws-crypto/util@3.0.0':
     dependencies:
-      '@aws-sdk/types': 3.398.0
+      '@aws-sdk/types': 3.804.0
       '@aws-sdk/util-utf8-browser': 3.259.0
       tslib: 1.14.1
 
@@ -12086,7 +12086,7 @@ snapshots:
       rimraf: 3.0.2
     optional: true
 
-  '@opennextjs/aws@3.6.2':
+  '@opennextjs/aws@3.6.5':
     dependencies:
       '@ast-grep/napi': 0.35.0
       '@aws-sdk/client-cloudfront': 3.398.0
@@ -12099,6 +12099,7 @@ snapshots:
       '@tsconfig/node18': 1.0.3
       aws4fetch: 1.0.20
       chalk: 5.4.1
+      cookie: 1.0.2
       esbuild: 0.25.4
       express: 5.0.1
       path-to-regexp: 6.3.0
@@ -12108,10 +12109,10 @@ snapshots:
       - aws-crt
       - supports-color
 
-  '@opennextjs/cloudflare@1.0.4(wrangler@4.17.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
+  '@opennextjs/cloudflare@1.2.1(wrangler@4.17.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
       '@dotenvx/dotenvx': 1.31.0
-      '@opennextjs/aws': 3.6.2
+      '@opennextjs/aws': 3.6.5
       enquirer: 2.4.1
       glob: 11.0.2
       ts-tqdm: 0.8.6
@@ -16214,7 +16215,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.20.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2)):
+  eslint-module-utils@2.12.0(@typescript-eslint/parser@8.20.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@9.28.0(jiti@2.4.2)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -16236,7 +16237,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.28.0(jiti@2.4.2)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.20.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0(eslint-plugin-import@2.31.0)(eslint@9.28.0(jiti@2.4.2)))(eslint@9.28.0(jiti@2.4.2))
+      eslint-module-utils: 2.12.0(@typescript-eslint/parser@8.20.0(eslint@9.28.0(jiti@2.4.2))(typescript@5.7.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.7.0)(eslint@9.28.0(jiti@2.4.2))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
