@@ -140,15 +140,19 @@ export default function Home() {
     <main>
       <Seo />
       <section className="relative flex flex-col items-center justify-center md:px-12 px-6 py-20 md:py-24">
-        <h1 className="max-w-4xl text-center text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
+        <h1 className="max-w-4xl text-center text-balance text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
           Forget Tools. Forget Platforms.
         </h1>
 
-        <p className="mx-auto my-4 max-w-3xl text-center leading-relaxed md:my-6 md:text-2xl text-md md:leading-relaxed">
-          <strong>Meet DOGEai: Your Weapon.</strong> This isn&apos;t another
-          polite chatbot. It&apos;s the autonomous watchdog built to rip the
-          mask off DC&apos;s dysfunction. Trained on raw data, engineered for
-          truth, ready to expose the rot. Get ready to interrogate the system.
+        <h2 className="font-semibold text-2xl text-center md:text-3xl my-2 md:my-6">
+          Meet DOGEai: Your Weapon.
+        </h2>
+
+        <p className="mx-auto max-w-2xl text-center md:text-2xl text-md mb-4 md:mb-6">
+          This isn&apos;t another polite chatbot. It&apos;s the autonomous
+          watchdog built to rip the mask off DC&apos;s dysfunction. Fueled by
+          raw data, engineered for truth, and ready to expose the rot. Get ready
+          to interrogate the system.
         </p>
         <div className="flex gap-4">
           <a
