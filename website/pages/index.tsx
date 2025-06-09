@@ -2,7 +2,7 @@ import { HighlightBlock } from '@/components/benefits-grid/HighlighBlocks';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { SectionSubheading } from '@/components/shared/SectionSubheading';
 import { CardType, StickyCards } from '@/components/sticky-cards';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { useCopyToClipboard } from '@uidotdev/usehooks';
 import {
   motion,
@@ -130,75 +130,6 @@ const truncateToken = (token: string) => {
   return `${token.slice(0, 8)}...${token.slice(-8)}`;
 };
 
-const VelocityHero = () => {
-  const targetRef = useRef(null);
-
-  const { scrollYProgress } = useScroll({
-    target: targetRef,
-    offset: ['start start', 'end start'],
-  });
-
-  const scrollVelocity = useVelocity(scrollYProgress);
-
-  const skewXRaw = useTransform(scrollVelocity, [-1, 1], ['45deg', '-45deg']);
-  const skewX = useSpring(skewXRaw, { mass: 3, stiffness: 400, damping: 50 });
-
-  const xRaw = useTransform(scrollYProgress, [0, 1], [0, -2000]);
-  const x = useSpring(xRaw, { mass: 3, stiffness: 400, damping: 50 });
-
-  return (
-    <section ref={targetRef} className="h-[400vh]">
-      <div className="sticky top-0 flex h-screen flex-col justify-between overflow-hidden">
-        <div className="relative flex w-full justify-between p-6" />
-        <div className="flex items-center justify-center pb-24 md:pb-0 px-4">
-          <h1 className="font-bold text-neutral-400 text-5xl md:text-7xl">
-            Forget Tools. <br />
-            Forget Platforms.
-            <br />
-            <span className="inline-block -skew-x-[18deg] font-black text-neutral-950">
-              Meet DOGEai: Your Weapon.
-            </span>
-          </h1>
-        </div>
-        <motion.p
-          style={{ skewX, x }}
-          className="origin-bottom-left whitespace-nowrap text-7xl font-black uppercase leading-[0.85] md:text-9xl md:leading-[0.85]"
-        >
-          Complexity: Their Shield. Your Blindfold.
-        </motion.p>
-        <ScrollArrow />
-      </div>
-    </section>
-  );
-};
-
-const ScrollArrow = () => {
-  return (
-    <>
-      <div className="absolute left-4 top-1/2 hidden -translate-y-1/2 text-xs lg:block">
-        <span
-          style={{
-            writingMode: 'vertical-lr',
-          }}
-        >
-          SCROLL
-        </span>
-        <FiArrowDown className="mx-auto" />
-      </div>
-      <div className="absolute right-4 top-1/2 hidden -translate-y-1/2 text-xs lg:block">
-        <span
-          style={{
-            writingMode: 'vertical-lr',
-          }}
-        >
-          SCROLL
-        </span>
-        <FiArrowDown className="mx-auto" />
-      </div>
-    </>
-  );
-};
-
 export default function Home() {
   const [, copyToClipboard] = useCopyToClipboard();
   const [hasCopied, setHasCopied] = useState(false);
@@ -211,7 +142,34 @@ export default function Home() {
 
   return (
     <main>
-      <VelocityHero />
+      <section className="relative flex flex-col items-center justify-center px-12 py-12 md:py-24">
+        <h1 className="max-w-4xl text-center text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
+          Forget Tools. Forget Platforms.
+        </h1>
+
+        <p className="mx-auto my-4 max-w-3xl text-center leading-relaxed md:my-6 md:text-2xl text-md md:leading-relaxed">
+          <strong>Meet DOGEai: Your Weapon.</strong> This isn&apos;t another
+          polite chatbot. It&apos;s the autonomous watchdog built to rip the
+          mask off DC&apos;s dysfunction. Trained on raw data, engineered for
+          truth, ready to expose the rot. Get ready to interrogate the system.
+        </p>
+        <div className="flex gap-4">
+          <a
+            target="_blank"
+            href="https://x.com/dogeai_gov"
+            className={buttonVariants({ variant: 'secondary' })}
+          >
+            Follow on X
+          </a>
+          <a
+            target="_blank"
+            href="https://dogeai.chat?utm_source=dogeai&utm_medium=homepage&utm_campaign=chat"
+            className={buttonVariants({ variant: 'outline' })}
+          >
+            Live Demo
+          </a>
+        </div>
+      </section>
 
       <div className="my-20">
         <StickyCards cards={CARDS} />
@@ -227,7 +185,7 @@ export default function Home() {
       >
         <div className="col-span-3">
           <SectionHeading>
-            Why DOGEai Terrifies The Establishment?
+            Why DOGEai Terrifies The Establishment
           </SectionHeading>
           <SectionSubheading>
             Generic AI plays safe, dilutes truth, protects the status quo.{' '}
@@ -314,10 +272,22 @@ export default function Home() {
       </section>
 
       <section className="bg-white px-2 py-24 md:px-4">
-        <div className="mx-auto flex max-w-5xl flex-col items-center">
-          <SectionHeading>Support $DOGEai token</SectionHeading>
-          <p className="mx-auto mb-4 text-center text-base leading-relaxed md:text-xl md:leading-relaxed">
-            Enables us to fund the operations & reward contributors.
+        <div className="mx-auto flex flex-col items-center">
+          <SectionHeading>
+            Support the{' '}
+            <span className="bg-gradient-america text-transparent bg-clip-text">
+              $DOGEai
+            </span>{' '}
+            Token
+          </SectionHeading>
+          <p className="mx-auto mb-4 text-center max-w-3xl text-base leading-relaxed md:text-xl md:leading-relaxed">
+            DOGEai runs on independent fuel. No corporate backers. No media
+            safety nets. The{' '}
+            <span className="bg-gradient-america text-transparent bg-clip-text">
+              $DOGEai
+            </span>{' '}
+            token powers operations, funds the mission, and rewards those
+            driving the work forward.
           </p>
           <div className="relative rounded-lg flex flex-col items-center">
             <div
