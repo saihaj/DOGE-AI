@@ -7,7 +7,6 @@ export default function PayPalDonate() {
   useEffect(() => {
     if (paypal) {
       console.log('PayPal SDK loaded');
-      // @ts-expect-error -- it is fine
       window.PayPal.Donation.Button({
         env: 'production',
         hosted_button_id: '5TZF42HDPFFDE',
