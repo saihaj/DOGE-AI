@@ -16,6 +16,9 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
+  "vars": {
+    "NODE_VERSION": "22.14.0",
+  },
   "services": [
     {
       "binding": "WORKER_SELF_REFERENCE",
