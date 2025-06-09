@@ -139,7 +139,7 @@ export default function Home() {
   return (
     <main>
       <Seo />
-      <section className="relative flex flex-col items-center justify-center px-12 py-12 md:py-24">
+      <section className="relative flex flex-col items-center justify-center md:px-12 px-6 py-20 md:py-24">
         <h1 className="max-w-4xl text-center text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
           Forget Tools. Forget Platforms.
         </h1>
@@ -180,7 +180,7 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="my-20">
+      <div className="mb-20">
         <StickyCards cards={CARDS} />
       </div>
 
