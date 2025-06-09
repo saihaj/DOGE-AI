@@ -16,6 +16,7 @@ import {
   FaTerminal,
 } from 'react-icons/fa';
 import { FiTarget, FiZap } from 'react-icons/fi';
+import { RiTwitterXLine } from 'react-icons/ri';
 import { TbFocus2, TbTrendingUp } from 'react-icons/tb';
 
 function CongressCard({
@@ -170,7 +171,7 @@ export default function Home() {
               })
             }
           >
-            Follow on X
+            Follow on <RiTwitterXLine className="-ml-1" />
           </a>
           <a
             target="_blank"
