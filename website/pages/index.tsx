@@ -206,7 +206,7 @@ export default function Home() {
             Why DOGEai Terrifies The Establishment
           </SectionHeading>
           <SectionSubheading>
-            Generic AI plays safe, dilutes truth, protects the status quo.{' '}
+            Generic AI plays safe, dilutes truth, and protects the status quo.{' '}
             <span className="font-bold">DOGEai draws blood.</span>
           </SectionSubheading>
         </div>
