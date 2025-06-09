@@ -3,6 +3,7 @@ import { ExpandableNavBar } from '@/components/navigation/ExpandableNavBar';
 import '@/styles/globals.css';
 import type { AppProps } from 'next/app';
 import { Funnel_Display } from 'next/font/google';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 const mainFont = Funnel_Display({
   variable: '--font-main',
@@ -17,6 +18,7 @@ export default function App({ Component, pageProps }: AppProps) {
         <ExpandableNavBar />
         <Component {...pageProps} />
         <Footer />
+        <GoogleAnalytics gaId="G-FZM2EERC5V" />
       </main>
     </div>
   );

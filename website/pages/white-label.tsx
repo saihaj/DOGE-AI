@@ -5,6 +5,7 @@ import { SectionHeading } from '@/components/shared/SectionHeading';
 import { Stats } from '@/components/stats/Stats';
 import { CardType, StickyCards } from '@/components/sticky-cards';
 import { buttonVariants } from '@/components/ui/button';
+import { sendGAEvent } from '@next/third-parties/google';
 import { Calendar, TrendingUp, Users, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
 import { FaDatabase } from 'react-icons/fa6';
@@ -138,6 +139,12 @@ function PoliticsTimeline() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={buttonVariants({ variant: 'secondary' })}
+                onClick={() =>
+                  sendGAEvent('event', 'button_clicked', {
+                    value: 'Request Quote',
+                    screen: 'whitelabel - timeline',
+                  })
+                }
               >
                 Request a Quote
               </motion.a>
@@ -191,12 +198,24 @@ export default function Home() {
             target="_blank"
             href="https://dogeai.chat?utm_source=dogeai&utm_medium=media_networks&utm_campaign=demo_cta"
             className={buttonVariants({ variant: 'secondary' })}
+            onClick={() =>
+              sendGAEvent('event', 'button_clicked', {
+                value: 'demo',
+                screen: 'whitelabel - hero',
+              })
+            }
           >
             Live Demo
           </a>
           <a
             href="mailto:dev@dogeai.info?subject=White-Label DOGEai Inquiry"
             className={buttonVariants({ variant: 'outline' })}
+            onClick={() =>
+              sendGAEvent('event', 'button_clicked', {
+                value: 'Request Quote',
+                screen: 'whitelabel - hero',
+              })
+            }
           >
             Request a Quote
           </a>
@@ -233,6 +252,12 @@ export default function Home() {
           <a
             href="mailto:dev@dogeai.info?subject=White-Label DOGEai Inquiry"
             className={buttonVariants({})}
+            onClick={() =>
+              sendGAEvent('event', 'button_clicked', {
+                value: 'Request Quote',
+                screen: 'whitelabel - cta',
+              })
+            }
           >
             <span className="font-bold">Request a Quote</span>
           </a>

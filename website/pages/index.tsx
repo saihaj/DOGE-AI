@@ -4,6 +4,7 @@ import { SectionHeading } from '@/components/shared/SectionHeading';
 import { SectionSubheading } from '@/components/shared/SectionSubheading';
 import { CardType, StickyCards } from '@/components/sticky-cards';
 import { Button, buttonVariants } from '@/components/ui/button';
+import { sendGAEvent } from '@next/third-parties/google';
 import { useCopyToClipboard } from '@uidotdev/usehooks';
 import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
@@ -154,6 +155,12 @@ export default function Home() {
             target="_blank"
             href="https://x.com/dogeai_gov"
             className={buttonVariants({ variant: 'secondary' })}
+            onClick={() =>
+              sendGAEvent('event', 'button_clicked', {
+                value: 'X Follow',
+                screen: 'homepage',
+              })
+            }
           >
             Follow on X
           </a>
@@ -161,6 +168,12 @@ export default function Home() {
             target="_blank"
             href="https://dogeai.chat?utm_source=dogeai&utm_medium=homepage&utm_campaign=chat"
             className={buttonVariants({ variant: 'outline' })}
+            onClick={() =>
+              sendGAEvent('event', 'button_clicked', {
+                value: 'demo',
+                screen: 'homepage',
+              })
+            }
           >
             Live Demo
           </a>
@@ -305,6 +318,10 @@ export default function Home() {
                   onClick={() => {
                     copyToClipboard(TOKEN);
                     setHasCopied(true);
+                    sendGAEvent('event', 'button_clicked', {
+                      value: 'copy token address',
+                      screen: 'homepage',
+                    });
                   }}
                   aria-label={hasCopied ? 'Token copied' : 'Copy token'}
                 >
