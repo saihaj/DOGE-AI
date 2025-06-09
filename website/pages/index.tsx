@@ -1,5 +1,4 @@
 import { HighlightBlock } from '@/components/benefits-grid/HighlighBlocks';
-import { Logo } from '@/components/logo';
 import { Seo } from '@/components/seo';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { SectionSubheading } from '@/components/shared/SectionSubheading';
