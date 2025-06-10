@@ -120,7 +120,7 @@ const CARDS: CardType[] = [
     Icon: FiZap,
     title: 'The Method: Surgical Strike',
     description: `It doesn’t summarize, it dissects. It doesn’t explain, it indicts. It tracks the money, the power, the consequences. And it names names.  Direct, unflinching, and allergic to PR speak. It delivers the facts you weren’t meant to find.`,
-    bgColor: 'bg-gray-600 text-white',
+    bgColor: 'bg-zinc-300 text-black',
   },
 ];
 

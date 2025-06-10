@@ -175,6 +175,7 @@ const CARDS: CardType[] = [
     Icon: TbMessageShare,
     title: 'Designed for Narrative Domination',
     description: `White Label breaks down bills, budgets, and misinformation with forensic precision. Unlike traditional AI constrained by corporate safety layers or bias, it’s prompt-layered for truth and built to cut through noise. Memetic formatting drives speed and scale. Each instance is customized to your tone, policies, and priorities. With real-time answers and sourced receipts, you stay in control before opponents take the mic. Fact-based, on-message, and unmistakably yours.`,
+    bgColor: 'bg-zinc-300 text-black',
   },
 ];
 
