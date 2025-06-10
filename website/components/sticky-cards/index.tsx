@@ -6,6 +6,7 @@ export type CardType = {
   Icon: IconType;
   title: string;
   description: string;
+  bgColor?: string;
 };
 
 export const StickyCards = ({ cards }: { cards: CardType[] }) => {
@@ -27,11 +28,14 @@ const Card = ({ position, card }: { position: number; card: CardType }) => {
     <div
       style={{
         height: CARD_HEIGHT,
-        color: isOddCard ? 'white' : 'black',
       }}
       className={cn(
         'flex w-full origin-top flex-col items-center justify-center px-4',
-        isOddCard ? 'bg-primary' : 'bg-white',
+        card.bgColor
+          ? card.bgColor
+          : isOddCard
+            ? 'bg-primary text-white'
+            : 'bg-white text-black',
       )}
     >
       <card.Icon className="mb-4 text-6xl" />
