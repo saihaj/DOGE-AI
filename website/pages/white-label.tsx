@@ -52,9 +52,8 @@ function PoliticsTimeline() {
           Campaigns Have Evolved
         </h1>
         <p className="text-md md:text-2xl max-w-3xl mx-auto leading-relaxed">
-          Campaigns aren&apos;t evolving. The shift has already happened. Since
-          2008, every cycle has moved away from traditional media and deeper
-          into real-time digital.
+          Since 2008, every cycle has moved away from traditional media and
+          deeper into real-time digital.
         </p>
       </div>
 
