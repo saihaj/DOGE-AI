@@ -278,11 +278,13 @@ fastify.route<{ Body: ChatStreamInput }>({
       manualKbSearch,
       webSearch,
       messages,
+      selectedKb,
       selectedChatModel,
     } = request.body as {
       documentSearch: boolean;
       manualKbSearch: boolean;
       webSearch: boolean;
+      selectedKb: 'custom1' | 'chat' | 'agent';
       billSearch: boolean;
       messages: CoreMessage[];
       selectedChatModel: string;
@@ -295,7 +297,7 @@ fastify.route<{ Body: ChatStreamInput }>({
 
     const userMessageText = userMessage.content.toString();
 
-    log.info({ text: userMessageText }, 'User message');
+    log.info({ text: userMessageText, selectedKb }, 'User message');
 
     // Listen for the client disconnecting (abort)
     request.raw.on('close', () => {
@@ -333,7 +335,7 @@ fastify.route<{ Body: ChatStreamInput }>({
           {
             messages: convoHistory,
             text: latestMessage.content.toString(),
-            manualEntries: 'agent',
+            manualEntries: selectedKb,
             billEntries: billSearch,
             documentEntries: documentSearch,
             openaiApiKey: OPENAI_API_KEY,

@@ -40,6 +40,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useCookie } from '@/hooks/use-cookie';
+import { TypeSelector } from './manual-kb/type-selector';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -243,6 +244,10 @@ export function Chat() {
     '',
   );
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [kb, setKbType] = useLocalStorage<'agent' | 'chat' | 'custom1'>(
+    'playgroundChatSelectedKb',
+    'chat',
+  );
 
   const initialMessages = useMemo(() => {
     const messages = [
@@ -282,6 +287,7 @@ export function Chat() {
       documentSearch,
       manualKbSearch,
       webSearch,
+      selectedKb: kb,
     },
     headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
     onError: error => {
@@ -408,6 +414,7 @@ export function Chat() {
       <Header
         right={
           <div className="flex gap-2">
+            <TypeSelector value={kb} setValue={setKbType} />
             <ModelSelector value={model} setValue={setModel} />
             <Button
               variant="outline"
