@@ -190,12 +190,16 @@ export default function Home() {
             </a>
           </div>
         </div>
-        <div className="relative mx-auto w-full h-[420px] md:w-full md:h-[520px]">
+        <div className="relative mx-auto w-full">
           <Image
             alt="hero image"
             src="/images/hero-2.jpeg"
-            fill
+            width={1200} // Large enough to scale to container width
+            height={0} // Let height adjust automatically
+            style={{ height: 'auto', objectFit: 'contain' }}
+            sizes="(max-width: 768px) 100vw, 80vw"
             loading="eager"
+            className="w-full"
           />
         </div>
       </section>
