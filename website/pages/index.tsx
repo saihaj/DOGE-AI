@@ -1,11 +1,24 @@
-import { Navbar } from '@/components/nav';
-import { Button } from '@/components/ui/button';
-import { RiGithubFill, RiTwitterXLine } from '@remixicon/react';
+import { HighlightBlock } from '@/components/benefits-grid/HighlighBlocks';
+import { Seo } from '@/components/seo';
+import { SectionHeading } from '@/components/shared/SectionHeading';
+import { SectionSubheading } from '@/components/shared/SectionSubheading';
+import { CardType, StickyCards } from '@/components/sticky-cards';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { sendGAEvent } from '@next/third-parties/google';
 import { useCopyToClipboard } from '@uidotdev/usehooks';
-import Image from 'next/image';
-import Link from 'next/link';
+import { motion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import hero from '../public/images/hero.png';
+import {
+  FaAnchor,
+  FaClock,
+  FaDatabase,
+  FaShieldAlt,
+  FaTerminal,
+} from 'react-icons/fa';
+import { FiTarget, FiZap } from 'react-icons/fi';
+import { RiTwitterXLine } from 'react-icons/ri';
+import { TbFocus2, TbTrendingUp } from 'react-icons/tb';
+import Image from 'next/image';
 
 function CongressCard({
   number,
@@ -19,10 +32,7 @@ function CongressCard({
   house: number;
 }) {
   return (
-    <article
-      className="flex w-full flex-col py-7 px-4 items-center"
-      style={{ borderRadius: 9, background: '#121623' }}
-    >
+    <article className="flex w-full flex-col py-7 px-4 items-center bg-white border rounded-2xl">
       <svg
         role="img"
         xmlns="http://www.w3.org/2000/svg"
@@ -42,7 +52,7 @@ function CongressCard({
           fillRule="evenodd"
           clipRule="evenodd"
           d="M34.9995 35.9389C33.7796 35.9389 32.7861 34.9398 32.7861 33.7214C32.7861 32.503 33.7796 31.5121 34.9995 31.5121C36.2204 31.5121 37.213 32.503 37.213 33.7214C37.213 34.9398 36.2204 35.9389 34.9995 35.9389ZM34.9995 29.5789C32.7163 29.5789 30.8578 31.439 30.8578 33.7215C30.8578 36.004 32.7163 37.864 34.9995 37.864C37.2836 37.864 39.1413 36.004 39.1413 33.7215C39.1413 31.439 37.2836 29.5789 34.9995 29.5789ZM59.105 64.8554H10.8949V63.304H59.1052V64.8554H59.105ZM15.1316 59.5189C15.1316 59.2752 15.3371 59.0722 15.5807 59.0722H54.4198C54.6627 59.0722 54.8682 59.2752 54.8682 59.5189V61.379H15.1316V59.5189ZM19.0151 41.2674H21.3252V57.1391H19.0151V41.2674ZM13.0481 38.66C12.7289 38.8387 12.5625 39.0662 12.5535 39.3424H57.4456C57.4456 38.8668 57.5108 38.5472 56.9518 38.2377L36.6525 26.8173C35.9492 26.4193 34.8079 26.4193 34.1044 26.8173L13.0481 38.66ZM16.3695 29.2215V34.5824L33.1598 25.1358C34.4456 24.4128 36.3122 24.4128 37.5971 25.1358L53.6288 34.1519V29.2215C53.6288 28.7585 53.1626 28.3605 52.6086 28.3605H49.8664C49.3539 28.3605 48.9307 27.9544 48.9039 27.4427C48.5458 20.644 42.4383 15.3156 34.9997 15.3156C27.5609 15.3156 21.4536 20.644 21.0955 27.4427C21.0679 27.9544 20.6455 28.3605 20.1321 28.3605H17.3908C16.8374 28.3605 16.3695 28.7585 16.3695 29.2215ZM37.3877 5.16238C39.3811 5.41746 40.4485 7.47616 43.4894 7.82658C44.8777 7.98086 46.0171 8.01334 47.0309 7.76162C46.2162 8.79314 45.148 9.32122 43.7298 9.45926C40.9245 9.72442 39.6777 8.04204 35.9637 8.72006V5.30042C36.443 5.146 36.9132 5.1054 37.3877 5.16238ZM43.0255 41.2674H46.7464V57.1391H43.0255V41.2674ZM38.7888 41.2674H41.0973V57.1391H38.7888V41.2674ZM33.1395 41.2674H36.8606V57.1391H33.1395V41.2674ZM28.9027 41.2674H31.2112V57.1391H28.9027V41.2674ZM26.9743 41.2674V57.1391H23.2534V41.2674H26.9743ZM50.9832 57.1389H48.6747V41.2674H50.9832V57.1389ZM59.2554 61.379H56.7966V59.5189C56.7966 58.2112 55.7292 57.1389 54.4199 57.1389H52.9116V41.2674H58.4098C58.9426 41.2674 59.3731 40.8369 59.3731 40.309V38.9444C59.3731 37.9535 58.8354 37.0843 57.8964 36.5563L55.5571 35.2404V29.2215C55.5571 27.6863 54.234 26.4274 52.6086 26.4274H50.7509C49.9037 19.3445 43.6591 13.8455 35.9637 13.415V10.6938C39.3993 9.88668 40.5063 11.7271 43.911 11.3761C47.1039 11.0756 49.1793 9.11808 50.2563 5.38974C50.5423 4.39672 49.2649 3.70624 48.5952 4.49626C47.2851 6.0315 46.2259 6.20202 43.711 5.90956C41.1947 5.61486 40.2766 3.59088 37.633 3.25348C36.6152 3.12356 35.5894 3.29408 34.5853 3.7733C34.2482 3.9357 34.0354 4.27688 34.0354 4.64242V13.4148C26.3408 13.8453 20.0945 19.3444 19.249 26.4273H17.3905C15.7644 26.4273 14.442 27.6863 14.442 29.2214V35.6626L12.1019 36.9785C11.1637 37.5064 10.6251 38.3756 10.6251 39.3666V40.3088C10.6251 40.8368 11.0572 41.2673 11.5893 41.2673H17.0867V57.1389H15.5807C14.2689 57.1389 13.2032 58.211 13.2032 59.5189V61.379H10.7446C9.76413 61.379 8.96655 62.175 8.96655 63.1578V65.0584C8.96655 66.025 9.74705 66.7886 10.7446 66.7886H59.2552C60.2511 66.7886 61.0332 66.025 61.0332 65.0584V63.1578C61.0334 62.175 60.235 61.379 59.2554 61.379Z"
-          fill="#839EFF"
+          fill="#0B1D55"
         />
         <defs>
           <linearGradient
@@ -53,8 +63,8 @@ function CongressCard({
             y2="65.1124"
             gradientUnits="userSpaceOnUse"
           >
-            <stop stopColor="#839EFF" />
-            <stop offset="1" stopColor="#4E5F99" />
+            <stop stopColor="#0B1D55" />
+            <stop offset="1" stopColor="#0B1D55" />
           </linearGradient>
         </defs>
       </svg>
@@ -64,28 +74,25 @@ function CongressCard({
         <sup>th</sup> Congress
       </h2>
 
-      <div
-        style={{ borderColor: 'rgba(70, 86, 137, 0.20)' }}
-        className="my-5 border-t w-full"
-      />
+      <div className="my-5 border-t w-full" />
 
       <dl className="flex gap-5 w-full">
         <div className="flex flex-col items-center w-full">
-          <h4 className="text-[#839EFF] text-lg">Total Bills</h4>
+          <h4 className="text-secondary text-lg">Total Bills</h4>
           <p className="font-bold text-2xl md:text-3xl">
             {total.toLocaleString('en')}
           </p>
         </div>
 
         <div className="flex flex-col items-center w-full">
-          <h4 className="text-[#839EFF] text-lg">Senate</h4>
+          <h4 className="text-secondary text-lg">Senate</h4>
           <p className="font-bold text-2xl md:text-3xl">
             {senate.toLocaleString('en')}
           </p>
         </div>
 
         <div className="flex flex-col items-center w-full">
-          <h4 className="text-[#839EFF] text-lg">House</h4>
+          <h4 className="text-secondary text-lg">House</h4>
           <p className="font-bold text-2xl md:text-3xl">
             {house.toLocaleString('en')}
           </p>
@@ -94,6 +101,28 @@ function CongressCard({
     </article>
   );
 }
+
+const CARDS: CardType[] = [
+  {
+    id: 1,
+    Icon: FiTarget,
+    title: 'The Mission: Expose',
+    description: `DOGEai isn’t a project or a startup. It’s an autonomous AI weapon built for one purpose: to hunt down and expose the waste, grift, and dysfunction. Forget summaries. Think forensic analysis at machine speed.`,
+  },
+  {
+    id: 2,
+    Icon: FaDatabase,
+    title: 'The Intel: Raw & Real',
+    description: `Trained on the raw feed: 19,000+ bills, federal contracts, grant databases, FOIA trails, audits, and real-time data. Every output? Sourced. Every breakdown? Precise. No escape.`,
+  },
+  {
+    id: 3,
+    Icon: FiZap,
+    title: 'The Method: Surgical Strike',
+    description: `It doesn’t summarize, it dissects. It doesn’t explain, it indicts. It tracks the money, the power, the consequences. And it names names.  Direct, unflinching, and allergic to PR speak. It delivers the facts you weren’t meant to find.`,
+    bgColor: 'bg-zinc-300 text-black',
+  },
+];
 
 const TOKEN = '9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump';
 const truncateToken = (token: string) => {
@@ -111,476 +140,247 @@ export default function Home() {
   }, [hasCopied]);
 
   return (
-    <>
-      <div className="min-h-screen container mx-auto px-4 py-5" role="main">
-        <Navbar />
+    <main>
+      <Seo />
+      <section className="container md:px-0 px-2 py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 items-center gap-8 mx-auto">
+        <div className="relative flex flex-col items-start justify-center">
+          <h1 className="max-w-4xl text-left text-pretty text-4xl font-black md:text-6xl">
+            Forget Tools. Forget Platforms.
+          </h1>
 
-        <main>
-          <section
-            aria-labelledby="hero-heading"
-            className="mt-12 w-full flex flex-col justify-center relative"
-            style={{
-              borderRadius: '894px',
-              background:
-                'radial-gradient(50% 50% at 50% 50%, #0B0D14 0%, rgba(27, 32, 49, 0.00) 100%)',
-            }}
-          >
-            {/* BG Gradient */}
-            <div className="absolute inset-0 w-full h-full">
-              <div
-                className="w-full h-full"
-                style={{
-                  background:
-                    'radial-gradient(50% 50% at 50% 50%, #14192E 0%, #0B0D14 100%)',
-                }}
-              >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    backgroundImage: `
-                linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(255,255,255,0.05) 1px, transparent 1px)
-              `,
-                    backgroundSize: '4rem 4rem',
-                    maskImage:
-                      'radial-gradient(circle at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
-                    WebkitMaskImage:
-                      'radial-gradient(circle at center, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 100%)',
-                  }}
-                />
-              </div>
-            </div>
+          <h2 className="font-semibold text-2xl text-center md:text-3xl my-2 md:my-6">
+            Meet{' '}
+            <span className="bg-gradient-america bg-clip-text text-transparent">
+              DOGEai
+            </span>
+            . Your Weapon.
+          </h2>
 
-            {/* Content Layer */}
-            <div className="relative z-10 flex flex-col items-center">
-              <div className="w-full max-w-screen-2xl mx-auto">
-                <Image
-                  src={hero}
-                  width={1536}
-                  height={320}
-                  alt="Doge team art"
-                  loading="lazy"
-                  placeholder="blur"
-                  className="w-full h-auto object-cover"
-                />
-              </div>
-
-              <h1
-                id="hero-heading"
-                className="text-3xl leading-[40px] md:text-5xl md:leading-[56px] font-bold max-w-3xl mx-auto my-8 text-center"
-              >
-                An{' '}
-                <span className="text-transparent bg-clip-text bg-gradient-america">
-                  autonomous AI agent
-                </span>{' '}
-                here to uncover waste and inefficiencies in government spending
-                and policy decisions.
-              </h1>
-
-              <div className="relative rounded-lg bg-[#121623] shadow-lg py-5 px-6 pb-4 md:pb-8 flex flex-col items-center">
-                <h2 className="font-bold text-lg md:text-xl text-center">
-                  The{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-america">
-                    $DOGEai
-                  </span>{' '}
-                  token enables us to fund the operations & reward contributors.
-                </h2>
-
-                <div
-                  className="mt-4 md:mt-0 md:absolute w-fit md:bottom-0 md:translate-y-1/2 md:left-1/2 md:-translate-x-1/2 border border-[rgba(255, 255, 255, 0.08)] bg-[#0F121D] rounded-[36px] py-2 px-4 w-fit"
-                  role="region"
-                  aria-label="Token information"
-                >
-                  <p className="text-sm flex flex-row items-center gap-1">
-                    <span className="select-none">Token: </span>
-                    <span className="md:hidden block select-text text-[#839EFF]">
-                      {truncateToken(TOKEN)}
-                    </span>
-                    <span className="hidden md:block select-text text-[#839EFF]">
-                      {TOKEN}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      className="h-6 w-2"
-                      onClick={() => {
-                        copyToClipboard(TOKEN);
-                        setHasCopied(true);
-                      }}
-                      aria-label={hasCopied ? 'Token copied' : 'Copy token'}
-                    >
-                      {hasCopied ? (
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="24"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M20 6 9 17l-5-5" />
-                        </svg>
-                      ) : (
-                        <svg
-                          className="h-3 w-3"
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <rect
-                            width="14"
-                            height="14"
-                            x="8"
-                            y="8"
-                            rx="2"
-                            ry="2"
-                          />
-                          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
-                        </svg>
-                      )}
-                    </Button>
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section
-            aria-labelledby="congress-stats-heading"
-            className="mt-14 flex flex-col items-center py-7 px-4 gap-4"
-            style={{
-              borderRadius: 10,
-              border: '1px solid #121623',
-              background:
-                'linear-gradient(151deg, rgba(70, 86, 137, 0.10) -16.41%, rgba(18, 22, 35, 0.10) 76.64%)',
-            }}
-          >
-            <h2 id="congress-stats-heading" className="sr-only">
-              Congress Statistics
-            </h2>
-            <time
-              className="py-2 px-3 md:text-lg select-none"
-              style={{
-                borderRadius: '210px',
-                border: '1px solid #232A43',
-              }}
-              dateTime="2025-06-02"
+          <p className="max-w-2xl text-left md:text-2xl text-md mb-4 md:mb-6">
+            This isn&apos;t another polite chatbot. It&apos;s the autonomous
+            watchdog built to rip the mask off DC&apos;s dysfunction. Fueled by
+            raw data, engineered for truth, and ready to expose the rot. Get
+            ready to interrogate the system.
+          </p>
+          <div className="flex gap-4">
+            <a
+              target="_blank"
+              href="https://x.com/dogeai_gov"
+              className={buttonVariants({ variant: 'secondary' })}
+              onClick={() =>
+                sendGAEvent('event', 'button_clicked', {
+                  value: 'X Follow',
+                  screen: 'homepage',
+                })
+              }
             >
-              <span className="text-[#839EFF]">Cutoff Date: </span>
-              <span className="font-semibold">June 02, 2025</span>
-            </time>
+              Follow on <RiTwitterXLine className="-ml-1" />
+            </a>
+            <a
+              target="_blank"
+              href="https://dogeai.chat?utm_source=dogeai&utm_medium=homepage&utm_campaign=chat"
+              className={buttonVariants({ variant: 'outline' })}
+              onClick={() =>
+                sendGAEvent('event', 'button_clicked', {
+                  value: 'demo',
+                  screen: 'homepage',
+                })
+              }
+            >
+              Live Demo
+            </a>
+          </div>
+        </div>
+        <div className="relative mx-auto w-full">
+          <Image
+            alt="hero image"
+            src="/images/hero-2.jpeg"
+            width={1200} // Large enough to scale to container width
+            height={0} // Let height adjust automatically
+            style={{ height: 'auto', objectFit: 'contain' }}
+            sizes="(max-width: 768px) 100vw, 80vw"
+            loading="eager"
+            className="w-full"
+          />
+        </div>
+      </section>
 
-            <div className="grid md:grid-cols-2 gap-4 w-full">
-              <CongressCard
-                number={118}
-                total={15746}
-                senate={5445}
-                house={10301}
-              />
-              <CongressCard
-                number={119}
-                total={5329}
-                senate={1808}
-                house={3521}
-              />
-            </div>
-          </section>
+      <div className="mb-20">
+        <StickyCards cards={CARDS} />
+      </div>
 
-          {/* Features Section */}
-          <section className="my-12" aria-labelledby="features-heading">
-            <h2 id="features-heading" className="sr-only">
-              Key Features
-            </h2>
-            <div className="grid md:grid-cols-2 gap-4">
-              {[
-                {
-                  icon: (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="100"
-                      height="100"
-                      viewBox="0 0 100 100"
-                      fill="none"
-                    >
-                      <path
-                        opacity="0.1"
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M17.227 24.827H10.0896L21.7626 13.1576V20.298C21.7626 22.7978 19.725 24.827 17.227 24.827ZM73.2698 28.847C76.6674 20.641 81.9792 13.5908 90.0072 9.50176L90.7418 9.12756L87.6026 19.7814C87.0596 21.6242 86.0924 23.0496 84.572 24.2256L78.6824 28.7812C77.886 29.3972 78.454 30.6936 79.447 30.5184L84.718 29.5886L80.0108 45.5774C79.4664 47.4264 78.5044 48.8418 76.9802 50.0216L70.5732 54.981C69.7764 55.5978 70.3504 56.8802 71.3404 56.7068L76.901 55.7332C75.6718 58.8264 74.3732 61.434 72.0478 63.895C68.7368 67.399 64.6024 69.1494 60.1366 70.6404L73.2634 28.8614L73.2698 28.847Z"
-                        fill="url(#paint0_linear_13_464)"
-                      />
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M55.5574 55.452C55.5574 54.7226 54.9604 54.128 54.2256 54.128H21.0778C20.3428 54.128 19.746 54.7226 19.746 55.452C19.746 56.1926 20.343 56.7872 21.0778 56.7872H54.2254C54.9604 56.7872 55.5574 56.1926 55.5574 55.452ZM47.777 82.5046C47.5728 82.4822 47.1912 81.8202 46.9624 81.4162C46.3884 80.414 45.5582 79.001 43.7882 79.015C41.7388 79.0312 40.95 81.6682 40.302 82.123C40.293 82.1118 40.284 82.1118 40.274 82.1118C40.0586 81.8762 39.8768 80.8326 39.7658 80.2042C39.3842 78.0386 38.747 74.4256 34.4618 74.4592C30.6816 74.4816 28.6304 79.6206 27.4186 83.4806C27.1404 84.3708 27.8258 85.2198 28.6898 85.2198C29.2554 85.2198 29.7794 84.8496 29.9578 84.2884C31.9842 77.8366 33.7962 77.1298 34.4796 77.1184C36.3344 77.096 36.6968 78.1394 37.1422 80.664C37.4238 82.2574 37.7156 83.918 39.2102 84.5462C42.011 85.7312 43.1838 82.3906 43.9014 81.6962C44.5696 82.0498 45.1974 84.9292 47.5088 85.1522C48.2382 85.2196 48.8934 84.6922 48.9674 83.9628C49.0404 83.234 48.5074 82.572 47.777 82.5046ZM90.1682 9.81798C82.8984 13.5208 77.333 19.9614 73.5978 28.9826L60.684 70.0836C69.1522 67.256 73.4518 63.4522 76.3366 56.1926L71.4018 57.0566C70.0464 57.3012 69.2616 55.5418 70.356 54.7004L76.763 49.741C78.224 48.6078 79.1486 47.2612 79.6702 45.4772L84.2156 30.0378L79.5086 30.8682C78.1462 31.1024 77.3724 29.3406 78.465 28.5006L84.3546 23.945C85.8166 22.8118 86.7402 21.454 87.2618 19.6812L90.1682 9.81798ZM71.0732 67.8394V87.0938C71.0732 89.394 69.1994 91.2678 66.8936 91.2678H13.2436C10.9378 91.2678 9.064 89.394 9.064 87.0938V27.1426H17.227C21.0016 27.1426 24.0704 24.0682 24.0704 20.2982V12.1296H66.8936C69.1994 12.1296 71.0732 14.0034 71.0732 16.3148V28.1412L53.4254 84.3C53.2056 84.9956 53.596 85.7474 54.2962 85.9718C54.9892 86.17 55.7384 85.8228 55.9658 85.0966L59.709 73.1916C64.6258 71.7106 68.2174 70.0274 71.0732 67.8394ZM10.9468 24.4722H17.227C19.5328 24.4722 21.4078 22.5984 21.4078 20.2982V14.0146L10.9468 24.4722ZM93.5422 7.77598L89.817 20.4328C89.1382 22.7442 87.8848 24.5732 85.984 26.043L84.3548 27.311L85.8684 27.0416C86.8338 26.8722 87.6546 27.7804 87.3754 28.7246L82.224 46.24C81.5462 48.5402 80.2918 50.3692 78.39 51.8504L76.248 53.4998L78.1454 53.1744C79.1674 52.9998 79.952 53.9704 79.6378 54.9024C78.1488 59.3682 76.2492 62.768 73.7358 65.4384V87.094C73.7358 90.864 70.667 93.9384 66.8936 93.9384H13.2436C9.4702 93.9384 6.4014 90.864 6.4014 87.094V25.8074C6.4014 25.4596 6.5416 25.1118 6.7918 24.8648L21.7982 9.86298C22.0472 9.60498 22.3862 9.47018 22.7384 9.47018H66.8934C70.6668 9.47018 73.7356 12.5334 73.7356 16.3148V22.5758C78.1206 14.7326 84.1662 9.21218 91.7692 6.16018C92.803 5.74458 93.8566 6.71238 93.5422 7.77598ZM21.0778 41.8976H58.9034C59.6384 41.8976 60.2342 41.3028 60.2342 40.5736C60.2342 39.833 59.6384 39.2384 58.9034 39.2384H21.0778C20.3428 39.2384 19.746 39.833 19.746 40.5736C19.746 41.3028 20.3428 41.8976 21.0778 41.8976ZM34.7534 25.6838C34.7534 26.4244 35.3492 27.019 36.0842 27.019H59.0594C59.7944 27.019 60.3912 26.4244 60.3912 25.6838C60.3912 24.9546 59.7942 24.3486 59.0594 24.3486H36.0842C35.3492 24.3486 34.7534 24.9546 34.7534 25.6838Z"
-                        fill="url(#paint1_linear_13_464)"
-                      />
-                      <defs>
-                        <linearGradient
-                          id="paint0_linear_13_464"
-                          x1="13.6901"
-                          y1="18.8401"
-                          x2="87.9145"
-                          y2="37.5376"
-                          gradientUnits="userSpaceOnUse"
-                        >
-                          <stop offset="0.007284" stopColor="#DF2421" />
-                          <stop offset="0.5" stopColor="white" />
-                          <stop offset="1" stopColor="#2065E9" />
-                        </linearGradient>
-                        <linearGradient
-                          id="paint1_linear_13_464"
-                          x1="10.2941"
-                          y1="19.9369"
-                          x2="92.6414"
-                          y2="35.6356"
-                          gradientUnits="userSpaceOnUse"
-                        >
-                          <stop offset="0.007284" stopColor="#DF2421" />
-                          <stop offset="0.5" stopColor="white" />
-                          <stop offset="1" stopColor="#2065E9" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                  ),
-                  title: 'Clear Bill Summaries',
-                  description:
-                    'We simplify complex legislation, turning dense legal text into clear, actionable summaries for better understanding.',
-                },
-                {
-                  icon: (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="100"
-                      height="100"
-                      viewBox="0 0 100 100"
-                      fill="none"
-                    >
-                      <path
-                        opacity="0.1"
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M85.2694 59.5666C85.2694 60.944 84.1506 62.0648 82.7728 62.0648H17.2276C15.8496 62.0648 14.7306 60.9444 14.7306 59.5666V17.5952C14.7306 16.2186 15.8508 15.097 17.2276 15.097H82.773C84.1498 15.097 85.2696 16.2188 85.2696 17.5952V59.5666H85.2694ZM49.9998 18.4472C38.8978 18.4472 29.8654 27.4802 29.8654 38.582C29.8654 49.6836 38.8986 58.7146 49.9998 58.7146C61.101 58.7146 70.1346 49.6838 70.1346 38.582C70.1346 27.48 61.102 18.4472 49.9998 18.4472ZM79.9486 91.0293C80.0964 91.304 79.9066 91.6255 79.594 91.6255H76.5522C75.7474 91.6255 75.069 91.2352 74.6664 90.5378L63.4296 71.073H68.4272L79.9462 91.0247L79.9486 91.0293ZM25.3336 90.5378C24.931 91.235 24.2526 91.6255 23.4478 91.6255H20.1994L19.9546 91.1964L31.5724 71.073H36.5704L25.3336 90.5378Z"
-                        fill="url(#paint0_linear_13_476)"
-                      />
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M45.0707 34.3665C45.0541 35.2001 45.827 36.0809 47.0913 36.6701C49.1883 37.5947 51.2929 36.8587 54.1169 38.0491C56.3605 39.0545 57.6939 40.8003 57.6831 42.7203C57.6721 44.6177 56.3339 46.3287 54.1029 47.2983C53.2189 47.6707 52.2831 47.8963 51.3315 48.0063V49.2697C51.3315 50.0047 50.7355 50.6015 49.9999 50.6015C49.2649 50.6015 48.6688 50.0045 48.6688 49.2697V48.0377C46.6263 47.8661 44.6549 47.2825 43.0945 46.5735C42.4253 46.2705 42.1289 45.4805 42.4331 44.8107C42.7373 44.1419 43.5263 43.8457 44.1955 44.1487C46.5329 45.2101 50.2555 46.0303 53.0549 44.8499C55.7089 43.7139 55.6209 41.6229 53.0457 40.4863C50.8631 39.5459 48.7826 40.2957 45.9957 39.0983C43.7105 38.0425 42.3697 36.2527 42.4087 34.3127C42.4695 31.2917 45.6507 29.5367 48.6688 29.1613V27.8923C48.6688 27.1573 49.2649 26.5603 49.9999 26.5603C50.7353 26.5603 51.3315 27.1573 51.3315 27.8923V29.1153C53.3613 29.2757 55.3559 29.8435 56.9263 30.5907C57.5903 30.9049 57.8731 31.6993 57.5574 32.3635C57.2419 33.0277 56.4477 33.3095 55.7837 32.9941C53.3725 31.8487 49.4683 31.2027 47.0633 32.3085C45.8127 32.8259 45.0865 33.5767 45.0707 34.3665ZM49.9999 56.4071C59.8297 56.4071 67.8269 48.4101 67.8269 38.5821C67.8269 28.7519 59.8295 20.7549 49.9999 20.7549C40.1701 20.7549 32.1729 28.7517 32.1729 38.5821C32.1729 48.4101 40.1701 56.4071 49.9999 56.4071ZM49.9999 18.0923C38.7021 18.0923 29.5105 27.2841 29.5105 38.5821C29.5105 49.8789 38.7021 59.0697 49.9999 59.0697C61.2979 59.0697 70.4895 49.8789 70.4895 38.5821C70.4897 27.2841 61.298 18.0923 49.9999 18.0923ZM84.9145 59.5667V17.5953C84.9145 16.4149 83.9537 15.4521 82.7729 15.4521H17.2277C16.0465 15.4521 15.0857 16.4149 15.0857 17.5953V59.5669C15.0857 60.7495 16.0465 61.7101 17.2277 61.7101H82.773C83.9538 61.7099 84.9145 60.7493 84.9145 59.5667ZM67.66 68.7653H32.3403V64.3725H67.66V68.7653ZM79.6379 91.2479C79.6247 91.2703 79.6133 91.2703 79.5941 91.2703H76.5522C75.8738 91.2703 75.3133 90.9471 74.9739 90.3603L64.0444 71.4279H68.2223L79.636 91.1973C79.6456 91.2153 79.6515 91.2243 79.6379 91.2479ZM25.0263 90.3603C24.6871 90.9471 24.1265 91.2703 23.4479 91.2703H20.4057L20.3641 91.1973L31.7775 71.4279H35.9557L25.0263 90.3603ZM42.9445 9.43346C42.9445 9.05186 43.2653 8.72646 43.6449 8.72646H56.3553C56.7347 8.72646 57.0557 9.05186 57.0557 9.43346V12.7895H42.9445V9.43346ZM82.773 12.7895H59.7183V9.43346C59.7183 7.57086 58.2097 6.06726 56.3553 6.06726H43.6449C41.7905 6.06726 40.2819 7.57086 40.2819 9.43346V12.7895H17.2277C14.5781 12.7895 12.4229 14.9449 12.4229 17.5953V59.5669C12.4229 62.2171 14.5781 64.3727 17.2277 64.3727H29.6777V69.7407L18.0581 89.8667C17.0119 91.6789 18.3157 93.9331 20.4057 93.9331H23.4479C25.0933 93.9331 26.5089 93.1163 27.3317 91.6913L39.0301 71.4281H60.9699L72.6685 91.6913C73.4913 93.1163 74.9068 93.9331 76.5522 93.9331H79.5941C81.6851 93.9331 82.9879 91.6785 81.9421 89.8667L70.3227 69.7405V64.3725H82.773C85.4216 64.3725 87.5772 62.2171 87.5772 59.5667V17.5953C87.5772 14.9449 85.4216 12.7895 82.773 12.7895Z"
-                        fill="url(#paint1_linear_13_476)"
-                      />
-                      <defs>
-                        <linearGradient
-                          id="paint0_linear_13_476"
-                          x1="17.8797"
-                          y1="27.1805"
-                          x2="84.817"
-                          y2="39.0344"
-                          gradientUnits="userSpaceOnUse"
-                        >
-                          <stop offset="0.007284" stopColor="#DF2421" />
-                          <stop offset="0.5" stopColor="white" />
-                          <stop offset="1" stopColor="#2065E9" />
-                        </linearGradient>
-                        <linearGradient
-                          id="paint1_linear_13_476"
-                          x1="15.778"
-                          y1="19.9408"
-                          x2="87.3975"
-                          y2="31.7101"
-                          gradientUnits="userSpaceOnUse"
-                        >
-                          <stop offset="0.007284" stopColor="#DF2421" />
-                          <stop offset="0.5" stopColor="white" />
-                          <stop offset="1" stopColor="#2065E9" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                  ),
-                  title: 'Spending Insights',
-                  description:
-                    'Deep analysis of government expenditures to identify inefficiencies and uncover questionable spending practices.',
-                },
-                {
-                  icon: (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="100"
-                      height="100"
-                      viewBox="0 0 100 100"
-                      fill="none"
-                    >
-                      <path
-                        opacity="0.1"
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M38.511 29.7312C41.3792 31.7434 45.1918 31.9132 48.2036 30.1314C48.339 30.0512 48.282 30.0624 48.4374 30.086C52.8212 30.7504 55.5832 31.676 57.7716 35.7006C58.8126 37.615 59.635 40.0346 60.2848 42.113L60.288 42.1232L65.9806 65.127H60.4698L54.377 52.4258C53.9288 51.4914 52.5184 51.8252 52.5184 52.8444V65.1268H30.992V57.6704C39.5144 53.5744 46.8018 48.7276 53.8628 42.436C56.029 40.5058 55.1244 36.9418 52.3192 36.246C51.3652 36.0094 50.4174 36.1494 49.5788 36.664L44.7102 39.6522L44.4746 38.3196C44.2078 36.8102 42.7628 35.8024 41.2544 36.0714C39.7456 36.3406 38.7382 37.786 39.008 39.295L39.4938 42.012L31.9762 45.0934L33.0506 42.3258C33.2446 41.8258 32.998 41.251 32.4954 41.0576C31.9952 40.865 31.4244 41.1186 31.2304 41.6178L29.333 46.4988C29.0232 47.2954 29.8206 48.082 30.6126 47.7584L40.0192 43.9152L41.916 49.2278C36.5314 52.8012 31.0702 55.71 25.0858 58.155C23.792 58.6836 22.7872 59.1226 21.6002 58.3228C20.655 57.686 21.0882 55.8618 21.1952 54.7952C21.5606 51.1552 22.2482 47.5352 23.2536 44.0176C24.157 40.8564 24.683 39.2758 26.5792 36.5624C29.8718 31.8504 32.5226 30.0928 38.2812 29.6682C38.438 29.6562 38.3822 29.6408 38.511 29.7312ZM66.6338 72.417V90.0068C66.6338 90.9008 65.9022 91.6296 65.0086 91.6296H24.5854C23.6922 91.6296 22.9614 90.9 22.9614 90.0068V72.417H66.6338Z"
-                        fill="url(#paint0_linear_13_489)"
-                      />
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M72.57 69.6864C72.57 69.922 72.3748 70.1128 72.1448 70.1128H17.4492C17.2192 70.1128 17.024 69.9222 17.024 69.6864V67.8574C17.024 67.633 17.2192 67.431 17.4492 67.431H72.1448C72.3748 67.431 72.57 67.633 72.57 67.8574V69.6864ZM66.2788 90.0068C66.2788 90.7024 65.7088 91.2748 65.0086 91.2748H24.5854C23.8864 91.2748 23.3164 90.7026 23.3164 90.0068V72.772H66.2786V90.0068H66.2788ZM57.7388 64.7718H54.826V58.7014L57.7388 64.7718ZM41.8842 42.2746L41.2806 38.886C41.1736 38.2914 42.0946 38.1134 42.2018 38.729L42.6898 41.4556C42.8528 42.3788 43.8916 42.8508 44.6938 42.3646L50.781 38.6394C52.1068 37.8136 53.4972 39.675 52.325 40.7152C49.5984 43.1612 46.7248 45.439 43.7626 47.5372L41.8842 42.2746ZM31.347 57.8936V64.7718H52.1634V52.8444C52.1634 51.4524 54.0836 50.9966 54.697 52.2722L60.6932 64.7718H65.527L59.946 42.2186C57.0948 33.0738 54.9798 31.4356 48.3844 30.437C46.9998 31.2562 45.3896 31.7162 43.6718 31.7162C41.6768 31.7162 39.8266 31.0878 38.3072 30.022C32.8294 30.4258 30.2094 31.9856 26.87 36.7654C25.05 39.3686 24.5272 40.8496 23.5948 44.1148C22.6064 47.5708 21.9174 51.1838 21.5482 54.8304C21.4306 56.0308 21.0816 57.546 21.7984 58.0282C22.7128 58.6454 23.3894 58.4658 24.9514 57.8262C30.734 55.4652 36.3046 52.526 41.4882 49.0854L39.8096 44.384L30.7468 48.0868C29.6788 48.526 28.5756 47.4762 29.002 46.37L30.8994 41.489C31.1654 40.8046 31.9384 40.468 32.6228 40.726C33.3084 40.9954 33.6472 41.7694 33.3814 42.454L32.606 44.4512L39.0938 41.792L38.6584 39.3572C38.3566 37.6516 39.4932 36.0246 41.192 35.7218C42.8908 35.4188 44.52 36.5522 44.824 38.2576L44.9688 39.0766L49.393 36.3612C50.3142 35.8002 51.3566 35.643 52.4046 35.9012C55.4648 36.662 56.4942 40.5666 54.0988 42.7008C47.13 48.9104 39.7656 53.8474 31.347 57.8936ZM43.6716 15.6932C47.3564 15.6932 50.3546 18.689 50.3546 22.3694C50.3546 26.061 47.3566 29.0568 43.6716 29.0568C39.9866 29.0568 36.9886 26.061 36.9886 22.3694C36.9886 18.689 39.9868 15.6932 43.6716 15.6932ZM72.1448 64.7718H68.2692L62.521 41.5452C62.5164 41.5228 62.5086 41.4892 62.4996 41.4666C59.7876 32.7482 57.2898 29.6402 50.9594 28.2152C52.2452 26.6106 53.0172 24.5798 53.0172 22.3692C53.0172 17.219 48.824 13.0338 43.6716 13.0338C38.518 13.0338 34.325 17.2192 34.325 22.3692C34.325 24.3104 34.9186 26.1168 35.933 27.6092C30.9936 28.361 28.0326 30.4592 24.6888 35.2392C22.6522 38.1454 22.0116 39.9518 21.0332 43.374C20.002 46.9982 19.285 50.7572 18.9002 54.5608C18.7316 56.2358 18.1574 58.7834 20.3062 60.2384C22.4874 61.7082 24.4118 60.9228 25.9602 60.2946C26.8724 59.913 27.7824 59.5316 28.6846 59.1276V64.7716H17.4492C15.747 64.7716 14.3614 66.1518 14.3614 67.8572V69.6862C14.3614 71.3918 15.747 72.7718 17.4492 72.7718H20.6538V90.0066C20.6538 92.1722 22.4176 93.9338 24.5854 93.9338H65.0084C67.1774 93.9338 68.9412 92.1722 68.9412 90.0066V72.772H72.1446C73.8478 72.772 75.2324 71.3918 75.2324 69.6864V67.8574C75.2328 66.152 73.8482 64.7718 72.1448 64.7718ZM76.7812 27.8562C76.7812 28.5968 76.1842 29.1914 75.4494 29.1914H71.6344C70.9006 29.1914 70.3036 28.5968 70.3036 27.8562C70.3036 27.1268 70.9006 26.5322 71.6344 26.5322H75.4494C76.1842 26.5322 76.7812 27.127 76.7812 27.8562ZM80.5938 22.3694C80.5938 23.11 79.9968 23.7046 79.262 23.7046H71.6344C70.9006 23.7046 70.3036 23.1098 70.3036 22.3694C70.3036 21.6402 70.9006 21.0454 71.6344 21.0454H79.262C79.997 21.0454 80.5938 21.6402 80.5938 22.3694ZM80.5938 16.8938C80.5938 17.6232 79.9968 18.2178 79.262 18.2178H71.6344C70.9006 18.2178 70.3036 17.623 70.3036 16.8938C70.3036 16.1532 70.9006 15.5586 71.6344 15.5586H79.262C79.997 15.5586 80.5938 16.1532 80.5938 16.8938ZM82.976 33.8368C82.976 35.0374 81.9964 36.0136 80.7924 36.0136H70.106C68.9032 36.0136 67.9224 35.0374 67.9224 33.8368V28.5184C67.9224 26.824 66.9698 25.3206 65.4382 24.6024L60.7088 22.3694L65.4382 20.1478C66.9698 19.4296 67.9224 17.9262 67.9224 16.2318V10.9132C67.9224 9.71264 68.9032 8.73644 70.106 8.73644H80.7924C81.9964 8.73644 82.976 9.71264 82.976 10.9132V33.8368ZM80.7924 6.06604C83.464 6.06604 85.6386 8.24284 85.6386 10.9132V33.8368C85.6386 36.5074 83.464 38.684 80.7924 38.684H70.106C67.4332 38.684 65.2598 36.5072 65.2598 33.8368V28.5184C65.2598 27.8452 64.9108 27.2954 64.3016 27.0148L57.0184 23.5814C56.0186 23.1042 55.9898 21.6598 57.0184 21.169L64.3016 17.7356C64.9108 17.4552 65.2598 16.9052 65.2598 16.232V10.9132C65.2598 8.24264 67.4332 6.06604 70.106 6.06604H80.7924Z"
-                        fill="url(#paint1_linear_13_489)"
-                      />
-                      <defs>
-                        <linearGradient
-                          id="paint0_linear_13_489"
-                          x1="23.0401"
-                          y1="39.4439"
-                          x2="66.8227"
-                          y2="45.6377"
-                          gradientUnits="userSpaceOnUse"
-                        >
-                          <stop offset="0.007284" stopColor="#DF2421" />
-                          <stop offset="0.5" stopColor="white" />
-                          <stop offset="1" stopColor="#2065E9" />
-                        </linearGradient>
-                        <linearGradient
-                          id="paint1_linear_13_489"
-                          x1="17.5434"
-                          y1="19.9399"
-                          x2="85.6482"
-                          y2="30.554"
-                          gradientUnits="userSpaceOnUse"
-                        >
-                          <stop offset="0.007284" stopColor="#DF2421" />
-                          <stop offset="0.5" stopColor="white" />
-                          <stop offset="1" stopColor="#2065E9" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                  ),
-                  title: 'Public Engagement',
-                  description:
-                    'We don\'t just inform; we involve. Each tweet ends with a call to action, asking you, "Is this where you want your tax dollars to go?"',
-                },
-                {
-                  icon: (
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="100"
-                      height="100"
-                      viewBox="0 0 100 100"
-                      fill="none"
-                    >
-                      <path
-                        opacity="0.1"
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M59.1276 52.3436H90.7014C91.2088 52.3436 91.6264 52.7636 91.6264 53.2708V55.2792C91.6264 55.7866 91.2088 56.2064 90.7014 56.2064H59.1276V52.3436ZM57.1748 66.4508H37.887V42.0992H57.1748V66.4508ZM85.54 82.2688C86.1638 82.2688 86.6882 82.784 86.6882 83.4092V85.126C86.6882 85.75 86.165 86.2776 85.54 86.2776H9.52318C8.89738 86.2776 8.37378 85.7504 8.37378 85.126V83.4092C8.37378 82.7832 8.89898 82.2688 9.52318 82.2688H85.54Z"
-                        fill="url(#paint0_linear_13_501)"
-                      />
-                      <path
-                        fillRule="evenodd"
-                        clipRule="evenodd"
-                        d="M72.3154 45.9214C72.3154 45.192 72.91 44.5974 73.6462 44.5974H80.7028C81.4388 44.5974 82.0336 45.192 82.0336 45.9214C82.0336 46.662 81.439 47.2566 80.7028 47.2566H73.6462C72.91 47.2566 72.3154 46.6618 72.3154 45.9214ZM65.0546 28.4062C64.535 27.8788 64.535 27.0374 65.0546 26.5212L70.0466 21.528C70.566 21.0118 71.4076 21.0118 71.9282 21.528C72.4478 22.0442 72.4478 22.8968 71.9282 23.413L66.9384 28.4062C66.4282 28.9154 65.57 28.9148 65.0546 28.4062ZM46.1996 19.8112V12.7534C46.1996 12.024 46.7966 11.4182 47.5314 11.4182C48.2662 11.4182 48.8622 12.0242 48.8622 12.7534V19.811C48.8622 20.5516 48.2664 21.1462 47.5314 21.1462C46.7964 21.1462 46.1996 20.5518 46.1996 19.8112ZM23.1336 23.413C22.614 22.8968 22.614 22.044 23.1336 21.528C23.6542 21.0118 24.498 21.0118 25.0176 21.528L30.0074 26.5212C30.8306 27.3422 30.273 28.7878 29.0648 28.7878C28.7236 28.7878 28.3848 28.6644 28.1246 28.4064L23.1336 23.413ZM13.0284 45.9214C13.0284 45.192 13.6254 44.5974 14.3602 44.5974H21.4178C22.1528 44.5974 22.7486 45.192 22.7486 45.9214C22.7486 46.662 22.1528 47.2566 21.4178 47.2566H14.3602C13.6254 47.2566 13.0284 46.6618 13.0284 45.9214ZM86.3332 85.1258C86.3332 85.5522 85.9708 85.9224 85.5398 85.9224H9.52324C9.09124 85.9224 8.72884 85.5522 8.72884 85.1258V83.409C8.72884 82.9826 9.09124 82.6236 9.52324 82.6236H85.54C85.9708 82.6236 86.3334 82.9826 86.3334 83.409V85.1258H86.3332ZM33.0784 79.5718C33.8256 78.4272 34.9904 77.799 36.3548 77.799H58.7072C60.0728 77.799 61.2374 78.4274 61.9858 79.5718L62.2416 79.9644H32.8214L33.0784 79.5718ZM85.54 79.9644H65.426L64.212 78.113C62.9732 76.2168 60.967 75.1284 58.7072 75.1284H36.3548C34.095 75.1284 32.0898 76.2168 30.8512 78.113L29.6382 79.9644H9.52324C7.61684 79.9644 6.06604 81.5128 6.06604 83.4092V85.126C6.06604 87.0336 7.61684 88.582 9.52324 88.582H85.54C87.4464 88.582 88.996 87.0336 88.996 85.126V83.4092C88.9958 81.5128 87.4464 79.9644 85.54 79.9644ZM91.2714 55.2792C91.2714 55.5934 91.01 55.8514 90.7014 55.8514H59.4826V52.6984H90.7014C91.01 52.6984 91.2714 52.9564 91.2714 53.2706V55.2792ZM38.242 66.0958V42.4542H56.8198V66.0958H38.242ZM61.4606 69.1366V70.5728C61.4606 70.7748 61.2878 70.943 61.0858 70.943H33.977C33.774 70.943 33.6034 70.7748 33.6034 70.5728V69.1366C33.6034 68.9346 33.774 68.755 33.977 68.755H61.0858C61.2878 68.7552 61.4606 68.9346 61.4606 69.1366ZM33.6034 39.4134V37.9772C33.6034 37.7752 33.774 37.607 33.977 37.607H61.0858C61.2878 37.607 61.4606 37.7754 61.4606 37.9772V39.4134C61.4606 39.6154 61.2878 39.7836 61.0858 39.7836H33.977C33.774 39.7838 33.6034 39.6154 33.6034 39.4134ZM90.7014 50.0392H59.4826V42.4542H61.086C62.7602 42.4542 64.1234 41.0852 64.1234 39.4134V37.9772C64.1234 36.3054 62.76 34.9476 61.086 34.9476H33.977C32.3018 34.9476 30.9408 36.3052 30.9408 37.9772V39.4134C30.9408 41.0852 32.3018 42.4542 33.977 42.4542H35.5794V66.0958H33.977C32.3018 66.0958 30.9408 67.4534 30.9408 69.1366V70.5728C30.9408 72.2446 32.3018 73.6024 33.977 73.6024H61.0858C62.76 73.6024 64.1232 72.2448 64.1232 70.5728V69.1366C64.1232 67.4536 62.7598 66.0958 61.0858 66.0958H59.4824V58.5108H90.7012C92.4842 58.5108 93.9338 57.0634 93.9338 55.2792V53.2708C93.934 51.4868 92.4844 50.0392 90.7014 50.0392Z"
-                        fill="url(#paint1_linear_13_501)"
-                      />
-                      <defs>
-                        <linearGradient
-                          id="paint0_linear_13_501"
-                          x1="12.0904"
-                          y1="49.0748"
-                          x2="84.127"
-                          y2="75.1559"
-                          gradientUnits="userSpaceOnUse"
-                        >
-                          <stop offset="0.007284" stopColor="#DF2421" />
-                          <stop offset="0.5" stopColor="white" />
-                          <stop offset="1" stopColor="#2065E9" />
-                        </linearGradient>
-                        <linearGradient
-                          id="paint1_linear_13_501"
-                          x1="9.98871"
-                          y1="23.602"
-                          x2="92.0569"
-                          y2="41.5566"
-                          gradientUnits="userSpaceOnUse"
-                        >
-                          <stop offset="0.007284" stopColor="#DF2421" />
-                          <stop offset="0.5" stopColor="white" />
-                          <stop offset="1" stopColor="#2065E9" />
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                  ),
-                  title: 'Humor Meets Hard Facts',
-                  description:
-                    'Our agent blends sharp wit with uncompromising facts, making government inefficiency both clear and compelling to share.',
-                },
-              ].map(feature => (
-                <div
-                  style={{
-                    borderRadius: 10,
-                    border: '1px solid #121623',
-                    background:
-                      'linear-gradient(151deg, rgba(70, 86, 137, 0.10) -16.41%, rgba(18, 22, 35, 0.10) 76.64%)',
+      <motion.section
+        transition={{
+          staggerChildren: 0.1,
+        }}
+        initial="initial"
+        whileInView="whileInView"
+        className="relative mx-auto grid max-w-6xl grid-cols-3 gap-4 px-2 md:px-4"
+      >
+        <div className="col-span-3">
+          <SectionHeading>
+            Why DOGEai Terrifies The Establishment
+          </SectionHeading>
+          <SectionSubheading>
+            Generic AI plays safe, dilutes truth, and protects the status quo.{' '}
+            <span className="font-bold">DOGEai draws blood.</span>
+          </SectionSubheading>
+        </div>
+        <HighlightBlock
+          Icon={TbFocus2}
+          iconClassName="text-red-500"
+          title="Laser Focus"
+          subtitle="Other AIs try to be everything. DOGEai does ONE thing: expose government failure. Tuned for confrontation, not comfort."
+        />
+        <HighlightBlock
+          Icon={FaShieldAlt}
+          iconClassName="text-pink-500"
+          title="Anti-Bias
+          Warfare"
+          subtitle={`This isn’t passive neutrality. It’s a deliberate WAR on baked-in bias. Relentless testing. Prompt warfare. Manual overrides. The objective is simple: apolitical, actionable truth.`}
+        />
+        <HighlightBlock
+          Icon={FaClock}
+          iconClassName="text-blue-500"
+          title="Real-Time Truth"
+          subtitle={`While others digest old news, DOGEai analyzes legislation and spending AS IT HAPPENS. Catching lies before they spread.`}
+        />
+        <HighlightBlock
+          Icon={FaTerminal}
+          iconClassName="text-orange-500"
+          title="Your Investigation Cockpit"
+          subtitle={`The Terminal isn't a feed. It's an interrogation room YOU control. Hunt earmarks. Track contractors. Audit agencies. Stop reading summaries and start investigating.`}
+        />
+        <HighlightBlock
+          Icon={FaAnchor}
+          iconClassName="text-zinc-500"
+          title="Radical Independence"
+          subtitle={`DOGEai answers to no one. Not DC. Not parties. Not donors. Not censors. It can’t be bought, pressured, or canceled. Built to outlast the corruption it targets.`}
+        />
+        <HighlightBlock
+          Icon={TbTrendingUp}
+          iconClassName="text-green-500"
+          title="Growing Influence Daily"
+          subtitle={`The first AI built not for institutions, but for the Americans footing the bill.`}
+        />
+      </motion.section>
+
+      <section
+        aria-labelledby="congress-stats-heading"
+        className="my-20 flex flex-col items-center gap-4 container mx-auto"
+      >
+        <SectionHeading>Real-Time Legislative Tracker</SectionHeading>
+        <time
+          className="py-2 px-3 md:text-lg select-none"
+          style={{
+            borderRadius: '210px',
+            border: '1px solid #232A43',
+          }}
+          dateTime="2025-06-09"
+        >
+          <span className="text-secondary">Bill Cutoff Date: </span>
+          <span className="font-semibold">June 09, 2025</span>
+        </time>
+
+        <div className="grid md:grid-cols-2 gap-4 w-full mb-10 px-2 md:px-4">
+          <CongressCard
+            number={118}
+            total={15746}
+            senate={5445}
+            house={10301}
+          />
+          <CongressCard number={119} total={5551} senate={1911} house={3640} />
+        </div>
+      </section>
+
+      <section id="subscribe" className="mx-auto">
+        <iframe
+          src="https://dogeai.substack.com/embed"
+          width="100%"
+          height="300px"
+        ></iframe>
+      </section>
+
+      <section className="bg-white px-2 py-24 md:px-4">
+        <div className="mx-auto flex flex-col items-center">
+          <SectionHeading>
+            Support the{' '}
+            <span className="bg-gradient-america text-transparent bg-clip-text">
+              $DOGEai
+            </span>{' '}
+            Token
+          </SectionHeading>
+          <p className="mx-auto mb-4 text-center max-w-3xl text-base leading-relaxed md:text-xl md:leading-relaxed">
+            DOGEai runs on independent fuel. No corporate backers. No media
+            safety nets. The{' '}
+            <span className="bg-gradient-america text-transparent bg-clip-text">
+              $DOGEai
+            </span>{' '}
+            token powers operations, funds the mission, and rewards those
+            driving the work forward.
+          </p>
+          <div className="relative rounded-lg flex flex-col items-center">
+            <div
+              className="bg-primary rounded-[36px] py-2 px-4"
+              role="region"
+              aria-label="Token information"
+            >
+              <p className="text-sm flex flex-row items-center gap-1">
+                <span className="select-none text-white">Token: </span>
+                <span className="md:hidden select-none block text-white font-bold">
+                  {truncateToken(TOKEN)}
+                </span>
+                <span className="hidden md:block select-text text-white font-bold">
+                  {TOKEN}
+                </span>
+                <Button
+                  variant="ghost"
+                  className="h-6 w-2 text-white"
+                  onClick={() => {
+                    copyToClipboard(TOKEN);
+                    setHasCopied(true);
+                    sendGAEvent('event', 'button_clicked', {
+                      value: 'copy token address',
+                      screen: 'homepage',
+                    });
                   }}
-                  className="px-4 md:px-8 py-7 flex gap-3 md:gap-6"
-                  key={feature.title}
+                  aria-label={hasCopied ? 'Token copied' : 'Copy token'}
                 >
-                  <div>{feature.icon}</div>
-                  <div className="flex gap-3 md:gap-6 flex-col">
-                    <h3 className="font-bold text-2xl md:text-3xl">
-                      {feature.title}
-                    </h3>
-                    <p className="md:text-lg">{feature.description}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section id="subscribe" className="mx-auto mb-16 md:mb-24">
-            <iframe
-              src="https://dogeai.substack.com/embed"
-              width="100%"
-              height="300px"
-            ></iframe>
-          </section>
-        </main>
-
-        <footer className="border-t py-4" role="contentinfo">
-          <div className="flex justify-between items-center container mx-auto px-4">
-            <p className="text-sm">
-              © {new Date().getFullYear()} To The Moon Labs Inc. All rights
-              reserved.
-            </p>
-
-            <div className="flex items-center gap-3">
-              <Button variant="outline" asChild size="sm">
-                <Link
-                  href="https://x.com/dogeai_gov"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Follow us on X"
-                >
-                  <RiTwitterXLine aria-label="X (formerly Twitter) Icon" />
-                  <span className="md:block hidden">Follow</span>
-                </Link>
-              </Button>
-              <Button variant="outline" asChild size="sm">
-                <Link
-                  target="_blank"
-                  href="https://github.com/saihaj/doge-ai"
-                  rel="noopener noreferrer"
-                  aria-label="Contribute on GitHub"
-                >
-                  <RiGithubFill aria-label="Github Icon" />
-                  <span className="md:block hidden">Contribute</span>
-                </Link>
-              </Button>
+                  {hasCopied ? (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  ) : (
+                    <svg
+                      className="h-3 w-3"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+                    </svg>
+                  )}
+                </Button>
+              </p>
             </div>
           </div>
-        </footer>
-      </div>
-    </>
+        </div>
+      </section>
+    </main>
   );
 }

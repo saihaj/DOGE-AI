@@ -14,6 +14,10 @@ export default {
         serif: ['var(--font-main)'],
       },
       colors: {
+        theme: {
+          blue: '#0B1D55',
+          red: '#C52C25',
+        },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -68,7 +72,7 @@ export default {
       addUtilities({
         '.bg-gradient-america': {
           backgroundImage:
-            'linear-gradient(101deg, #DF2421 6.89%, #FFF 47.34%, #2065E9 88.39%)',
+            'linear-gradient(101deg, #df2421 6.89%, #2065e9 88.39%)',
         },
       });
     }),

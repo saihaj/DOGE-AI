@@ -1,6 +1,4 @@
-import { Footer } from '@/components/footer';
-import { Navbar } from '@/components/nav';
-import Head from 'next/head';
+import { Seo } from '@/components/seo';
 import pMap from 'p-map';
 import { EmbeddedTweet } from 'react-tweet';
 import { getTweet, type Tweet } from 'react-tweet/api';
@@ -101,16 +99,18 @@ export async function getStaticProps() {
 export default function Page({ tweets }: { tweets: Array<Tweet> }) {
   return (
     <div className="min-h-screen container mx-auto px-4 py-5" role="main">
-      <Head>
-        <title>Loud, Clear, and Unignorable | DOGEai</title>
-      </Head>
-      <Navbar />
-
-      <main className="container mx-auto px-2 py-4">
-        <h1 className="text-balance text-3xl md:text-5xl text-center font-semibold mb-2 md:mb-8">
+      <Seo
+        title="Loud, Clear, and Unignorable | DOGEai"
+        description="DOGEai is not just noticed, but recognized. Explore the impact of DOGEai across the world with our curated collection of tweets."
+        image="https://dogeai.info/images/interaction-og.jpg"
+      />
+      <section className="relative flex flex-col items-center justify-center md:px-12 px-6 py-16 md:py-20">
+        <h1 className="max-w-4xl text-center text-balance text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
           Not Just Noticed. Recognized.
         </h1>
-        <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
+      </section>
+      <main className="container mx-auto px-2">
+        <div className="columns-1 sm:columns-2 md:columns-3 gap-4 light">
           {tweets.map((tweet, index) => (
             <div key={index} className="break-inside-avoid mb-2 [&>div]:!mt-0">
               <EmbeddedTweet tweet={tweet} />
@@ -118,8 +118,6 @@ export default function Page({ tweets }: { tweets: Array<Tweet> }) {
           ))}
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }
