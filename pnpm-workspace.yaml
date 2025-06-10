@@ -4,3 +4,4 @@ packages:
   - website
   - database
   - chat
+  - dashboard
