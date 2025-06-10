@@ -185,6 +185,7 @@ export default function Home() {
       <Seo
         title="Win the digital fight | DOGEai"
         description="Real-time AI for narrative control. Custom, policy-trained, counters misinformation."
+        image="https://dogeai.info/images/white-label-og.jpg"
       />
       <section className="relative flex flex-col items-center justify-center px-6 md:px-12 py-20 md:py-24">
         <h1 className="max-w-4xl text-center text-balance text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">

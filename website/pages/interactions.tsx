@@ -102,6 +102,7 @@ export default function Page({ tweets }: { tweets: Array<Tweet> }) {
       <Seo
         title="Loud, Clear, and Unignorable | DOGEai"
         description="DOGEai is not just noticed, but recognized. Explore the impact of DOGEai across the world with our curated collection of tweets."
+        image="https://dogeai.info/images/interaction-og.jpg"
       />
       <section className="relative flex flex-col items-center justify-center md:px-12 px-6 py-16 md:py-20">
         <h1 className="max-w-4xl text-center text-balance text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
