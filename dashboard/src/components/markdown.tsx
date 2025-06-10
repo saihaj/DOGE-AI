@@ -10,7 +10,7 @@ const components: Partial<Components> = {
   code: ({ node, children, className, ...props }) => (
     <code
       className={cn(
-        'text-sm bg-zinc-100 dark:bg-zinc-800 py-0.5 px-1 rounded-md',
+        'text-sm bg-zinc-100 dark:bg-zinc-800 text-black py-0.5 px-1 rounded-md',
         className,
       )}
       {...props}

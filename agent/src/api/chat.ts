@@ -8,8 +8,7 @@ import {
   wrapLanguageModel,
 } from 'ai';
 import { createOpenRouter } from '@openrouter/ai-sdk-provider';
-import { createDeepInfra } from '@ai-sdk/deepinfra';
-import { DEEPINFRA_API_KEY, OPEN_ROUTER_API_KEY } from '../const';
+import { OPEN_ROUTER_API_KEY } from '../const';
 import { xai } from '@ai-sdk/xai';
 import { google } from '@ai-sdk/google';
 
@@ -28,10 +27,6 @@ const openrouter = createOpenRouter({
   apiKey: OPEN_ROUTER_API_KEY,
 });
 
-const deepinfra = createDeepInfra({
-  apiKey: DEEPINFRA_API_KEY,
-});
-
 export const myProvider = customProvider({
   languageModels: {
     'sonar-reasoning-pro': perplexity('sonar-reasoning-pro'),
@@ -46,7 +41,23 @@ export const myProvider = customProvider({
     'claude-3-5-sonnet-latest': anthropic('claude-3-5-sonnet-latest'),
     'claude-3-5-haiku-latest': anthropic('claude-3-5-haiku-latest'),
     'deepseek-r1': wrapLanguageModel({
-      model: deepinfra('deepseek-ai/DeepSeek-R1'),
+      model: openrouter.chat('deepseek/deepseek-r1', {
+        reasoning: {
+          effort: 'high',
+        },
+      }),
+      middleware: [
+        extractReasoningMiddleware({
+          tagName: 'think',
+        }),
+      ],
+    }),
+    'deepseek-r1-0528': wrapLanguageModel({
+      model: openrouter.chat('deepseek/deepseek-r1-0528', {
+        reasoning: {
+          effort: 'high',
+        },
+      }),
       middleware: [
         extractReasoningMiddleware({
           tagName: 'think',

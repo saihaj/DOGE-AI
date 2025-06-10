@@ -33,6 +33,10 @@ const models = [
     label: 'DeepSeek R1',
   },
   {
+    value: 'deepseek-r1-0528',
+    label: 'R1 0528',
+  },
+  {
     value: 'gpt-4o',
     label: 'GPT 4o',
   },
