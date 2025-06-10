@@ -14,7 +14,7 @@ const mainFont = Funnel_Display({
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <div className={`${mainFont.variable} font-serif text-black`}>
-      <main className="mx-auto max-w-screen-2xl">
+      <main>
         <ExpandableNavBar />
         <Component {...pageProps} />
         <Footer />
