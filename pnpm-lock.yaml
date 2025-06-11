@@ -74,8 +74,8 @@ importers:
         specifier: ^14.17.3
         version: 14.17.3(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       dotenv:
-        specifier: ^16.4.7
-        version: 16.4.7
+        specifier: ^16.5.0
+        version: 16.5.0
       drizzle-orm:
         specifier: ^0.38.4
         version: 0.38.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/react@19.1.7)(better-sqlite3@11.6.0)(prisma@6.2.1)(react@19.1.0)(sqlite3@5.1.7)
@@ -558,8 +558,8 @@ importers:
         specifier: ^0.14.0
         version: 0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       dotenv:
-        specifier: ^16.4.7
-        version: 16.4.7
+        specifier: ^16.5.0
+        version: 16.5.0
       drizzle-orm:
         specifier: ^0.38.4
         version: 0.38.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/react@19.1.7)(better-sqlite3@11.6.0)(prisma@6.2.1)(react@19.1.0)(sqlite3@5.1.7)
@@ -5696,10 +5696,6 @@ packages:
 
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
-
-  dotenv@16.4.7:
-    resolution: {integrity: sha512-47qPchRCykZC03FhkYAhrvwU4xDBFIj1QPqaarj6mdM/hgUzfPHcpkHJOn3mJAufFeeAxAzeGsr5X0M4k6fLZQ==}
-    engines: {node: '>=12'}
 
   dotenv@16.5.0:
     resolution: {integrity: sha512-m/C+AwOAr9/W1UOIZUo232ejMNnJAJtYQjUbHoNTBNTJSvqzzDh7vnrei3o3r3m9blf6ZoDkvcw0VmozNRFJxg==}
@@ -16231,8 +16227,6 @@ snapshots:
       domelementtype: 2.3.0
       domhandler: 5.0.3
 
-  dotenv@16.4.7: {}
-
   dotenv@16.5.0: {}
 
   drizzle-kit@0.31.1:
@@ -16911,7 +16905,7 @@ snapshots:
   exa-js@1.5.13(encoding@0.1.13):
     dependencies:
       cross-fetch: 4.1.0(encoding@0.1.13)
-      dotenv: 16.4.7
+      dotenv: 16.5.0
     transitivePeerDependencies:
       - encoding
 
@@ -17560,7 +17554,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9)
+      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.0))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -19814,7 +19808,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9):
+  retry-axios@2.6.0(axios@1.7.9(debug@4.4.0)):
     dependencies:
       axios: 1.7.9(debug@4.4.0)
 
