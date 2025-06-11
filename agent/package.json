@@ -41,7 +41,7 @@
     "database": "workspace:^",
     "date-fns": "^4.1.0",
     "dedent": "^1.5.3",
-    "discord.js": "^14.17.3",
+    "discord.js": "^14.19.3",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.38.4",
     "exa-js": "^1.5.13",
