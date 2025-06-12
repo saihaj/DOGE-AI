@@ -31,6 +31,7 @@ import {
 } from './prompts';
 import { z } from 'zod';
 import pMap from 'p-map';
+import { P } from 'pino';
 
 /**
  * Given a thread and the extracted question, it will return documents that are related to the tweet.
@@ -519,6 +520,45 @@ async function getReasonBillContext(
   );
   log.info({}, `Found ${embeddingsForKeywords.length} embeddings.`);
 
+  const searchPromises2 = embeddingsForKeywords.map(
+    async termEmbeddingString => {
+      return db.$client.execute({
+        sql: `SELECT "id" FROM vector_top_k('BillVector_vector_idx', vector32(?), 3);`,
+        args: [termEmbeddingString],
+      });
+    },
+  );
+
+  const searchResults2 = (
+    await pMap(
+      searchPromises2,
+      searchPromise => searchPromise.rows.flatMap(r => r.id?.toString()),
+      {
+        concurrency: 5,
+      },
+    )
+  ).flat();
+  log.info(
+    { size: searchResults2.length },
+    `Found ${searchResults2.length} vector search results.`,
+  );
+
+  const uniqueRowIds = new Set<string>();
+  const uniqueSearchResults2 = searchResults2
+    .filter(id => {
+      if (id === null) return false;
+      if (id === undefined) return false;
+      if (uniqueRowIds.has(id)) return false;
+      uniqueRowIds.add(id);
+      return true;
+    })
+    .filter(a => a !== undefined);
+
+  log.info(
+    { all: searchResults2.length, unique: uniqueSearchResults2.length },
+    'removed duplicates',
+  );
+
   const searchPromises = embeddingsForKeywords.map(
     async termEmbeddingString => {
       const embeddingsQuery = db
@@ -568,6 +608,8 @@ async function getReasonBillContext(
     { all: searchResults.length, unique: uniqueSearchResults.length },
     'removed duplicates',
   );
+
+  return;
 
   const baseText = uniqueSearchResults
     .map(({ title, text, billId }) => {
