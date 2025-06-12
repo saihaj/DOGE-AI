@@ -106,7 +106,7 @@ export default function Page({ tweets }: { tweets: Array<Tweet> }) {
       />
       <section className="relative flex flex-col items-center justify-center md:px-12 px-6 py-16 md:py-20">
         <h1 className="max-w-4xl text-center text-balance text-4xl font-black leading-[1.15] md:text-7xl md:leading-[1.15]">
-          Not Just Noticed. Recognized.
+          Recognized by the most prominent thought leaders worldwide
         </h1>
       </section>
       <main className="container mx-auto px-2">
