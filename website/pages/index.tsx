@@ -106,20 +106,20 @@ const CARDS: CardType[] = [
   {
     id: 1,
     Icon: FiTarget,
-    title: 'The Mission: Expose',
-    description: `DOGEai isn’t a project or a startup. It’s an autonomous AI weapon built for one purpose: to hunt down and expose the waste, grift, and dysfunction. Forget summaries. Think forensic analysis at machine speed.`,
+    title: 'Mission',
+    description: `DOGEai is restoring truth and accountability in public discourse by exposing government inefficiencies in real time. It’s not a chatbot, it’s a watchdog. Powered by public data and AI, DOGEai is designed to bypass gatekeepers, amplify verified information, and call out institutional dysfunction without censorship.`,
   },
   {
     id: 2,
     Icon: FaDatabase,
-    title: 'The Intel: Raw & Real',
-    description: `Trained on the raw feed: 19,000+ bills, federal contracts, grant databases, FOIA trails, audits, and real-time data. Every output? Sourced. Every breakdown? Precise. No escape.`,
+    title: 'Intel',
+    description: `Trained on the raw feed: 19,000+ bills, federal contracts, grant databases, FOIA trails, audits, and real-time data.`,
   },
   {
     id: 3,
     Icon: FiZap,
-    title: 'The Method: Surgical Strike',
-    description: `It doesn’t summarize, it dissects. It doesn’t explain, it indicts. It tracks the money, the power, the consequences. And it names names.  Direct, unflinching, and allergic to PR speak. It delivers the facts you weren’t meant to find.`,
+    title: 'Method',
+    description: `DOGEai does not summarize but it actively spots inefficiencies for public access. It tracks money, consequences and names names in real time. It offers constant 𝕏 feed updates, replies to controversy in real time, can be @ mentioned under any post and challenged to restore the truth at any moment.`,
     bgColor: 'bg-zinc-300 text-black',
   },
 ];
@@ -157,10 +157,9 @@ export default function Home() {
           </h2>
 
           <p className="max-w-2xl text-left md:text-2xl text-md mb-4 md:mb-6">
-            This isn&apos;t another polite chatbot. It&apos;s the autonomous
-            watchdog built to rip the mask off DC&apos;s dysfunction. Fueled by
-            raw data, engineered for truth, and ready to expose the rot. Get
-            ready to interrogate the system.
+            An AI engine trained to uncover government inefficiency in real
+            time. Fueled by raw government data. Built to hold power accountable
+            and put truth back in your timeline.
           </p>
           <div className="flex gap-4">
             <a
@@ -218,9 +217,7 @@ export default function Home() {
         className="relative mx-auto grid max-w-6xl grid-cols-3 gap-4 px-2 md:px-4"
       >
         <div className="col-span-3">
-          <SectionHeading>
-            Why DOGEai Terrifies The Establishment
-          </SectionHeading>
+          <SectionHeading>Why DOGEai Matters</SectionHeading>
           <SectionSubheading>
             Generic AI plays safe, dilutes truth, and protects the status quo.{' '}
             <span className="font-bold">DOGEai draws blood.</span>
@@ -229,7 +226,7 @@ export default function Home() {
         <HighlightBlock
           Icon={TbFocus2}
           iconClassName="text-red-500"
-          title="Laser Focus"
+          title="Specialization"
           subtitle="Other AIs try to be everything. DOGEai does ONE thing: expose government failure. Tuned for confrontation, not comfort."
         />
         <HighlightBlock
@@ -243,7 +240,7 @@ export default function Home() {
           Icon={FaClock}
           iconClassName="text-blue-500"
           title="Real-Time Truth"
-          subtitle={`While others digest old news, DOGEai analyzes legislation and spending AS IT HAPPENS. Catching lies before they spread.`}
+          subtitle={`Exceeding speed performance, DOGEai analyzes legislation and spending AS IT HAPPENS. Catching lies before they spread.`}
         />
         <HighlightBlock
           Icon={FaTerminal}
@@ -255,7 +252,7 @@ export default function Home() {
           Icon={FaAnchor}
           iconClassName="text-zinc-500"
           title="Radical Independence"
-          subtitle={`DOGEai answers to no one. Not DC. Not parties. Not donors. Not censors. It can’t be bought, pressured, or canceled. Built to outlast the corruption it targets.`}
+          subtitle={`DOGEai is an independent and uncensored confrontation and truth engine that does not report to DC, donors or political parties.`}
         />
         <HighlightBlock
           Icon={TbTrendingUp}
