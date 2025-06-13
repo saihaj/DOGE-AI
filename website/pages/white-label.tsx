@@ -11,22 +11,17 @@ import { sendGAEvent } from '@next/third-parties/google';
 import { Calendar, TrendingUp, Users, Zap } from 'lucide-react';
 import { motion } from 'motion/react';
 import {
-  FaAnchor,
   FaBolt,
   FaBullhorn,
-  FaClock,
   FaCog,
   FaEye,
   FaFolder,
   FaHandshake,
   FaLightbulb,
   FaShieldAlt,
-  FaTerminal,
 } from 'react-icons/fa';
-import { FaBrain, FaDatabase, FaEyeSlash } from 'react-icons/fa6';
-import { IoIosPeople, IoIosRadio } from 'react-icons/io';
-import { PiChartLineUp } from 'react-icons/pi';
-import { TbFocus2, TbMessageShare, TbTrendingUp } from 'react-icons/tb';
+import { FaBrain, FaEyeSlash } from 'react-icons/fa6';
+import { IoIosPeople } from 'react-icons/io';
 
 const timelineEvents = [
   {
