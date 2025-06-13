@@ -240,7 +240,7 @@ export default function Home() {
         }}
         initial="initial"
         whileInView="whileInView"
-        className="relative mx-auto grid max-w-6xl grid-cols-3 gap-4 px-2 md:px-4 py-20 md:py-32"
+        className="relative mx-auto grid container grid-cols-3 gap-4 px-2 md:px-0 pb-20 md:pb-32"
       >
         <div className="col-span-3">
           <SectionHeading>White Label at a Glance</SectionHeading>
@@ -295,6 +295,7 @@ export default function Home() {
       <div className="pt-20 md:pt-32 container mx-auto px-4 md:px-8">
         <PoliticsTimeline />
       </div>
+
       <div className="md:space-y-32 space-y-20 bg-zinc-50 py-20 md:py-32">
         <motion.section
           transition={{
@@ -302,7 +303,7 @@ export default function Home() {
           }}
           initial="initial"
           whileInView="whileInView"
-          className="relative mx-auto grid max-w-6xl grid-cols-3 gap-4 px-2 md:px-4"
+          className="relative mx-auto grid container grid-cols-3 gap-4 px-2 md:px-0"
         >
           <div className="col-span-3">
             <SectionHeading>How It Works</SectionHeading>
@@ -344,14 +345,14 @@ export default function Home() {
         </section>
         <BenefitsGrid />
       </div>
-      <section id="subscribe" className="mx-auto mb-16 md:mb-24">
+      <section id="subscribe" className="mx-auto">
         <iframe
           src="https://dogeai.substack.com/embed"
           width="100%"
           height="300px"
         ></iframe>
       </section>
-      <section className="-mt-8 bg-white px-2 py-24 md:px-4">
+      <section className="-mt-8 bg-white px-2 md:py-32 py-24 md:px-4">
         <div className="mx-auto flex max-w-5xl flex-col items-center">
           <Logo className="h-[80px] w-[80px] rounded-full" />
           <SectionHeading>Your voice. Weaponized.</SectionHeading>

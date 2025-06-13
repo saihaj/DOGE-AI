@@ -212,7 +212,7 @@ export default function Home() {
         }}
         initial="initial"
         whileInView="whileInView"
-        className="relative mx-auto grid max-w-6xl grid-cols-3 gap-4 px-2 md:px-4 md:my-32 my-20"
+        className="relative mx-auto grid container grid-cols-3 gap-4 px-2 md:px-0 md:mb-32 mb-20"
       >
         <div className="col-span-3">
           <SectionHeading>Who Is It For?</SectionHeading>
@@ -253,7 +253,7 @@ export default function Home() {
         }}
         initial="initial"
         whileInView="whileInView"
-        className="relative mx-auto grid max-w-6xl grid-cols-3 gap-4 px-2 md:px-4"
+        className="relative mx-auto grid container grid-cols-3 gap-4 px-2 md:px-0"
       >
         <div className="col-span-3">
           <SectionHeading>Why DOGEai Matters</SectionHeading>
