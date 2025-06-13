@@ -7,20 +7,26 @@ import { Button, buttonVariants } from '@/components/ui/button';
 import { sendGAEvent } from '@next/third-parties/google';
 import { useCopyToClipboard } from '@uidotdev/usehooks';
 import { motion } from 'motion/react';
+import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import {
   FaAnchor,
   FaClock,
   FaDatabase,
   FaFistRaised,
+  FaGraduationCap,
   FaShieldAlt,
   FaTerminal,
 } from 'react-icons/fa';
+import {
+  FaBullhorn,
+  FaHandshake,
+  FaMagnifyingGlass,
+  FaNewspaper,
+} from 'react-icons/fa6';
 import { FiTarget, FiZap } from 'react-icons/fi';
 import { RiTwitterXLine } from 'react-icons/ri';
 import { TbFocus2, TbTrendingUp } from 'react-icons/tb';
-import Image from 'next/image';
-import { FaBullhorn, FaMagnifyingGlass, FaNewspaper } from 'react-icons/fa6';
 
 function CongressCard({
   number,
@@ -237,9 +243,21 @@ export default function Home() {
         />
         <HighlightBlock
           Icon={FaFistRaised}
-          iconClassName="text-orange-500"
+          iconClassName="text-teal-500"
           title="Advocacy Groups"
           subtitle={`Fight corruption with speed. DOGEai uncovers evidence and amplifies your cause with undeniable receipts.`}
+        />
+        <HighlightBlock
+          Icon={FaGraduationCap}
+          iconClassName="text-yellow-500"
+          title="Policy Researchers"
+          subtitle={`Uncover government inefficiencies with real-time data insights, fueling impactful research and shareable findings that spark public debate.`}
+        />
+        <HighlightBlock
+          Icon={FaHandshake}
+          iconClassName="text-slate-500"
+          title="Non-Profits"
+          subtitle={`Champion Your Cause With DOGEai, turn your mission into powerful advocacy. Create shareable, impactful messages that ignite awareness and rally communities to act.`}
         />
       </motion.section>
 
