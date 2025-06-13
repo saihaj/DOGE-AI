@@ -88,8 +88,8 @@ export function ChatWithCustomScroll({
               renderMessageParts(message)
             ) : (
               <MessageContent className="bg-primary w-full text-primary-foreground whitespace-normal">
-                {message.parts
-                  .map(a => {
+                {message?.parts
+                  ?.map(a => {
                     if (a.type === 'text') {
                       return a.text;
                     }

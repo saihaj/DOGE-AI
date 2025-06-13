@@ -222,6 +222,7 @@ fastify.register(fastifyTRPCPlugin, {
 const UserChatStreamInput = Type.Object({
   id: Type.String(),
   message: Type.Any(),
+  forkedMessages: Type.Optional(Type.Array(Type.Any())),
 });
 type UserChatStreamInput = Static<typeof UserChatStreamInput>;
 
@@ -246,9 +247,10 @@ fastify.route<{ Body: UserChatStreamInput }>({
     // Create an AbortController for the backend
     const abortController = new AbortController();
 
-    let { message, id } = request.body as {
+    let { message, id, forkedMessages } = request.body as {
       message: UIMessage;
       id: string;
+      forkedMessages?: UIMessage[];
     };
 
     const log = chatLogger.child({
@@ -335,9 +337,34 @@ fastify.route<{ Body: UserChatStreamInput }>({
 
     const previousMessages = await getMessagesByChatId({ id: chatId });
 
+    if (forkedMessages && forkedMessages.length > 0) {
+      log.info(
+        { length: forkedMessages.length },
+        'Forked messages detected, saving them',
+      );
+
+      try {
+        await saveMessages({
+          messages: forkedMessages.map(forkedMessage => ({
+            chatId,
+            id: crypto.randomUUID(),
+            role: forkedMessage.role,
+            parts: forkedMessage.parts,
+          })),
+        });
+      } catch (error) {
+        log.error({ error }, 'Error saving forked messages');
+        return new ChatSDKError(
+          'bad_request:chat',
+          'unable to save forked messages',
+          requestId,
+        ).toResponse();
+      }
+    }
+
     let messages = appendClientMessage({
       // @ts-expect-error -  TODO: satisfy them some other day
-      messages: previousMessages,
+      messages: [...(forkedMessages || []), ...(previousMessages || [])],
       message,
     });
 
@@ -346,7 +373,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
         messages: [
           {
             chatId,
-            id: message.id,
+            id: crypto.randomUUID(),
             role: 'user',
             parts: message.parts,
           },

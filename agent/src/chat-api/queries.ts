@@ -1,17 +1,5 @@
 import { createClient } from '@libsql/client';
-import {
-  and,
-  asc,
-  count,
-  desc,
-  eq,
-  gt,
-  gte,
-  inArray,
-  lt,
-  type InferSelectModel,
-  type SQL,
-} from 'drizzle-orm';
+import { and, asc, count, eq, gte, type InferSelectModel } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/libsql';
 import { CHAT_TURSO_AUTH_TOKEN, CHAT_TURSO_DATABASE_URL } from '../const';
 import { ChatSDKError } from './errors';

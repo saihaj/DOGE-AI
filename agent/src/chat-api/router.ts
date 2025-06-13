@@ -6,6 +6,13 @@ import {
   getMessagesByChatId,
   updateChatVisibility,
 } from './queries';
+import {
+  db,
+  eq,
+  message as messageDbSchema,
+  chat as chatDbSchema,
+  asc,
+} from 'database';
 
 const getUserChatMessages = protectedProcedure
   .input(z.object({ id: z.string() }))
@@ -113,10 +120,67 @@ const getPublicChatMessages = publicProcedure
     };
   });
 
+const getTweetMessages = publicProcedure
+  .input(z.object({ tweetId: z.string() }))
+  .query(async ({ input, ctx }) => {
+    if (!input.tweetId) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Tweet ID is required',
+      });
+    }
+
+    const chat = await db.query.chat.findFirst({
+      where: eq(chatDbSchema.tweetId, input.tweetId),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (!chat) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: `Tweet not found: ${input.tweetId}`,
+      });
+    }
+
+    const messages = await db.query.message.findMany({
+      where: eq(messageDbSchema.chat, chat.id),
+      orderBy: asc(messageDbSchema.createdAt),
+      columns: {
+        id: true,
+        text: true,
+        createdAt: true,
+        role: true,
+      },
+    });
+
+    return {
+      chat,
+      messages: messages.map(m => {
+        const { text, ...rest } = m;
+
+        if (rest.role === 'user') {
+          const cleanedText = text.replace(/@\w+/g, '');
+          return {
+            ...rest,
+            content: cleanedText.trim() || text,
+          };
+        }
+
+        return {
+          ...rest,
+          content: text,
+        };
+      }),
+    };
+  });
+
 export const appRouter = router({
   getUserChatMessages,
   getPublicChatMessages,
   makeChatPublic,
+  getTweetMessages,
 });
 
 export type AppRouter = typeof appRouter;
