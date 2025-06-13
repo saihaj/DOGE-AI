@@ -142,9 +142,9 @@ export default function Home() {
   return (
     <main>
       <Seo />
-      <section className="container md:px-0 px-2 py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 items-center gap-8 mx-auto">
+      <section className="container md:px-0 px-2 py-16 md:py-20 grid grid-cols-1 lg:grid-cols-2 items-center gap-8 mx-auto">
         <div className="relative flex flex-col items-start justify-center">
-          <h1 className="max-w-4xl text-left text-pretty text-4xl font-black md:text-6xl">
+          <h1 className="max-w-4xl text-left text-balance text-4xl font-black md:text-6xl">
             Forget Tools. Forget Platforms.
           </h1>
 
