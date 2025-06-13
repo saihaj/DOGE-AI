@@ -344,7 +344,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
       );
 
       try {
-        const a = await saveMessages({
+        await saveMessages({
           messages: forkedMessages.map(forkedMessage => ({
             chatId,
             id: crypto.randomUUID(),
@@ -352,7 +352,6 @@ fastify.route<{ Body: UserChatStreamInput }>({
             parts: forkedMessage.parts,
           })),
         });
-        console.log('Saved forked messages:', a);
       } catch (error) {
         log.error({ error }, 'Error saving forked messages');
         return new ChatSDKError(
