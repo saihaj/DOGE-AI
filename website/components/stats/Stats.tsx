@@ -7,7 +7,7 @@ export const Stats = () => {
       <div className="flex flex-col items-center justify-center gap-12 sm:flex-row sm:gap-0">
         <Stat num={175} suffix="M+" subheading="Impressions" />
         <Stat num={110} suffix="K+" subheading="Followers" />
-        <Stat num={19} suffix="K+" subheading="Bills tracked" />
+        <Stat num={5} suffix="M+" subheading="Likes" />
       </div>
     </section>
   );
