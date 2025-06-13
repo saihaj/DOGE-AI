@@ -12,6 +12,7 @@ import {
   FaAnchor,
   FaClock,
   FaDatabase,
+  FaFistRaised,
   FaShieldAlt,
   FaTerminal,
 } from 'react-icons/fa';
@@ -19,6 +20,7 @@ import { FiTarget, FiZap } from 'react-icons/fi';
 import { RiTwitterXLine } from 'react-icons/ri';
 import { TbFocus2, TbTrendingUp } from 'react-icons/tb';
 import Image from 'next/image';
+import { FaBullhorn, FaMagnifyingGlass, FaNewspaper } from 'react-icons/fa6';
 
 function CongressCard({
   number,
@@ -106,20 +108,20 @@ const CARDS: CardType[] = [
   {
     id: 1,
     Icon: FiTarget,
-    title: 'The Mission: Expose',
-    description: `DOGEai isn’t a project or a startup. It’s an autonomous AI weapon built for one purpose: to hunt down and expose the waste, grift, and dysfunction. Forget summaries. Think forensic analysis at machine speed.`,
+    title: 'Mission',
+    description: `DOGEai is restoring truth and accountability in public discourse by exposing government inefficiencies in real time. It’s not a chatbot, it’s a watchdog. Powered by public data and AI, DOGEai is designed to bypass gatekeepers, amplify verified information, and call out institutional dysfunction without censorship.`,
   },
   {
     id: 2,
     Icon: FaDatabase,
-    title: 'The Intel: Raw & Real',
-    description: `Trained on the raw feed: 19,000+ bills, federal contracts, grant databases, FOIA trails, audits, and real-time data. Every output? Sourced. Every breakdown? Precise. No escape.`,
+    title: 'Intel',
+    description: `Trained on the raw feed: 19,000+ bills, federal contracts, grant databases, FOIA trails, audits, and real-time data.`,
   },
   {
     id: 3,
     Icon: FiZap,
-    title: 'The Method: Surgical Strike',
-    description: `It doesn’t summarize, it dissects. It doesn’t explain, it indicts. It tracks the money, the power, the consequences. And it names names.  Direct, unflinching, and allergic to PR speak. It delivers the facts you weren’t meant to find.`,
+    title: 'Method',
+    description: `DOGEai does not summarize but it actively spots inefficiencies for public access. It tracks money, consequences and names names in real time. It offers constant 𝕏 feed updates, replies to controversy in real time, can be @ mentioned under any post and challenged to restore the truth at any moment.`,
     bgColor: 'bg-zinc-300 text-black',
   },
 ];
@@ -142,10 +144,10 @@ export default function Home() {
   return (
     <main>
       <Seo />
-      <section className="container md:px-0 px-2 py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 items-center gap-8 mx-auto">
+      <section className="container md:px-0 px-2 py-16 md:py-20 grid grid-cols-1 lg:grid-cols-2 items-center gap-8 mx-auto">
         <div className="relative flex flex-col items-start justify-center">
-          <h1 className="max-w-4xl text-left text-pretty text-4xl font-black md:text-6xl">
-            Forget Tools. Forget Platforms.
+          <h1 className="max-w-4xl text-left text-balance text-4xl font-black md:text-6xl">
+            Empower Your Voice. Expose the Truth.
           </h1>
 
           <h2 className="font-semibold text-2xl text-center md:text-3xl my-2 md:my-6">
@@ -157,10 +159,9 @@ export default function Home() {
           </h2>
 
           <p className="max-w-2xl text-left md:text-2xl text-md mb-4 md:mb-6">
-            This isn&apos;t another polite chatbot. It&apos;s the autonomous
-            watchdog built to rip the mask off DC&apos;s dysfunction. Fueled by
-            raw data, engineered for truth, and ready to expose the rot. Get
-            ready to interrogate the system.
+            An AI engine trained to uncover government inefficiency in real
+            time. Fueled by raw government data. Built to hold power accountable
+            and put truth back in your timeline.
           </p>
           <div className="flex gap-4">
             <a
@@ -205,6 +206,43 @@ export default function Home() {
         </div>
       </section>
 
+      <motion.section
+        transition={{
+          staggerChildren: 0.1,
+        }}
+        initial="initial"
+        whileInView="whileInView"
+        className="relative mx-auto grid container grid-cols-3 gap-4 px-2 md:px-0 md:mb-32 mb-20"
+      >
+        <div className="col-span-3">
+          <SectionHeading>Who Is It For?</SectionHeading>
+        </div>
+        <HighlightBlock
+          Icon={FaMagnifyingGlass}
+          iconClassName="text-red-500"
+          title="Taxpayers"
+          subtitle="DOGEai digs into government data to expose waste, giving you the truth to share instantly."
+        />
+        <HighlightBlock
+          Icon={FaBullhorn}
+          iconClassName="text-pink-500"
+          title="Political Campaigns"
+          subtitle={`Engage voters with hard-hitting facts. DOGEai crafts real-time, data-driven posts to keep your message sharp.`}
+        />
+        <HighlightBlock
+          Icon={FaNewspaper}
+          iconClassName="text-blue-500"
+          title="Journalists"
+          subtitle={`Transform your research into viral stories. DOGEai auto-summarizes findings for tweets that cut through the noise.`}
+        />
+        <HighlightBlock
+          Icon={FaFistRaised}
+          iconClassName="text-orange-500"
+          title="Advocacy Groups"
+          subtitle={`Fight corruption with speed. DOGEai uncovers evidence and amplifies your cause with undeniable receipts.`}
+        />
+      </motion.section>
+
       <div className="mb-20">
         <StickyCards cards={CARDS} />
       </div>
@@ -215,12 +253,10 @@ export default function Home() {
         }}
         initial="initial"
         whileInView="whileInView"
-        className="relative mx-auto grid max-w-6xl grid-cols-3 gap-4 px-2 md:px-4"
+        className="relative mx-auto grid container grid-cols-3 gap-4 px-2 md:px-0"
       >
         <div className="col-span-3">
-          <SectionHeading>
-            Why DOGEai Terrifies The Establishment
-          </SectionHeading>
+          <SectionHeading>Why DOGEai Matters</SectionHeading>
           <SectionSubheading>
             Generic AI plays safe, dilutes truth, and protects the status quo.{' '}
             <span className="font-bold">DOGEai draws blood.</span>
@@ -229,7 +265,7 @@ export default function Home() {
         <HighlightBlock
           Icon={TbFocus2}
           iconClassName="text-red-500"
-          title="Laser Focus"
+          title="Specialization"
           subtitle="Other AIs try to be everything. DOGEai does ONE thing: expose government failure. Tuned for confrontation, not comfort."
         />
         <HighlightBlock
@@ -243,7 +279,7 @@ export default function Home() {
           Icon={FaClock}
           iconClassName="text-blue-500"
           title="Real-Time Truth"
-          subtitle={`While others digest old news, DOGEai analyzes legislation and spending AS IT HAPPENS. Catching lies before they spread.`}
+          subtitle={`Exceeding speed performance, DOGEai analyzes legislation and spending AS IT HAPPENS. Catching lies before they spread.`}
         />
         <HighlightBlock
           Icon={FaTerminal}
@@ -255,7 +291,7 @@ export default function Home() {
           Icon={FaAnchor}
           iconClassName="text-zinc-500"
           title="Radical Independence"
-          subtitle={`DOGEai answers to no one. Not DC. Not parties. Not donors. Not censors. It can’t be bought, pressured, or canceled. Built to outlast the corruption it targets.`}
+          subtitle={`DOGEai is an independent and uncensored confrontation and truth engine that does not report to DC, donors or political parties.`}
         />
         <HighlightBlock
           Icon={TbTrendingUp}
