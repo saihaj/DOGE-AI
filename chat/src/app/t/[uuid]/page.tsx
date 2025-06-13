@@ -8,10 +8,7 @@ import { ForkConversation } from './fork-convo';
 import removeMarkdown from 'markdown-to-text';
 import { Metadata, ResolvingMetadata } from 'next';
 
-export const config = {
-  dynamicParams: true,
-  revalidate: 86400, // 24 hours
-};
+export const revalidate = 86400; // 24 hours
 
 // Generate metadata for SEO
 export async function generateMetadata(
