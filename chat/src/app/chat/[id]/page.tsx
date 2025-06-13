@@ -106,10 +106,6 @@ function ChatPage() {
       [PRIVY_COOKIE_NAME]: privyToken,
     },
     experimental_prepareRequestBody: body => {
-      console.log({
-        forkedMessages,
-        hasProcessedInitialMessage,
-      });
       if (!hasProcessedInitialMessage) {
         setHasProcessedInitialMessage(true);
         return {
