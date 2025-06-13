@@ -32,11 +32,12 @@ function ChatPage() {
   const searchParams = useSearchParams();
   const chatId = params.id as string;
   const initialMessage = searchParams.get('message');
+  const forkedMessages = searchParams.get('forked');
   const { reachedLimitForTheDay, setReachedLimitForTheDay } = useRateLimit();
   const [, copyToClipboard] = useCopyToClipboard();
-
-  const [hasProcessedInitialMessage, setHasProcessedInitialMessage] =
-    useState(false);
+  const [hasProcessedInitialMessage, setHasProcessedInitialMessage] = useState(
+    !searchParams.get('newChat'),
+  );
   const [isNewChat] = useState(searchParams.get('newChat'));
 
   const trpc = useTRPC();
@@ -89,6 +90,7 @@ function ChatPage() {
     reload,
     status,
     append,
+    setMessages,
   } = useChat({
     initialMessages:
       data?.map(message => ({
@@ -103,10 +105,26 @@ function ChatPage() {
     headers: {
       [PRIVY_COOKIE_NAME]: privyToken,
     },
-    experimental_prepareRequestBody: body => ({
-      id: body.id,
-      message: body.messages.at(-1),
-    }),
+    experimental_prepareRequestBody: body => {
+      console.log({
+        forkedMessages,
+        hasProcessedInitialMessage,
+      });
+      if (!hasProcessedInitialMessage) {
+        setHasProcessedInitialMessage(true);
+        return {
+          id: body.id,
+          // exclude the last message from the forked messages
+          forkedMessages: body.messages.slice(0, -1),
+          message: body.messages.at(-1),
+        };
+      }
+
+      return {
+        id: body.id,
+        message: body.messages.at(-1),
+      };
+    },
     onResponse: async response => {
       if (response.status === 429) {
         setReachedLimitForTheDay(true);
@@ -155,6 +173,15 @@ function ChatPage() {
     window.history.replaceState({}, '', url);
   }
 
+  // Handle forked messages using state
+  if (forkedMessages) {
+    const parsedMessages = JSON.parse(forkedMessages);
+    setMessages(parsedMessages);
+    // Clean up the URL by removing the message parameter
+    const url = `/chat/${chatId}`;
+    window.history.replaceState({}, '', url);
+  }
+
   const shareChat = async () => {
     if ('vibrate' in navigator) {
       navigator.vibrate(50);
@@ -196,9 +223,11 @@ function ChatPage() {
                   <div className="flex gap-2 items-center">
                     {messages.length > 0 && (
                       <>
-                        <Button onClick={shareChat} variant="outline">
-                          <Share />
-                        </Button>
+                        {hasProcessedInitialMessage && (
+                          <Button onClick={shareChat} variant="outline">
+                            <Share />
+                          </Button>
+                        )}
                         <Button onClick={startNewChat} variant="outline">
                           <SquarePen />
                         </Button>
@@ -283,6 +312,7 @@ function ChatPage() {
                             });
                             return;
                           }
+
                           handleSubmit(e);
                         }}
                         setInput={setInput}

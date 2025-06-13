@@ -16,6 +16,7 @@ import { drizzle } from 'drizzle-orm/libsql';
 import { CHAT_TURSO_AUTH_TOKEN, CHAT_TURSO_DATABASE_URL } from '../const';
 import { ChatSDKError } from './errors';
 import * as schema from './schema';
+import { logger } from '../logger';
 
 const client = createClient({
   url: CHAT_TURSO_DATABASE_URL,
