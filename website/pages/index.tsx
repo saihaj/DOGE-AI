@@ -12,6 +12,7 @@ import {
   FaAnchor,
   FaClock,
   FaDatabase,
+  FaFistRaised,
   FaShieldAlt,
   FaTerminal,
 } from 'react-icons/fa';
@@ -19,6 +20,7 @@ import { FiTarget, FiZap } from 'react-icons/fi';
 import { RiTwitterXLine } from 'react-icons/ri';
 import { TbFocus2, TbTrendingUp } from 'react-icons/tb';
 import Image from 'next/image';
+import { FaBullhorn, FaMagnifyingGlass, FaNewspaper } from 'react-icons/fa6';
 
 function CongressCard({
   number,
@@ -145,7 +147,7 @@ export default function Home() {
       <section className="container md:px-0 px-2 py-16 md:py-20 grid grid-cols-1 md:grid-cols-2 items-center gap-8 mx-auto">
         <div className="relative flex flex-col items-start justify-center">
           <h1 className="max-w-4xl text-left text-pretty text-4xl font-black md:text-6xl">
-            Forget Tools. Forget Platforms.
+            Empower Your Voice. Expose the Truth.
           </h1>
 
           <h2 className="font-semibold text-2xl text-center md:text-3xl my-2 md:my-6">
@@ -203,6 +205,43 @@ export default function Home() {
           />
         </div>
       </section>
+
+      <motion.section
+        transition={{
+          staggerChildren: 0.1,
+        }}
+        initial="initial"
+        whileInView="whileInView"
+        className="relative mx-auto grid max-w-6xl grid-cols-3 gap-4 px-2 md:px-4 md:my-32 my-20"
+      >
+        <div className="col-span-3">
+          <SectionHeading>Who Is It For?</SectionHeading>
+        </div>
+        <HighlightBlock
+          Icon={FaMagnifyingGlass}
+          iconClassName="text-red-500"
+          title="Taxpayers"
+          subtitle="DOGEai digs into government data to expose waste, giving you the truth to share instantly."
+        />
+        <HighlightBlock
+          Icon={FaBullhorn}
+          iconClassName="text-pink-500"
+          title="Political Campaigns"
+          subtitle={`Engage voters with hard-hitting facts. DOGEai crafts real-time, data-driven posts to keep your message sharp.`}
+        />
+        <HighlightBlock
+          Icon={FaNewspaper}
+          iconClassName="text-blue-500"
+          title="Journalists"
+          subtitle={`Transform your research into viral stories. DOGEai auto-summarizes findings for tweets that cut through the noise.`}
+        />
+        <HighlightBlock
+          Icon={FaFistRaised}
+          iconClassName="text-orange-500"
+          title="Advocacy Groups"
+          subtitle={`Fight corruption with speed. DOGEai uncovers evidence and amplifies your cause with undeniable receipts.`}
+        />
+      </motion.section>
 
       <div className="mb-20">
         <StickyCards cards={CARDS} />
