@@ -13,8 +13,8 @@ export default function NotFound() {
       <div className="flex-1 prose flex flex-col items-center justify-center">
         <h1 className="mb-2">Conversation Not Found</h1>
         <p>
-          The shared conversation you're looking for doesn't exist or may have
-          expired. Please check the URL and try again.
+          The conversation you are looking for does not exist or has been
+          deleted.
         </p>
         <Link
           prefetch
