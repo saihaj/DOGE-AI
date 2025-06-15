@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
     // We assume 404s are not cached and won't have this header
     response.headers.set(
       'Cache-Control',
-      'public, max-age=3600, must-revalidate',
+      'public, max-age=3600,',
     );
   }
 
