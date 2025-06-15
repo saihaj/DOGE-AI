@@ -1,13 +1,14 @@
 import { ChatWithCustomScroll } from '@/components/chat-scroll';
 import { Logo } from '@/components/logo';
-import { Button } from '@/components/ui/button';
 import { createTrpcServerClient } from '@/lib/trpc/server';
-import { generateId, UIMessage } from 'ai';
+import { UIMessage } from 'ai';
 import { notFound } from 'next/navigation';
 import React from 'react';
 import { ForkConversation } from './fork-convo';
 import removeMarkdown from 'markdown-to-text';
 import { Metadata, ResolvingMetadata } from 'next';
+
+export const revalidate = 86400; // 24 hours
 
 // Generate metadata for SEO
 export async function generateMetadata(

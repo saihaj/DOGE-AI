@@ -9,6 +9,8 @@ import { notFound } from 'next/navigation';
 import React from 'react';
 import removeMarkdown from 'markdown-to-text';
 
+export const revalidate = 86400; // 24 hours
+
 // Generate metadata for SEO
 export async function generateMetadata(
   { params }: { params: Promise<{ uuid: string }> },
