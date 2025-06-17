@@ -13,6 +13,24 @@ import {
   chat as chatDbSchema,
   asc,
 } from 'database';
+import { BentoCache, bentostore } from 'bentocache';
+import { redisDriver } from 'bentocache/drivers/redis';
+import Redis from 'ioredis';
+import { CHAT_REDIS_URL } from '../const';
+
+const chatBento = new BentoCache({
+  default: 'redis',
+  stores: {
+    redis: bentostore().useL2Layer(
+      redisDriver({
+        connection: new Redis(CHAT_REDIS_URL, {
+          family: 6,
+          connectionName: 'bento-chatredis',
+        }),
+      }),
+    ),
+  },
+});
 
 const getUserChatMessages = protectedProcedure
   .input(z.object({ id: z.string() }))
@@ -130,12 +148,20 @@ const getTweetMessages = publicProcedure
       });
     }
 
-    const chat = await db.query.chat.findFirst({
-      where: eq(chatDbSchema.tweetId, input.tweetId),
-      columns: {
-        id: true,
+    const chat = await chatBento.getOrSet(
+      `chatTweetId_${input.tweetId}`,
+      () => {
+        return db.query.chat.findFirst({
+          where: eq(chatDbSchema.tweetId, input.tweetId),
+          columns: {
+            id: true,
+          },
+        });
       },
-    });
+      {
+        ttl: '1hr',
+      },
+    );
 
     if (!chat) {
       throw new TRPCError({
@@ -144,35 +170,45 @@ const getTweetMessages = publicProcedure
       });
     }
 
-    const messages = await db.query.message.findMany({
-      where: eq(messageDbSchema.chat, chat.id),
-      orderBy: asc(messageDbSchema.createdAt),
-      columns: {
-        id: true,
-        text: true,
-        createdAt: true,
-        role: true,
+    const messages = await chatBento.getOrSet(
+      `chatMessages_${chat.id}`,
+      async () => {
+        const msgs = await db.query.message.findMany({
+          where: eq(messageDbSchema.chat, chat.id),
+          orderBy: asc(messageDbSchema.createdAt),
+          columns: {
+            id: true,
+            text: true,
+            createdAt: true,
+            role: true,
+          },
+        });
+
+        return msgs.map(m => {
+          const { text, ...rest } = m;
+
+          if (rest.role === 'user') {
+            const cleanedText = text.replace(/@\w+/g, '');
+            return {
+              ...rest,
+              content: cleanedText.trim() || text,
+            };
+          }
+
+          return {
+            ...rest,
+            content: text,
+          };
+        });
       },
-    });
+      {
+        ttl: '1hr',
+      },
+    );
 
     return {
       chat,
-      messages: messages.map(m => {
-        const { text, ...rest } = m;
-
-        if (rest.role === 'user') {
-          const cleanedText = text.replace(/@\w+/g, '');
-          return {
-            ...rest,
-            content: cleanedText.trim() || text,
-          };
-        }
-
-        return {
-          ...rest,
-          content: text,
-        };
-      }),
+      messages,
     };
   });
 
