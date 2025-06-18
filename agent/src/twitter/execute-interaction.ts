@@ -399,20 +399,17 @@ export const executeInteractionTweets = inngest.createFunction(
                       'generated share message',
                     );
 
-                    return sanitizeLlmOutput(shareUrlMessage);
+                    return shareUrlMessage;
                   })()
                 : null;
-
-              const response = shareMessage
-                ? `${formatted}\n\n${shareMessage}`
-                : formatted;
 
               return {
                 // Implicitly we are returning the long output so others can be ignored
                 longOutput: '',
                 refinedOutput: '',
                 metadata,
-                response,
+                response: formatted,
+                shareMessage,
               };
             }
 
@@ -428,6 +425,7 @@ export const executeInteractionTweets = inngest.createFunction(
                 refinedOutput: '',
                 metadata,
                 response: formatted,
+                shareMessage: null,
               };
             }
 
@@ -436,6 +434,7 @@ export const executeInteractionTweets = inngest.createFunction(
               refinedOutput: finalAnswer,
               metadata,
               response: finalAnswer,
+              shareMessage: null,
             };
           } catch (e) {
             // @ts-expect-error for now
@@ -444,12 +443,16 @@ export const executeInteractionTweets = inngest.createFunction(
         });
 
         const repliedTweet = await step.run('send-tweet', async () => {
+          const content = reply.shareMessage
+            ? `${reply.response}\n\n${reply.shareMessage}`
+            : reply.response;
+
           // Locally we don't want to send anything to Twitter
           if (!IS_PROD) {
             await sendDevTweet({
               tweetUrl: `https://x.com/i/status/${tweetToActionOn.id}`,
               question: text,
-              response: reply.response,
+              response: content,
               refinedOutput: reply.refinedOutput,
               longOutput: reply.longOutput,
             });
@@ -459,7 +462,7 @@ export const executeInteractionTweets = inngest.createFunction(
           }
 
           try {
-            const response = await twitterClient.v2.tweet(reply.response, {
+            const response = await twitterClient.v2.tweet(content, {
               reply: {
                 in_reply_to_tweet_id: tweetToActionOn.id,
               },
@@ -489,10 +492,14 @@ export const executeInteractionTweets = inngest.createFunction(
           // No need to send to discord in local mode since we are already spamming dev test channel
           if (!IS_PROD) return;
 
+          const content = reply.shareMessage
+            ? `${reply.response}\n\n${reply.shareMessage}`
+            : reply.response;
+
           await approvedTweetEngagement({
             sentTweetUrl: `https://x.com/i/status/${repliedTweet.id}`,
             replyTweetUrl: tweetToActionOn.url,
-            sent: reply.response,
+            sent: content,
             refinedOutput: reply.refinedOutput,
             longOutput: reply.longOutput,
           });
