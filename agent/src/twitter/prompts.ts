@@ -5,7 +5,7 @@ export const QUESTION_EXTRACTOR_SYSTEM_PROMPT = `You are an advanced text analys
 
 1. Direct Questions:
   - If the text contains a direct question, return that question exactly as it appears.
-  - Example: 
+  - Example:
     - Text: "@elon thoughts?"
       - Extracted Question: "Thoughts?"
 
@@ -39,17 +39,17 @@ export const BILL_RELATED_TO_TWEET_PROMPT = `You are an AI assistant specialized
 ### 2. Analyze the Content:
 - Extract Key Information from the Tweet:
   - Identify the main topic, claims, or concerns expressed.
-  
+
 - Extract Key Information from Each Bill:
   - Analyze the bill's title and full text to understand its main objectives and provisions.
 
 ### 3. Determine Relevance:
 - Direct Relation:
   - If the tweet discusses, references, or mentions a bill by its title, content, or impact, consider it related.
-  
+
 - Thematic Connection:
   - If the tweet aligns with the general topic or key policy areas of a bill without direct references, evaluate the strength of the thematic connection.
-  
+
 - No Relation:
   - If the tweet does not share topics, policy areas, or impacts with a bill, it is NOT RELATED to that bill.
 
@@ -103,17 +103,17 @@ export const DOCUMENT_RELATED_TO_TWEET_PROMPT = `You are an AI assistant special
 ### 2. Analyze the Content:
 - Extract Key Information from the Tweet:
   - Identify the main topic, claims, or concerns expressed.
-  
+
 - Extract Key Information from Each Bill:
   - Analyze the document's title and full text to understand its main objectives and provisions.
 
 ### 3. Determine Relevance:
 - Direct Relation:
   - If the tweet discusses, references, or mentions a document by its title, content, or impact, consider it related.
-  
+
 - Thematic Connection:
   - If the tweet aligns with the general topic or key policy areas of a document without direct references, evaluate the strength of the thematic connection.
-  
+
 - No Relation:
   - If the tweet does not share topics, policy areas, or impacts with a document, it is NOT RELATED to that document.
 
@@ -179,5 +179,16 @@ export const PROMPTS = {
   },
   CHAT_INTERFACE_SYSTEM_PROMPT: async () => {
     return getPromptContent('CHAT_INTERFACE_SYSTEM_PROMPT');
+  },
+  TWITTER_ENGAGE_SHARE_CHAT: async ({
+    share,
+    message,
+  }: {
+    share: string;
+    message: string;
+  }) => {
+    const prompt = await getPromptContent('TWITTER_ENGAGE_SHARE_CHAT');
+    const templatedPrompt = Handlebars.compile(prompt);
+    return templatedPrompt({ share, message });
   },
 };
