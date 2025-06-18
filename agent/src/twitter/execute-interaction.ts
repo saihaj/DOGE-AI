@@ -14,6 +14,7 @@ import {
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
+  OPENAI_API_KEY,
   DEEPINFRA_API_KEY,
   IS_PROD,
   OPENAI_API_KEY,
@@ -49,9 +50,15 @@ import { getKbContext } from './knowledge-base.ts';
 import { PROMPTS } from './prompts';
 import { getSearchResult } from './web.ts';
 import { createDeepInfra } from '@ai-sdk/deepinfra';
+import { createOpenAI } from '@ai-sdk/openai';
 
 const deepinfra = createDeepInfra({
   apiKey: DEEPINFRA_API_KEY,
+});
+
+const openai = createOpenAI({
+  apiKey: OPENAI_API_KEY,
+  compatibility: 'strict',
 });
 
 /**
@@ -361,12 +368,52 @@ export const executeInteractionTweets = inngest.createFunction(
             if (returnLong) {
               log.info({}, 'returning long');
 
+              // Inject it 20% of the time
+              const injectShare = Math.random() < 0.2;
+
+              const shareMessage = injectShare
+                ? await (async () => {
+                    const shareUrl = `https://dogeai.chat/t/${tweetToActionOn.id}`;
+                    log.info({ url: shareUrl }, 'generating share message');
+
+                    const formatSharePrompt =
+                      await PROMPTS.TWITTER_ENGAGE_SHARE_CHAT({
+                        message: formatted,
+                        share: shareUrl,
+                      });
+
+                    const { text: shareUrlMessage } = await generateText({
+                      model: openai('gpt-4.1'),
+                      temperature: TEMPERATURE,
+                      seed: SEED,
+                      messages: [
+                        { role: 'system', content: formatSharePrompt },
+                        {
+                          role: 'user',
+                          content: formatted,
+                        },
+                      ],
+                    });
+
+                    log.info(
+                      { message: shareUrlMessage },
+                      'generated share message',
+                    );
+
+                    return sanitizeLlmOutput(shareUrlMessage);
+                  })()
+                : null;
+
+              const response = shareMessage
+                ? `${formatted}\n\n${shareMessage}`
+                : formatted;
+
               return {
                 // Implicitly we are returning the long output so others can be ignored
                 longOutput: '',
                 refinedOutput: '',
                 metadata,
-                response: formatted,
+                response,
               };
             }
 
