@@ -149,14 +149,23 @@ const getTweetMessages = publicProcedure
     }
 
     const chat = await chatBento.getOrSet(
-      `chatTweetId_${input.tweetId}`,
-      () => {
-        return db.query.chat.findFirst({
+      `chatTweetId:${input.tweetId}`,
+      async () => {
+        const c = await db.query.chat.findFirst({
           where: eq(chatDbSchema.tweetId, input.tweetId),
           columns: {
             id: true,
           },
         });
+
+        if (!c) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: `Tweet not found: ${input.tweetId}`,
+          });
+        }
+
+        return c;
       },
       {
         ttl: '1hr',
@@ -171,7 +180,7 @@ const getTweetMessages = publicProcedure
     }
 
     const messages = await chatBento.getOrSet(
-      `chatMessages_${chat.id}`,
+      `chatMessages:${chat.id}`,
       async () => {
         const msgs = await db.query.message.findMany({
           where: eq(messageDbSchema.chat, chat.id),
