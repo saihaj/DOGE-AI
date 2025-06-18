@@ -372,7 +372,7 @@ export const executeInteractionTweets = inngest.createFunction(
 
               const shareMessage = injectShare
                 ? await (async () => {
-                    const shareUrl = `https://dogeai.chat/t/${tweetToActionOn.id}`;
+                    const shareUrl = `https//dogeai.chat/t/${tweetToActionOn.id}?utm_source=twitter&utm_medium=dogeai_gov&utm_campaign=${event.data.action}`;
                     log.info({ url: shareUrl }, 'generating share message');
 
                     const formatSharePrompt =
