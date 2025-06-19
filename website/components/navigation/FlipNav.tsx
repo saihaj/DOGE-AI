@@ -38,7 +38,10 @@ const NavLeft = () => {
         </div>
       </Link>
       <NavLink text="Recognition" href="/interactions" />
-      <NavLink text="White Label" href="/white-label" />
+      <NavLink
+        text="White Label"
+        href="https://rhetor.ai?utm_source=dogeai&utm_medium=website&utm_campaign=nav"
+      />
     </div>
   );
 };
@@ -48,7 +51,7 @@ const NavLink = ({ text, href }: { text: string; href: string }) => {
     <Link
       prefetch
       href={href}
-      rel="nofollow"
+      target={href.startsWith('http') ? '_blank' : undefined}
       className="hidden lg:block h-[30px] overflow-hidden font-medium"
     >
       <motion.div whileHover={{ y: -30 }}>
@@ -104,7 +107,11 @@ const NavMenu = ({
       className="z-10 absolute p-4 bg-white shadow-lg left-0 right-0 top-full origin-top flex flex-col gap-4"
     >
       <MenuLink setIsOpen={setIsOpen} text="Recognition" href="/interactions" />
-      <MenuLink setIsOpen={setIsOpen} text="White Label" href="/white-label" />
+      <MenuLink
+        setIsOpen={setIsOpen}
+        text="White Label"
+        href="https://rhetor.ai?utm_source=dogeai&utm_medium=website&utm_campaign=nav"
+      />
     </motion.div>
   );
 };
@@ -119,7 +126,12 @@ const MenuLink = ({
   setIsOpen: Dispatch<SetStateAction<boolean>>;
 }) => {
   return (
-    <Link href={href} prefetch onClick={() => setIsOpen(pv => !pv)}>
+    <Link
+      href={href}
+      prefetch
+      target={href.startsWith('http') ? '_blank' : undefined}
+      onClick={() => setIsOpen(pv => !pv)}
+    >
       <motion.div
         variants={menuLinkVariants}
         className="h-[30px] overflow-hidden font-medium text-lg flex items-start gap-2"
