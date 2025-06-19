@@ -284,7 +284,7 @@ fastify.route<{ Body: ChatStreamInput }>({
       documentSearch: boolean;
       manualKbSearch: boolean;
       webSearch: boolean;
-      selectedKb: 'custom1' | 'chat' | 'agent';
+      selectedKb: 'custom1' | 'custom2' | 'chat' | 'agent';
       billSearch: boolean;
       messages: CoreMessage[];
       selectedChatModel: string;
@@ -496,7 +496,7 @@ fastify.route<{ Body: UserChatStreamInput }>({
     const abortController = new AbortController();
     let { messages, selectedChatModel, selectedKb } = request.body as {
       messages: CoreMessage[];
-      selectedKb: 'custom1' | 'chat' | 'agent';
+      selectedKb: 'custom2' | 'custom1' | 'chat' | 'agent';
       selectedChatModel: string;
     };
     const userMessage = messages[messages.length - 1];

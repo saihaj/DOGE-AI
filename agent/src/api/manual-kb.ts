@@ -29,7 +29,7 @@ export const createKbEntry = protectedProcedure
   .input(
     z.object({
       title: z.string(),
-      type: z.enum(['agent', 'chat', 'custom1']),
+      type: z.enum(['agent', 'chat', 'custom1', 'custom2']),
       content: z.string(),
     }),
   )
@@ -48,6 +48,7 @@ export const createKbEntry = protectedProcedure
         case 'chat':
           return MANUAL_KB_CHAT_SOURCE;
         case 'custom1':
+        case 'custom2':
           return `manual-kb-${type}` as const;
         default:
           throw new Error('Invalid type');
@@ -107,7 +108,7 @@ export const editKbEntry = protectedProcedure
       id: z.string().uuid(),
       title: z.string(),
       content: z.string(),
-      type: z.enum(['agent', 'chat', 'custom1']),
+      type: z.enum(['agent', 'chat', 'custom1', 'custom2']),
     }),
   )
   .mutation(async opts => {
@@ -126,6 +127,7 @@ export const editKbEntry = protectedProcedure
         case 'chat':
           return MANUAL_KB_CHAT_SOURCE;
         case 'custom1':
+        case 'custom2':
           return `manual-kb-${type}` as const;
         default:
           throw new Error('Invalid type');
@@ -207,7 +209,7 @@ export const getKbEntries = protectedProcedure
     z.object({
       cursor: z.string().optional(),
       limit: z.number(),
-      type: z.enum(['agent', 'chat', 'custom1']),
+      type: z.enum(['agent', 'chat', 'custom1', 'custom2']),
       query: z.string().optional(),
     }),
   )
@@ -221,6 +223,7 @@ export const getKbEntries = protectedProcedure
         case 'chat':
           return MANUAL_KB_CHAT_SOURCE;
         case 'custom1':
+        case 'custom2':
           return `manual-kb-${type}` as const;
         default:
           throw new Error('Invalid type');
@@ -312,7 +315,7 @@ export const deleteKbEntry = protectedProcedure
   .input(
     z.object({
       id: z.string().uuid(),
-      type: z.enum(['agent', 'chat', 'custom1']),
+      type: z.enum(['agent', 'chat', 'custom1', 'custom2']),
     }),
   )
   .mutation(async opts => {
@@ -325,6 +328,7 @@ export const deleteKbEntry = protectedProcedure
         case 'chat':
           return MANUAL_KB_CHAT_SOURCE;
         case 'custom1':
+        case 'custom2':
           return `manual-kb-${type}` as const;
         default:
           throw new Error('Invalid type');

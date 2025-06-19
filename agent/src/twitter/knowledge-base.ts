@@ -41,7 +41,7 @@ async function getManualKbDocuments(
     kbSourceType,
   }: {
     termEmbeddingString: string;
-    kbSourceType: 'agent' | 'chat' | 'custom1';
+    kbSourceType: 'agent' | 'chat' | 'custom1' | 'custom2';
   },
   logger: WithLogger,
 ) {
@@ -58,6 +58,7 @@ async function getManualKbDocuments(
       case 'chat':
         return MANUAL_KB_CHAT_SOURCE;
       case 'custom1':
+      case 'custom2':
         return `manual-kb-${kbSourceType}` as const;
       default:
         throw new Error('Invalid type');
@@ -753,7 +754,7 @@ export async function getKbContext(
     messages: CoreMessage[];
     text: string;
     /** Should we search for manual entries from Web UI? */
-    manualEntries: false | 'agent' | 'chat' | 'custom1';
+    manualEntries: false | 'agent' | 'chat' | 'custom1' | 'custom2';
     /** Should we search for web pages scraped? */
     documentEntries: boolean;
     /** Should we search for bills scraped? */

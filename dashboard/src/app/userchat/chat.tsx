@@ -199,10 +199,9 @@ export function UserChat() {
     'userChatSelectedChatModel',
     'gpt-4.1-nano',
   );
-  const [kb, setKbType] = useLocalStorage<'agent' | 'chat' | 'custom1'>(
-    'userChatSelectedKb',
-    'chat',
-  );
+  const [kb, setKbType] = useLocalStorage<
+    'agent' | 'chat' | 'custom1' | 'custom2'
+  >('userChatSelectedKb', 'chat');
   const [systemPrompt, setSystemPrompt] = useLocalStorage(
     'userChatSystemPrompt',
     PLACEHOLDER_PROMPT,
