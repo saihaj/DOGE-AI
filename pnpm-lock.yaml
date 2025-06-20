@@ -153,8 +153,8 @@ importers:
         specifier: ^0.25.5
         version: 0.25.5
       inngest-cli:
-        specifier: 1.5.13
-        version: 1.5.13(encoding@0.1.13)
+        specifier: 1.8.0
+        version: 1.8.0(encoding@0.1.13)
       pino-pretty:
         specifier: ^13.0.0
         version: 13.0.0
@@ -395,8 +395,8 @@ importers:
         specifier: ^0.25.5
         version: 0.25.5
       inngest-cli:
-        specifier: 1.5.13
-        version: 1.5.13(encoding@0.1.13)
+        specifier: 1.8.0
+        version: 1.8.0(encoding@0.1.13)
 
   dashboard:
     dependencies:
@@ -6729,8 +6729,8 @@ packages:
   inline-style-parser@0.2.4:
     resolution: {integrity: sha512-0aO8FkhNZlj/ZIbNi7Lxxr12obT7cL1moPfE4tg1LkX7LlLfC6DeX4l2ZEud1ukP9jNQyNnfzQVqwbwmAATY4Q==}
 
-  inngest-cli@1.5.13:
-    resolution: {integrity: sha512-TiSolV3IDtPhz5iHS3TixVEgUVSAhn/lGNOuuwHkyUq9Q3IeqPcNztY2H9E8SHImdnZtBkovhL6BUaFzjw09GQ==}
+  inngest-cli@1.8.0:
+    resolution: {integrity: sha512-N8PAtu5QU2vVbtZwoQKYfX2d5l131Hrdu0//UCC1MYxwjvS92wfpuyxtZJ4JDNxNJOL810L9DNckGS0YcnPw3Q==}
     hasBin: true
 
   inngest@3.30.0:
@@ -11432,7 +11432,7 @@ snapshots:
   '@eslint/config-array@0.20.0':
     dependencies:
       '@eslint/object-schema': 2.1.6
-      debug: 4.4.0
+      debug: 4.4.1
       minimatch: 3.1.2
     transitivePeerDependencies:
       - supports-color
@@ -12215,7 +12215,7 @@ snapshots:
     dependencies:
       '@ethereumjs/tx': 4.2.0
       '@types/debug': 4.1.12
-      debug: 4.4.0
+      debug: 4.4.1
       semver: 7.7.1
       superstruct: 1.0.4
     transitivePeerDependencies:
@@ -17497,7 +17497,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.1))
+      retry-axios: 2.6.0(axios@1.7.9)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -17543,10 +17543,10 @@ snapshots:
 
   inline-style-parser@0.2.4: {}
 
-  inngest-cli@1.5.13(encoding@0.1.13):
+  inngest-cli@1.8.0(encoding@0.1.13):
     dependencies:
       adm-zip: 0.5.16
-      debug: 4.4.0
+      debug: 4.4.1
       node-fetch: 2.7.0(encoding@0.1.13)
       tar: 6.2.1
     transitivePeerDependencies:
@@ -19761,7 +19761,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9(debug@4.4.1)):
+  retry-axios@2.6.0(axios@1.7.9):
     dependencies:
       axios: 1.7.9(debug@4.4.1)
 
