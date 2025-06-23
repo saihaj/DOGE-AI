@@ -1,22 +1,15 @@
-import { inngest } from './client';
 import { embedMany } from 'ai';
-import { NonRetriableError } from 'inngest';
 import {
-  db,
   bill as billDbSchema,
-  eq,
   billVector as billVectorDbSchema,
+  db,
+  eq,
   sql,
 } from 'database';
+import { NonRetriableError } from 'inngest';
+import { inngest } from './client';
 import { cleanText, embeddingModel, textSplitter } from './helpers';
 
-function canIgnoreAnalysis(text: string) {
-  return (
-    text === 'NOT_SPECIFIED' ||
-    text === 'NO_FUNDING_ALLOCATED' ||
-    text === 'NO_FUNDING_ALLOCATED.'
-  );
-}
 export const embedBill = inngest.createFunction(
   {
     id: 'embed-bill',
