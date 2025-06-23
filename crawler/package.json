@@ -36,7 +36,7 @@
     "fast-content-type-parse": "^2.0.1",
     "fastify": "5.3.3",
     "he": "^1.2.0",
-    "inngest": "^3.28.0",
+    "inngest": "^3.39.2",
     "langchain": "^0.3.29",
     "pdf-parse": "^1.1.1",
     "sanitize-html": "^2.16.0",
