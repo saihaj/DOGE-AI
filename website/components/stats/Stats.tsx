@@ -5,9 +5,9 @@ export const Stats = () => {
   return (
     <section className="mx-auto max-w-5xl px-4">
       <div className="flex flex-col items-center justify-center gap-12 sm:flex-row sm:gap-0">
-        <Stat num={175} suffix="M+" subheading="Impressions" />
-        <Stat num={110} suffix="K+" subheading="Followers" />
-        <Stat num={5} suffix="M+" subheading="Likes" />
+        <Stat num={210} suffix="M+" subheading="Impressions" />
+        <Stat num={118} suffix="K+" subheading="Followers" />
+        <Stat num={5.8} suffix="M+" subheading="Likes" />
       </div>
     </section>
   );
