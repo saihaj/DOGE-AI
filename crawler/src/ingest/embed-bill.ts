@@ -21,10 +21,10 @@ export const embedBill = inngest.createFunction(
   {
     id: 'embed-bill',
     throttle: {
-      limit: 1000,
+      limit: 800,
       period: '1h',
     },
-    concurrency: 50,
+    concurrency: 20,
   },
   { event: 'bill.embed' },
   async ({ event, step }) => {
