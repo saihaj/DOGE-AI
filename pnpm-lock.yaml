@@ -80,8 +80,8 @@ importers:
         specifier: ^0.38.4
         version: 0.38.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/pg@8.6.1)(@types/react@19.1.8)(better-sqlite3@11.6.0)(prisma@6.2.1)(react@19.1.0)(sqlite3@5.1.7)
       exa-js:
-        specifier: ^1.8.16
-        version: 1.8.16(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)
+        specifier: ^1.8.17
+        version: 1.8.17(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)
       fastify:
         specifier: 5.3.3
         version: 5.3.3
@@ -6687,8 +6687,8 @@ packages:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
 
-  exa-js@1.8.16:
-    resolution: {integrity: sha512-UaXRWBTKI2uozEi2Xf3Uo3aiafiinuslAuWIW0fkziSyArnUf7XQtHJehrHm3ITfS6p7GS8+WL06euBY8Spt2Q==}
+  exa-js@1.8.17:
+    resolution: {integrity: sha512-yvUgUEjRFxpraVi9+4IbVOkzWqWgK37ydYB/8/yw/vmTgsZH1ZROao60s2MSRFXVyiOjDNyJ4N+bmmlq/pr2Hw==}
 
   execa@5.1.1:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
@@ -18104,7 +18104,7 @@ snapshots:
 
   events@3.3.0: {}
 
-  exa-js@1.8.16(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4):
+  exa-js@1.8.17(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4):
     dependencies:
       cross-fetch: 4.1.0(encoding@0.1.13)
       dotenv: 16.4.7
