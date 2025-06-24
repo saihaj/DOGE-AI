@@ -77,7 +77,9 @@ fastify.register(cors, {
   origin: [
     'http://localhost:4322',
     'http://localhost:8787',
+    'http://localhost:3000',
     'https://dogeai.chat',
+    'https://rhetor.ai',
     /^https:\/\/([a-zA-Z0-9-]+)*dogeai-terminal\.saihaj\.workers\.dev$/, // Matches dogeai-terminal.saihaj.workers.dev and subdomains
   ],
 });
