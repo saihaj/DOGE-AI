@@ -31,6 +31,7 @@ import { createContext } from './chat-api/trpc';
 import {
   CHAT_OPENAI_API_KEY,
   CHAT_REDIS_URL,
+  DEMO_SECRET_API_KEY,
   IS_PROD,
   OPENAI_API_KEY,
   PRIVY_APP_ID,
@@ -598,9 +599,34 @@ const ChatDemoStreamInput = Type.Object({
 });
 type ChatDemoStreamInput = Static<typeof ChatDemoStreamInput>;
 
+const demoAuthHandler = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const requestId =
+    normalizeHeaderValue(request.headers['x-request-id']) || request.id;
+  request.id = requestId;
+
+  const log = chatLogger.child({
+    requestId: request.id,
+  });
+
+  const value = normalizeHeaderValue(request.headers['x-demo-api-secret']);
+
+  if (DEMO_SECRET_API_KEY !== value) {
+    log.error({}, 'Invalid Demo API key');
+    return reply.status(401).send({
+      status: false,
+      message: 'Invalid Demo API key',
+    });
+  }
+
+  log.info({}, 'Demo API key is valid');
+};
+
 fastify.route<{ Body: ChatDemoStreamInput }>({
   method: 'post',
-  preHandler: [authHandler],
+  preHandler: [demoAuthHandler],
   schema: {
     body: ChatDemoStreamInput,
   },
