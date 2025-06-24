@@ -695,97 +695,32 @@ fastify.route<{ Body: ChatDemoStreamInput }>({
       // @ts-expect-error - TODO: fix typings
       messages = updatedMessages;
 
-      if (billSearch || documentSearch || manualKbSearch || webSearch) {
-        const latestMessage = messages[messages.length - 1];
-        const convoHistory = messages.filter(
-          message => message.role === 'user' || message.role === 'assistant',
-        );
+      const latestMessage = messages[messages.length - 1];
+      const convoHistory = messages.filter(
+        message => message.role === 'user' || message.role === 'assistant',
+      );
 
-        const kb = await getKbContext(
-          {
-            messages: convoHistory,
-            text: latestMessage.content.toString(),
-            manualEntries: selectedKb,
-            billEntries: billSearch,
-            documentEntries: documentSearch,
-            openaiApiKey: OPENAI_API_KEY,
-          },
-          log,
-        );
+      const kb = await getKbContext(
+        {
+          messages: convoHistory,
+          text: latestMessage.content.toString(),
+          manualEntries: selectedKb,
+          billEntries: false,
+          documentEntries: false,
+          openaiApiKey: OPENAI_API_KEY,
+        },
+        log,
+      );
 
-        if (kb?.bill) {
-          log.info(
-            {
-              id: kb.bill.id,
-              title: kb.bill.title,
-            },
-            'bill found',
-          );
-        }
-
-        const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
-        const summary = (() => {
-          let result = ' ';
-
-          if (kb.manualEntries) {
-            result += 'Knowledge base entries:\n';
-            result += kb.manualEntries;
-            result += '\n\n';
-          }
-
-          if (kb.documents) {
-            result += kb.documents;
-            result += '\n\n';
-          }
-
-          if (bill) {
-            result += bill;
-            result += '\n\n';
-          }
-
-          return result.trim();
-        })();
-
-        if (summary) {
-          log.info({ summary }, 'summary');
-          // want to insert the DB summary as the second last message in the context of messages.
-          messages.splice(messages.length - 1, 0, {
-            role: 'user',
-            content: summary,
-          });
-        }
-
-        const webSearchResults = webSearch
-          ? // if the model is sonar or online, then don't do web search
-            selectedChatModel.startsWith('sonar') ||
-            selectedChatModel.includes('online')
-            ? null
-            : await getSearchResult(
-                {
-                  // latest message
-                  messages: [messages[messages.length - 1]],
-                },
-                log,
-              )
-          : null;
-
-        if (webSearchResults) {
-          const webResult = webSearchResults
-            .map(
-              result =>
-                `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
-            )
-            .join('');
-          const urls = webSearchResults.map(result => result.url);
-
-          stream.append({ role: 'sources', content: urls });
-
-          // want to insert the internet results summary as the second last message in the context of messages
-          messages.splice(messages.length - 1, 0, {
-            role: 'user',
-            content: `Web search results:\n\n${webResult}`,
-          });
-        }
+      if (kb.manualEntries) {
+        let result = 'Knowledge base entries:\n';
+        result += kb.manualEntries;
+        result += '\n\n';
+        // inject to second last message
+        messages.splice(messages.length - 1, 0, {
+          role: 'user',
+          content: result.trim(),
+        });
       }
 
       const systemPrompt = messages.find(message => message.role === 'system');
@@ -810,6 +745,8 @@ fastify.route<{ Body: ChatDemoStreamInput }>({
         temperature: selectedChatModel.startsWith('o4') ? 1 : TEMPERATURE,
         seed: SEED,
         maxSteps: 5,
+        // @ts-expect-error - TODO: fix types
+        tools: getChatTools(messages, log, stream),
         experimental_generateMessageId: crypto.randomUUID,
         experimental_transform: smoothStream({}),
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
