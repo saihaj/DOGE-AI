@@ -87,16 +87,16 @@ const SUGGESTED_PROMPTS = [
     value: `What's in H.R. 1?`,
   },
   {
+    value: 'Tell me about the CCP buying American Farmland',
+  },
+  {
+    value: 'How many countries did Obama strike with drones?',
+  },
+  {
     value: 'Give me 3 recent bills',
   },
   {
-    value: 'Will DOGE cuts be permanent?',
-  },
-  {
-    value: "What is the current status of Trump's Tariffs?",
-  },
-  {
-    value: 'Why are federal judges blocking Trump?',
+    value: 'How much revenue have the Trump tariffs brought into the US?',
   },
 ];
 
