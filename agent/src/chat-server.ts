@@ -4,6 +4,7 @@ import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
 import {
   appendClientMessage,
   appendResponseMessages,
+  CoreMessage,
   smoothStream,
   StreamData,
   streamText,
@@ -30,7 +31,9 @@ import { createContext } from './chat-api/trpc';
 import {
   CHAT_OPENAI_API_KEY,
   CHAT_REDIS_URL,
+  DEMO_SECRET_API_KEY,
   IS_PROD,
+  OPENAI_API_KEY,
   PRIVY_APP_ID,
   SEED,
   TEMPERATURE,
@@ -56,6 +59,9 @@ import {
 } from './utils/stream';
 import { getChatTools } from './utils/tools';
 import { createOpenAI } from '@ai-sdk/openai';
+import { getSearchResult } from './twitter/web';
+import { mergeConsecutiveSameRole } from './twitter/helpers';
+import { myProvider } from './api/chat';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -72,7 +78,9 @@ fastify.register(cors, {
   origin: [
     'http://localhost:4322',
     'http://localhost:8787',
+    'http://localhost:3000',
     'https://dogeai.chat',
+    'https://rhetor.ai',
     /^https:\/\/([a-zA-Z0-9-]+)*dogeai-terminal\.saihaj\.workers\.dev$/, // Matches dogeai-terminal.saihaj.workers.dev and subdomains
   ],
 });
@@ -577,6 +585,275 @@ fastify.route<{ Body: UserChatStreamInput }>({
     }
   },
   url: '/api/userchat',
+});
+
+const ChatDemoStreamInput = Type.Object({
+  id: Type.String(),
+  messages: Type.Array(Type.Any()),
+  selectedChatModel: Type.String(),
+  billSearch: Type.Boolean(),
+  documentSearch: Type.Boolean(),
+  manualKbSearch: Type.Boolean(),
+  webSearch: Type.Boolean(),
+  selectedKb: Type.String(),
+});
+type ChatDemoStreamInput = Static<typeof ChatDemoStreamInput>;
+
+const demoAuthHandler = async (
+  request: FastifyRequest,
+  reply: FastifyReply,
+) => {
+  const requestId =
+    normalizeHeaderValue(request.headers['x-request-id']) || request.id;
+  request.id = requestId;
+
+  const log = chatLogger.child({
+    requestId: request.id,
+  });
+
+  const value = normalizeHeaderValue(request.headers['x-demo-api-secret']);
+
+  if (DEMO_SECRET_API_KEY !== value) {
+    log.error({}, 'Invalid Demo API key');
+    return reply.status(401).send({
+      status: false,
+      message: 'Invalid Demo API key',
+    });
+  }
+
+  log.info({}, 'Demo API key is valid');
+};
+
+fastify.route<{ Body: ChatDemoStreamInput }>({
+  method: 'post',
+  preHandler: [demoAuthHandler],
+  schema: {
+    body: ChatDemoStreamInput,
+  },
+  handler: async (request, reply) => {
+    apiRequest.inc({
+      method: request.method,
+      path: '/api/chat-demo',
+    });
+    const log = chatLogger.child({
+      function: 'api-chat-demo',
+      requestId: request.id,
+    });
+    // Create an AbortController for the backend
+    const abortController = new AbortController();
+    let {
+      billSearch,
+      documentSearch,
+      manualKbSearch,
+      webSearch,
+      messages,
+      selectedKb,
+      selectedChatModel,
+    } = request.body as {
+      documentSearch: boolean;
+      manualKbSearch: boolean;
+      webSearch: boolean;
+      selectedKb: 'custom1' | 'custom2' | 'chat' | 'agent';
+      billSearch: boolean;
+      messages: CoreMessage[];
+      selectedChatModel: string;
+      promptId?: string;
+    };
+    const userMessage = messages[messages.length - 1];
+
+    if (!userMessage) {
+      throw new Error('No user message');
+    }
+
+    const userMessageText = userMessage.content.toString();
+
+    log.info({ text: userMessageText, selectedKb }, 'User message');
+
+    // Listen for the client disconnecting (abort)
+    request.raw.on('close', () => {
+      if (request.raw.aborted) {
+        abortController.abort();
+      }
+    });
+
+    // Mark the response as a v1 data stream:
+    setStreamHeaders(reply);
+
+    try {
+      const stream = new StreamData();
+
+      // Process any tweet URLs in the message
+      const { messages: updatedMessages } = await extractAndProcessTweet(
+        // @ts-expect-error - TODO: fix typings
+        messages,
+        userMessageText,
+        stream,
+        log,
+      );
+
+      // Update messages with the processed result
+      // @ts-expect-error - TODO: fix typings
+      messages = updatedMessages;
+
+      if (billSearch || documentSearch || manualKbSearch || webSearch) {
+        const latestMessage = messages[messages.length - 1];
+        const convoHistory = messages.filter(
+          message => message.role === 'user' || message.role === 'assistant',
+        );
+
+        const kb = await getKbContext(
+          {
+            messages: convoHistory,
+            text: latestMessage.content.toString(),
+            manualEntries: selectedKb,
+            billEntries: billSearch,
+            documentEntries: documentSearch,
+            openaiApiKey: OPENAI_API_KEY,
+          },
+          log,
+        );
+
+        if (kb?.bill) {
+          log.info(
+            {
+              id: kb.bill.id,
+              title: kb.bill.title,
+            },
+            'bill found',
+          );
+        }
+
+        const bill = kb?.bill ? `${kb.bill.title}: \n\n${kb.bill.content}` : '';
+        const summary = (() => {
+          let result = ' ';
+
+          if (kb.manualEntries) {
+            result += 'Knowledge base entries:\n';
+            result += kb.manualEntries;
+            result += '\n\n';
+          }
+
+          if (kb.documents) {
+            result += kb.documents;
+            result += '\n\n';
+          }
+
+          if (bill) {
+            result += bill;
+            result += '\n\n';
+          }
+
+          return result.trim();
+        })();
+
+        if (summary) {
+          log.info({ summary }, 'summary');
+          // want to insert the DB summary as the second last message in the context of messages.
+          messages.splice(messages.length - 1, 0, {
+            role: 'user',
+            content: summary,
+          });
+        }
+
+        const webSearchResults = webSearch
+          ? // if the model is sonar or online, then don't do web search
+            selectedChatModel.startsWith('sonar') ||
+            selectedChatModel.includes('online')
+            ? null
+            : await getSearchResult(
+                {
+                  // latest message
+                  messages: [messages[messages.length - 1]],
+                },
+                log,
+              )
+          : null;
+
+        if (webSearchResults) {
+          const webResult = webSearchResults
+            .map(
+              result =>
+                `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
+            )
+            .join('');
+          const urls = webSearchResults.map(result => result.url);
+
+          stream.append({ role: 'sources', content: urls });
+
+          // want to insert the internet results summary as the second last message in the context of messages
+          messages.splice(messages.length - 1, 0, {
+            role: 'user',
+            content: `Web search results:\n\n${webResult}`,
+          });
+        }
+      }
+
+      const systemPrompt = messages.find(message => message.role === 'system');
+
+      if (!systemPrompt) {
+        const prompt = await PROMPTS.DEMO_CHAT_CUSTOM_1();
+        messages.unshift({
+          role: 'system',
+          content: `${prompt}.\nCurrent date: ${new Date().toUTCString()}`,
+        });
+      }
+
+      // if sonar models then need to merge
+      if (selectedChatModel.startsWith('sonar')) {
+        messages = mergeConsecutiveSameRole(messages);
+      }
+
+      const result = streamText({
+        model: myProvider.languageModel(selectedChatModel), // Ensure this returns a valid model
+        abortSignal: abortController.signal,
+        messages,
+        temperature: selectedChatModel.startsWith('o4') ? 1 : TEMPERATURE,
+        seed: SEED,
+        maxSteps: 5,
+        experimental_generateMessageId: crypto.randomUUID,
+        experimental_transform: smoothStream({}),
+        experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
+        onError(error) {
+          log.error({ error }, 'Error in chat stream');
+        },
+        async onFinish(event) {
+          if (event.sources.length === 0) {
+            log.info({}, 'no sources');
+            await stream.close();
+            return;
+          }
+          const sources = event.sources;
+          log.info({ sources }, 'sources');
+
+          const urls = sources.map(source => source.url);
+
+          if (urls) {
+            stream.append({ role: 'sources', content: urls });
+          }
+          await stream.close();
+        },
+      });
+
+      // Use toDataStreamResponse for simplicity
+      const response = result.toDataStreamResponse({
+        sendReasoning: true,
+        sendUsage: true,
+        data: stream,
+      });
+
+      return response;
+    } catch (error) {
+      log.error({ error }, 'Error in chat stream');
+      if (abortController.signal.aborted) {
+        // Handle the abort gracefully
+        reply.status(204).send(); // No Content
+        return;
+      }
+
+      throw error; // Other errors should be handled as usual
+    }
+  },
+  url: '/api/chat-demo',
 });
 
 // So in fly.io, health should do both the health check and the readiness check

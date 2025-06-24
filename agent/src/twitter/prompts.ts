@@ -191,4 +191,7 @@ export const PROMPTS = {
     const templatedPrompt = Handlebars.compile(prompt);
     return templatedPrompt({ share, message });
   },
+  DEMO_CHAT_CUSTOM_1: async () => {
+    return getPromptContent('DEMO_CHAT_CUSTOM_1');
+  },
 };

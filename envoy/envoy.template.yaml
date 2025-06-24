@@ -140,6 +140,8 @@ static_resources:
                             path: '/health'
                         - match:
                             path: '/chat/api/health'
+                        - match:
+                            path: '/chat/api/chat-demo'
                         # Skip JWT verification for OPTIONS requests
                         - match:
                             prefix: '/'

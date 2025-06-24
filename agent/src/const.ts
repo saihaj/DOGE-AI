@@ -206,3 +206,9 @@ export const CHAT_EXA_API_KEY = (() => {
  * more context: https://grok.com/share/bGVnYWN5_6d2794ed-0293-4402-8ec6-3d921de392aa
  */
 export const LARGE_BILL_LENGTH_THRESHOLD = 200_000;
+export const DEMO_SECRET_API_KEY = (() => {
+  if (!process.env.DEMO_SECRET_API_KEY) {
+    throw new Error('DEMO_SECRET_API_KEY is not set in your .env');
+  }
+  return process.env.DEMO_SECRET_API_KEY;
+})();
