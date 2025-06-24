@@ -1,6 +1,6 @@
 import { IS_LOCAL } from '@/lib/const';
-import { z } from 'zod';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
+import { z } from 'zod';
 
 const FLY_APP_TOKEN = (() => {
   if (!process.env.FLY_APP_TOKEN) {
