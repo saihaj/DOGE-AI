@@ -367,8 +367,8 @@ export const executeInteractionTweets = inngest.createFunction(
             if (returnLong) {
               log.info({}, 'returning long');
 
-              // Inject it 20% of the time
-              const injectShare = Math.random() < 0.2;
+              // Inject it 40% of the time
+              const injectShare = Math.random() < 0.4;
 
               const shareMessage = injectShare
                 ? await (async () => {
