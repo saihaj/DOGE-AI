@@ -45,7 +45,7 @@
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.38.4",
     "exa-js": "^1.8.17",
-    "fastify": "5.3.3",
+    "fastify": "5.4.0",
     "fastify-plugin": "^5.0.1",
     "handlebars": "^4.7.8",
     "inngest": "^3.39.2",
