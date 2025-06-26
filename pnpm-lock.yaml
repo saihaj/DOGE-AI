@@ -332,7 +332,7 @@ importers:
         version: 1.3.22(zod@3.24.4)
       '@langchain/community':
         specifier: ^0.3.47
-        version: 0.3.47(lmv4x5ayxrivfueayxorctg7rm)
+        version: 0.3.47(3f7ljyyclh4lorz5fj5rz3gscm)
       '@langchain/core':
         specifier: ^0.3.61
         version: 0.3.61(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4))
@@ -340,8 +340,8 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0(@langchain/core@0.3.61(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))
       '@mendable/firecrawl-js':
-        specifier: ^1.25.5
-        version: 1.25.5
+        specifier: ^1.27.0
+        version: 1.27.0
       ai:
         specifier: ^4.3.16
         version: 4.3.16(react@19.1.0)(zod@3.24.4)
@@ -2801,8 +2801,8 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
-  '@mendable/firecrawl-js@1.25.5':
-    resolution: {integrity: sha512-cozEZipMdtyfAQKX8IFC8DW06cYd7CxL8cxwMaD61sQrWpLkGcpivoMEeSFuyJTKmobAYAT5EB5ZExUJSVJkXw==}
+  '@mendable/firecrawl-js@1.27.0':
+    resolution: {integrity: sha512-Wm/9UTe1AjIeh/kwufXtoziL2JH0jQMcQ+HwsZkOiZCBPiCjykPNCneCQjfyem6aBC5n4j38ZrXSRvSl1owPeA==}
     engines: {node: '>=22.0.0'}
 
   '@metamask/abi-utils@1.2.0':
@@ -12540,7 +12540,7 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@langchain/community@0.3.47(lmv4x5ayxrivfueayxorctg7rm)':
+  '@langchain/community@0.3.47(3f7ljyyclh4lorz5fj5rz3gscm)':
     dependencies:
       '@browserbasehq/stagehand': 1.11.0(@playwright/test@1.50.1)(bufferutil@4.0.9)(deepmerge@4.3.1)(dotenv@16.5.0)(encoding@0.1.13)(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4))(utf-8-validate@5.0.10)(zod@3.24.4)
       '@ibm-cloud/watsonx-ai': 1.4.0(@langchain/core@0.3.61(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))
@@ -12565,7 +12565,7 @@ snapshots:
       '@aws-sdk/credential-provider-node': 3.817.0
       '@browserbasehq/sdk': 2.6.0(encoding@0.1.13)
       '@libsql/client': 0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@mendable/firecrawl-js': 1.25.5
+      '@mendable/firecrawl-js': 1.27.0
       '@smithy/protocol-http': 3.3.0
       '@smithy/signature-v4': 2.3.0
       '@smithy/util-utf8': 2.3.0
@@ -12726,12 +12726,12 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  '@mendable/firecrawl-js@1.25.5':
+  '@mendable/firecrawl-js@1.27.0':
     dependencies:
       axios: 1.9.0
       typescript-event-target: 1.1.1
-      zod: 3.24.4
-      zod-to-json-schema: 3.24.5(zod@3.24.4)
+      zod: 3.25.64
+      zod-to-json-schema: 3.24.5(zod@3.25.64)
     transitivePeerDependencies:
       - debug
 
