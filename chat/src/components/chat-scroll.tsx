@@ -83,7 +83,7 @@ function renderUserMessage(message: UseChatHelpers['messages'][0]) {
     <MessageContent className="bg-primary w-full text-primary-foreground whitespace-normal">
       <>
         {tweetId && (
-          <div className="-mb-4">
+          <div className="-mb-4 [zoom:0.8]">
             <Tweet id={tweetId} />
           </div>
         )}
