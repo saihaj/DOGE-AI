@@ -3,7 +3,8 @@ import { useLocalStorage } from '@uidotdev/usehooks';
 import { createTRPCClient, httpBatchLink } from '@trpc/client';
 import { AppRouter, TRPCProvider } from '@/lib/trpc/client';
 import { API_URL, PRIVY_COOKIE_NAME } from '@/lib/const';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useToken } from '@privy-io/react-auth';
 
 export function ClientPrivyTokenProvider({
   children,
@@ -12,7 +13,21 @@ export function ClientPrivyTokenProvider({
   children: React.ReactNode;
   queryClient: any; // Replace with proper QueryClient type
 }) {
+  const { getAccessToken } = useToken();
   const [privyToken] = useLocalStorage('privy:token', '');
+
+  useEffect(() => {
+    // Run on mount
+    getAccessToken();
+
+    // Add focus event listener for window focus
+    window.addEventListener('focus', getAccessToken);
+
+    // Cleanup: Remove event listener on unmount
+    return () => {
+      window.removeEventListener('focus', getAccessToken);
+    };
+  }, []); // Empty deps to run only on mount/unmount
 
   const trpcClient = useMemo(() => {
     return createTRPCClient<AppRouter>({
