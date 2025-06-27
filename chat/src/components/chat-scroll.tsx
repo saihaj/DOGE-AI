@@ -36,11 +36,7 @@ const TweetPage = async ({ id }: { id: string }) => {
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
-    return (
-      <MessageContent className="px-0 md:px-2" markdown>
-        {message.content}
-      </MessageContent>
-    );
+    return <MessageContent markdown>{message.content}</MessageContent>;
   }
 
   return (
@@ -48,7 +44,7 @@ function renderMessageParts(message: UseChatHelpers['messages'][0]) {
       {message.parts.map((part, index) => {
         if (part.type === 'text') {
           return (
-            <MessageContent key={index} className="px-0 md:px-2" markdown>
+            <MessageContent key={index} markdown>
               {part.text}
             </MessageContent>
           );
@@ -108,10 +104,10 @@ function renderUserMessage(message: UseChatHelpers['messages'][0]) {
 
   return (
     // @ts-ignore
-    <MessageContent className="bg-primary w-full text-primary-foreground whitespace-normal">
+    <MessageContent className="bg-primary px-4 py-2 w-full text-primary-foreground whitespace-normal">
       <>
         {tweetId && (
-          <div className="-mb-4 [zoom:0.8]">
+          <div className="-mb-4 -mt-4 [zoom:0.8]">
             <Suspense fallback={<TweetSkeleton />}>
               <TweetPage id={tweetId} />
             </Suspense>
@@ -146,7 +142,7 @@ export function ChatWithCustomScroll({
             key={message.id}
             className={cn(
               message.role === 'user' ? 'justify-end' : 'justify-start',
-              'py-2 max-w-none w-full md:w-fit',
+              'max-w-none w-full md:w-fit',
             )}
           >
             {isAssistant
