@@ -16,7 +16,7 @@
     "tsx": "^4.19.4"
   },
   "dependencies": {
-    "@libsql/client": "^0.14.0",
+    "@libsql/client": "^0.15.9",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.2"
   }
