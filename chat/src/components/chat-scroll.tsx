@@ -5,6 +5,34 @@ import { cn } from '@/lib/utils';
 import { UseChatHelpers } from '@ai-sdk/react';
 import { Loader2 } from 'lucide-react';
 import { Tweet } from 'react-tweet';
+import { Suspense } from 'react';
+import { unstable_cache } from 'next/cache';
+import { TweetSkeleton, EmbeddedTweet, TweetNotFound } from 'react-tweet';
+import { getTweet as _getTweet } from 'react-tweet/api';
+
+const getTweet = unstable_cache(
+  async (id: string) =>
+    fetch(`https://react-tweet.vercel.app/api/tweet/${id}`, {
+      headers: {
+        'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
+        'X-Client-Name': 'dogeai-chat',
+      },
+    })
+      .then(a => a.json())
+      .then(a => a?.data || a),
+  ['tweet'],
+  { revalidate: 3600 * 24 },
+);
+
+const TweetPage = async ({ id }: { id: string }) => {
+  try {
+    const tweet = await getTweet(id);
+    return tweet ? <EmbeddedTweet tweet={tweet} /> : <TweetNotFound />;
+  } catch (error) {
+    console.error(error);
+    return <TweetNotFound error={error} />;
+  }
+};
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -84,7 +112,9 @@ function renderUserMessage(message: UseChatHelpers['messages'][0]) {
       <>
         {tweetId && (
           <div className="-mb-4 [zoom:0.8]">
-            <Tweet id={tweetId} />
+            <Suspense fallback={<TweetSkeleton />}>
+              <TweetPage id={tweetId} />
+            </Suspense>
           </div>
         )}
         {text}
