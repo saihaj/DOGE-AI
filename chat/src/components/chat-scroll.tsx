@@ -78,10 +78,8 @@ export function ChatWithCustomScroll({
           <Message
             key={message.id}
             className={cn(
-              message.role === 'user'
-                ? 'justify-end'
-                : 'justify-start max-w-none w-full',
-              'py-2',
+              message.role === 'user' ? 'justify-end' : 'justify-start',
+              'py-2 max-w-none w-full',
             )}
           >
             {isAssistant ? (
