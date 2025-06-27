@@ -4,6 +4,7 @@ import { Message, MessageContent } from '@/components/ui/message';
 import { cn } from '@/lib/utils';
 import { UseChatHelpers } from '@ai-sdk/react';
 import { Loader2 } from 'lucide-react';
+import { Tweet } from 'react-tweet';
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -56,6 +57,42 @@ function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   );
 }
 
+const IS_TWITTER_URL =
+  /(https?:\/\/)?((www\.)?(twitter|x)\.com\/(?:(?:i\/web\/status\/|status\/)?\d+|[^/\s]+)(\/[^/\s]*)?)/i;
+
+const EXTRACT_TWEET_ID = /(?:i\/web\/status\/|status\/)(\d{15,19})/i;
+
+function renderUserMessage(message: UseChatHelpers['messages'][0]) {
+  const text =
+    message?.parts
+      ?.map(part => {
+        if (part.type === 'text') {
+          return part.text;
+        }
+        return '';
+      })
+      .join('') ||
+    message.content ||
+    '';
+
+  const hasTweet = IS_TWITTER_URL.test(text);
+  const tweetId = hasTweet ? text.match(EXTRACT_TWEET_ID)?.[1] : null;
+
+  return (
+    // @ts-ignore
+    <MessageContent className="bg-primary w-full text-primary-foreground whitespace-normal">
+      <>
+        {tweetId && (
+          <div className="-mb-4 [zoom:0.8]">
+            <Tweet id={tweetId} />
+          </div>
+        )}
+        {text}
+      </>
+    </MessageContent>
+  );
+}
+
 export function ChatWithCustomScroll({
   messages,
   status,
@@ -82,19 +119,9 @@ export function ChatWithCustomScroll({
               'py-2 max-w-none w-full md:w-fit',
             )}
           >
-            {isAssistant ? (
-              renderMessageParts(message)
-            ) : (
-              <MessageContent className="bg-primary w-full text-primary-foreground whitespace-normal">
-                {message?.parts
-                  ?.map(a => {
-                    if (a.type === 'text') {
-                      return a.text;
-                    }
-                  })
-                  .join('') || message.content}
-              </MessageContent>
-            )}
+            {isAssistant
+              ? renderMessageParts(message)
+              : renderUserMessage(message)}
           </Message>
         );
       })}
