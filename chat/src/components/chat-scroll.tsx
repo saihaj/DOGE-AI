@@ -36,7 +36,11 @@ const TweetPage = async ({ id }: { id: string }) => {
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
-    return <MessageContent markdown>{message.content}</MessageContent>;
+    return (
+      <MessageContent className="mt-2" markdown>
+        {message.content}
+      </MessageContent>
+    );
   }
 
   return (
@@ -44,7 +48,7 @@ function renderMessageParts(message: UseChatHelpers['messages'][0]) {
       {message.parts.map((part, index) => {
         if (part.type === 'text') {
           return (
-            <MessageContent key={index} markdown>
+            <MessageContent className="mt-2" key={index} markdown>
               {part.text}
             </MessageContent>
           );
