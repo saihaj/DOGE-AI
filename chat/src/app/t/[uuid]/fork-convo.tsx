@@ -20,12 +20,7 @@ export function ForkConversation({ messages }: { messages: string }) {
     }
 
     if (!authenticated) {
-      toast.error('Please login to continue', {
-        action: {
-          label: 'Login',
-          onClick: login,
-        },
-      });
+      login();
       return;
     }
 
