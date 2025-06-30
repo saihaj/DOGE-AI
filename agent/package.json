@@ -42,7 +42,7 @@
     "date-fns": "^4.1.0",
     "dedent": "^1.6.0",
     "discord.js": "^14.21.0",
-    "dotenv": "^16.5.0",
+    "dotenv": "^16.6.1",
     "drizzle-orm": "^0.44.2",
     "exa-js": "^1.8.17",
     "fastify": "5.4.0",
