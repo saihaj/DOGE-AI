@@ -3,6 +3,7 @@ website/out/**
 website/public/**
 chat/public/**
 chat/.next/**
+chat/.open-next/**
 chat/out/**
 chat/.vercel/**
 crawler/data/**
