@@ -21,7 +21,8 @@
     "dev:server": "tsx --watch --env-file=.env ./src/server.ts | pino-pretty",
     "dev:inngest": "inngest dev -u http://localhost:3000/api/inngest",
     "dev:agent": "pnpm run dev:server & pnpm run dev:inngest",
-    "db:generate:chat": "drizzle-kit generate --config=./drizzle-chat.config.ts"
+    "db:generate:chat": "drizzle-kit generate --config=./drizzle-chat.config.ts",
+    "db:generate:controlplane": "drizzle-kit generate --config=./drizzle-controlplane.config.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^1.2.12",
