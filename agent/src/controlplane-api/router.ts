@@ -35,7 +35,7 @@ async function createTursoDbInstance({
     .insert(ControlPlaneOrganizationDb)
     .values({
       id,
-      name,
+      name: instanceName,
       hostname: tursoInstance.hostname,
       organization: orgId,
     })
