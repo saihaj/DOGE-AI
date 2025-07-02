@@ -1,10 +1,8 @@
+import { Providers } from '@/components/providers';
+import { Toaster } from '@/components/ui/sonner';
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
-import { Toaster } from '@/components/ui/sonner';
 import './globals.css';
-import { Providers } from '@/components/providers';
-import { PwaInstallBanner } from '@/components/install-pwa';
-import { ClientOnly } from '@/components/client-only';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -100,9 +98,6 @@ export default function RootLayout({
       >
         <Providers>
           {children}
-          <ClientOnly>
-            <PwaInstallBanner />
-          </ClientOnly>
           <Toaster theme="light" richColors />
         </Providers>
       </body>
