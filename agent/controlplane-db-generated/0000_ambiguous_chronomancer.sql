@@ -14,7 +14,6 @@ CREATE TABLE `OrganizationDatabase` (
 	`organization` text NOT NULL,
 	`createdAt` numeric DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updatedAt` numeric DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
-	`token` text NOT NULL,
 	FOREIGN KEY (`organization`) REFERENCES `Organization`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint

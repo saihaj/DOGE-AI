@@ -37,7 +37,6 @@ export const ControlPlaneOrganizationDb = sqliteTable(
       .default(sql`(CURRENT_TIMESTAMP)`)
       .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    token: text().notNull(),
   },
   table => [
     foreignKey({

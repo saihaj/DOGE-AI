@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "113a5822-0ec2-4ff8-b936-c665f8a09177",
+  "id": "29e4ea93-8ea6-42b6-b8cd-fd22b66e22f8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "Organization": {
@@ -55,7 +55,9 @@
       "indexes": {
         "Organization_slug_unique": {
           "name": "Organization_slug_unique",
-          "columns": ["slug"],
+          "columns": [
+            "slug"
+          ],
           "isUnique": true
         }
       },
@@ -103,13 +105,6 @@
           "notNull": true,
           "autoincrement": false,
           "default": "(CURRENT_TIMESTAMP)"
-        },
-        "token": {
-          "name": "token",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
         }
       },
       "indexes": {},
@@ -118,8 +113,12 @@
           "name": "organization_id_fk",
           "tableFrom": "OrganizationDatabase",
           "tableTo": "Organization",
-          "columnsFrom": ["organization"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "organization"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -193,7 +192,10 @@
       "indexes": {
         "unique_key_organization": {
           "name": "unique_key_organization",
-          "columns": ["key", "organization"],
+          "columns": [
+            "key",
+            "organization"
+          ],
           "isUnique": true
         }
       },
@@ -202,8 +204,12 @@
           "name": "organization_id_fk",
           "tableFrom": "Prompt",
           "tableTo": "Organization",
-          "columnsFrom": ["organization"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "organization"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -284,7 +290,9 @@
       "indexes": {
         "PromptCommit_prompt_id": {
           "name": "PromptCommit_prompt_id",
-          "columns": ["promptId"],
+          "columns": [
+            "promptId"
+          ],
           "isUnique": false
         }
       },
@@ -293,8 +301,12 @@
           "name": "parent_commit_id_fk",
           "tableFrom": "PromptCommit",
           "tableTo": "PromptCommit",
-          "columnsFrom": ["parentCommitId"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "parentCommitId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -302,8 +314,12 @@
           "name": "organization_id_fk",
           "tableFrom": "PromptCommit",
           "tableTo": "Organization",
-          "columnsFrom": ["organization"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "organization"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
