@@ -11,12 +11,14 @@ CREATE UNIQUE INDEX `Organization_slug_unique` ON `Organization` (`slug`);--> st
 CREATE TABLE `OrganizationDatabase` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,
+	`hostname` text NOT NULL,
 	`organization` text NOT NULL,
 	`createdAt` numeric DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updatedAt` numeric DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	FOREIGN KEY (`organization`) REFERENCES `Organization`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `unique_name_organization` ON `OrganizationDatabase` (`name`,`organization`);--> statement-breakpoint
 CREATE TABLE `Prompt` (
 	`id` text PRIMARY KEY NOT NULL,
 	`key` text NOT NULL,
