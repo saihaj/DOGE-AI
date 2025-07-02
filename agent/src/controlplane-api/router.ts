@@ -15,16 +15,14 @@ const tursoApiClient = createTursoApiClient({
 async function createTursoDbInstance({
   orgId,
   orgSlug,
-  name,
   type,
 }: {
   orgId: string;
   orgSlug: string;
-  name: string;
   type: 'kb' | 'action';
 }) {
-  const id = `${orgSlug}-${name}`;
-  const instanceName = `${orgSlug.substring(0, 40)}-${name}`;
+  const id = `${orgSlug}-${type}`;
+  const instanceName = `${orgSlug.substring(0, 40)}-${type}`;
   const tursoInstance = await tursoApiClient.databases.create(instanceName, {
     group: '',
     seed: {
@@ -57,6 +55,66 @@ async function createTursoDbInstance({
     name: insertedOrgDb.name,
     hostname: insertedOrgDb.hostname,
     organization: insertedOrgDb.organization,
+  };
+}
+
+async function getOrgDb({
+  type,
+  orgSlug,
+}: {
+  type: 'kb' | 'action';
+  orgSlug: string;
+}) {
+  const id = `${orgSlug}-${type}`;
+  const dbInstance = await db.query.ControlPlaneOrganizationDb.findFirst({
+    where: eq(ControlPlaneOrganizationDb.id, id),
+  });
+
+  if (!dbInstance) {
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: `Database instance "${type}" not found for organization "${orgSlug}"`,
+    });
+  }
+
+  return {
+    id: dbInstance.id,
+    name: dbInstance.name,
+    hostname: dbInstance.hostname,
+    organization: dbInstance.organization,
+  };
+}
+
+async function getOrganizationBySlug(slug: string) {
+  const org = await db.query.ControlPlaneOrganization.findFirst({
+    where: eq(ControlPlaneOrganization.slug, slug),
+  });
+
+  if (!org) {
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: `Organization with slug "${slug}" not found`,
+    });
+  }
+
+  const [kbInstance, actionInstance] = await Promise.all([
+    getOrgDb({
+      type: 'kb',
+      orgSlug: slug,
+    }),
+    getOrgDb({
+      type: 'action',
+      orgSlug: slug,
+    }),
+  ]);
+
+  return {
+    name: org.name,
+    slug: org.slug,
+    id: org.id,
+    location: org.location,
+    knowledgebaseHost: kbInstance.hostname,
+    actionsDbHost: actionInstance.hostname,
   };
 }
 
@@ -129,13 +187,11 @@ const createOrganization = protectedProcedure
       createTursoDbInstance({
         orgSlug: org.slug,
         orgId: org.id,
-        name: 'knowledgebase',
         type: 'kb',
       }),
       createTursoDbInstance({
         orgSlug: org.slug,
         orgId: org.id,
-        name: 'actions',
         type: 'action',
       }),
     ]);
@@ -150,8 +206,24 @@ const createOrganization = protectedProcedure
     };
   });
 
+const getOrganization = protectedProcedure
+  .input(z.object({ slug: z.string() }))
+  .mutation(async ({ input, ctx }) => {
+    const { slug } = input;
+
+    ctx.logger.info(
+      {
+        slug,
+      },
+      'Fetching organization by slug',
+    );
+
+    return getOrganizationBySlug(slug);
+  });
+
 export const controlPlaneRouter = router({
   createOrganization,
+  getOrganization,
 });
 
 export type ControlPlaneRouter = typeof controlPlaneRouter;
