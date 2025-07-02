@@ -92,8 +92,8 @@ importers:
         specifier: ^4.7.8
         version: 4.7.8
       inngest:
-        specifier: ^3.39.2
-        version: 3.39.2(@vercel/node@5.1.16(encoding@0.1.13))(encoding@0.1.13)(express@5.1.0)(fastify@5.4.0)(h3@1.15.3)(next@15.3.4(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.7.3)
+        specifier: ^3.40.0
+        version: 3.40.0(@vercel/node@5.1.16(encoding@0.1.13))(encoding@0.1.13)(express@5.1.0)(fastify@5.4.0)(h3@1.15.3)(next@15.3.4(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.7.3)
       ioredis:
         specifier: ^5.6.1
         version: 5.6.1
@@ -364,8 +364,8 @@ importers:
         specifier: ^1.2.0
         version: 1.2.0
       inngest:
-        specifier: ^3.39.2
-        version: 3.39.2(@vercel/node@5.1.16(encoding@0.1.13))(encoding@0.1.13)(express@5.1.0)(fastify@5.4.0)(h3@1.15.3)(next@15.3.4(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.7.3)
+        specifier: ^3.40.0
+        version: 3.40.0(@vercel/node@5.1.16(encoding@0.1.13))(encoding@0.1.13)(express@5.1.0)(fastify@5.4.0)(h3@1.15.3)(next@15.3.4(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.7.3)
       langchain:
         specifier: ^0.3.29
         version: 0.3.29(@langchain/core@0.3.61(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))(axios@1.7.9)(encoding@0.1.13)(handlebars@4.7.8)(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4))(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
@@ -7259,8 +7259,8 @@ packages:
     resolution: {integrity: sha512-2mKDkdqnQh7C2Hk2+CEs60Ezy/apf6/BmX0OK0XG1IeRXrtJsE8VuHTEr8sq7YqZ61Aeb3x0TgNiOPmpAbwyMA==}
     hasBin: true
 
-  inngest@3.39.2:
-    resolution: {integrity: sha512-P71dUa16SUsFnhsBvzWICj/i3BiXDNZ1UVf+qXXAGQQ6BcszEW8ZHgk5t4tQvfKJ7KZ8oYrLvq2JGat+dhXx0Q==}
+  inngest@3.40.0:
+    resolution: {integrity: sha512-Eer57BXQjsDCrHC2/xt8usck/0T8CRk/rs+NDpJm1BBHt/Y4jlxXqksWbXInYN1xelFUiA8dxek9U1oEju6LQQ==}
     engines: {node: '>=14'}
     peerDependencies:
       '@sveltejs/kit': '>=1.27.3'
@@ -16680,10 +16680,6 @@ snapshots:
       mime-types: 3.0.1
       negotiator: 1.0.0
 
-  acorn-import-attributes@1.9.5(acorn@8.14.0):
-    dependencies:
-      acorn: 8.14.0
-
   acorn-import-attributes@1.9.5(acorn@8.15.0):
     dependencies:
       acorn: 8.15.0
@@ -18883,8 +18879,8 @@ snapshots:
 
   import-in-the-middle@1.14.2:
     dependencies:
-      acorn: 8.14.0
-      acorn-import-attributes: 1.9.5(acorn@8.14.0)
+      acorn: 8.15.0
+      acorn-import-attributes: 1.9.5(acorn@8.15.0)
       cjs-module-lexer: 1.2.3
       module-details-from-path: 1.0.4
 
@@ -18920,7 +18916,7 @@ snapshots:
       - encoding
       - supports-color
 
-  inngest@3.39.2(@vercel/node@5.1.16(encoding@0.1.13))(encoding@0.1.13)(express@5.1.0)(fastify@5.4.0)(h3@1.15.3)(next@15.3.4(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.7.3):
+  inngest@3.40.0(@vercel/node@5.1.16(encoding@0.1.13))(encoding@0.1.13)(express@5.1.0)(fastify@5.4.0)(h3@1.15.3)(next@15.3.4(@opentelemetry/api@1.9.0)(@playwright/test@1.50.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(typescript@5.7.3):
     dependencies:
       '@bufbuild/protobuf': 2.5.2
       '@inngest/ai': 0.1.4
