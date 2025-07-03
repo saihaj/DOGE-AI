@@ -80,8 +80,8 @@ importers:
         specifier: ^0.44.2
         version: 0.44.2(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/pg@8.6.1)(better-sqlite3@11.6.0)(prisma@6.2.1)(sqlite3@5.1.7)
       exa-js:
-        specifier: ^1.8.18
-        version: 1.8.18(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)
+        specifier: ^1.8.19
+        version: 1.8.19(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       fastify:
         specifier: 5.4.0
         version: 5.4.0
@@ -6707,8 +6707,8 @@ packages:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
 
-  exa-js@1.8.18:
-    resolution: {integrity: sha512-NWfvFaLcmcAoknYQyx2cLs8dYqCx26d0JaFoqY1r+W025AAd0ftnokJYYIGOedmBCjD/fFyrzi0vYz0ICSmq+Q==}
+  exa-js@1.8.19:
+    resolution: {integrity: sha512-0H/8JIM37UoQbAuvzOkSdWBJDu6MJL+GGyaQqLSTlTcgnoQIkNblf/MTnbRiJMYJB1kM+soSqhKHWVFAJR6tPg==}
 
   execa@5.1.1:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
@@ -18174,15 +18174,16 @@ snapshots:
 
   events@3.3.0: {}
 
-  exa-js@1.8.18(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4):
+  exa-js@1.8.19(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)):
     dependencies:
       cross-fetch: 4.1.0(encoding@0.1.13)
       dotenv: 16.4.7
-      openai: 5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)
+      openai: 5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.64)
+      zod: 3.25.64
+      zod-to-json-schema: 3.24.5(zod@3.25.64)
     transitivePeerDependencies:
       - encoding
       - ws
-      - zod
 
   execa@5.1.1:
     dependencies:
@@ -20345,6 +20346,11 @@ snapshots:
     optionalDependencies:
       ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       zod: 3.24.4
+
+  openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.25.64):
+    optionalDependencies:
+      ws: 8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      zod: 3.25.64
 
   openapi-types@12.1.3: {}
 
