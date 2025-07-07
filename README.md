@@ -31,6 +31,73 @@ on top of this foundation. We hope this framework becomes the foundation for new
 ways to interact with and leverage government data, enabling innovative
 solutions and greater public engagement.
 
+## What Can DOGE-AI Do?
+
+DOGE-AI is a comprehensive platform that makes government spending and policy decisions more accessible to the public. Here's what the system can do:
+
+### 🤖 Intelligent Twitter Agent (@DogeXBT)
+- **Answer Questions**: Responds to mentions and replies about specific bills, government spending, and policy decisions
+- **Contextual Engagement**: Uses AI to understand complex legislative questions and provide informed responses
+- **Real-time Interaction**: Automatically processes and responds to relevant Twitter conversations about government waste
+- **Knowledge Integration**: Draws from a comprehensive database of bills and government documents to provide accurate information
+
+### 🕷️ Automated Government Data Collection
+- **Bill Scraping**: Continuously monitors and scrapes the U.S. Congress API for new legislation
+- **Content Analysis**: Automatically extracts and processes bill text, summaries, and metadata
+- **Waste Detection**: Uses AI to analyze bills for potential wasteful spending and inefficiencies
+- **Multi-source Integration**: Collects data from congress.gov, official government websites, and other reliable sources
+- **Scheduled Processing**: Runs automated workflows to keep the database current with the latest legislative activity
+
+### 💬 Interactive Chat Interface
+- **Ask Anything**: Users can chat directly with the AI about government bills, spending, and policies
+- **Contextual Responses**: Provides detailed answers backed by real government data and documents
+- **Bill Lookup**: Quickly find and explain specific pieces of legislation
+- **Spending Analysis**: Break down complex budget allocations and identify potential waste
+
+### 🌐 Public Web Platform
+- **Bill Discovery**: Browse and search through thousands of congressional bills
+- **Spending Insights**: Visualize government expenditures and identify wasteful allocations
+- **Social Sharing**: Easy sharing of bills and spending insights on social media
+- **Public Access**: Free access to government transparency data for all citizens
+
+### 📊 Knowledge Base Management
+- **Document Storage**: Centralized repository for bills, documents, and government data
+- **Vector Search**: Advanced semantic search capabilities for finding relevant information
+- **Content Enrichment**: AI-powered summarization and analysis of complex government documents
+- **Admin Dashboard**: Tools for managing and curating the knowledge base
+
+### 🔍 Advanced Search & Analytics
+- **Semantic Search**: Find bills and documents using natural language queries
+- **Spending Analysis**: Identify patterns in government expenditures and flag potential waste
+- **Bill Tracking**: Monitor the progress and status of legislation through the congressional process
+- **Impact Assessment**: Analyze the potential financial and social impact of proposed legislation
+
+### 🛠️ Developer-Friendly Infrastructure
+- **Open Source**: All code is publicly available for transparency and community contribution
+- **API Access**: Programmatic access to government data and AI analysis
+- **Modular Architecture**: Each component can be deployed and scaled independently
+- **Framework Foundation**: Built to support additional specialized agents for different government departments
+
+### 🎯 What You Can Do Right Now
+
+**For Citizens:**
+- Tweet [@DogeXBT](https://twitter.com/DogeXBT) to ask about any bill: *"@DogeXBT what does HR 1234 spend money on?"*
+- Visit the chat interface to have detailed conversations about government spending
+- Browse the website to discover wasteful spending in your area of interest
+- Share insights about government waste on social media
+
+**For Researchers & Journalists:**
+- Access comprehensive bill data and analysis through the web interface
+- Use the chat system to quickly research complex legislation
+- Download and analyze government spending patterns
+- Build on top of the open-source infrastructure for your own projects
+
+**For Developers:**
+- Fork the repository and contribute improvements
+- Deploy your own specialized agents for specific government departments
+- Use the APIs to build additional transparency tools
+- Help expand the knowledge base and improve AI responses
+
 ## Key Objectives
 
 In order to achieve the vision following are actionable objectives:
