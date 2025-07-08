@@ -15,11 +15,11 @@ import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
   OPENAI_API_KEY,
+  DEEPINFRA_API_KEY,
   IS_PROD,
   REJECTION_REASON,
   SEED,
   TEMPERATURE,
-  OPEN_ROUTER_API_KEY,
 } from '../const';
 import {
   approvedTweetEngagement,
@@ -48,11 +48,11 @@ import {
 import { getKbContext } from './knowledge-base.ts';
 import { PROMPTS } from './prompts';
 import { getSearchResult } from './web.ts';
+import { createDeepInfra } from '@ai-sdk/deepinfra';
 import { createOpenAI } from '@ai-sdk/openai';
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 
-const openrouter = createOpenRouter({
-  apiKey: OPEN_ROUTER_API_KEY,
+const deepinfra = createDeepInfra({
+  apiKey: DEEPINFRA_API_KEY,
 });
 
 const openai = createOpenAI({
@@ -138,11 +138,7 @@ export async function getLongResponse(
     temperature: TEMPERATURE,
     seed: SEED,
     model: wrapLanguageModel({
-      model: openrouter.chat('deepseek/deepseek-r1', {
-        reasoning: {
-          effort: 'high',
-        },
-      }),
+      model: deepinfra('deepseek-ai/DeepSeek-R1'),
       middleware: [
         extractReasoningMiddleware({
           tagName: 'think',
