@@ -19,15 +19,15 @@ async function createTursoDbInstance({
 }: {
   orgId: string;
   orgSlug: string;
-  type: 'kb' | 'action';
+  type: 'kb' | 'actions';
 }) {
   const id = `${orgSlug}-${type}`;
   const instanceName = `${orgSlug.substring(0, 40)}-${type}`;
   const tursoInstance = await tursoApiClient.databases.create(instanceName, {
-    group: '',
+    group: 'rhetor-useast',
     seed: {
       type: 'database',
-      name: type,
+      name: `${type}base`,
     },
   });
 
