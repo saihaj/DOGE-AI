@@ -192,7 +192,7 @@ const createOrganization = protectedProcedure
       createTursoDbInstance({
         orgSlug: org.slug,
         orgId: org.id,
-        type: 'action',
+        type: 'actions',
       }),
     ]);
 
