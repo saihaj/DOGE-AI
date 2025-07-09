@@ -1,60 +1,11 @@
 import { sql } from 'drizzle-orm';
 import {
   blob,
-  foreignKey,
   index,
   numeric,
   sqliteTable,
   text,
 } from 'drizzle-orm/sqlite-core';
-import * as crypto from 'node:crypto';
-
-export const ActionDbPromptTable = sqliteTable('Prompt', {
-  id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
-  key: text().notNull().unique(),
-  description: text(),
-  createdAt: numeric()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .notNull(),
-  updatedAt: numeric()
-    .default(sql`(CURRENT_TIMESTAMP)`)
-    .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
-    .notNull(),
-  meta: blob(),
-  latestCommitId: text().notNull(),
-});
-
-export const ActionDbPromptCommitTable = sqliteTable(
-  'PromptCommit',
-  {
-    id: text().primaryKey().$defaultFn(crypto.randomUUID).notNull(),
-    promptId: text().notNull(),
-    parentCommitId: text(),
-    content: text().notNull(),
-    message: text(),
-    createdAt: numeric()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .notNull(),
-    updatedAt: numeric()
-      .default(sql`(CURRENT_TIMESTAMP)`)
-      .$onUpdate(() => sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    meta: blob(),
-  },
-  table => [
-    index('prompt_idx').on(table.promptId),
-    foreignKey({
-      columns: [table.promptId],
-      foreignColumns: [ActionDbPromptTable.id],
-      name: 'prompt_id_fk',
-    }),
-    foreignKey({
-      columns: [table.parentCommitId],
-      foreignColumns: [table.id],
-      name: 'parent_commit_fk',
-    }),
-  ],
-);
 
 export const chat = sqliteTable(
   'Chat',

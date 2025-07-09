@@ -42,8 +42,8 @@ CREATE TABLE `PromptCommit` (
 	`createdAt` numeric DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`updatedAt` numeric DEFAULT (CURRENT_TIMESTAMP) NOT NULL,
 	`meta` blob,
-	FOREIGN KEY (`parentCommitId`) REFERENCES `PromptCommit`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`organization`) REFERENCES `Organization`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`organization`) REFERENCES `Organization`(`id`) ON UPDATE no action ON DELETE no action,
+	FOREIGN KEY (`parentCommitId`) REFERENCES `PromptCommit`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE INDEX `PromptCommit_prompt_id` ON `PromptCommit` (`promptId`);
