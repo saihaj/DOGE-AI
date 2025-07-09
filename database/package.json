@@ -9,7 +9,8 @@
     "dev": "tsx --watch ./src/client.ts",
     "generate": "drizzle-kit generate",
     "push": "drizzle-kit push",
-    "db:generate:actiondb": "drizzle-kit generate --config=./drizzle-actiondb.config.ts"
+    "db:generate:actiondb": "drizzle-kit generate --config=./drizzle-actiondb.config.ts",
+    "db:generate:manualkb": "drizzle-kit generate --config=./drizzle-manualkb.config.ts"
   },
   "devDependencies": {
     "@types/node": "^22.15.19",
