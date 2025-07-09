@@ -55,9 +55,7 @@
       "indexes": {
         "Organization_slug_unique": {
           "name": "Organization_slug_unique",
-          "columns": [
-            "slug"
-          ],
+          "columns": ["slug"],
           "isUnique": true
         }
       },
@@ -117,10 +115,7 @@
       "indexes": {
         "unique_name_organization": {
           "name": "unique_name_organization",
-          "columns": [
-            "name",
-            "organization"
-          ],
+          "columns": ["name", "organization"],
           "isUnique": true
         }
       },
@@ -129,12 +124,8 @@
           "name": "organization_id_fk",
           "tableFrom": "OrganizationDatabase",
           "tableTo": "Organization",
-          "columnsFrom": [
-            "organization"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -208,10 +199,7 @@
       "indexes": {
         "unique_key_organization": {
           "name": "unique_key_organization",
-          "columns": [
-            "key",
-            "organization"
-          ],
+          "columns": ["key", "organization"],
           "isUnique": true
         }
       },
@@ -220,12 +208,8 @@
           "name": "Prompt_organization_Organization_id_fk",
           "tableFrom": "Prompt",
           "tableTo": "Organization",
-          "columnsFrom": [
-            "organization"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -306,9 +290,7 @@
       "indexes": {
         "PromptCommit_prompt_id": {
           "name": "PromptCommit_prompt_id",
-          "columns": [
-            "promptId"
-          ],
+          "columns": ["promptId"],
           "isUnique": false
         }
       },
@@ -317,12 +299,8 @@
           "name": "PromptCommit_organization_Organization_id_fk",
           "tableFrom": "PromptCommit",
           "tableTo": "Organization",
-          "columnsFrom": [
-            "organization"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organization"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -330,12 +308,8 @@
           "name": "parent_commit_id_fk",
           "tableFrom": "PromptCommit",
           "tableTo": "PromptCommit",
-          "columnsFrom": [
-            "parentCommitId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parentCommitId"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
