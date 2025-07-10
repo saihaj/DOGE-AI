@@ -128,8 +128,8 @@ importers:
         specifier: ^4.19.4
         version: 4.19.4
       twitter-api-v2:
-        specifier: ^1.19.0
-        version: 1.19.0(patch_hash=qtm7kmv32i2ogwqkvthtr6ar7u)
+        specifier: ^1.24.0
+        version: 1.24.0(patch_hash=qtm7kmv32i2ogwqkvthtr6ar7u)
       typescript:
         specifier: ^5.7.3
         version: 5.7.3
@@ -9864,8 +9864,8 @@ packages:
   tweetnacl@1.0.3:
     resolution: {integrity: sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==}
 
-  twitter-api-v2@1.19.0:
-    resolution: {integrity: sha512-jfG4aapNPM9+4VxNxn0TXvD8Qj8NmVx6cY0hp5K626uZ41qXPaJz33Djd3y6gfHF/+W29+iZz0Y5qB869d/akA==}
+  twitter-api-v2@1.24.0:
+    resolution: {integrity: sha512-RDEiuNwnFirvf4c5f1sysgg0rfMQgekXgKt+/UdbNu+Bs5bJ1VbXkqKzdd2a2lPMlDVDbdGUoe2pOd4n25fFVQ==}
 
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
@@ -18839,7 +18839,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9)
+      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.1))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -21159,7 +21159,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9):
+  retry-axios@2.6.0(axios@1.7.9(debug@4.4.1)):
     dependencies:
       axios: 1.7.9(debug@4.4.1)
 
@@ -21978,7 +21978,7 @@ snapshots:
 
   tweetnacl@1.0.3: {}
 
-  twitter-api-v2@1.19.0(patch_hash=qtm7kmv32i2ogwqkvthtr6ar7u): {}
+  twitter-api-v2@1.24.0(patch_hash=qtm7kmv32i2ogwqkvthtr6ar7u): {}
 
   type-check@0.4.0:
     dependencies:
