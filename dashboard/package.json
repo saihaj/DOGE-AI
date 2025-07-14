@@ -29,7 +29,7 @@
     "@trpc/client": "^11.2.0",
     "@trpc/tanstack-react-query": "^11.2.0",
     "@uidotdev/usehooks": "^2.4.1",
-    "ai": "^4.3.16",
+    "ai": "^4.3.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "1.1.1",
