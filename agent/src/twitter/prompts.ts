@@ -194,4 +194,10 @@ export const PROMPTS = {
   DEMO_CHAT_CUSTOM_1: async () => {
     return getPromptContent('DEMO_CHAT_CUSTOM_1');
   },
+  CDNYC_TWITTER_REPLY_TEMPLATE_KB: async () => {
+    return getPromptContent('CDNYC_TWITTER_REPLY_TEMPLATE_KB');
+  },
+  CDNYC_INT_ENGAGE_DECISION_PROMPT: async () => {
+    return getPromptContent('CDNYC_INT_ENGAGE_DECISION_PROMPT');
+  },
 };
