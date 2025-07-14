@@ -5,7 +5,7 @@ db.sqlite
 
 .DS_Store
 dump.sql
-local.db
+*.db
 
 dist
 

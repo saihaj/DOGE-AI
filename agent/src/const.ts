@@ -1,3 +1,10 @@
+function getEnvKey(key: string): string {
+  const value = process.env[key];
+  if (!value) {
+    throw new Error(`${key} is not set in your .env`);
+  }
+  return value;
+}
 if (!process.env.PERPLEXITY_API_KEY) {
   throw new Error('PERPLEXITY_API_KEY is not set in your .env');
 }
@@ -211,4 +218,16 @@ export const DEMO_SECRET_API_KEY = (() => {
     throw new Error('DEMO_SECRET_API_KEY is not set in your .env');
   }
   return process.env.DEMO_SECRET_API_KEY;
+})();
+export const TURSO_PLATFORM_API_TOKEN = (() => {
+  return getEnvKey('TURSO_PLATFORM_API_TOKEN');
+})();
+export const TURSO_PLATFORM_ORG_NAME = (() => {
+  return getEnvKey('TURSO_PLATFORM_ORG_NAME');
+})();
+export const CONTROLPLANE_TURSO_DATABASE_URL = (() => {
+  return getEnvKey('CONTROLPLANE_TURSO_DATABASE_URL');
+})();
+export const CONTROLPLANE_TURSO_AUTH_TOKEN = (() => {
+  return getEnvKey('CONTROLPLANE_TURSO_AUTH_TOKEN');
 })();
