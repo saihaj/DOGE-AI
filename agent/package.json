@@ -36,7 +36,7 @@
     "@openrouter/ai-sdk-provider": "^0.7.2",
     "@sinclair/typebox": "^0.34.37",
     "@trpc/server": "^11.2.0",
-    "ai": "^4.3.16",
+    "ai": "^4.3.18",
     "bentocache": "1.0.0-beta.9",
     "database": "workspace:^",
     "date-fns": "^4.1.0",
