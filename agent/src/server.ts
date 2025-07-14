@@ -40,7 +40,6 @@ import { executeTweets } from './twitter/execute';
 import { ingestInteractionTweets } from './twitter/ingest-interaction';
 import { processInteractionTweets } from './twitter/process-interactions';
 import { executeInteractionTweets } from './twitter/execute-interaction';
-import { ingestTemporaryInteractionTweets } from './twitter/ingest-temporary';
 import { createContext } from './trpc';
 import { appRouter } from './router';
 import { getSearchResult } from './twitter/web';
@@ -58,7 +57,6 @@ fastify.route({
       processTweets,
       executeTweets,
       ingestInteractionTweets,
-      ingestTemporaryInteractionTweets,
       processInteractionTweets,
       executeInteractionTweets,
     ],
