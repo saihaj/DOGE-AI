@@ -1,5 +1,5 @@
 function getEnvKey(key: string): string {
-  const value = process.env[key];
+  const value = process.env?.[key];
   if (!value) {
     throw new Error(`${key} is not set in your .env`);
   }
@@ -15,22 +15,13 @@ if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
   throw new Error('GOOGLE_GENERATIVE_AI_API_KEY is not set in your .env');
 }
 export const OPENAI_API_KEY = (() => {
-  if (!process.env.OPENAI_API_KEY) {
-    throw new Error('OPENAI_API_KEY is not set in your .env');
-  }
-  return process.env.OPENAI_API_KEY;
+  return getEnvKey('OPENAI_API_KEY');
 })();
 export const TWITTER_API_KEY = (() => {
-  if (!process.env.TWITTER_IO_API_KEY) {
-    throw new Error('TWITTER_IO_API_KEY is required');
-  }
-  return process.env.TWITTER_IO_API_KEY;
+  return getEnvKey('TWITTER_IO_API_KEY');
 })();
 export const TWITTER_USERNAME = (() => {
-  if (!process.env.TWITTER_USERNAME) {
-    throw new Error('TWITTER_USERNAME is not set');
-  }
-  return process.env.TWITTER_USERNAME;
+  return getEnvKey('TWITTER_USERNAME');
 })();
 export const MAX_TWEET_LENGTH = 280;
 export const TWITTER_API_BASE_URL = 'https://api.twitterapi.io';
@@ -62,58 +53,31 @@ export const REJECTION_REASON = {
   NO_TAG_ENGAGEMENT_TO_OWN_REPLY: 'NO_TAG_ENGAGEMENT_TO_OWN_REPLY',
 } as const;
 export const DISCORD_TOKEN = (() => {
-  if (!process.env.DISCORD_TOKEN) {
-    throw new Error('DISCORD_TOKEN is not set');
-  }
-  return process.env.DISCORD_TOKEN;
+  return getEnvKey('DISCORD_TOKEN');
 })();
 export const DISCORD_APPROVED_CHANNEL_ID = (() => {
-  if (!process.env.DISCORD_APPROVED_CHANNEL_ID) {
-    throw new Error('DISCORD_APPROVED_CHANNEL_ID is not set in your .env');
-  }
-  return process.env.DISCORD_APPROVED_CHANNEL_ID;
+  return getEnvKey('DISCORD_APPROVED_CHANNEL_ID');
 })();
 export const DISCORD_REJECTED_CHANNEL_ID = (() => {
-  if (!process.env.DISCORD_REJECTED_CHANNEL_ID) {
-    throw new Error('DISCORD_REJECTED_CHANNEL_ID is not set in your .env');
-  }
-  return process.env.DISCORD_REJECTED_CHANNEL_ID;
+  return getEnvKey('DISCORD_REJECTED_CHANNEL_ID');
 })();
 export const DISCORD_SERVER_ID = (() => {
-  if (!process.env.DISCORD_SERVER_ID) {
-    throw new Error('DISCORD_SERVER_ID is not set in your .env');
-  }
-  return process.env.DISCORD_SERVER_ID;
+  return getEnvKey('DISCORD_SERVER_ID');
 })();
 export const DISCORD_ERROR_LOG_CHANNEL_ID = (() => {
-  if (!process.env.DISCORD_ERROR_LOG_CHANNEL_ID) {
-    throw new Error('DISCORD_ERROR_LOG_CHANNEL_ID is not set in your .env');
-  }
-  return process.env.DISCORD_ERROR_LOG_CHANNEL_ID;
+  return getEnvKey('DISCORD_ERROR_LOG_CHANNEL_ID');
 })();
 export const TWITTER_APP_KEY = (() => {
-  if (!process.env.TWITTER_APP_KEY) {
-    throw new Error('TWITTER_APP_KEY is not set in your .env');
-  }
-  return process.env.TWITTER_APP_KEY;
+  return getEnvKey('TWITTER_APP_KEY');
 })();
 export const TWITTER_APP_SECRET = (() => {
-  if (!process.env.TWITTER_APP_SECRET) {
-    throw new Error('TWITTER_APP_SECRET is not set in your .env');
-  }
-  return process.env.TWITTER_APP_SECRET;
+  return getEnvKey('TWITTER_APP_SECRET');
 })();
 export const TWITTER_ACCESS_TOKEN = (() => {
-  if (!process.env.TWITTER_ACCESS_TOKEN) {
-    throw new Error('TWITTER_ACCESS_TOKEN is not set in your .env');
-  }
-  return process.env.TWITTER_ACCESS_TOKEN;
+  return getEnvKey('TWITTER_ACCESS_TOKEN');
 })();
 export const TWITTER_ACCESS_SECRET = (() => {
-  if (!process.env.TWITTER_ACCESS_SECRET) {
-    throw new Error('TWITTER_ACCESS_SECRET is not set in your .env');
-  }
-  return process.env.TWITTER_ACCESS_SECRET;
+  return getEnvKey('TWITTER_ACCESS_SECRET');
 })();
 export const IS_PROD = process.env.NODE_ENV === 'production';
 export const DISCORD_LOCAL_TWEETS_CHANNEL_ID = (() => {
@@ -146,22 +110,13 @@ export const CF_TEAM_DOMAIN = (() => {
 export const VECTOR_SEARCH_MATCH_THRESHOLD = 0.6;
 export const TWEET_EXTRACT_REGEX = /https?:\/\/(x\.com|twitter\.com)\/[^\s]+/i;
 export const OPEN_ROUTER_API_KEY = (() => {
-  if (!process.env.OPEN_ROUTER_API_KEY) {
-    throw new Error('OPEN_ROUTER_API_KEY is not set in your .env');
-  }
-  return process.env.OPEN_ROUTER_API_KEY;
+  return getEnvKey('OPEN_ROUTER_API_KEY');
 })();
 export const EXA_API_KEY = (() => {
-  if (!process.env.EXA_API_KEY) {
-    throw new Error('EXA_API_KEY is not set in your .env');
-  }
-  return process.env.EXA_API_KEY;
+  return getEnvKey('EXA_API_KEY');
 })();
 export const DEEPINFRA_API_KEY = (() => {
-  if (!process.env.DEEPINFRA_API_KEY) {
-    throw new Error('DEEPINFRA_API_KEY is not set in your .env');
-  }
-  return process.env.DEEPINFRA_API_KEY;
+  return getEnvKey('DEEPINFRA_API_KEY');
 })();
 export const PRIVY_JWKS = (() => {
   if (!IS_PROD) return '';
@@ -171,40 +126,22 @@ export const PRIVY_JWKS = (() => {
   return process.env.PRIVY_JWKS;
 })();
 export const PRIVY_APP_ID = (() => {
-  if (!process.env.PRIVY_APP_ID) {
-    throw new Error('PRIVY_APP_ID is not set in your .env');
-  }
-  return process.env.PRIVY_APP_ID;
+  return getEnvKey('PRIVY_APP_ID');
 })();
 export const CHAT_TURSO_DATABASE_URL = (() => {
-  if (!process.env.CHAT_TURSO_DATABASE_URL) {
-    throw new Error('CHAT_TURSO_DATABASE_URL is not set in your .env');
-  }
-  return process.env.CHAT_TURSO_DATABASE_URL;
+  return getEnvKey('CHAT_TURSO_DATABASE_URL');
 })();
 export const CHAT_TURSO_AUTH_TOKEN = (() => {
-  if (!process.env.CHAT_TURSO_AUTH_TOKEN) {
-    throw new Error('CHAT_TURSO_AUTH_TOKEN is not set in your .env');
-  }
-  return process.env.CHAT_TURSO_AUTH_TOKEN;
+  return getEnvKey('CHAT_TURSO_AUTH_TOKEN');
 })();
 export const CHAT_REDIS_URL = (() => {
-  if (!process.env.CHAT_REDIS_URL) {
-    throw new Error('CHAT_REDIS_URL is not set in your .env');
-  }
-  return process.env.CHAT_REDIS_URL;
+  return getEnvKey('CHAT_REDIS_URL');
 })();
 export const CHAT_OPENAI_API_KEY = (() => {
-  if (!process.env.CHAT_OPENAI_API_KEY) {
-    throw new Error('CHAT_OPENAI_API_KEY is not set in your .env');
-  }
-  return process.env.CHAT_OPENAI_API_KEY;
+  return getEnvKey('CHAT_OPENAI_API_KEY');
 })();
 export const CHAT_EXA_API_KEY = (() => {
-  if (!process.env.CHAT_EXA_API_KEY) {
-    throw new Error('CHAT_EXA_API_KEY is not set in your .env');
-  }
-  return process.env.CHAT_EXA_API_KEY;
+  return getEnvKey('CHAT_EXA_API_KEY');
 })();
 /**
  * Should be more than enough for most the bills.
@@ -214,10 +151,7 @@ export const CHAT_EXA_API_KEY = (() => {
  */
 export const LARGE_BILL_LENGTH_THRESHOLD = 200_000;
 export const DEMO_SECRET_API_KEY = (() => {
-  if (!process.env.DEMO_SECRET_API_KEY) {
-    throw new Error('DEMO_SECRET_API_KEY is not set in your .env');
-  }
-  return process.env.DEMO_SECRET_API_KEY;
+  return getEnvKey('DEMO_SECRET_API_KEY');
 })();
 export const TURSO_PLATFORM_API_TOKEN = (() => {
   return getEnvKey('TURSO_PLATFORM_API_TOKEN');
