@@ -97,7 +97,7 @@ export const processInteractionTweets = inngest.createFunction(
       const systemPrompt =
         await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
       const result = await generateText({
-        model: openai('gpt-4.1-nano'),
+        model: openai('gpt-4.1-mini'),
         temperature: TEMPERATURE,
         messages: [
           { role: 'system', content: systemPrompt },
