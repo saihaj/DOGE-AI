@@ -3,13 +3,14 @@ import { createClient as createTursoApiClient } from '@tursodatabase/api';
 import { eq } from 'drizzle-orm';
 import slugify from 'slugify';
 import { z } from 'zod';
+import { TURSO_PLATFORM_API_TOKEN, TURSO_PLATFORM_ORG_NAME } from '../const';
 import { ControlPlaneDbInstance as db } from './db';
 import { ControlPlaneOrganization, ControlPlaneOrganizationDb } from './schema';
-import { protectedProcedure, router } from './trpc';
+import { protectedProcedure, router } from '../trpc';
 
 const tursoApiClient = createTursoApiClient({
-  org: '...',
-  token: '',
+  org: TURSO_PLATFORM_ORG_NAME,
+  token: TURSO_PLATFORM_API_TOKEN,
 });
 
 async function createTursoDbInstance({
@@ -118,7 +119,7 @@ async function getOrganizationBySlug(slug: string) {
   };
 }
 
-const createOrganization = protectedProcedure
+export const createOrganization = protectedProcedure
   .input(z.object({ name: z.string(), slug: z.string() }))
   .mutation(async ({ input, ctx }) => {
     const { name: _name, slug: _slug } = input;
@@ -206,7 +207,7 @@ const createOrganization = protectedProcedure
     };
   });
 
-const getOrganization = protectedProcedure
+export const getOrganization = protectedProcedure
   .input(z.object({ slug: z.string() }))
   .mutation(async ({ input, ctx }) => {
     const { slug } = input;
@@ -220,10 +221,3 @@ const getOrganization = protectedProcedure
 
     return getOrganizationBySlug(slug);
   });
-
-export const controlPlaneRouter = router({
-  createOrganization,
-  getOrganization,
-});
-
-export type ControlPlaneRouter = typeof controlPlaneRouter;
