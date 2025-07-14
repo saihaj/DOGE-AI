@@ -1,23 +1,24 @@
-import { inngest } from '../inngest.ts';
-import { NonRetriableError } from 'inngest';
+import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
+import { NonRetriableError } from 'inngest';
 import {
-  rejectedInteractionTweet,
-  reportFailureToDiscord,
-} from '../discord/action.ts';
-import { PROMPTS } from './prompts.ts';
-import { logger } from '../logger.ts';
-import {
-  DEEPINFRA_API_KEY,
+  OPENAI_API_KEY,
   REJECTION_REASON,
   TEMPERATURE,
   TWITTER_USERNAME,
 } from '../const.ts';
+import {
+  rejectedInteractionTweet,
+  reportFailureToDiscord,
+} from '../discord/action.ts';
+import { inngest } from '../inngest.ts';
+import { logger } from '../logger.ts';
 import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
-import { createDeepInfra } from '@ai-sdk/deepinfra';
+import { PROMPTS } from './prompts.ts';
 
-const deepinfra = createDeepInfra({
-  apiKey: DEEPINFRA_API_KEY,
+const openai = createOpenAI({
+  apiKey: OPENAI_API_KEY,
+  compatibility: 'strict',
 });
 
 export const processInteractionTweets = inngest.createFunction(
@@ -96,7 +97,7 @@ export const processInteractionTweets = inngest.createFunction(
       const systemPrompt =
         await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
       const result = await generateText({
-        model: deepinfra('meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8'),
+        model: openai('gpt-4.1-mini'),
         temperature: TEMPERATURE,
         messages: [
           { role: 'system', content: systemPrompt },

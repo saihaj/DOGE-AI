@@ -17,7 +17,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.525.0",
-    "motion": "^12.23.0",
+    "motion": "^12.23.1",
     "next": "15.3.5",
     "next-sitemap": "^4.2.3",
     "p-map": "^7.0.3",
@@ -38,6 +38,6 @@
     "eslint-config-next": "15.3.5",
     "postcss": "^8.5.6",
     "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.3"
+    "typescript": "^5.8.3"
   }
 }
