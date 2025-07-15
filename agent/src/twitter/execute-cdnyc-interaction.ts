@@ -134,7 +134,7 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
           .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase())
       ) {
         tweetsProcessingRejected.inc({
-          method: 'execute-interaction-tweets',
+          method: ID,
           reason: REJECTION_REASON.NO_QUESTION_DETECTED,
         });
         await rejectedTweet({
@@ -321,13 +321,10 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
             const timeElapsed =
               getTimeInSecondsElapsedSinceTweetCreated(tweetToActionOn);
             log.info({ response, deltaSeconds: timeElapsed }, 'tweet sent');
-            tweetProcessingTime.observe(
-              { method: 'execute-interaction-tweets' },
-              timeElapsed,
-            );
+            tweetProcessingTime.observe({ method: ID }, timeElapsed);
             tweetsPublished.inc({
               action: event.data.action,
-              method: 'execute-interaction-tweets',
+              method: ID,
             });
 
             return {
