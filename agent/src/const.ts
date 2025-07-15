@@ -165,3 +165,9 @@ export const CONTROLPLANE_TURSO_DATABASE_URL = (() => {
 export const CONTROLPLANE_TURSO_AUTH_TOKEN = (() => {
   return getEnvKey('CONTROLPLANE_TURSO_AUTH_TOKEN');
 })();
+export const CDNYC_TURSO_DATABASE_URL = (() => {
+  return getEnvKey('CDNYC_TURSO_DATABASE_URL');
+})();
+export const CDNYC_TURSO_AUTH_TOKEN = (() => {
+  return getEnvKey('CDNYC_TURSO_AUTH_TOKEN');
+})();
