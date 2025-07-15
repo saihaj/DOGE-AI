@@ -462,7 +462,7 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
         // embed and store reply
         await step.run('persist-chat', async () => {
           // No need to send to discord in local mode since we are already spamming dev test channel
-          if (!IS_PROD) return;
+          // if (!IS_PROD) return;
 
           const user = await upsertUser({
             twitterId: tweetToActionOn.author.id,
