@@ -3,6 +3,7 @@ import { actionDb as actionDbSchema, eq } from 'database';
 import { drizzle } from 'drizzle-orm/libsql';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
+import { TwitterApi } from 'twitter-api-v2';
 import {
   CDNYC_TURSO_AUTH_TOKEN,
   CDNYC_TURSO_DATABASE_URL,
@@ -38,7 +39,6 @@ import {
 } from './helpers.ts';
 import { getKbContext } from './knowledge-base.ts';
 import { PROMPTS } from './prompts';
-import { TwitterApi } from 'twitter-api-v2';
 
 const dbClient = createClient({
   url: CDNYC_TURSO_DATABASE_URL,
