@@ -333,7 +333,7 @@ fastify.route<{ Body: ChatStreamInput }>({
           {
             messages: convoHistory,
             text: latestMessage.content.toString(),
-            manualEntries: selectedKb,
+            manualEntries: manualKbSearch ? selectedKb : false,
             billEntries: billSearch,
             documentEntries: documentSearch,
             openaiApiKey: OPENAI_API_KEY,
