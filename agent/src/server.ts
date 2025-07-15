@@ -56,12 +56,12 @@ fastify.route({
   handler: serve({
     client: inngest,
     functions: [
-      // ingestTweets,
-      // processTweets,
-      // executeTweets,
-      // ingestInteractionTweets,
-      // processInteractionTweets,
-      // executeInteractionTweets,
+      ingestTweets,
+      processTweets,
+      executeTweets,
+      ingestInteractionTweets,
+      processInteractionTweets,
+      executeInteractionTweets,
       ingestCdnycInteractionTweets,
       processCdnycInteractionTweets,
       executeCdnycInteractionTweets,
