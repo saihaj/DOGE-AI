@@ -1,7 +1,12 @@
 import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { NonRetriableError } from 'inngest';
-import { OPENAI_API_KEY, REJECTION_REASON, TEMPERATURE } from '../const.ts';
+import {
+  DISCORD_CDNYC_REJECTED_CHANNEL_ID,
+  OPENAI_API_KEY,
+  REJECTION_REASON,
+  TEMPERATURE,
+} from '../const.ts';
 import {
   rejectedInteractionTweet,
   reportFailureToDiscord,
@@ -63,6 +68,7 @@ export const processCdnycInteractionTweets = inngest.createFunction(
         tweetId: id,
         tweetUrl: url,
         reason: error.message,
+        channelId: DISCORD_CDNYC_REJECTED_CHANNEL_ID,
       });
     },
     timeouts: {

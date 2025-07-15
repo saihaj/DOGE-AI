@@ -2,6 +2,7 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { NonRetriableError } from 'inngest';
 import {
+  DISCORD_REJECTED_CHANNEL_ID,
   OPENAI_API_KEY,
   REJECTION_REASON,
   TEMPERATURE,
@@ -66,6 +67,7 @@ export const processInteractionTweets = inngest.createFunction(
         tweetId: id,
         tweetUrl: url,
         reason: error.message,
+        channelId: DISCORD_REJECTED_CHANNEL_ID,
       });
     },
     timeouts: {

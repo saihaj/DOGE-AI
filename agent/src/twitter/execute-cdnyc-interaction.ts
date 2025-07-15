@@ -6,6 +6,8 @@ import * as crypto from 'node:crypto';
 import {
   CDNYC_TURSO_AUTH_TOKEN,
   CDNYC_TURSO_DATABASE_URL,
+  DISCORD_CDNYC_APPROVED_CHANNEL_ID,
+  DISCORD_CDNYC_REJECTED_CHANNEL_ID,
   IS_PROD,
   OPENAI_API_KEY,
   REJECTION_REASON,
@@ -128,6 +130,7 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
           tweetId: id,
           tweetUrl: url,
           reason: errorMessage,
+          channelId: DISCORD_CDNYC_REJECTED_CHANNEL_ID,
         });
         return;
       }
@@ -337,6 +340,7 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
             sentTweetUrl: `https://x.com/i/status/${repliedTweet.id}`,
             replyTweetUrl: tweetToActionOn.url,
             sent: content,
+            channelId: DISCORD_CDNYC_APPROVED_CHANNEL_ID,
             refinedOutput: reply.refinedOutput,
             longOutput: reply.longOutput,
           });
@@ -345,7 +349,7 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
         // embed and store reply
         await step.run('persist-chat', async () => {
           // No need to send to discord in local mode since we are already spamming dev test channel
-          // if (!IS_PROD) return;
+          if (!IS_PROD) return;
 
           const user = await upsertUser({
             twitterId: tweetToActionOn.author.id,

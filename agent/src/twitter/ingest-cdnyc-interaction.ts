@@ -5,6 +5,7 @@ import { inngest } from '../inngest';
 import { logger } from '../logger';
 import { tweetsIngested } from '../prom';
 import { fetchTweetsFromList } from './ingest-interaction';
+import { searchTweets } from './ingest';
 
 const ID = 'ingest-cdnyc-inter-tweets';
 const log = logger.child({ module: ID });
@@ -25,15 +26,30 @@ export const ingestCdnycInteractionTweets = inngest.createFunction(
   // Runs every 5 minutes between 8am and midnight
   { cron: 'TZ=America/New_York */5 8-23 * * *' },
   async () => {
-    const [list] = await Promise.all([
+    /**
+     * Search for all the tweets for the bot and not it's own tweets
+     *
+     * Reason we look at last 7 minutes is to account for any delay in processing.
+     * Idempotency is relied on inngest based on tweet id.
+     *
+     * Learn more about syntax here: https://github.com/igorbrigadir/twitter-advanced-search
+     *
+     * I tag bot a lot in updates and most of these are useless interactions for him to process so ignoring as much.
+     */
+    const searchQuery = `("Zohran Mamdani" OR "Eric Adams") -filter:replies lang:en within_time:7m`;
+
+    const [list, search] = await Promise.all([
       // https://x.com/i/lists/1942682760713298237
       fetchTweetsFromList({
         window: WINDOW,
         id: '1942682760713298237',
       }),
+      searchTweets({
+        query: searchQuery,
+      }),
     ]);
 
-    const totalTweets = list.tweets;
+    const totalTweets = list.tweets.concat(search);
 
     const tweets = totalTweets
       // make sure to filter out any replies - for now

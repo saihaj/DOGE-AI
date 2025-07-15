@@ -1,19 +1,20 @@
-import {
-  TWITTER_USERNAME,
-  REJECTION_REASON,
-  TEMPERATURE,
-  SEED,
-} from '../const';
-import { inngest } from '../inngest';
-import { NonRetriableError } from 'inngest';
-import { getTweet, getTweetContentAsText } from './helpers.ts';
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
-import { PROMPTS } from './prompts.ts';
+import { NonRetriableError } from 'inngest';
+import {
+  DISCORD_REJECTED_CHANNEL_ID,
+  REJECTION_REASON,
+  SEED,
+  TEMPERATURE,
+  TWITTER_USERNAME,
+} from '../const';
 import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
+import { inngest } from '../inngest';
 import { logger } from '../logger.ts';
-import { getTweetContext } from './execute.ts';
 import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
+import { getTweetContext } from './execute.ts';
+import { getTweet, getTweetContentAsText } from './helpers.ts';
+import { PROMPTS } from './prompts.ts';
 
 const DO_NOT_ENGAGE_USERNAMES = [
   // Do not engage with any of my tweets
@@ -68,6 +69,7 @@ export const processTweets = inngest.createFunction(
         tweetId: id,
         tweetUrl: url,
         reason: error.message,
+        channelId: DISCORD_REJECTED_CHANNEL_ID,
       });
     },
     throttle: {

@@ -20,6 +20,8 @@ import {
   REJECTION_REASON,
   SEED,
   TEMPERATURE,
+  DISCORD_APPROVED_CHANNEL_ID,
+  DISCORD_REJECTED_CHANNEL_ID,
 } from '../const';
 import {
   approvedTweetEngagement,
@@ -230,6 +232,7 @@ export const executeInteractionTweets = inngest.createFunction(
           tweetId: id,
           tweetUrl: url,
           reason: errorMessage,
+          channelId: DISCORD_REJECTED_CHANNEL_ID,
         });
         return;
       }
@@ -499,6 +502,7 @@ export const executeInteractionTweets = inngest.createFunction(
           await approvedTweetEngagement({
             sentTweetUrl: `https://x.com/i/status/${repliedTweet.id}`,
             replyTweetUrl: tweetToActionOn.url,
+            channelId: DISCORD_APPROVED_CHANNEL_ID,
             sent: content,
             refinedOutput: reply.refinedOutput,
             longOutput: reply.longOutput,

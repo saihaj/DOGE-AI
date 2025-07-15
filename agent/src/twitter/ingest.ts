@@ -17,6 +17,54 @@ API.pathname = '/twitter/tweet/advanced_search';
 
 const log = logger.child({ module: 'ingest-tweets' });
 
+export async function searchTweets({ query }: { query: string }) {
+  API.searchParams.set('query', query);
+  API.searchParams.set('queryType', 'Latest');
+
+  let tweets: z.infer<typeof SearchResultResponseSchema>['tweets'] = [];
+  let cursor = '';
+  API.searchParams.set('cursor', cursor);
+
+  do {
+    const response = await fetch(API.toString(), {
+      method: 'GET',
+      headers: {
+        'X-API-Key': TWITTER_API_KEY,
+      },
+    });
+
+    if (response.status !== 200) {
+      const text = await response.text();
+      log.error(
+        { status: response.status, body: text },
+        'Failed to fetch tweets',
+      );
+      throw new NonRetriableError(
+        `Failed to fetch tweets. Status: ${response.status}, Body: ${text}`,
+      );
+    }
+
+    const data = await response.json();
+
+    const result = await SearchResultResponseSchema.safeParseAsync(data);
+
+    if (result.success === false) {
+      throw new Error(result.error.message);
+    }
+
+    tweets = tweets.concat(result.data.tweets);
+    cursor = result.data.next_cursor || '';
+    API.searchParams.set('cursor', cursor);
+
+    // If there are no more tweets to fetch, break out of the loop
+    if (!result.data.has_next_page) {
+      break;
+    }
+  } while (cursor);
+
+  return tweets;
+}
+
 /**
  * Fetches tweets from the Twitter API and queues them for processing.
  */
@@ -45,49 +93,9 @@ export const ingestTweets = inngest.createFunction(
      * I tag bot a lot in updates and most of these are useless interactions for him to process so ignoring as much.
      */
     const searchQuery = `@${TWITTER_USERNAME} -from:${TWITTER_USERNAME} -from:singh_saihaj within_time:7m`;
-    API.searchParams.set('query', searchQuery);
-    API.searchParams.set('queryType', 'Latest');
-
-    let tweets: z.infer<typeof SearchResultResponseSchema>['tweets'] = [];
-    let cursor = '';
-    API.searchParams.set('cursor', cursor);
-
-    do {
-      const response = await fetch(API.toString(), {
-        method: 'GET',
-        headers: {
-          'X-API-Key': TWITTER_API_KEY,
-        },
-      });
-
-      if (response.status !== 200) {
-        const text = await response.text();
-        log.error(
-          { status: response.status, body: text },
-          'Failed to fetch tweets',
-        );
-        throw new NonRetriableError(
-          `Failed to fetch tweets. Status: ${response.status}, Body: ${text}`,
-        );
-      }
-
-      const data = await response.json();
-
-      const result = await SearchResultResponseSchema.safeParseAsync(data);
-
-      if (result.success === false) {
-        throw new Error(result.error.message);
-      }
-
-      tweets = tweets.concat(result.data.tweets);
-      cursor = result.data.next_cursor || '';
-      API.searchParams.set('cursor', cursor);
-
-      // If there are no more tweets to fetch, break out of the loop
-      if (!result.data.has_next_page) {
-        break;
-      }
-    } while (cursor);
+    const tweets = await searchTweets({
+      query: searchQuery,
+    });
 
     log.info({ size: tweets.length }, `fetched ${tweets.length} tweets`);
     tweets.forEach(tweet => {

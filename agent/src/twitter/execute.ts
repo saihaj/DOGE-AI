@@ -1,4 +1,6 @@
 import {
+  DISCORD_APPROVED_CHANNEL_ID,
+  DISCORD_REJECTED_CHANNEL_ID,
   IS_PROD,
   OPENAI_API_KEY,
   REJECTION_REASON,
@@ -165,6 +167,7 @@ export const executeTweets = inngest.createFunction(
           tweetId: id,
           tweetUrl: url,
           reason: errorMessage,
+          channelId: DISCORD_REJECTED_CHANNEL_ID,
         });
         return;
       }
@@ -488,6 +491,7 @@ export const executeTweets = inngest.createFunction(
       await approvedTweetEngagement({
         sentTweetUrl: `https://x.com/i/status/${repliedTweet.id}`,
         replyTweetUrl: tweetToActionOn.url,
+        channelId: DISCORD_APPROVED_CHANNEL_ID,
         sent: reply.text,
       });
     });
