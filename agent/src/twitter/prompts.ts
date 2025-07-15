@@ -200,4 +200,7 @@ export const PROMPTS = {
   CDNYC_INT_ENGAGE_DECISION_PROMPT: async () => {
     return getPromptContent('CDNYC_INT_ENGAGE_DECISION_PROMPT');
   },
+  REPLY_AS_CDNYC: async () => {
+    return getPromptContent('REPLY_AS_CDNYC');
+  },
 };
