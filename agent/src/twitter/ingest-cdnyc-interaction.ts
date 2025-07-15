@@ -23,8 +23,7 @@ export const ingestCdnycInteractionTweets = inngest.createFunction(
       });
     },
   },
-  // Runs every 5 minutes between 8am and midnight
-  { cron: 'TZ=America/New_York */5 8-23 * * *' },
+  { cron: '5 * * * *' },
   async () => {
     /**
      * Search for all the tweets for the bot and not it's own tweets
