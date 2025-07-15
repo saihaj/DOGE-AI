@@ -177,3 +177,15 @@ export const DISCORD_CDNYC_APPROVED_CHANNEL_ID = (() => {
 export const DISCORD_CDNYC_REJECTED_CHANNEL_ID = (() => {
   return getEnvKey('DISCORD_CDNYC_REJECTED_CHANNEL_ID');
 })();
+export const CDNYC_X_ACCESS_TOKEN = (() => {
+  return getEnvKey('CDNYC_X_ACCESS_TOKEN');
+})();
+export const CDNYC_X_ACCESS_SECRET = (() => {
+  return getEnvKey('CDNYC_X_ACCESS_SECRET');
+})();
+export const X_CONSUMER_TOKEN = (() => {
+  return getEnvKey('X_CONSUMER_TOKEN');
+})();
+export const X_CONSUMER_SECRET = (() => {
+  return getEnvKey('X_CONSUMER_SECRET');
+})();

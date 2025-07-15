@@ -6,11 +6,15 @@ import * as crypto from 'node:crypto';
 import {
   CDNYC_TURSO_AUTH_TOKEN,
   CDNYC_TURSO_DATABASE_URL,
+  CDNYC_X_ACCESS_SECRET,
+  CDNYC_X_ACCESS_TOKEN,
   DISCORD_CDNYC_APPROVED_CHANNEL_ID,
   DISCORD_CDNYC_REJECTED_CHANNEL_ID,
   IS_PROD,
   OPENAI_API_KEY,
   REJECTION_REASON,
+  X_CONSUMER_SECRET,
+  X_CONSUMER_TOKEN,
 } from '../const';
 import {
   approvedTweetEngagement,
@@ -26,7 +30,6 @@ import {
   tweetsProcessingRejected,
   tweetsPublished,
 } from '../prom.ts';
-import { twitterClient } from './client.ts';
 import { getLongResponse } from './execute-interaction.ts';
 import {
   getTimeInSecondsElapsedSinceTweetCreated,
@@ -35,13 +38,21 @@ import {
 } from './helpers.ts';
 import { getKbContext } from './knowledge-base.ts';
 import { PROMPTS } from './prompts';
+import { TwitterApi } from 'twitter-api-v2';
 
-const client = createClient({
+const dbClient = createClient({
   url: CDNYC_TURSO_DATABASE_URL,
   authToken: CDNYC_TURSO_AUTH_TOKEN,
 });
 
-const DbInstance = drizzle({ client, schema: actionDbSchema });
+const twitterClient = new TwitterApi({
+  appKey: X_CONSUMER_TOKEN,
+  appSecret: X_CONSUMER_SECRET,
+  accessToken: CDNYC_X_ACCESS_TOKEN,
+  accessSecret: CDNYC_X_ACCESS_SECRET,
+});
+
+const DbInstance = drizzle({ client: dbClient, schema: actionDbSchema });
 
 async function upsertUser({ twitterId }: { twitterId: string }) {
   const user = await DbInstance.query.ActionDbTweetUser.findFirst({
