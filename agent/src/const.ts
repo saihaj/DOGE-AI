@@ -165,3 +165,27 @@ export const CONTROLPLANE_TURSO_DATABASE_URL = (() => {
 export const CONTROLPLANE_TURSO_AUTH_TOKEN = (() => {
   return getEnvKey('CONTROLPLANE_TURSO_AUTH_TOKEN');
 })();
+export const CDNYC_TURSO_DATABASE_URL = (() => {
+  return getEnvKey('CDNYC_TURSO_DATABASE_URL');
+})();
+export const CDNYC_TURSO_AUTH_TOKEN = (() => {
+  return getEnvKey('CDNYC_TURSO_AUTH_TOKEN');
+})();
+export const DISCORD_CDNYC_APPROVED_CHANNEL_ID = (() => {
+  return getEnvKey('DISCORD_CDNYC_APPROVED_CHANNEL_ID');
+})();
+export const DISCORD_CDNYC_REJECTED_CHANNEL_ID = (() => {
+  return getEnvKey('DISCORD_CDNYC_REJECTED_CHANNEL_ID');
+})();
+export const CDNYC_X_ACCESS_TOKEN = (() => {
+  return getEnvKey('CDNYC_X_ACCESS_TOKEN');
+})();
+export const CDNYC_X_ACCESS_SECRET = (() => {
+  return getEnvKey('CDNYC_X_ACCESS_SECRET');
+})();
+export const X_CONSUMER_TOKEN = (() => {
+  return getEnvKey('X_CONSUMER_TOKEN');
+})();
+export const X_CONSUMER_SECRET = (() => {
+  return getEnvKey('X_CONSUMER_SECRET');
+})();

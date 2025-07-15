@@ -2,11 +2,10 @@ import { createOpenAI } from '@ai-sdk/openai';
 import { generateText } from 'ai';
 import { NonRetriableError } from 'inngest';
 import {
-  DISCORD_REJECTED_CHANNEL_ID,
+  DISCORD_CDNYC_REJECTED_CHANNEL_ID,
   OPENAI_API_KEY,
   REJECTION_REASON,
   TEMPERATURE,
-  TWITTER_USERNAME,
 } from '../const.ts';
 import {
   rejectedInteractionTweet,
@@ -22,14 +21,16 @@ const openai = createOpenAI({
   compatibility: 'strict',
 });
 
-export const processInteractionTweets = inngest.createFunction(
+const ID = 'process-cdnyc-inter-tweets';
+const loggerBase = logger.child({ module: ID });
+
+export const processCdnycInteractionTweets = inngest.createFunction(
   {
-    id: 'process-interaction-tweets',
+    id: ID,
     onFailure: async ({ event, error }) => {
       const id = event?.data?.event?.data?.id;
       const url = event?.data?.event?.data?.url;
-      const log = logger.child({
-        module: 'process-interaction-tweets',
+      const log = loggerBase.child({
         tweetId: id,
         eventId: event.data.event.id,
       });
@@ -42,7 +43,7 @@ export const processInteractionTweets = inngest.createFunction(
           'failed to extract tweet id or url from event data',
         );
         await reportFailureToDiscord({
-          message: `[process-interaction-tweets]: unable to extract tweet ID or URL from event data. Run id: ${event.data.run_id}`,
+          message: `[${ID}]: unable to extract tweet ID or URL from event data. Run id: ${event.data.run_id}`,
         });
         return;
       }
@@ -60,14 +61,14 @@ export const processInteractionTweets = inngest.createFunction(
         ? error.message
         : 'IGNORED';
       tweetsProcessingRejected.inc({
-        method: 'process-interaction-tweets',
+        method: ID,
         reason,
       });
       await rejectedInteractionTweet({
         tweetId: id,
         tweetUrl: url,
         reason: error.message,
-        channelId: DISCORD_REJECTED_CHANNEL_ID,
+        channelId: DISCORD_CDNYC_REJECTED_CHANNEL_ID,
       });
     },
     timeouts: {
@@ -78,26 +79,17 @@ export const processInteractionTweets = inngest.createFunction(
       period: '1m',
     },
   },
-  { event: 'tweet.process.interaction' },
+  { event: 'tweet.process.cdnyc-interaction' },
   async ({ event, step }) => {
-    const log = logger.child({
-      module: 'process-interaction-tweets',
+    const log = loggerBase.child({
       tweetId: event.data.id,
       eventId: event.id,
     });
     log.info({}, 'processing interaction tweet');
     const tweetText = event.data.text;
 
-    // Do not engage with tweets from the agent
-    if (event.data.author.userName === TWITTER_USERNAME) {
-      throw new NonRetriableError(
-        REJECTION_REASON.ENGAGEMENT_RESTRICTED_ACCOUNT,
-      );
-    }
-
     const shouldEngage = await step.run('should-engage', async () => {
-      const systemPrompt =
-        await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
+      const systemPrompt = await PROMPTS.CDNYC_INT_ENGAGE_DECISION_PROMPT();
       const result = await generateText({
         model: openai('gpt-4.1-mini'),
         temperature: TEMPERATURE,
@@ -139,7 +131,7 @@ export const processInteractionTweets = inngest.createFunction(
     if (shouldEngage === true) {
       log.info({}, 'queuing tweet for engagement');
       await step.sendEvent('fire-off-tweet', {
-        name: 'tweet.execute.interaction',
+        name: 'tweet.execute.cdnyc-interaction',
         data: {
           tweetId: event.data.id,
           action: 'reply-engage',
@@ -147,7 +139,7 @@ export const processInteractionTweets = inngest.createFunction(
         },
       });
       tweetsProcessed.inc({
-        method: 'process-interaction-tweets',
+        method: ID,
         action: 'reply-engage',
       });
       return;

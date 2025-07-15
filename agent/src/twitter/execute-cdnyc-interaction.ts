@@ -1,27 +1,21 @@
-import { anthropic } from '@ai-sdk/anthropic';
-import {
-  CoreMessage,
-  extractReasoningMiddleware,
-  generateText,
-  wrapLanguageModel,
-} from 'ai';
-import {
-  chat as chatDbSchema,
-  db,
-  eq,
-  message as messageDbSchema,
-} from 'database';
+import { createClient } from '@libsql/client';
+import { actionDb as actionDbSchema, eq } from 'database';
+import { drizzle } from 'drizzle-orm/libsql';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
+import { TwitterApi } from 'twitter-api-v2';
 import {
-  OPENAI_API_KEY,
-  DEEPINFRA_API_KEY,
+  CDNYC_TURSO_AUTH_TOKEN,
+  CDNYC_TURSO_DATABASE_URL,
+  CDNYC_X_ACCESS_SECRET,
+  CDNYC_X_ACCESS_TOKEN,
+  DISCORD_CDNYC_APPROVED_CHANNEL_ID,
+  DISCORD_CDNYC_REJECTED_CHANNEL_ID,
   IS_PROD,
+  OPENAI_API_KEY,
   REJECTION_REASON,
-  SEED,
-  TEMPERATURE,
-  DISCORD_APPROVED_CHANNEL_ID,
-  DISCORD_REJECTED_CHANNEL_ID,
+  X_CONSUMER_SECRET,
+  X_CONSUMER_TOKEN,
 } from '../const';
 import {
   approvedTweetEngagement,
@@ -30,183 +24,98 @@ import {
   sendDevTweet,
 } from '../discord/action.ts';
 import { inngest } from '../inngest';
-import { logger, WithLogger } from '../logger.ts';
+import { logger } from '../logger.ts';
 import {
   tweetProcessingTime,
   tweetPublishFailed,
   tweetsProcessingRejected,
   tweetsPublished,
 } from '../prom.ts';
-import { twitterClient } from './client.ts';
+import { getLongResponse } from './execute-interaction.ts';
 import {
   getTimeInSecondsElapsedSinceTweetCreated,
   getTweet,
   getTweetContentAsText,
-  longResponseFormatter,
-  sanitizeLlmOutput,
-  upsertChat,
-  upsertUser,
 } from './helpers.ts';
 import { getKbContext } from './knowledge-base.ts';
 import { PROMPTS } from './prompts';
-import { getSearchResult } from './web.ts';
-import { createDeepInfra } from '@ai-sdk/deepinfra';
-import { createOpenAI } from '@ai-sdk/openai';
 
-const deepinfra = createDeepInfra({
-  apiKey: DEEPINFRA_API_KEY,
+const dbClient = createClient({
+  url: CDNYC_TURSO_DATABASE_URL,
+  authToken: CDNYC_TURSO_AUTH_TOKEN,
 });
 
-const openai = createOpenAI({
-  apiKey: OPENAI_API_KEY,
-  compatibility: 'strict',
+const twitterClient = new TwitterApi({
+  appKey: X_CONSUMER_TOKEN,
+  appSecret: X_CONSUMER_SECRET,
+  accessToken: CDNYC_X_ACCESS_TOKEN,
+  accessSecret: CDNYC_X_ACCESS_SECRET,
 });
 
-/**
- * Given summary of and text of tweet generate a long contextual response
- */
-export async function getLongResponse(
-  {
-    summary,
-    text,
-    systemPrompt,
-    prefixPrompt,
-  }: {
-    summary: string;
-    text: string;
-    systemPrompt?: string;
-    prefixPrompt?: string;
-  },
-  { method, log, action }: { log: WithLogger; method: string; action: string },
-) {
-  if (!systemPrompt) {
-    systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE_KB();
-  }
+const DbInstance = drizzle({ client: dbClient, schema: actionDbSchema });
 
-  if (!prefixPrompt) {
-    prefixPrompt = await PROMPTS.REPLY_AS_DOGE();
-  }
-
-  const webSearchResults = await getSearchResult(
-    {
-      messages: [
-        {
-          role: 'user',
-          content: text,
-        },
-      ],
+async function upsertUser({ twitterId }: { twitterId: string }) {
+  const user = await DbInstance.query.ActionDbTweetUser.findFirst({
+    where: eq(actionDbSchema.ActionDbTweetUser.twitterId, twitterId),
+    columns: {
+      id: true,
     },
-    log,
+  });
+
+  if (user) {
+    return user;
+  }
+
+  const created = await DbInstance.insert(actionDbSchema.ActionDbTweetUser)
+    .values({
+      id: crypto.randomUUID(),
+      twitterId,
+    })
+    .returning({ id: actionDbSchema.ActionDbTweetUser.id });
+
+  const [result] = created;
+  return result;
+}
+
+async function upsertChat({
+  user,
+  tweetId,
+}: {
+  user: string;
+  tweetId: string;
+}) {
+  const lookupChat = await DbInstance.query.ActionDbTweetConversation.findFirst(
+    {
+      where: eq(actionDbSchema.ActionDbTweetConversation.tweetId, tweetId),
+      columns: {
+        id: true,
+      },
+    },
   );
 
-  const messages = [
-    {
-      role: 'system',
-      content: systemPrompt,
-    },
-  ] as CoreMessage[];
-
-  if (summary) {
-    messages.push({ role: 'user', content: summary });
+  if (lookupChat) {
+    return lookupChat;
   }
 
-  const webResult = webSearchResults
-    ?.map(
-      result =>
-        `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
-    )
-    .join('');
+  const chat = await DbInstance.insert(actionDbSchema.ActionDbTweetConversation)
+    .values({
+      id: crypto.randomUUID(),
+      user,
+      tweetId,
+    })
+    .returning({ id: actionDbSchema.ActionDbTweetConversation.id });
 
-  const sources =
-    webSearchResults?.map(result => ({
-      url: result.url,
-      title: result.title,
-      publishedDate: result.publishedDate,
-    })) || [];
-
-  if (webResult) {
-    messages.push({
-      role: 'user',
-      content: `Web search results:\n\n${webResult}`,
-    });
-  }
-
-  messages.push({
-    role: 'user',
-    content: `${prefixPrompt} "${text}"`,
-  });
-
-  const { text: _responseLong, reasoning } = await generateText({
-    temperature: TEMPERATURE,
-    seed: SEED,
-    model: wrapLanguageModel({
-      model: deepinfra('deepseek-ai/DeepSeek-R1'),
-      middleware: [
-        extractReasoningMiddleware({
-          tagName: 'think',
-        }),
-      ],
-    }),
-    messages: messages,
-    experimental_generateMessageId: crypto.randomUUID,
-    maxRetries: 0,
-  });
-
-  const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
-
-  log.info({ reasoning }, 'reasoning');
-  log.info({ response: _responseLong }, 'raw long response');
-
-  const responseLong = sanitizeLlmOutput(_responseLong);
-  const formatted = await longResponseFormatter(responseLong);
-  log.info({ response: formatted }, 'formatted long response');
-  return {
-    raw: responseLong,
-    formatted,
-    metadata,
-  };
+  return chat[0];
 }
 
-/**
- * Using `getLongResponse` output generate a refined short response for more engaging output
- */
-export async function getShortResponse({
-  topic,
-  refinePrompt,
-}: {
-  topic: string;
-  refinePrompt?: string;
-}) {
-  if (!refinePrompt) {
-    refinePrompt = await PROMPTS.REPLY_SHORTENER_PROMPT();
-  }
+const ID = 'execute-cdnyc-interaction-tweet';
+const baseLogger = logger.child({ module: ID });
 
-  const { text: _finalAnswer } = await generateText({
-    model: anthropic('claude-3-5-sonnet-latest'),
-    temperature: TEMPERATURE,
-    messages: [
-      {
-        role: 'system',
-        content: refinePrompt,
-      },
-      {
-        role: 'user',
-        content: topic,
-      },
-    ],
-  });
-
-  const finalAnswer = sanitizeLlmOutput(_finalAnswer);
-
-  return finalAnswer;
-}
-
-export const executeInteractionTweets = inngest.createFunction(
+export const executeCdnycInteractionTweets = inngest.createFunction(
   {
-    id: 'execute-interaction-tweets',
+    id: ID,
     onFailure: async ({ event, error }) => {
-      const log = logger.child({
-        module: 'execute-interaction-tweets',
+      const log = baseLogger.child({
         tweetId: event.data.event.data.tweetId,
         eventId: event.data.event.id,
       });
@@ -225,24 +134,24 @@ export const executeInteractionTweets = inngest.createFunction(
           .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase())
       ) {
         tweetsProcessingRejected.inc({
-          method: 'execute-interaction-tweets',
+          method: ID,
           reason: REJECTION_REASON.NO_QUESTION_DETECTED,
         });
         await rejectedTweet({
           tweetId: id,
           tweetUrl: url,
           reason: errorMessage,
-          channelId: DISCORD_REJECTED_CHANNEL_ID,
+          channelId: DISCORD_CDNYC_REJECTED_CHANNEL_ID,
         });
         return;
       }
 
       await reportFailureToDiscord({
-        message: `[execute-interaction-tweets]:${id} ${errorMessage}`,
+        message: `[${ID}]:${id} ${errorMessage}`,
       });
 
       tweetPublishFailed.inc({
-        method: 'execute-interaction-tweets',
+        method: ID,
       });
     },
     timeouts: {
@@ -253,10 +162,9 @@ export const executeInteractionTweets = inngest.createFunction(
       period: '15s',
     },
   },
-  { event: 'tweet.execute.interaction' },
+  { event: 'tweet.execute.cdnyc-interaction' },
   async ({ event, step }) => {
-    const log = logger.child({
-      module: 'execute-interaction-tweets',
+    const log = baseLogger.child({
       tweetId: event.data.tweetId,
       eventId: event.id,
     });
@@ -267,12 +175,15 @@ export const executeInteractionTweets = inngest.createFunction(
           // skip for local testing
           if (!IS_PROD) return null;
 
-          return db.query.chat.findFirst({
+          return DbInstance.query.ActionDbTweetConversation.findFirst({
             columns: {
               id: true,
               tweetId: true,
             },
-            where: eq(chatDbSchema.tweetId, event.data.tweetId),
+            where: eq(
+              actionDbSchema.ActionDbTweetConversation.tweetId,
+              event.data.tweetId,
+            ),
           });
         });
 
@@ -310,7 +221,7 @@ export const executeInteractionTweets = inngest.createFunction(
               text,
               billEntries: true,
               documentEntries: true,
-              manualEntries: 'agent',
+              manualEntries: 'custom2',
               openaiApiKey: OPENAI_API_KEY,
             },
             log,
@@ -343,14 +254,20 @@ export const executeInteractionTweets = inngest.createFunction(
           })();
 
           try {
+            const [system, prefix] = await Promise.all([
+              PROMPTS.CDNYC_TWITTER_REPLY_TEMPLATE_KB(),
+              PROMPTS.REPLY_AS_CDNYC(),
+            ]);
             const { raw, metadata, formatted } = await getLongResponse(
               {
                 summary,
                 text,
+                systemPrompt: system,
+                prefixPrompt: prefix,
               },
               {
                 log,
-                method: 'execute-interaction-tweets',
+                method: ID,
                 action: event.data.action,
               },
             );
@@ -363,80 +280,11 @@ export const executeInteractionTweets = inngest.createFunction(
               'generated response',
             );
 
-            // 90% of the time we return the long output, 10% of the time we return the short output
-            // const returnLong = Math.random() > 0.1;
-            const returnLong = true;
-
-            if (returnLong) {
-              log.info({}, 'returning long');
-
-              // Inject it 40% of the time
-              const injectShare = Math.random() < 0.4;
-
-              const shareMessage = injectShare
-                ? await (async () => {
-                    const shareUrl = `https//dogeai.chat/t/${tweetToActionOn.id}?utm_source=twitter&utm_medium=dogeai_gov&utm_campaign=${event.data.action}`;
-                    log.info({ url: shareUrl }, 'generating share message');
-
-                    const formatSharePrompt =
-                      await PROMPTS.TWITTER_ENGAGE_SHARE_CHAT({
-                        message: formatted,
-                        share: shareUrl,
-                      });
-
-                    const { text: shareUrlMessage } = await generateText({
-                      model: openai('gpt-4.1'),
-                      temperature: TEMPERATURE,
-                      seed: SEED,
-                      messages: [
-                        { role: 'system', content: formatSharePrompt },
-                        {
-                          role: 'user',
-                          content: formatted,
-                        },
-                      ],
-                    });
-
-                    log.info(
-                      { message: shareUrlMessage },
-                      'generated share message',
-                    );
-
-                    return shareUrlMessage;
-                  })()
-                : null;
-
-              return {
-                // Implicitly we are returning the long output so others can be ignored
-                longOutput: '',
-                refinedOutput: '',
-                metadata,
-                response: formatted,
-                shareMessage,
-              };
-            }
-
-            const finalAnswer = await getShortResponse({ topic: raw });
-            log.info({ response: finalAnswer }, 'generated short');
-
-            // some times claude safety kicks in and we get a NO
-            if (finalAnswer.toLowerCase().startsWith('no')) {
-              log.warn({}, 'claude safety kicked in. returning long');
-              return {
-                // Implicitly we are returning the long output so others can be ignored
-                longOutput: '',
-                refinedOutput: '',
-                metadata,
-                response: formatted,
-                shareMessage: null,
-              };
-            }
-
             return {
-              longOutput: formatted,
-              refinedOutput: finalAnswer,
+              longOutput: '',
+              refinedOutput: '',
               metadata,
-              response: finalAnswer,
+              response: formatted,
               shareMessage: null,
             };
           } catch (e) {
@@ -473,13 +321,10 @@ export const executeInteractionTweets = inngest.createFunction(
             const timeElapsed =
               getTimeInSecondsElapsedSinceTweetCreated(tweetToActionOn);
             log.info({ response, deltaSeconds: timeElapsed }, 'tweet sent');
-            tweetProcessingTime.observe(
-              { method: 'execute-interaction-tweets' },
-              timeElapsed,
-            );
+            tweetProcessingTime.observe({ method: ID }, timeElapsed);
             tweetsPublished.inc({
               action: event.data.action,
-              method: 'execute-interaction-tweets',
+              method: ID,
             });
 
             return {
@@ -502,8 +347,8 @@ export const executeInteractionTweets = inngest.createFunction(
           await approvedTweetEngagement({
             sentTweetUrl: `https://x.com/i/status/${repliedTweet.id}`,
             replyTweetUrl: tweetToActionOn.url,
-            channelId: DISCORD_APPROVED_CHANNEL_ID,
             sent: content,
+            channelId: DISCORD_CDNYC_APPROVED_CHANNEL_ID,
             refinedOutput: reply.refinedOutput,
             longOutput: reply.longOutput,
           });
@@ -523,8 +368,9 @@ export const executeInteractionTweets = inngest.createFunction(
             tweetId: tweetToActionOn.id,
           });
 
-          const message = await db
-            .insert(messageDbSchema)
+          const message = await DbInstance.insert(
+            actionDbSchema.ActionDbTweetMessage,
+          )
             .values([
               {
                 id: crypto.randomUUID(),
@@ -546,8 +392,8 @@ export const executeInteractionTweets = inngest.createFunction(
               },
             ])
             .returning({
-              id: messageDbSchema.id,
-              tweetId: messageDbSchema.tweetId,
+              id: actionDbSchema.ActionDbTweetMessage.id,
+              tweetId: actionDbSchema.ActionDbTweetMessage.tweetId,
             })
             .get();
 

@@ -45,6 +45,9 @@ import { appRouter } from './router';
 import { getSearchResult } from './twitter/web';
 import { UserChatStreamInput } from './api/user-chat';
 import { PROMPTS } from './twitter/prompts';
+import { ingestCdnycInteractionTweets } from './twitter/ingest-cdnyc-interaction';
+import { processCdnycInteractionTweets } from './twitter/process-cdnyc-interactions';
+import { executeCdnycInteractionTweets } from './twitter/execute-cdnyc-interaction';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -59,6 +62,9 @@ fastify.route({
       ingestInteractionTweets,
       processInteractionTweets,
       executeInteractionTweets,
+      ingestCdnycInteractionTweets,
+      processCdnycInteractionTweets,
+      executeCdnycInteractionTweets,
     ],
   }),
   onResponse(request, reply) {

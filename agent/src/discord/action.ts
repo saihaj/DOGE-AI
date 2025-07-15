@@ -21,6 +21,7 @@ export async function approvedTweetEngagement({
   longOutput,
   refinedOutput,
   sent,
+  channelId,
 }: {
   /** Tweet we are replying to */
   replyTweetUrl: string;
@@ -29,9 +30,10 @@ export async function approvedTweetEngagement({
   longOutput?: string;
   refinedOutput?: string;
   sent: string;
+  channelId: string;
 }) {
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
-  const channel = await guild.channels.fetch(DISCORD_APPROVED_CHANNEL_ID);
+  const channel = await guild.channels.fetch(channelId);
 
   if (!channel || !(channel instanceof TextChannel)) {
     throw Error('Approved channel not found or not a text channel');
@@ -42,7 +44,7 @@ export async function approvedTweetEngagement({
     `**Sent Tweet**: ${sentTweetUrl}`,
     longOutput ? `**Long output**: ${longOutput}` : '',
     refinedOutput ? `**Refined output**: ${refinedOutput}` : '',
-    `**DOGEai**: ${sent}`,
+    `**Agent**: ${sent}`,
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -51,7 +53,7 @@ export async function approvedTweetEngagement({
     const contentShortened = [
       `**Replied To**: ${replyTweetUrl}`,
       `**Sent Tweet**: ${sentTweetUrl}`,
-      `**DOGEai**: ${sent}`,
+      `**Agent**: ${sent}`,
     ]
       .filter(Boolean)
       .join('\n\n');
@@ -73,13 +75,15 @@ export async function rejectedInteractionTweet({
   tweetUrl,
   tweetId,
   reason,
+  channelId,
 }: {
   tweetId: string;
   tweetUrl: string;
   reason: string;
+  channelId: string;
 }) {
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
-  const channel = await guild.channels.fetch(DISCORD_REJECTED_CHANNEL_ID);
+  const channel = await guild.channels.fetch(channelId);
 
   if (!channel || !(channel instanceof TextChannel)) {
     throw Error('Rejection channel not found or not a text channel');
@@ -104,13 +108,15 @@ export async function rejectedTweet({
   tweetUrl,
   tweetId,
   reason,
+  channelId,
 }: {
   tweetId: string;
   tweetUrl: string;
   reason: string;
+  channelId: string;
 }) {
   const guild = await discordClient.guilds.fetch(DISCORD_SERVER_ID);
-  const channel = await guild.channels.fetch(DISCORD_REJECTED_CHANNEL_ID);
+  const channel = await guild.channels.fetch(channelId);
 
   if (!channel || !(channel instanceof TextChannel)) {
     throw Error('Rejection channel not found or not a text channel');
@@ -173,7 +179,7 @@ export async function sendDevTweet({
     `**User**: ${question}`,
     longOutput ? `**Long output**: ${longOutput}` : '',
     refinedOutput ? `**Refined output**: ${refinedOutput}` : '',
-    `**DOGEai**: ${response}`,
+    `**Agent**: ${response}`,
   ]
     .filter(Boolean)
     .join('\n\n');
@@ -183,7 +189,7 @@ export async function sendDevTweet({
       `**Tweet**: ${tweetUrl}`,
       longOutput ? `**Long output**: ${longOutput}` : '',
       refinedOutput ? `**Refined output**: ${refinedOutput}` : '',
-      `**DOGEai**: ${response}`,
+      `**Agent**: ${response}`,
     ]
       .filter(Boolean)
       .join('\n\n');
