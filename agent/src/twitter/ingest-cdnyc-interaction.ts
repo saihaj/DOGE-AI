@@ -9,7 +9,7 @@ import { fetchTweetsFromList } from './ingest-interaction';
 const ID = 'ingest-cdnyc-inter-tweets';
 const log = logger.child({ module: ID });
 
-const WINDOW = 6;
+const WINDOW = 60;
 
 export const ingestCdnycInteractionTweets = inngest.createFunction(
   {
