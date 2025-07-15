@@ -23,7 +23,8 @@ export const ingestCdnycInteractionTweets = inngest.createFunction(
       });
     },
   },
-  { cron: '5 * * * *' },
+  // Runs every 5 minutes
+  { cron: '*/5 * * * *' },
   async () => {
     /**
      * Search for all the tweets for the bot and not it's own tweets
