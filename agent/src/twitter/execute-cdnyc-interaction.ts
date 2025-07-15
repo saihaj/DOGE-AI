@@ -1,5 +1,3 @@
-import { createDeepInfra } from '@ai-sdk/deepinfra';
-import { createOpenAI } from '@ai-sdk/openai';
 import { createClient } from '@libsql/client';
 import { actionDb as actionDbSchema, eq } from 'database';
 import { drizzle } from 'drizzle-orm/libsql';
@@ -8,7 +6,6 @@ import * as crypto from 'node:crypto';
 import {
   CDNYC_TURSO_AUTH_TOKEN,
   CDNYC_TURSO_DATABASE_URL,
-  DEEPINFRA_API_KEY,
   IS_PROD,
   OPENAI_API_KEY,
   REJECTION_REASON,
@@ -36,15 +33,6 @@ import {
 } from './helpers.ts';
 import { getKbContext } from './knowledge-base.ts';
 import { PROMPTS } from './prompts';
-
-const deepinfra = createDeepInfra({
-  apiKey: DEEPINFRA_API_KEY,
-});
-
-const openai = createOpenAI({
-  apiKey: OPENAI_API_KEY,
-  compatibility: 'strict',
-});
 
 const client = createClient({
   url: CDNYC_TURSO_DATABASE_URL,
