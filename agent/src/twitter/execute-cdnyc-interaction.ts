@@ -1,21 +1,17 @@
-import {
-  CoreMessage,
-  extractReasoningMiddleware,
-  generateText,
-  wrapLanguageModel,
-} from 'ai';
-import { eq, actionDb as actionDbSchema } from 'database';
+import { createDeepInfra } from '@ai-sdk/deepinfra';
+import { createOpenAI } from '@ai-sdk/openai';
+import { createClient } from '@libsql/client';
+import { actionDb as actionDbSchema, eq } from 'database';
+import { drizzle } from 'drizzle-orm/libsql';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
-  OPENAI_API_KEY,
+  CDNYC_TURSO_AUTH_TOKEN,
+  CDNYC_TURSO_DATABASE_URL,
   DEEPINFRA_API_KEY,
   IS_PROD,
+  OPENAI_API_KEY,
   REJECTION_REASON,
-  SEED,
-  TEMPERATURE,
-  CDNYC_TURSO_DATABASE_URL,
-  CDNYC_TURSO_AUTH_TOKEN,
 } from '../const';
 import {
   approvedTweetEngagement,
@@ -24,7 +20,7 @@ import {
   sendDevTweet,
 } from '../discord/action.ts';
 import { inngest } from '../inngest';
-import { logger, WithLogger } from '../logger.ts';
+import { logger } from '../logger.ts';
 import {
   tweetProcessingTime,
   tweetPublishFailed,
@@ -32,20 +28,14 @@ import {
   tweetsPublished,
 } from '../prom.ts';
 import { twitterClient } from './client.ts';
+import { getLongResponse } from './execute-interaction.ts';
 import {
   getTimeInSecondsElapsedSinceTweetCreated,
   getTweet,
   getTweetContentAsText,
-  longResponseFormatter,
-  sanitizeLlmOutput,
 } from './helpers.ts';
 import { getKbContext } from './knowledge-base.ts';
 import { PROMPTS } from './prompts';
-import { getSearchResult } from './web.ts';
-import { createDeepInfra } from '@ai-sdk/deepinfra';
-import { createOpenAI } from '@ai-sdk/openai';
-import { createClient } from '@libsql/client';
-import { drizzle } from 'drizzle-orm/libsql';
 
 const deepinfra = createDeepInfra({
   apiKey: DEEPINFRA_API_KEY,
@@ -115,107 +105,6 @@ async function upsertChat({
     .returning({ id: actionDbSchema.ActionDbTweetConversation.id });
 
   return chat[0];
-}
-
-/**
- * Given summary of and text of tweet generate a long contextual response
- */
-export async function getLongResponse(
-  {
-    summary,
-    text,
-    systemPrompt,
-    prefixPrompt,
-  }: {
-    summary: string;
-    text: string;
-    systemPrompt?: string;
-    prefixPrompt?: string;
-  },
-  { method, log, action }: { log: WithLogger; method: string; action: string },
-) {
-  if (!systemPrompt) {
-    systemPrompt = await PROMPTS.CDNYC_TWITTER_REPLY_TEMPLATE_KB();
-  }
-
-  const webSearchResults = await getSearchResult(
-    {
-      messages: [
-        {
-          role: 'user',
-          content: text,
-        },
-      ],
-    },
-    log,
-  );
-
-  const messages = [
-    {
-      role: 'system',
-      content: systemPrompt,
-    },
-  ] as CoreMessage[];
-
-  if (summary) {
-    messages.push({ role: 'user', content: summary });
-  }
-
-  const webResult = webSearchResults
-    ?.map(
-      result =>
-        `Title: ${result.title}\nURL: ${result.url}\n\n Published Date: ${result.publishedDate}\n\n Content: ${result.text}\n\n`,
-    )
-    .join('');
-
-  const sources =
-    webSearchResults?.map(result => ({
-      url: result.url,
-      title: result.title,
-      publishedDate: result.publishedDate,
-    })) || [];
-
-  if (webResult) {
-    messages.push({
-      role: 'user',
-      content: `Web search results:\n\n${webResult}`,
-    });
-  }
-
-  messages.push({
-    role: 'user',
-    content: `"${text}"`,
-  });
-
-  const { text: _responseLong, reasoning } = await generateText({
-    temperature: TEMPERATURE,
-    seed: SEED,
-    model: wrapLanguageModel({
-      model: deepinfra('deepseek-ai/DeepSeek-R1'),
-      middleware: [
-        extractReasoningMiddleware({
-          tagName: 'think',
-        }),
-      ],
-    }),
-    messages: messages,
-    experimental_generateMessageId: crypto.randomUUID,
-    maxRetries: 0,
-  });
-
-  const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
-
-  log.info({ reasoning }, 'reasoning');
-  log.info({ response: _responseLong }, 'raw long response');
-
-  const responseLong = sanitizeLlmOutput(_responseLong);
-  const formatted = await longResponseFormatter(responseLong);
-  log.info({ response: formatted }, 'formatted long response');
-  return {
-    raw: responseLong,
-    formatted,
-    metadata,
-  };
 }
 
 const ID = 'execute-cdnyc-interaction-tweet';
@@ -363,10 +252,16 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
           })();
 
           try {
+            const [system, prefix] = await Promise.all([
+              PROMPTS.CDNYC_TWITTER_REPLY_TEMPLATE_KB(),
+              PROMPTS.REPLY_AS_CDNYC(),
+            ]);
             const { raw, metadata, formatted } = await getLongResponse(
               {
                 summary,
                 text,
+                systemPrompt: system,
+                prefixPrompt: prefix,
               },
               {
                 log,
