@@ -132,7 +132,8 @@ const CARDS: CardType[] = [
   },
 ];
 
-const TOKEN = '9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump';
+// const TOKEN = '9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump';
+const TOKEN = '3uxMtF7dT2VSvRFkrLf9Gqm4nDDy2J5RBEXCQpjubonk';
 const truncateToken = (token: string) => {
   return `${token.slice(0, 8)}...${token.slice(-8)}`;
 };
@@ -360,7 +361,7 @@ export default function Home() {
           <SectionHeading>
             Support the{' '}
             <span className="bg-gradient-america text-transparent bg-clip-text">
-              $DOGEai
+              $RT
             </span>{' '}
             Token
           </SectionHeading>
@@ -368,7 +369,7 @@ export default function Home() {
             DOGEai runs on independent fuel. No corporate backers. No media
             safety nets. The{' '}
             <span className="bg-gradient-america text-transparent bg-clip-text">
-              $DOGEai
+              $RT
             </span>{' '}
             token powers operations, funds the mission, and rewards those
             driving the work forward.
