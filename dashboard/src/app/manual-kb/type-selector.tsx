@@ -35,6 +35,10 @@ const values = [
     value: 'custom2',
     label: 'CT 2',
   },
+  {
+    value: 'custom3',
+    label: 'CT 3',
+  },
 ] as const;
 
 type Values = (typeof values)[number]['value'];

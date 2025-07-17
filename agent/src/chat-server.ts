@@ -653,7 +653,7 @@ fastify.route<{ Body: ChatDemoStreamInput }>({
       documentSearch: boolean;
       manualKbSearch: boolean;
       webSearch: boolean;
-      selectedKb: 'custom1' | 'custom2' | 'chat' | 'agent';
+      selectedKb: 'custom1' | 'custom2' | 'custom3' | 'chat' | 'agent';
       billSearch: boolean;
       messages: CoreMessage[];
       selectedChatModel: string;

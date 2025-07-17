@@ -245,7 +245,7 @@ export function Chat() {
   );
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [kb, setKbType] = useLocalStorage<
-    'agent' | 'chat' | 'custom1' | 'custom2'
+    'agent' | 'chat' | 'custom1' | 'custom2' | 'custom3'
   >('playgroundChatSelectedKb', 'chat');
 
   const initialMessages = useMemo(() => {
