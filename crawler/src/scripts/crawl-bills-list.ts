@@ -8,7 +8,7 @@ import {
 } from '../const.js';
 
 const BILL_ENDPOINT = `${API_BASE_URL}/${API_VERSION}/bill`;
-const BILL_TYPE = 'hr';
+const BILL_TYPE = 's';
 const API_URL = `${BILL_ENDPOINT}/${BILL_CONGRESS}/${BILL_TYPE}`;
 const DATA_DIR = 'data';
 const DATA_FILE = 'bill';
