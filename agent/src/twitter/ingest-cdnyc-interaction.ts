@@ -36,7 +36,7 @@ export const ingestCdnycInteractionTweets = inngest.createFunction(
      *
      * I tag bot a lot in updates and most of these are useless interactions for him to process so ignoring as much.
      */
-    const searchQuery = `("Zohran Mamdani" OR "Zohran" OR "Eric Adams" OR "Cuomo" OR "Curtis Sliwa" OR "Jim Walden" OR "DSA" OR "CUNY" OR "NYCHA" OR "Socialist NYC") -filter:replies lang:en within_time:7m`;
+    const searchQuery = `("Zohran Mamdani" OR "Zohran" OR "Eric Adams" OR "Cuomo" OR "Curtis Sliwa" OR "Jim Walden" OR "DSA" OR "CUNY" OR "NYCHA" OR "Socialist NYC" OR "AOC") -filter:replies lang:en within_time:7m`;
     const [list, search] = await Promise.all([
       // https://x.com/i/lists/1942682760713298237
       fetchTweetsFromList({
