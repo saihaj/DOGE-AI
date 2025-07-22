@@ -41,6 +41,7 @@ export const myProvider = customProvider({
     'o4-mini': openai('o4-mini'),
     'claude-3-5-sonnet-latest': anthropic('claude-3-5-sonnet-latest'),
     'claude-3-5-haiku-latest': anthropic('claude-3-5-haiku-latest'),
+    'moonshotai/kimi-k2': openrouter.chat('moonshotai/kimi-k2'),
     'deepseek-r1': wrapLanguageModel({
       model: openrouter.chat('deepseek/deepseek-r1', {
         reasoning: {

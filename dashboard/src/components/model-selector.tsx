@@ -108,6 +108,10 @@ const models = [
     value: 'gemini-2.5-pro-exp',
     label: 'Gemini 2.5 Pro Exp',
   },
+  {
+    value: 'moonshotai/kimi-k2',
+    label: 'Kimi K2',
+  },
 ] as const;
 
 export type ModelValues = (typeof models)[number]['value'];
