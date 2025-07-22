@@ -31,58 +31,10 @@ on top of this foundation. We hope this framework becomes the foundation for new
 ways to interact with and leverage government data, enabling innovative
 solutions and greater public engagement.
 
-## Key Objectives
-
-In order to achieve the vision following are actionable objectives:
-
-1. Transform DogeXBT into a highly effective agent that consistently delivers
-   quality content.
-2. Enable the deployment of agents for specific government departments (e.g.,
-   DOJ, FDA), creating a swarm of specialized DogeXBT agents.
-3. Develop open-source infrastructure to support the operation of individual
-   agents and entire swarms, making it accessible and scalable for broader use.
-
-## Roadmap
-
-The project will be developed in distinct phases (or sprints), each building on
-the previous to establish a robust and scalable system. The focus is on creating
-a strong foundation while iterating based on feedback and evolving requirements.
-
-### Phase 1:
-
-- Set up infrastructure to process government bills.
-- Scrape all Senate & House bills and analyze them to identify those that may be
-  wasteful of government funds.
-- Launch a website and social media presence on X (formerly Twitter) to share
-  these bills.
-- Launch a token.
-
-### Phase 2:
-
-- Make agent to reply to X replies,
-- Make agent to reply to mentions.
-- Highlight wasteful funding we have captured on the website.
-- Configure agent to tweet 2-3 bills daily.
-- CRON interval to scrape bills from the U.S. Congress API.
-
-### Future:
-
-> [!NOTE]
->
-> Things evolve quickly. We want to keep the roadmap flexible and community
-> driven. These are just ideas for now.
-
-- Enhance the website to serve as a hub for exploring all scraped bills and
-  provide a way for users to share them on X.
-- Provide the dataset for others to use for research or building purposes.
-- Enable interaction with the agent on X.
-- Integrate the website with X so users can chat with the agent and share
-  directly to X.
-
 ## Contributing
 
 We welcome contributions from the community! If you're interested in helping us
-build DogeXBT.
+build DOGEai.
 
 ### Getting Started
 
@@ -199,7 +151,23 @@ For a deeper dive into the architecture, check out these articles I wrote:
 
 #### `website`
 
-Home for `dogexbt.ai`. A Next.js application.
+Home for `dogeai.info`. A Next.js application.
+
+#### `chat`
+
+A Next.js application (`dogeai.chat`) that serves as a terminal to chat with DOGEai for in-depth analysis. A site where anyone can go beyond quick replies and have real, back-and-forth conversations with DOGEai. Ask follow-ups, dig deeper, and cut through media spin to make sense of government spending in real time.
+
+#### `envoy`
+
+An [Envoy proxy](https://www.envoyproxy.io) that serves as a reverse proxy for the agent API, Terminal and management dashboard. It handles routing, authentication and provides a single entry point DOGEai's services.
+
+#### `dashboard`
+
+Management dashboard for DOGEai. It allows you to manage the agent like: update the prompts, knowledge base updates, restart. It even acts as a playground to iterate. It is built with Next.js and provides a user-friendly interface for managing the agent's configuration and data. This is only meant for internal use and not for public consumption.
+
+#### `log-shipper`
+
+A Fly.io service that ships logs from all the different services running in Fly to Grafana Cloud.
 
 ## License
 
