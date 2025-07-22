@@ -155,19 +155,30 @@ Home for `dogeai.info`. A Next.js application.
 
 #### `chat`
 
-A Next.js application (`dogeai.chat`) that serves as a terminal to chat with DOGEai for in-depth analysis. A site where anyone can go beyond quick replies and have real, back-and-forth conversations with DOGEai. Ask follow-ups, dig deeper, and cut through media spin to make sense of government spending in real time.
+A Next.js application (`dogeai.chat`) that serves as a terminal to chat with
+DOGEai for in-depth analysis. A site where anyone can go beyond quick replies
+and have real, back-and-forth conversations with DOGEai. Ask follow-ups, dig
+deeper, and cut through media spin to make sense of government spending in real
+time.
 
 #### `envoy`
 
-An [Envoy proxy](https://www.envoyproxy.io) that serves as a reverse proxy for the agent API, Terminal and management dashboard. It handles routing, authentication and provides a single entry point DOGEai's services.
+An [Envoy proxy](https://www.envoyproxy.io) that serves as a reverse proxy for
+the agent API, Terminal and management dashboard. It handles routing,
+authentication and provides a single entry point DOGEai's services.
 
 #### `dashboard`
 
-Management dashboard for DOGEai. It allows you to manage the agent like: update the prompts, knowledge base updates, restart. It even acts as a playground to iterate. It is built with Next.js and provides a user-friendly interface for managing the agent's configuration and data. This is only meant for internal use and not for public consumption.
+Management dashboard for DOGEai. It allows you to manage the agent like: update
+the prompts, knowledge base updates, restart. It even acts as a playground to
+iterate. It is built with Next.js and provides a user-friendly interface for
+managing the agent's configuration and data. This is only meant for internal use
+and not for public consumption.
 
 #### `log-shipper`
 
-A Fly.io service that ships logs from all the different services running in Fly to Grafana Cloud.
+A Fly.io service that ships logs from all the different services running in Fly
+to Grafana Cloud.
 
 ## License
 
