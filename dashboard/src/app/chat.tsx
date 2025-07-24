@@ -41,6 +41,8 @@ import {
 } from '@/components/ui/popover';
 import { useCookie } from '@/hooks/use-cookie';
 import { TypeSelector } from './manual-kb/type-selector';
+import { createAvatar } from '@dicebear/core';
+import { glass } from '@dicebear/collection';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -408,6 +410,13 @@ export function Chat() {
     ]);
   };
 
+  const avatarSvg = (() =>
+    createAvatar(glass, {
+      seed: kb,
+    }).toString())();
+
+  const isDogeAiKb = kb === 'agent' || kb === 'chat';
+
   return (
     <div className="flex-1 flex flex-col">
       <Header
@@ -485,7 +494,16 @@ export function Chat() {
                       <div className="flex gap-2">
                         {message.role === 'assistant' && (
                           <span>
-                            <Logo className="h-[30px] w-[30px] rounded-full" />
+                            {isDogeAiKb ? (
+                              <Logo className="h-[30px] w-[30px] rounded-full overflow-hidden" />
+                            ) : (
+                              <div
+                                className="h-[30px] w-[30px] rounded-full overflow-hidden"
+                                dangerouslySetInnerHTML={{
+                                  __html: avatarSvg,
+                                }}
+                              />
+                            )}
                           </span>
                         )}
                         <div
@@ -608,7 +626,16 @@ export function Chat() {
               )}
             >
               <span>
-                <Logo className="h-[30px] w-[30px] rounded-full" />
+                {isDogeAiKb ? (
+                  <Logo className="h-[30px] w-[30px] rounded-full overflow-hidden" />
+                ) : (
+                  <div
+                    className="h-[30px] w-[30px] rounded-full overflow-hidden"
+                    dangerouslySetInnerHTML={{
+                      __html: avatarSvg,
+                    }}
+                  />
+                )}
               </span>
               <Loader2 className="animate-spin" size={20} />
             </div>

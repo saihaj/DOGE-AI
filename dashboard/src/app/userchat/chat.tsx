@@ -32,6 +32,8 @@ import {
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
 import { TypeSelector } from '../manual-kb/type-selector';
+import { createAvatar } from '@dicebear/core';
+import { glass } from '@dicebear/collection';
 
 interface MessageWithMeta extends Message {
   sources?: string[];
@@ -352,6 +354,13 @@ export function UserChat() {
     ]);
   };
 
+  const avatarSvg = (() =>
+    createAvatar(glass, {
+      seed: kb,
+    }).toString())();
+
+  const isDogeAiKb = kb === 'agent' || kb === 'chat';
+
   return (
     <div className="flex-1 flex flex-col print:block print:overflow-visible print:h-auto">
       <Header
@@ -445,7 +454,16 @@ export function UserChat() {
                         {message.role === 'assistant' && (
                           <>
                             <span>
-                              <Logo className="h-[30px] w-[30px] rounded-full" />
+                              {isDogeAiKb ? (
+                                <Logo className="h-[30px] w-[30px] rounded-full overflow-hidden" />
+                              ) : (
+                                <div
+                                  className="h-[30px] w-[30px] rounded-full overflow-hidden"
+                                  dangerouslySetInnerHTML={{
+                                    __html: avatarSvg,
+                                  }}
+                                />
+                              )}
                               {message.hasKbAnnotation && (
                                 <Badge
                                   className="bg-green-500"
@@ -626,7 +644,16 @@ export function UserChat() {
                   >
                     <div className="flex gap-2">
                       <span>
-                        <Logo className="h-[30px] w-[30px] rounded-full" />
+                        {isDogeAiKb ? (
+                          <Logo className="h-[30px] w-[30px] rounded-full overflow-hidden" />
+                        ) : (
+                          <div
+                            className="h-[30px] w-[30px] rounded-full overflow-hidden"
+                            dangerouslySetInnerHTML={{
+                              __html: avatarSvg,
+                            }}
+                          />
+                        )}
                       </span>
                       <div className="bg-secondary/20 animate-pulse rounded-md flex">
                         <div className="flex items-center justify-center gap-2">
