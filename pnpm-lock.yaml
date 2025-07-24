@@ -341,7 +341,7 @@ importers:
         version: 1.3.23(zod@3.24.4)
       '@langchain/community':
         specifier: ^0.3.49
-        version: 0.3.49(4chwzdqzysk7isi456toevxbe4)
+        version: 0.3.49(jxlodg5jewc4tugvy4fpwamspm)
       '@langchain/core':
         specifier: ^0.3.66
         version: 0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4))
@@ -349,8 +349,8 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0(@langchain/core@0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))
       '@mendable/firecrawl-js':
-        specifier: ^1.29.1
-        version: 1.29.1
+        specifier: ^1.29.2
+        version: 1.29.2
       ai:
         specifier: ^4.3.19
         version: 4.3.19(react@19.1.0)(zod@3.24.4)
@@ -2820,8 +2820,8 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
-  '@mendable/firecrawl-js@1.29.1':
-    resolution: {integrity: sha512-w7mXja6hSNL6li7BHgY6LQLnBJ9RIxWkmZ16y2MCOr3w6MlR7k2ZcTxro6vEJrUoshhyoOqhcFCyD1P0ckBuRw==}
+  '@mendable/firecrawl-js@1.29.2':
+    resolution: {integrity: sha512-Yv3lyCbGTm8hRSrRzRi2eqJFXZNyTuL1y34tABSSxNPqlvL7HJV+f1zPnhksZ48gPcn/OJm/E68MDnSfTYXKzA==}
     engines: {node: '>=22.0.0'}
 
   '@metamask/abi-utils@1.2.0':
@@ -5545,6 +5545,9 @@ packages:
     resolution: {integrity: sha512-RE3mdQ7P3FRSe7eqCWoeQ/Z9QXrtniSjp1wUjt5nRC3WIpz5rSCve6o3fsZ2aCpJtrZjSZgjwXAoTO5k4tEI0w==}
     engines: {node: '>=4'}
 
+  axios@1.11.0:
+    resolution: {integrity: sha512-1Lx3WLFQWm3ooKDYZD1eXmoGO9fxYQjrycfHFC8P0sCfQVXyROp0p9PFWBehewBOdCwHc+f/b8I0fMto5eSfwA==}
+
   axios@1.7.9:
     resolution: {integrity: sha512-LhLcE7Hbiryz8oMDdDptSrWowmB4Bl6RCt6sIJKpRB4XtVf0iEgewX3au/pJqm+Py1kCASkb/FFKjxQaLtxJvw==}
 
@@ -6955,6 +6958,10 @@ packages:
 
   form-data@4.0.1:
     resolution: {integrity: sha512-tzN8e4TX8+kkxGPK8D5u0FNmjPUjw3lwC9lSLxxoB/+GtsJG91CO8bSWy73APlgAZzZbXEYZJuxjkHH2w+Ezhw==}
+    engines: {node: '>= 6'}
+
+  form-data@4.0.4:
+    resolution: {integrity: sha512-KrGhL9Q4zjj0kiUt5OO4Mr/A/jlI2jDYs5eHBpYHPcBEVSiipAvn2Ko2HnPe20rmcuuvMHNdZFp+4IlGTMF0Ow==}
     engines: {node: '>= 6'}
 
   formdata-node@4.4.1:
@@ -12682,7 +12689,7 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@langchain/community@0.3.49(4chwzdqzysk7isi456toevxbe4)':
+  '@langchain/community@0.3.49(jxlodg5jewc4tugvy4fpwamspm)':
     dependencies:
       '@browserbasehq/stagehand': 1.11.0(@playwright/test@1.50.1)(bufferutil@4.0.9)(deepmerge@4.3.1)(dotenv@16.6.1)(encoding@0.1.13)(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4))(utf-8-validate@5.0.10)(zod@3.24.4)
       '@ibm-cloud/watsonx-ai': 1.4.0(@langchain/core@0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))
@@ -12707,7 +12714,7 @@ snapshots:
       '@aws-sdk/credential-provider-node': 3.817.0
       '@browserbasehq/sdk': 2.6.0(encoding@0.1.13)
       '@libsql/client': 0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@mendable/firecrawl-js': 1.29.1
+      '@mendable/firecrawl-js': 1.29.2
       '@smithy/protocol-http': 3.3.0
       '@smithy/signature-v4': 2.3.0
       '@smithy/util-utf8': 2.3.0
@@ -12870,9 +12877,9 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  '@mendable/firecrawl-js@1.29.1':
+  '@mendable/firecrawl-js@1.29.2':
     dependencies:
-      axios: 1.9.0
+      axios: 1.11.0
       typescript-event-target: 1.1.1
       zod: 3.25.64
       zod-to-json-schema: 3.24.5(zod@3.25.64)
@@ -17389,6 +17396,14 @@ snapshots:
 
   axe-core@4.10.2: {}
 
+  axios@1.11.0:
+    dependencies:
+      follow-redirects: 1.15.9(debug@4.4.1)
+      form-data: 4.0.4
+      proxy-from-env: 1.1.0
+    transitivePeerDependencies:
+      - debug
+
   axios@1.7.9(debug@4.4.1):
     dependencies:
       follow-redirects: 1.15.9(debug@4.4.1)
@@ -18970,6 +18985,14 @@ snapshots:
       combined-stream: 1.0.8
       mime-types: 2.1.35
 
+  form-data@4.0.4:
+    dependencies:
+      asynckit: 0.4.0
+      combined-stream: 1.0.8
+      es-set-tostringtag: 2.1.0
+      hasown: 2.0.2
+      mime-types: 2.1.35
+
   formdata-node@4.4.1:
     dependencies:
       node-domexception: 1.0.0
@@ -19355,7 +19378,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9)
+      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.1))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -21670,7 +21693,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9):
+  retry-axios@2.6.0(axios@1.7.9(debug@4.4.1)):
     dependencies:
       axios: 1.7.9(debug@4.4.1)
 
