@@ -159,8 +159,8 @@ importers:
         specifier: ^0.25.8
         version: 0.25.8
       inngest-cli:
-        specifier: 1.10.0
-        version: 1.10.0(encoding@0.1.13)
+        specifier: 1.11.0
+        version: 1.11.0(encoding@0.1.13)
       pino-pretty:
         specifier: ^13.0.0
         version: 13.0.0
@@ -404,8 +404,8 @@ importers:
         specifier: ^0.25.8
         version: 0.25.8
       inngest-cli:
-        specifier: 1.10.0
-        version: 1.10.0(encoding@0.1.13)
+        specifier: 1.11.0
+        version: 1.11.0(encoding@0.1.13)
 
   dashboard:
     dependencies:
@@ -7504,8 +7504,8 @@ packages:
   inline-style-parser@0.2.4:
     resolution: {integrity: sha512-0aO8FkhNZlj/ZIbNi7Lxxr12obT7cL1moPfE4tg1LkX7LlLfC6DeX4l2ZEud1ukP9jNQyNnfzQVqwbwmAATY4Q==}
 
-  inngest-cli@1.10.0:
-    resolution: {integrity: sha512-MTWUrclLW1z/kMw/V+hVLnrKkPCdWyk6aiNeYvZVeMRbKBGnSGslobU0Zi9z3XT76DVh6/yHSC50oMBebGpGqg==}
+  inngest-cli@1.11.0:
+    resolution: {integrity: sha512-Y4KuPEOZS/VgUxxcL7yuYKaUcntgxqEWC9K71Ys39Aet9M3YZ/GSx3UCgTvCxpBgv/in5hZ+OmsXgMngkEG5WQ==}
     hasBin: true
 
   inngest@3.40.1:
@@ -19732,7 +19732,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.1))
+      retry-axios: 2.6.0(axios@1.7.9)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -19785,7 +19785,7 @@ snapshots:
 
   inline-style-parser@0.2.4: {}
 
-  inngest-cli@1.10.0(encoding@0.1.13):
+  inngest-cli@1.11.0(encoding@0.1.13):
     dependencies:
       adm-zip: 0.5.16
       debug: 4.4.1
@@ -22047,7 +22047,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9(debug@4.4.1)):
+  retry-axios@2.6.0(axios@1.7.9):
     dependencies:
       axios: 1.7.9(debug@4.4.1)
 
