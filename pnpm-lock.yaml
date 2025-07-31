@@ -341,7 +341,7 @@ importers:
         version: 1.3.23(zod@3.24.4)
       '@langchain/community':
         specifier: ^0.3.49
-        version: 0.3.49(jxlodg5jewc4tugvy4fpwamspm)
+        version: 0.3.49(l3zaatagdca6tcwntpip3qrssq)
       '@langchain/core':
         specifier: ^0.3.66
         version: 0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4))
@@ -349,8 +349,8 @@ importers:
         specifier: ^0.1.0
         version: 0.1.0(@langchain/core@0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))
       '@mendable/firecrawl-js':
-        specifier: ^1.29.2
-        version: 1.29.2
+        specifier: ^1.29.3
+        version: 1.29.3
       ai:
         specifier: ^4.3.19
         version: 4.3.19(react@19.1.0)(zod@3.24.4)
@@ -3012,8 +3012,8 @@ packages:
       react: '>=16.8.0'
       react-dom: '>=16.8.0'
 
-  '@mendable/firecrawl-js@1.29.2':
-    resolution: {integrity: sha512-Yv3lyCbGTm8hRSrRzRi2eqJFXZNyTuL1y34tABSSxNPqlvL7HJV+f1zPnhksZ48gPcn/OJm/E68MDnSfTYXKzA==}
+  '@mendable/firecrawl-js@1.29.3':
+    resolution: {integrity: sha512-+uvDktesJmVtiwxMtimq+3f5bKlsan4T7TokxOI7DbxFkApwrRNss5GYEXbInveMTz8LpGth/9Ch5BTwCqrpfA==}
     engines: {node: '>=22.0.0'}
 
   '@metamask/abi-utils@1.2.0':
@@ -13035,7 +13035,7 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@langchain/community@0.3.49(jxlodg5jewc4tugvy4fpwamspm)':
+  '@langchain/community@0.3.49(l3zaatagdca6tcwntpip3qrssq)':
     dependencies:
       '@browserbasehq/stagehand': 1.11.0(@playwright/test@1.50.1)(bufferutil@4.0.9)(deepmerge@4.3.1)(dotenv@16.6.1)(encoding@0.1.13)(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4))(utf-8-validate@5.0.10)(zod@3.24.4)
       '@ibm-cloud/watsonx-ai': 1.4.0(@langchain/core@0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))
@@ -13060,7 +13060,7 @@ snapshots:
       '@aws-sdk/credential-provider-node': 3.817.0
       '@browserbasehq/sdk': 2.6.0(encoding@0.1.13)
       '@libsql/client': 0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
-      '@mendable/firecrawl-js': 1.29.2
+      '@mendable/firecrawl-js': 1.29.3
       '@smithy/protocol-http': 3.3.0
       '@smithy/signature-v4': 2.3.0
       '@smithy/util-utf8': 2.3.0
@@ -13223,7 +13223,7 @@ snapshots:
       react: 19.1.0
       react-dom: 19.1.0(react@19.1.0)
 
-  '@mendable/firecrawl-js@1.29.2':
+  '@mendable/firecrawl-js@1.29.3':
     dependencies:
       axios: 1.11.0
       typescript-event-target: 1.1.1
@@ -19724,7 +19724,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.1))
+      retry-axios: 2.6.0(axios@1.7.9)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -22039,7 +22039,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9(debug@4.4.1)):
+  retry-axios@2.6.0(axios@1.7.9):
     dependencies:
       axios: 1.7.9(debug@4.4.1)
 
