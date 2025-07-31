@@ -5,8 +5,14 @@ import slugify from 'slugify';
 import { z } from 'zod';
 import { TURSO_PLATFORM_API_TOKEN, TURSO_PLATFORM_ORG_NAME } from '../const';
 import { ControlPlaneDbInstance as db } from './db';
-import { ControlPlaneOrganization, ControlPlaneOrganizationDb } from './schema';
+import {
+  ControlPlaneOrganization,
+  ControlPlaneOrganizationDb,
+  ControlPlanePrompt,
+} from './schema';
 import { protectedProcedure, router } from '../trpc';
+import { getPrompt } from './prompt-registry';
+import { bento } from '../cache';
 
 const tursoApiClient = createTursoApiClient({
   org: TURSO_PLATFORM_ORG_NAME,
@@ -220,4 +226,60 @@ export const getOrganization = protectedProcedure
     );
 
     return getOrganizationBySlug(slug);
+  });
+
+export const getControlPlanePromptByKey = protectedProcedure
+  .input(z.object({ key: z.string(), orgId: z.string() }))
+  .query(async opts => {
+    const { key, orgId } = opts.input;
+
+    const log = opts.ctx.logger.child({
+      function: 'getPrompt',
+      requestId: opts.ctx.requestId,
+      key,
+      orgId,
+    });
+    log.info({}, 'get prompt');
+
+    const promptValue = await getPrompt({
+      key,
+      orgId,
+    });
+
+    if (!promptValue) {
+      log.error({}, 'prompt not found');
+      throw new TRPCError({ code: 'NOT_FOUND' });
+    }
+
+    return {
+      content: promptValue.content,
+      commitId: promptValue.commitId,
+    };
+  });
+
+export const getControlPlanePromptKeys = protectedProcedure
+  .input(z.object({ orgId: z.string() }))
+  .query(async opts => {
+    const { orgId } = opts.input;
+
+    const log = opts.ctx.logger.child({
+      function: 'getPromptKeys',
+      requestId: opts.ctx.requestId,
+      orgId,
+    });
+    log.info({}, 'get prompt keys');
+
+    return bento.getOrSet(
+      `PROMPT_KEYS_${orgId}`,
+      async () => {
+        const keys = await db
+          .select({ key: ControlPlanePrompt.key })
+          .from(ControlPlanePrompt)
+          .where(eq(ControlPlanePrompt.organization, orgId))
+          .all();
+
+        return keys.map(k => k.key);
+      },
+      { ttl: '1d' },
+    );
   });

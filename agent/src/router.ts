@@ -12,7 +12,12 @@ import {
   revertPromptVersion,
   updatePromptByKey,
 } from './api/prompt';
-import { createOrganization, getOrganization } from './controlplane-api/router';
+import {
+  createOrganization,
+  getControlPlanePromptByKey,
+  getControlPlanePromptKeys,
+  getOrganization,
+} from './controlplane-api/router';
 
 export const appRouter = router({
   createKbEntry,
@@ -26,6 +31,8 @@ export const appRouter = router({
   revertPromptVersion,
   createOrganization,
   getOrganization,
+  getControlPlanePromptKeys,
+  getControlPlanePromptByKey,
 });
 
 export type AppRouter = typeof appRouter;
