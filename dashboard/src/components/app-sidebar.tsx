@@ -1,13 +1,5 @@
 'use client';
 import {
-  BookIcon,
-  Home,
-  MessageCircle,
-  PencilIcon,
-  Reply,
-  ReplyAll,
-} from 'lucide-react';
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -18,8 +10,18 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import {
+  BookIcon,
+  Home,
+  MessageCircle,
+  PencilIcon,
+  Reply,
+  ReplyAll,
+} from 'lucide-react';
 import Link from 'next/link';
+import { AvailableOrgs } from './org-selector';
 import { Settings } from './settings';
+import { ClientOnly } from './client-only';
 
 const items = [
   {
@@ -78,10 +80,13 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
+          <SidebarMenuItem className="flex gap-2">
             <SidebarMenuButton asChild>
               <Settings />
             </SidebarMenuButton>
+            <ClientOnly>
+              <AvailableOrgs />
+            </ClientOnly>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

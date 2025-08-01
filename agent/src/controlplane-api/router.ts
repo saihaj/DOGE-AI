@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { createClient as createTursoApiClient } from '@tursodatabase/api';
-import { eq } from 'drizzle-orm';
+import { and, eq, gt } from 'drizzle-orm';
 import slugify from 'slugify';
 import { z } from 'zod';
 import { TURSO_PLATFORM_API_TOKEN, TURSO_PLATFORM_ORG_NAME } from '../const';
@@ -282,4 +282,42 @@ export const getControlPlanePromptKeys = protectedProcedure
       },
       { ttl: '1d' },
     );
+  });
+
+export const getOrgs = protectedProcedure
+  .input(
+    z.object({
+      cursor: z.string().optional(),
+      limit: z.number(),
+    }),
+  )
+  .query(async opts => {
+    const { limit, cursor } = opts.input;
+
+    const orgs = await db.query.ControlPlaneOrganization.findMany({
+      where: cursor
+        ? gt(ControlPlaneOrganization.createdAt, cursor)
+        : undefined,
+      orderBy: (orgs, { asc }) => asc(orgs.createdAt),
+      limit: limit + 1,
+      columns: {
+        id: true,
+        name: true,
+        slug: true,
+        createdAt: true,
+      },
+    });
+
+    const hasMore = orgs.length > limit;
+
+    if (hasMore) {
+      orgs.pop(); // Remove the last item to ensure we only return the requested limit
+    }
+
+    const nextCursor = hasMore ? orgs[orgs.length - 1].createdAt : null;
+
+    return {
+      items: orgs,
+      nextCursor,
+    };
   });

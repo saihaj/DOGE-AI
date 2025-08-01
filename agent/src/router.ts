@@ -17,6 +17,7 @@ import {
   getControlPlanePromptByKey,
   getControlPlanePromptKeys,
   getOrganization,
+  getOrgs,
 } from './controlplane-api/router';
 
 export const appRouter = router({
@@ -33,6 +34,7 @@ export const appRouter = router({
   getOrganization,
   getControlPlanePromptKeys,
   getControlPlanePromptByKey,
+  getOrgs,
 });
 
 export type AppRouter = typeof appRouter;
