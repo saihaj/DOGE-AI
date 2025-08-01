@@ -58,9 +58,7 @@ export function AvailableOrgs({}: {}) {
     ),
   );
 
-  const displayValue = selectedOrg
-    ? `${selectedOrg.name} (${selectedOrg.slug})`
-    : 'Select Org';
+  const displayValue = selectedOrg ? selectedOrg.name : 'Select Org';
 
   const [open, setOpen] = useState(false);
 
