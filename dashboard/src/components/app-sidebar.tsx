@@ -21,7 +21,6 @@ import {
 import Link from 'next/link';
 import { AvailableOrgs } from './org-selector';
 import { Settings } from './settings';
-import { ClientOnly } from './client-only';
 
 const items = [
   {
@@ -84,9 +83,7 @@ export function AppSidebar() {
             <SidebarMenuButton asChild>
               <Settings />
             </SidebarMenuButton>
-            <ClientOnly>
-              <AvailableOrgs />
-            </ClientOnly>
+            <AvailableOrgs />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

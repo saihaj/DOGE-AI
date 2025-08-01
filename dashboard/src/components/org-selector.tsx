@@ -14,13 +14,13 @@ import {
 import { useTRPC } from '@/lib/trpc';
 import { cn } from '@/lib/utils';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { useLocalStorage } from '@uidotdev/usehooks';
+import { useLocalStorageState } from 'ahooks';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from './ui/button';
 
 export function useSelectedOrg() {
-  const [selectedOrg, setSelectedOrg] = useLocalStorage<
+  const [selectedOrg, setSelectedOrg] = useLocalStorageState<
     ReturnType<typeof useTRPC>['getOrgs']['~types']['output']['items'][number]
   >('playgroundSelectedOrg', undefined);
 
