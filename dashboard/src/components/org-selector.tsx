@@ -20,9 +20,8 @@ import { useState } from 'react';
 import { Button } from './ui/button';
 
 export function useSelectedOrg() {
-  const trpc = useTRPC();
   const [selectedOrg, setSelectedOrg] = useLocalStorage<
-    (typeof trpc.getOrgs)['~types']['output']['items'][number]
+    ReturnType<typeof useTRPC>['getOrgs']['~types']['output']['items'][number]
   >('playgroundSelectedOrg', undefined);
 
   return {
@@ -31,7 +30,7 @@ export function useSelectedOrg() {
   };
 }
 
-export function AvailableOrgs({}: {}) {
+export function AvailableOrgs() {
   const trpc = useTRPC();
   const { selectedOrg, setSelectedOrg } = useSelectedOrg();
 
