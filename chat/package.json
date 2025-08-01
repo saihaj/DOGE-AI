@@ -23,7 +23,7 @@
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-tooltip": "^1.2.7",
     "@solana/spl-token": "^0.4.13",
-    "@solana/web3.js": "^1.98.2",
+    "@solana/web3.js": "^1.98.4",
     "@tanstack/react-query": "^5.83.0",
     "@trpc/client": "^11.2.0",
     "@trpc/react-query": "^11.2.0",
