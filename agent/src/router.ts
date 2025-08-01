@@ -4,14 +4,6 @@ import {
   editKbEntry,
   getKbEntries,
 } from './api/manual-kb';
-import { router } from './trpc';
-import {
-  getPromptByKey,
-  getPromptKeys,
-  getPromptVersions,
-  revertPromptVersion,
-  updatePromptByKey,
-} from './api/prompt';
 import {
   createOrganization,
   getControlPlanePromptByKey,
@@ -22,17 +14,13 @@ import {
   revertControlPlanePromptVersion,
   updateControlPlanePromptByKey,
 } from './controlplane-api/router';
+import { router } from './trpc';
 
 export const appRouter = router({
   createKbEntry,
   editKbEntry,
   deleteKbEntry,
   getKbEntries,
-  getPromptKeys,
-  getPromptByKey,
-  updatePromptByKey,
-  getPromptVersions,
-  revertPromptVersion,
   createOrganization,
   getOrganization,
   getControlPlanePromptKeys,
