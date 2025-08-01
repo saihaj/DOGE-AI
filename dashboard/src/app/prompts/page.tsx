@@ -48,18 +48,21 @@ function AvailableVersion({
   setValue: ({ content, id }: { content: string; id: string }) => void;
 }) {
   const trpc = useTRPC();
+  const { selectedOrg } = useSelectedOrg();
   const {
     data: availableVersions,
     hasNextPage,
     isLoading,
     fetchNextPage,
   } = useInfiniteQuery(
-    trpc.getPromptVersions.infiniteQueryOptions(
+    trpc.getControlPlanePromptVersions.infiniteQueryOptions(
       {
         key: promptId,
+        orgId: selectedOrg?.id || '',
         limit: 5,
       },
       {
+        enabled: Boolean(selectedOrg?.id),
         staleTime: 0,
         select(data) {
           return {
@@ -255,11 +258,11 @@ export default function Prompts() {
   >(null);
 
   const { mutateAsync: apiUpdatePrompt } = useMutation(
-    trpc.updatePromptByKey.mutationOptions(),
+    trpc.updateControlPlanePromptByKey.mutationOptions(),
   );
 
   const { mutateAsync: apiRevertPrompt } = useMutation(
-    trpc.revertPromptVersion.mutationOptions(),
+    trpc.revertControlPlanePromptVersion.mutationOptions(),
   );
   const { data, isLoading, isError } = useQuery(
     trpc.getControlPlanePromptByKey.queryOptions(
@@ -461,6 +464,11 @@ export default function Prompts() {
                   return;
                 }
 
+                if (!selectedOrg?.id) {
+                  toast.error('No organization selected');
+                  return;
+                }
+
                 if (!selectedPromptKey) {
                   toast.error('No prompt selected');
                   return;
@@ -476,6 +484,7 @@ export default function Prompts() {
                     apiRevertPrompt({
                       key: selectedPromptKey,
                       commitId: selectedPromptVersion,
+                      orgId: selectedOrg.id,
                     }),
                     {
                       loading: 'Reverting prompt...',
@@ -497,6 +506,7 @@ export default function Prompts() {
                   apiUpdatePrompt({
                     key: selectedPromptKey,
                     value: edited,
+                    orgId: selectedOrg.id,
                   }),
                   {
                     loading: 'Updating prompt...',

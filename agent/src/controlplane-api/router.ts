@@ -1,6 +1,6 @@
 import { TRPCError } from '@trpc/server';
 import { createClient as createTursoApiClient } from '@tursodatabase/api';
-import { and, eq, gt } from 'drizzle-orm';
+import { and, desc, eq, gt, lt } from 'drizzle-orm';
 import slugify from 'slugify';
 import { z } from 'zod';
 import { TURSO_PLATFORM_API_TOKEN, TURSO_PLATFORM_ORG_NAME } from '../const';
@@ -9,9 +9,10 @@ import {
   ControlPlaneOrganization,
   ControlPlaneOrganizationDb,
   ControlPlanePrompt,
+  ControlPlanePromptCommit,
 } from './schema';
 import { protectedProcedure, router } from '../trpc';
-import { getPrompt } from './prompt-registry';
+import { commitPrompt, getPrompt, revertPrompt } from './prompt-registry';
 import { bento } from '../cache';
 
 const tursoApiClient = createTursoApiClient({
@@ -234,8 +235,7 @@ export const getControlPlanePromptByKey = protectedProcedure
     const { key, orgId } = opts.input;
 
     const log = opts.ctx.logger.child({
-      function: 'getPrompt',
-      requestId: opts.ctx.requestId,
+      function: 'getControlPlanePromptByKey',
       key,
       orgId,
     });
@@ -261,10 +261,8 @@ export const getControlPlanePromptKeys = protectedProcedure
   .input(z.object({ orgId: z.string() }))
   .query(async opts => {
     const { orgId } = opts.input;
-
     const log = opts.ctx.logger.child({
-      function: 'getPromptKeys',
-      requestId: opts.ctx.requestId,
+      function: 'getControlPlanePromptKeys',
       orgId,
     });
     log.info({}, 'get prompt keys');
@@ -320,4 +318,221 @@ export const getOrgs = protectedProcedure
       items: orgs,
       nextCursor,
     };
+  });
+
+// Given a string, it extracts all the template variables
+function extractTemplateVariableNames(content: string) {
+  const template = content.match(/{{(.*?)}}/g);
+  const variableNames = new Set<string>();
+
+  if (template) {
+    template.forEach(t => {
+      const key = t.replace(/{{|}}/g, '');
+      variableNames.add(key);
+    });
+  }
+
+  return Array.from(variableNames);
+}
+
+export const updateControlPlanePromptByKey = protectedProcedure
+  .input(z.object({ key: z.string(), value: z.string(), orgId: z.string() }))
+  .mutation(async opts => {
+    const { key, value, orgId } = opts.input;
+    const log = opts.ctx.logger.child({
+      function: 'updateControlPlanePromptByKey',
+      key,
+      orgId,
+    });
+    log.info({}, 'patch prompt');
+
+    if (!value) {
+      log.error({}, 'no value found');
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'No value found',
+      });
+    }
+
+    const currentPrompt = await getPrompt({
+      key,
+      orgId,
+    });
+    if (!currentPrompt) {
+      log.error({}, 'prompt not found');
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: `Prompt "${key}" not found`,
+      });
+    }
+
+    if (currentPrompt.content === value) {
+      log.warn(
+        {
+          active: currentPrompt.content,
+          proposed: value,
+        },
+        'no change in prompt',
+      );
+
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'No change in prompt',
+      });
+    }
+
+    // validate variables in the current prompt
+    const currentVariables = extractTemplateVariableNames(
+      currentPrompt.content,
+    );
+    const proposedVariables = extractTemplateVariableNames(value);
+
+    // check if the proposed prompt has the same variables as the current prompt
+    if (currentVariables.length !== proposedVariables.length) {
+      log.error(
+        {
+          currentVariables,
+          proposedVariables,
+        },
+        'variable count mismatch',
+      );
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Variable count mismatch',
+      });
+    }
+
+    // check if the proposed prompt has the same variables as the current prompt
+    if (currentVariables.some(v => !proposedVariables.includes(v))) {
+      log.error(
+        {
+          currentVariables,
+          proposedVariables,
+        },
+        'variable name mismatch',
+      );
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: 'Variable name mismatch',
+      });
+    }
+
+    // update the prompt
+    const state = await commitPrompt({
+      key,
+      value,
+      message: `By ${opts.ctx.userEmail}`,
+      orgId,
+    });
+
+    if (state.commitId) {
+      log.info(state, 'updated prompt');
+      return {
+        status: 'success',
+      };
+    }
+
+    log.error({}, 'failed to update prompt');
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to update prompt',
+    });
+  });
+
+export const getControlPlanePromptVersions = protectedProcedure
+  .input(
+    z.object({
+      key: z.string(),
+      cursor: z.string().optional(),
+      limit: z.number(),
+      orgId: z.string(),
+    }),
+  )
+  .query(async opts => {
+    const { key, cursor, limit, orgId } = opts.input;
+    const log = opts.ctx.logger.child({
+      function: 'getControlPlanePromptVersions',
+      key,
+      orgId,
+    });
+    log.info({}, 'get prompt versions');
+
+    const latestPrompt = await getPrompt({
+      key,
+      orgId,
+    });
+    if (!latestPrompt) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: `Prompt "${key}" not found`,
+      });
+    }
+
+    const promptHistory = await db.query.ControlPlanePromptCommit.findMany({
+      where: and(
+        eq(ControlPlanePromptCommit.promptId, latestPrompt.promptId),
+        cursor ? lt(ControlPlanePromptCommit.createdAt, cursor) : undefined,
+      ),
+      orderBy: (promptCommit, { asc }) => desc(promptCommit.createdAt),
+      columns: {
+        id: true,
+        createdAt: true,
+        content: true,
+      },
+      limit: limit + 1,
+    });
+
+    // Process the results
+    const hasNext = promptHistory.length > limit;
+    if (hasNext) promptHistory.pop(); // Remove the extra item
+
+    const nextCursor =
+      promptHistory.length > 0
+        ? promptHistory[promptHistory.length - 1].createdAt
+        : null;
+
+    return {
+      items: promptHistory.map(item => ({
+        commitId: item.id,
+        createdAt: item.createdAt,
+        content: item.content,
+      })),
+      nextCursor: hasNext ? nextCursor : null,
+    };
+  });
+
+export const revertControlPlanePromptVersion = protectedProcedure
+  .input(
+    z.object({
+      key: z.string(),
+      commitId: z.string(),
+      orgId: z.string(),
+    }),
+  )
+  .mutation(async opts => {
+    const { key, commitId, orgId } = opts.input;
+    const log = opts.ctx.logger.child({
+      function: 'revertControlPlanePromptVersion',
+      key,
+      orgId,
+    });
+    log.info({}, 'revert prompt version');
+
+    const status = await revertPrompt({
+      key,
+      targetCommitId: commitId,
+      orgId,
+    });
+
+    if (status) {
+      log.info(status, 'reverted prompt version');
+      return {
+        status: 'success',
+      };
+    }
+    log.error({}, 'failed to revert prompt version');
+    throw new TRPCError({
+      code: 'INTERNAL_SERVER_ERROR',
+      message: 'Failed to revert prompt version',
+    });
   });
