@@ -46,7 +46,7 @@
     "discord.js": "^14.21.0",
     "dotenv": "^16.6.1",
     "drizzle-orm": "^0.44.3",
-    "exa-js": "^1.8.23",
+    "exa-js": "^1.8.26",
     "fastify": "5.4.0",
     "fastify-plugin": "^5.0.1",
     "handlebars": "^4.7.8",
