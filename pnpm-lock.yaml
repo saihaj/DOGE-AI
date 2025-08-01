@@ -80,8 +80,8 @@ importers:
         specifier: ^16.6.1
         version: 16.6.1
       drizzle-orm:
-        specifier: ^0.44.3
-        version: 0.44.3(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/pg@8.6.1)(better-sqlite3@11.6.0)(prisma@6.2.1)(sqlite3@5.1.7)
+        specifier: ^0.44.4
+        version: 0.44.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/pg@8.6.1)(better-sqlite3@11.6.0)(prisma@6.2.1)(sqlite3@5.1.7)
       exa-js:
         specifier: ^1.8.26
         version: 1.8.26(encoding@0.1.13)(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))
@@ -576,8 +576,8 @@ importers:
         specifier: ^16.6.1
         version: 16.6.1
       drizzle-orm:
-        specifier: ^0.44.3
-        version: 0.44.3(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/pg@8.6.1)(better-sqlite3@11.6.0)(prisma@6.2.1)(sqlite3@5.1.7)
+        specifier: ^0.44.4
+        version: 0.44.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/pg@8.6.1)(better-sqlite3@11.6.0)(prisma@6.2.1)(sqlite3@5.1.7)
     devDependencies:
       '@types/node':
         specifier: ^22.15.19
@@ -6404,8 +6404,8 @@ packages:
     resolution: {integrity: sha512-tCPWVZWZqWVx2XUsVpJRnH9Mx0ClVOf5YUHerZ5so1OKSlqww4zy1R5ksEdGRcO3tM3zj0PYN6V48TbQCL1RfA==}
     hasBin: true
 
-  drizzle-orm@0.44.3:
-    resolution: {integrity: sha512-8nIiYQxOpgUicEL04YFojJmvC4DNO4KoyXsEIqN44+g6gNBr6hmVpWk3uyAt4CaTiRGDwoU+alfqNNeonLAFOQ==}
+  drizzle-orm@0.44.4:
+    resolution: {integrity: sha512-ZyzKFpTC/Ut3fIqc2c0dPZ6nhchQXriTsqTNs4ayRgl6sZcFlMs9QZKPSHXK4bdOf41GHGWf+FrpcDDYwW+W6Q==}
     peerDependencies:
       '@aws-sdk/client-rds-data': '>=3'
       '@cloudflare/workers-types': '>=4'
@@ -18371,7 +18371,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  drizzle-orm@0.44.3(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/pg@8.6.1)(better-sqlite3@11.6.0)(prisma@6.2.1)(sqlite3@5.1.7):
+  drizzle-orm@0.44.4(@cloudflare/workers-types@4.20240614.0)(@libsql/client@0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))(@opentelemetry/api@1.9.0)(@prisma/client@6.2.1(prisma@6.2.1))(@types/better-sqlite3@7.6.12)(@types/pg@8.6.1)(better-sqlite3@11.6.0)(prisma@6.2.1)(sqlite3@5.1.7):
     optionalDependencies:
       '@cloudflare/workers-types': 4.20240614.0
       '@libsql/client': 0.14.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
@@ -19716,7 +19716,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9)
+      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.1))
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -22031,7 +22031,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9):
+  retry-axios@2.6.0(axios@1.7.9(debug@4.4.1)):
     dependencies:
       axios: 1.7.9(debug@4.4.1)
 
