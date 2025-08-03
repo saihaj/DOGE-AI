@@ -74,6 +74,6 @@
     "drizzle-kit": "^0.31.4",
     "esbuild": "^0.25.8",
     "inngest-cli": "1.11.2",
-    "pino-pretty": "^13.0.0"
+    "pino-pretty": "^13.1.1"
   }
 }
