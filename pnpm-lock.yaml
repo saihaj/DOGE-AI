@@ -171,8 +171,8 @@ importers:
         specifier: ^1.2.12
         version: 1.2.12(react@19.1.1)(zod@3.24.4)
       '@opennextjs/cloudflare':
-        specifier: ^1.6.2
-        version: 1.6.2(encoding@0.1.13)(wrangler@4.26.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+        specifier: ^1.6.3
+        version: 1.6.3(encoding@0.1.13)(wrangler@4.26.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@privy-io/react-auth':
         specifier: ^2.20.0
         version: 2.20.0(@solana/spl-token@0.4.13(@solana/web3.js@1.98.4(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.4(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))(@types/react@19.1.9)(aws4fetch@1.0.20)(bs58@6.0.0)(bufferutil@4.0.9)(ioredis@5.6.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.1.1))(utf-8-validate@5.0.10)(zod@3.24.4)
@@ -3199,12 +3199,12 @@ packages:
     engines: {node: '>=10'}
     deprecated: This functionality has been moved to @npmcli/fs
 
-  '@opennextjs/aws@3.7.1':
-    resolution: {integrity: sha512-ryV5cQucSJDU0TF3+Jzqn9g0/+zhUZgjNopSnchPvH0SxSAbKkNaNH7SlnWBhykjusqHaFzQ8dfEjcjAq7TJSQ==}
+  '@opennextjs/aws@3.7.2':
+    resolution: {integrity: sha512-OITG/97+ugbVI3G36/iYLKbRSyR5rG+Y99dsghSzei08tX2qQoNZ/WXlcPcF3yfKItsNOoRfDLOejeDK0XIPMw==}
     hasBin: true
 
-  '@opennextjs/cloudflare@1.6.2':
-    resolution: {integrity: sha512-N96OTbp1970NwLP6dNkAzBDrxjthLQ3VXHcjKl8edqNbJ/iT75H60ZYHU/ZZ7gSZQeJluPvPb1n0ZPQ08EooCQ==}
+  '@opennextjs/cloudflare@1.6.3':
+    resolution: {integrity: sha512-njP3Dt+RflECy59QaixkQHWhQ2LgNlbv/TC40HmKULo5pRxG1U018ufId61VbE0anxeGFLL7zCsoKojhl7VuqA==}
     hasBin: true
     peerDependencies:
       wrangler: ^4.24.4
@@ -13414,7 +13414,7 @@ snapshots:
       rimraf: 3.0.2
     optional: true
 
-  '@opennextjs/aws@3.7.1':
+  '@opennextjs/aws@3.7.2':
     dependencies:
       '@ast-grep/napi': 0.35.0
       '@aws-sdk/client-cloudfront': 3.398.0
@@ -13437,10 +13437,10 @@ snapshots:
       - aws-crt
       - supports-color
 
-  '@opennextjs/cloudflare@1.6.2(encoding@0.1.13)(wrangler@4.26.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
+  '@opennextjs/cloudflare@1.6.3(encoding@0.1.13)(wrangler@4.26.1(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
       '@dotenvx/dotenvx': 1.31.0
-      '@opennextjs/aws': 3.7.1
+      '@opennextjs/aws': 3.7.2
       cloudflare: 4.5.0(encoding@0.1.13)
       enquirer: 2.4.1
       glob: 11.0.2
@@ -19728,7 +19728,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.1))
+      retry-axios: 2.6.0(axios@1.7.9)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -22038,7 +22038,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9(debug@4.4.1)):
+  retry-axios@2.6.0(axios@1.7.9):
     dependencies:
       axios: 1.7.9(debug@4.4.1)
 
