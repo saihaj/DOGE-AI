@@ -159,8 +159,8 @@ importers:
         specifier: ^0.25.8
         version: 0.25.8
       inngest-cli:
-        specifier: 1.11.2
-        version: 1.11.2(encoding@0.1.13)
+        specifier: 1.11.3
+        version: 1.11.3(encoding@0.1.13)
       pino-pretty:
         specifier: ^13.1.1
         version: 13.1.1
@@ -404,8 +404,8 @@ importers:
         specifier: ^0.25.8
         version: 0.25.8
       inngest-cli:
-        specifier: 1.11.2
-        version: 1.11.2(encoding@0.1.13)
+        specifier: 1.11.3
+        version: 1.11.3(encoding@0.1.13)
 
   dashboard:
     dependencies:
@@ -7493,8 +7493,8 @@ packages:
   inline-style-parser@0.2.4:
     resolution: {integrity: sha512-0aO8FkhNZlj/ZIbNi7Lxxr12obT7cL1moPfE4tg1LkX7LlLfC6DeX4l2ZEud1ukP9jNQyNnfzQVqwbwmAATY4Q==}
 
-  inngest-cli@1.11.2:
-    resolution: {integrity: sha512-ljgUqMPxiljqyU5/JVN31Fxns1QMZyeC6mP6cv5UldrrRDbH+8eljhg8nmk/tQKzczNo5y5lV5v5TC1gwDEyCg==}
+  inngest-cli@1.11.3:
+    resolution: {integrity: sha512-LRxpQq81uRxQ24urAxr+1mC239eu0+XwmrGO4mdILPrfKfbf1Wdqy6l00eJikeDbsLAx5jyf5ruPdrPYgj51Ug==}
     hasBin: true
 
   inngest@3.40.1:
@@ -19763,7 +19763,7 @@ snapshots:
 
   inline-style-parser@0.2.4: {}
 
-  inngest-cli@1.11.2(encoding@0.1.13):
+  inngest-cli@1.11.3(encoding@0.1.13):
     dependencies:
       adm-zip: 0.5.16
       debug: 4.4.1
