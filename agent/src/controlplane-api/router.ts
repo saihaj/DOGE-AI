@@ -3,13 +3,14 @@ import {
   CreatedDatabase,
   createClient as createTursoApiClient,
 } from '@tursodatabase/api';
-import { and, desc, eq, gt, lt } from 'drizzle-orm';
+import { and, asc, desc, eq, gt, isNotNull, lt, sql } from 'drizzle-orm';
 import slugify from 'slugify';
 import { z } from 'zod';
 import {
   IS_PROD,
   TURSO_PLATFORM_API_TOKEN,
   TURSO_PLATFORM_ORG_NAME,
+  VECTOR_SEARCH_MATCH_THRESHOLD,
 } from '../const';
 import { ControlPlaneDbInstance as db } from './db';
 import {
@@ -26,6 +27,15 @@ import {
   revertPrompt,
 } from './prompt-registry';
 import { bento } from '../cache';
+import { createClient } from '@libsql/client';
+import { manualKbDb } from 'database';
+import {
+  generateEmbedding,
+  generateEmbeddings,
+  textSplitter,
+} from '../twitter/helpers';
+import { drizzle } from 'drizzle-orm/libsql';
+import { WithLogger } from '../logger';
 
 const tursoApiClient = createTursoApiClient({
   org: TURSO_PLATFORM_ORG_NAME,
@@ -578,4 +588,237 @@ export const revertControlPlanePromptVersion = protectedProcedure
       code: 'INTERNAL_SERVER_ERROR',
       message: 'Failed to revert prompt version',
     });
+  });
+
+async function getKbDbInstance({
+  orgId,
+  log,
+}: {
+  orgId: string;
+  log: WithLogger;
+}) {
+  const org = await db.query.ControlPlaneOrganization.findFirst({
+    where: eq(ControlPlaneOrganization.id, orgId),
+    columns: {
+      id: true,
+      slug: true,
+    },
+  });
+
+  if (!org) {
+    log.error({}, 'Organization not found');
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: 'Organization not found',
+    });
+  }
+
+  const dbName = `${org.slug}-kb`;
+  const kbDbHostname = await db.query.ControlPlaneOrganizationDb.findFirst({
+    where: and(eq(ControlPlaneOrganizationDb.id, dbName)),
+    columns: {
+      hostname: true,
+    },
+  });
+
+  if (!kbDbHostname) {
+    log.error({}, 'Knowledge base database not found for organization');
+    throw new TRPCError({
+      code: 'NOT_FOUND',
+      message: 'Knowledge base database not found for organization',
+    });
+  }
+
+  const kbDbClient = createClient({
+    url: kbDbHostname.hostname,
+    authToken: '',
+  });
+
+  return drizzle({
+    client: kbDbClient,
+    schema: manualKbDb,
+  });
+}
+
+export const createKbEntry = protectedProcedure
+  .input(
+    z.object({
+      title: z.string(),
+      orgId: z.string(),
+      content: z.string(),
+    }),
+  )
+  .mutation(async opts => {
+    const { title, content, orgId } = opts.input;
+    const log = opts.ctx.logger.child({
+      function: 'createKbEntry',
+      organizationId: orgId,
+    });
+
+    const kbDbInstance = await getKbDbInstance({
+      orgId,
+      log,
+    });
+
+    const source = 'manual' as const;
+    const documentDbEntry = await kbDbInstance
+      .insert(manualKbDb.ManualKbDocument)
+      .values({
+        id: crypto.randomUUID(),
+        title,
+        url: `/${source}/${slugify(title)}`,
+        source,
+        content: Buffer.from(content),
+      })
+      .returning({
+        id: manualKbDb.ManualKbDocument.id,
+      });
+    const [result] = documentDbEntry;
+
+    log.info({ document: result.id }, 'inserted manual kb document');
+
+    const chunks = await textSplitter.splitText(`${title}: ${content}`);
+    const embeddings = await generateEmbeddings(chunks);
+
+    const data = chunks.map((value, index) => ({
+      value,
+      embedding: embeddings[index],
+    }));
+
+    const insertEmbeddings = await kbDbInstance
+      .insert(manualKbDb.ManualKbDocumentVector)
+      .values(
+        data.map(({ value, embedding }) => ({
+          id: crypto.randomUUID(),
+          document: result.id,
+          text: value,
+          source,
+          vector: embedding,
+        })),
+      )
+      .execute();
+
+    log.info(
+      { embeddings: insertEmbeddings.rowsAffected, document: result.id },
+      'inserted embeddings for manual kb document',
+    );
+
+    return {
+      id: result.id,
+    };
+  });
+
+export const getKbEntries = protectedProcedure
+  .input(
+    z.object({
+      cursor: z.string().optional(),
+      limit: z.number(),
+      orgId: z.string(),
+      query: z.string().optional(),
+    }),
+  )
+  .query(async opts => {
+    const { limit, cursor, query, orgId } = opts.input;
+
+    const log = opts.ctx.logger.child({
+      function: 'getKbEntries',
+      organizationId: orgId,
+      query,
+    });
+
+    const kbDbInstance = await getKbDbInstance({
+      orgId,
+      log,
+    });
+    const source = 'manual' as const;
+
+    if (!query) {
+      const documents = await kbDbInstance.query.ManualKbDocument.findMany({
+        where: and(
+          eq(manualKbDb.ManualKbDocument.source, source),
+          cursor
+            ? gt(manualKbDb.ManualKbDocument.createdAt, cursor)
+            : undefined,
+        ),
+        orderBy: (documents, { asc }) => asc(documents.createdAt),
+        limit: limit + 1,
+        columns: {
+          id: true,
+          content: true,
+          title: true,
+          createdAt: true,
+        },
+      });
+
+      // Process the results
+      const hasNext = documents.length > limit;
+      if (hasNext) documents.pop(); // Remove the extra item
+
+      const nextCursor =
+        documents.length > 0 ? documents[documents.length - 1].createdAt : null;
+
+      return {
+        items: documents.map(doc => ({
+          id: doc.id,
+          title: doc.title,
+          // @ts-expect-error ignore type
+          content: Buffer.from(doc.content).toString(),
+        })),
+        nextCursor: hasNext ? nextCursor : null,
+        query: null,
+      };
+    }
+
+    const termEmbedding = await generateEmbedding(query.trim());
+    const termEmbeddingString = JSON.stringify(termEmbedding);
+
+    const documents = await kbDbInstance
+      .select({
+        id: manualKbDb.ManualKbDocument.id,
+        title: manualKbDb.ManualKbDocument.title,
+        content: manualKbDb.ManualKbDocument.content,
+        createdAt: manualKbDb.ManualKbDocument.createdAt,
+      })
+      .from(manualKbDb.ManualKbDocumentVector)
+      .where(
+        and(
+          sql`vector_distance_cos(${manualKbDb.ManualKbDocumentVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
+          isNotNull(manualKbDb.ManualKbDocumentVector.document),
+          eq(manualKbDb.ManualKbDocumentVector.source, source),
+          cursor
+            ? gt(manualKbDb.ManualKbDocument.createdAt, cursor)
+            : undefined,
+        ),
+      )
+      .orderBy(
+        sql`vector_distance_cos(${manualKbDb.ManualKbDocumentVector.vector}, vector32(${termEmbeddingString})) ASC`,
+        asc(manualKbDb.ManualKbDocument.createdAt),
+      )
+      .groupBy(manualKbDb.ManualKbDocumentVector.document)
+      .leftJoin(
+        manualKbDb.ManualKbDocument,
+        eq(
+          manualKbDb.ManualKbDocument.id,
+          manualKbDb.ManualKbDocumentVector.document,
+        ),
+      )
+      .limit(limit + 1);
+
+    // Process the results
+    const hasNext = documents.length > limit;
+    if (hasNext) documents.pop(); // Remove the extra item
+
+    const nextCursor =
+      documents.length > 0 ? documents[documents.length - 1].createdAt : null;
+
+    return {
+      items: documents.map(doc => ({
+        id: doc.id!,
+        title: doc.title!,
+        // @ts-expect-error ignore type
+        content: Buffer.from(doc.content).toString(),
+      })),
+      nextCursor: hasNext ? nextCursor : null,
+      query,
+    };
   });
