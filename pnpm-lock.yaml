@@ -340,8 +340,8 @@ importers:
         specifier: ^1.3.23
         version: 1.3.23(zod@3.24.4)
       '@langchain/community':
-        specifier: ^0.3.49
-        version: 0.3.49(l3zaatagdca6tcwntpip3qrssq)
+        specifier: ^0.3.50
+        version: 0.3.50(l3zaatagdca6tcwntpip3qrssq)
       '@langchain/core':
         specifier: ^0.3.66
         version: 0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4))
@@ -2535,8 +2535,8 @@ packages:
   '@js-sdsl/ordered-map@4.4.2':
     resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
 
-  '@langchain/community@0.3.49':
-    resolution: {integrity: sha512-1AAo9mvr1FmqYHUpXhYI8P4NBPC4t9TfUAuvefEImrtb3gZ60fPelVu17ljWlKJcHC1hPSHYpPJWm0Yx7yRvrw==}
+  '@langchain/community@0.3.50':
+    resolution: {integrity: sha512-3tni++DmYV1Xb4AYZmky4he8lMxrTrkOT+/RSVin5gAwEN5e0QEeNmipWpcKRrmDNUsZZxGdYRPN5Wo23hDqBA==}
     engines: {node: '>=18'}
     peerDependencies:
       '@arcjet/redact': ^v1.0.0-alpha.23
@@ -2583,7 +2583,7 @@ packages:
       '@pinecone-database/pinecone': '*'
       '@planetscale/database': ^1.8.0
       '@premai/prem-sdk': ^0.3.25
-      '@qdrant/js-client-rest': ^1.8.2
+      '@qdrant/js-client-rest': ^1.15.0
       '@raycast/api': ^1.55.2
       '@rockset/client': ^0.9.1
       '@smithy/eventstream-codec': ^2.0.5
@@ -13029,7 +13029,7 @@ snapshots:
 
   '@js-sdsl/ordered-map@4.4.2': {}
 
-  '@langchain/community@0.3.49(l3zaatagdca6tcwntpip3qrssq)':
+  '@langchain/community@0.3.50(l3zaatagdca6tcwntpip3qrssq)':
     dependencies:
       '@browserbasehq/stagehand': 1.11.0(@playwright/test@1.50.1)(bufferutil@4.0.9)(deepmerge@4.3.1)(dotenv@16.6.1)(encoding@0.1.13)(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4))(utf-8-validate@5.0.10)(zod@3.24.4)
       '@ibm-cloud/watsonx-ai': 1.4.0(@langchain/core@0.3.66(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.57.2(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@1.30.1(@opentelemetry/api@1.9.0))(openai@5.3.0(ws@8.18.2(bufferutil@4.0.9)(utf-8-validate@5.0.10))(zod@3.24.4)))
@@ -19710,7 +19710,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.1))
+      retry-axios: 2.6.0(axios@1.7.9)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -22020,7 +22020,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9(debug@4.4.1)):
+  retry-axios@2.6.0(axios@1.7.9):
     dependencies:
       axios: 1.7.9(debug@4.4.1)
 
