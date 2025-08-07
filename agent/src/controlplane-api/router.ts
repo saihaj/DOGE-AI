@@ -19,7 +19,12 @@ import {
   ControlPlanePromptCommit,
 } from './schema';
 import { protectedProcedure, router } from '../trpc';
-import { commitPrompt, getPrompt, revertPrompt } from './prompt-registry';
+import {
+  commitPrompt,
+  getPrompt,
+  initPrompt,
+  revertPrompt,
+} from './prompt-registry';
 import { bento } from '../cache';
 
 const tursoApiClient = createTursoApiClient({
@@ -152,17 +157,17 @@ export const createOrganization = protectedProcedure
     });
     const name = _name.trim();
 
+    const log = ctx.logger.child({
+      function: 'createOrganization',
+      slug,
+    });
+
     const existingOrg = await db.query.ControlPlaneOrganization.findFirst({
       where: eq(ControlPlaneOrganization.slug, slug),
     });
 
     if (existingOrg) {
-      ctx.logger.error(
-        {
-          slug,
-        },
-        'Organization already exists',
-      );
+      log.error({}, 'Organization already exists');
       throw new TRPCError({
         code: 'CONFLICT',
         message: `Organization with slug "${slug}" already exists`,
@@ -183,12 +188,7 @@ export const createOrganization = protectedProcedure
       .returning();
 
     if (newOrg.length === 0) {
-      ctx.logger.error(
-        {
-          slug,
-        },
-        'Failed to create organization',
-      );
+      log.error({}, 'Failed to create organization');
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Failed to create organization',
@@ -196,26 +196,56 @@ export const createOrganization = protectedProcedure
     }
 
     const org = newOrg[0];
-    ctx.logger.info(
+    log.info(
       {
-        slug,
         organizationId: org.id,
       },
       'Organization created successfully',
     );
 
-    const [knowledgebase, actions] = await Promise.all([
-      createTursoDbInstance({
-        orgSlug: org.slug,
-        orgId: org.id,
-        type: 'kb',
-      }),
-      createTursoDbInstance({
-        orgSlug: org.slug,
-        orgId: org.id,
-        type: 'actions',
-      }),
-    ]);
+    // NOTE we are doing everything sequentially here because SQLite gets stuck with too many concurrent writes.
+
+    const knowledgebase = await createTursoDbInstance({
+      orgSlug: org.slug,
+      orgId: org.id,
+      type: 'kb',
+    });
+    log.info(
+      {
+        dbUrl: knowledgebase.hostname,
+      },
+      'Knowledge Base DB created',
+    );
+
+    const actions = await createTursoDbInstance({
+      orgSlug: org.slug,
+      orgId: org.id,
+      type: 'actions',
+    });
+    log.info(
+      {
+        dbUrl: actions.hostname,
+      },
+      'Actions DB created',
+    );
+
+    log.info({}, 'setting up agent prompts');
+    await initPrompt({
+      orgId: org.id,
+      key: 'TWITTER_REPLY_USING_KB',
+      value: '',
+    });
+    await initPrompt({
+      orgId: org.id,
+      key: 'REPLY_AS',
+      value: '',
+    });
+    await initPrompt({
+      orgId: org.id,
+      key: 'ENGAGE_DECISION_PROMPT',
+      value: '',
+    });
+    log.info({}, 'agent prompts setup complete');
 
     return {
       name: org.name,
