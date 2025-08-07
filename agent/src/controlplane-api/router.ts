@@ -1,9 +1,16 @@
 import { TRPCError } from '@trpc/server';
-import { createClient as createTursoApiClient } from '@tursodatabase/api';
+import {
+  CreatedDatabase,
+  createClient as createTursoApiClient,
+} from '@tursodatabase/api';
 import { and, desc, eq, gt, lt } from 'drizzle-orm';
 import slugify from 'slugify';
 import { z } from 'zod';
-import { TURSO_PLATFORM_API_TOKEN, TURSO_PLATFORM_ORG_NAME } from '../const';
+import {
+  IS_PROD,
+  TURSO_PLATFORM_API_TOKEN,
+  TURSO_PLATFORM_ORG_NAME,
+} from '../const';
 import { ControlPlaneDbInstance as db } from './db';
 import {
   ControlPlaneOrganization,
@@ -31,13 +38,19 @@ async function createTursoDbInstance({
 }) {
   const id = `${orgSlug}-${type}`;
   const instanceName = `${orgSlug.substring(0, 40)}-${type}`;
-  const tursoInstance = await tursoApiClient.databases.create(instanceName, {
-    group: 'rhetor-useast',
-    seed: {
-      type: 'database',
-      name: `${type}base`,
-    },
-  });
+  const tursoInstance = IS_PROD
+    ? await tursoApiClient.databases.create(instanceName, {
+        group: 'rhetor-useast',
+        seed: {
+          type: 'database',
+          name: `${type}base`,
+        },
+      })
+    : await Promise.resolve<CreatedDatabase>({
+        hostname: 'localhost',
+        name: instanceName,
+        id: 'local-dev-id',
+      });
 
   const dbInsert = await db
     .insert(ControlPlaneOrganizationDb)
