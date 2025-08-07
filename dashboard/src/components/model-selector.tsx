@@ -65,6 +65,14 @@ const models = [
     label: 'Llama 4 Scout',
   },
   {
+    value: 'gpt-oss-120b',
+    label: 'GPT OSS (120B)',
+  },
+  {
+    value: 'gpt-oss-20b',
+    label: 'GPT OSS (20B)',
+  },
+  {
     value: 'o3-mini',
     label: 'o3 Mini',
   },

@@ -20,6 +20,6 @@
   "dependencies": {
     "@libsql/client": "^0.14.0",
     "dotenv": "^16.6.1",
-    "drizzle-orm": "^0.44.3"
+    "drizzle-orm": "^0.44.4"
   }
 }

@@ -39,6 +39,8 @@ export const myProvider = customProvider({
     'gpt-4.1-nano': openai('gpt-4.1-nano'),
     'o3-mini': openai('o3-mini'),
     'o4-mini': openai('o4-mini'),
+    'gpt-oss-120b': openrouter.chat('openai/gpt-oss-120b'),
+    'gpt-oss-20b': openrouter.chat('openai/gpt-oss-20b'),
     'claude-3-5-sonnet-latest': anthropic('claude-3-5-sonnet-latest'),
     'claude-3-5-haiku-latest': anthropic('claude-3-5-haiku-latest'),
     'moonshotai/kimi-k2': openrouter.chat('moonshotai/kimi-k2'),
