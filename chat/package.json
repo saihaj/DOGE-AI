@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@ai-sdk/react": "^1.2.12",
-    "@opennextjs/cloudflare": "^1.6.3",
+    "@opennextjs/cloudflare": "^1.6.5",
     "@privy-io/react-auth": "^2.21.1",
     "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-dialog": "^1.1.14",
