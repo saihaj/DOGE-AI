@@ -1,39 +1,38 @@
 'use client';
 import type React from 'react';
 
-import { useChat, type Message, type UseChatHelpers } from 'ai/react';
-import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
+import { CopyButton } from '@/components/copy-button';
+import { Header } from '@/components/header';
+import { Markdown } from '@/components/markdown';
+import { ModelSelector, type ModelValues } from '@/components/model-selector';
+import { useSelectedOrg } from '@/components/org-selector';
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { ArrowUp, Loader2, Square, Trash2Icon } from 'lucide-react';
-import { ModelSelector, type ModelValues } from '@/components/model-selector';
-import { Logo } from '@/components/logo';
-import { CopyButton } from '@/components/copy-button';
-import { Markdown } from '@/components/markdown';
-import { useLocalStorage } from '@uidotdev/usehooks';
-import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
-import { Header } from '@/components/header';
-import { toast } from 'sonner';
-import { useEffect, useMemo, useRef } from 'react';
-import { Drawer } from 'vaul';
-import { useCookie } from '@/hooks/use-cookie';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   PromptInput,
   PromptInputAction,
   PromptInputActions,
   PromptInputTextarea,
 } from '@/components/ui/prompt-input';
-import { TypeSelector } from '../manual-kb/type-selector';
-import { createAvatar } from '@dicebear/core';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
+import { useCookie } from '@/hooks/use-cookie';
+import { API_URL, CF_BACKEND_HEADER_NAME, CF_COOKIE_NAME } from '@/lib/const';
+import { cn } from '@/lib/utils';
 import { glass } from '@dicebear/collection';
+import { createAvatar } from '@dicebear/core';
+import { useLocalStorage } from '@uidotdev/usehooks';
+import { useChat, type Message, type UseChatHelpers } from 'ai/react';
+import { ArrowUp, Loader2, Square, Trash2Icon } from 'lucide-react';
+import { useEffect, useMemo, useRef } from 'react';
+import { toast } from 'sonner';
+import { Drawer } from 'vaul';
 
 interface MessageWithMeta extends Message {
   sources?: string[];
@@ -204,6 +203,8 @@ export function UserChat() {
   const [kb, setKbType] = useLocalStorage<
     'agent' | 'chat' | 'custom1' | 'custom2' | 'custom3'
   >('userChatSelectedKb', 'chat');
+  const { selectedOrg } = useSelectedOrg();
+
   const [systemPrompt, setSystemPrompt] = useLocalStorage(
     'userChatSystemPrompt',
     PLACEHOLDER_PROMPT,
@@ -237,7 +238,7 @@ export function UserChat() {
     api: `${API_URL}/api/userchat`,
     body: {
       selectedChatModel: model,
-      selectedKb: kb,
+      selectedOrgId: selectedOrg?.id,
     },
     headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
     onError: error => {
@@ -356,10 +357,8 @@ export function UserChat() {
 
   const avatarSvg = (() =>
     createAvatar(glass, {
-      seed: kb,
+      seed: selectedOrg?.id,
     }).toString())();
-
-  const isDogeAiKb = kb === 'agent' || kb === 'chat';
 
   return (
     <div className="flex-1 flex flex-col print:block print:overflow-visible print:h-auto">
@@ -367,7 +366,6 @@ export function UserChat() {
         className="print:hidden"
         right={
           <div className="flex gap-2">
-            <TypeSelector value={kb} setValue={setKbType} />
             <ModelSelector value={model} setValue={setModel} />
             <Button
               variant="outline"
@@ -454,16 +452,12 @@ export function UserChat() {
                         {message.role === 'assistant' && (
                           <>
                             <span>
-                              {isDogeAiKb ? (
-                                <Logo className="h-[30px] w-[30px] rounded-full overflow-hidden" />
-                              ) : (
-                                <div
-                                  className="h-[30px] w-[30px] rounded-full overflow-hidden"
-                                  dangerouslySetInnerHTML={{
-                                    __html: avatarSvg,
-                                  }}
-                                />
-                              )}
+                              <div
+                                className="h-[30px] w-[30px] rounded-full overflow-hidden"
+                                dangerouslySetInnerHTML={{
+                                  __html: avatarSvg,
+                                }}
+                              />
                               {message.hasKbAnnotation && (
                                 <Badge
                                   className="bg-green-500"
@@ -644,16 +638,12 @@ export function UserChat() {
                   >
                     <div className="flex gap-2">
                       <span>
-                        {isDogeAiKb ? (
-                          <Logo className="h-[30px] w-[30px] rounded-full overflow-hidden" />
-                        ) : (
-                          <div
-                            className="h-[30px] w-[30px] rounded-full overflow-hidden"
-                            dangerouslySetInnerHTML={{
-                              __html: avatarSvg,
-                            }}
-                          />
-                        )}
+                        <div
+                          className="h-[30px] w-[30px] rounded-full overflow-hidden"
+                          dangerouslySetInnerHTML={{
+                            __html: avatarSvg,
+                          }}
+                        />
                       </span>
                       <div className="bg-secondary/20 animate-pulse rounded-md flex">
                         <div className="flex items-center justify-center gap-2">

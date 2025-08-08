@@ -438,7 +438,9 @@ fastify.route<{ Body: UserChatStreamInput }>({
           messages: [...messages.filter(m => m.role !== 'system')],
           // latest message
           text: messages[messages.length - 1].content.toString(),
-          manualEntries: 'chat',
+          manualEntries: {
+            orgId: '2f18a8c5-331f-41da-8fcb-2b82eefebcb0',
+          },
           billEntries: false,
           documentEntries: false,
         },
@@ -704,7 +706,8 @@ fastify.route<{ Body: ChatDemoStreamInput }>({
         {
           messages: convoHistory,
           text: latestMessage.content.toString(),
-          manualEntries: selectedKb,
+          // TODO: Make this dynamic
+          manualEntries: false,
           billEntries: false,
           documentEntries: false,
           openaiApiKey: OPENAI_API_KEY,

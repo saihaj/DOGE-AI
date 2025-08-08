@@ -1,36 +1,37 @@
+import { createOpenAI } from '@ai-sdk/openai';
 import { CoreMessage, generateObject, generateText, tool } from 'ai';
-import { WithLogger } from '../logger';
-import { generateEmbedding } from './helpers';
 import {
   and,
+  bill as billDbSchema,
   billVector,
   db,
+  desc,
   document,
   eq,
-  isNotNull,
-  sql,
-  bill as billDbSchema,
   inArray,
-  desc,
+  isNotNull,
+  manualKbDb,
+  sql,
 } from 'database';
-import { createOpenAI } from '@ai-sdk/openai';
+import pMap from 'p-map';
+import { z } from 'zod';
 import {
   ACTIVE_CONGRESS,
+  CONTROL_PLANE_KB_SOURCE,
   LARGE_BILL_LENGTH_THRESHOLD,
-  MANUAL_KB_AGENT_SOURCE,
-  MANUAL_KB_CHAT_SOURCE,
   REJECTION_REASON,
   SEED,
   TEMPERATURE,
   VECTOR_SEARCH_MATCH_THRESHOLD,
   WEB_SOURCE,
 } from '../const';
+import { getKbDbInstance } from '../controlplane-api/utils';
+import { WithLogger } from '../logger';
+import { generateEmbedding } from './helpers';
 import {
   BILL_RELATED_TO_TWEET_PROMPT,
   DOCUMENT_RELATED_TO_TWEET_PROMPT,
 } from './prompts';
-import { z } from 'zod';
-import pMap from 'p-map';
 
 /**
  * Given a thread and the extracted question, it will return documents that are related to the tweet.
@@ -38,49 +39,33 @@ import pMap from 'p-map';
 async function getManualKbDocuments(
   {
     termEmbeddingString,
-    kbSourceType,
+    dbInstance,
   }: {
     termEmbeddingString: string;
-    kbSourceType: 'agent' | 'chat' | 'custom1' | 'custom2' | 'custom3';
+    dbInstance: Awaited<ReturnType<typeof getKbDbInstance>>;
   },
   logger: WithLogger,
 ) {
   const log = logger.child({
     method: 'getManualKbDocuments',
-    kbSourceType,
   });
   const LIMIT = 5;
 
-  const source = (() => {
-    switch (kbSourceType) {
-      case 'agent':
-        return MANUAL_KB_AGENT_SOURCE;
-      case 'chat':
-        return MANUAL_KB_CHAT_SOURCE;
-      case 'custom1':
-      case 'custom2':
-      case 'custom3':
-        return `manual-kb-${kbSourceType}` as const;
-      default:
-        throw new Error('Invalid type');
-    }
-  })();
-
-  const embeddingsQuery = await db
+  const embeddingsQuery = await dbInstance
     .select({
-      documentId: billVector.document,
-      distance: sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString}))`,
+      documentId: manualKbDb.ManualKbDocumentVector.document,
+      distance: sql`vector_distance_cos(${manualKbDb.ManualKbDocumentVector.vector}, vector32(${termEmbeddingString}))`,
     })
-    .from(billVector)
+    .from(manualKbDb.ManualKbDocumentVector)
     .where(
       and(
-        sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
-        isNotNull(billVector.document),
-        eq(billVector.source, source),
+        sql`vector_distance_cos(${manualKbDb.ManualKbDocumentVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
+        isNotNull(manualKbDb.ManualKbDocumentVector.document),
+        eq(manualKbDb.ManualKbDocumentVector.source, CONTROL_PLANE_KB_SOURCE),
       ),
     )
     .orderBy(
-      sql`vector_distance_cos(${billVector.vector}, vector32(${termEmbeddingString})) ASC`,
+      sql`vector_distance_cos(${manualKbDb.ManualKbDocumentVector.vector}, vector32(${termEmbeddingString})) ASC`,
     )
     .limit(LIMIT);
 
@@ -755,7 +740,11 @@ export async function getKbContext(
     messages: CoreMessage[];
     text: string;
     /** Should we search for manual entries from Web UI? */
-    manualEntries: false | 'agent' | 'chat' | 'custom1' | 'custom2' | 'custom3';
+    manualEntries:
+      | {
+          orgId: string;
+        }
+      | false;
     /** Should we search for web pages scraped? */
     documentEntries: boolean;
     /** Should we search for bills scraped? */
@@ -768,10 +757,16 @@ export async function getKbContext(
   const termEmbeddingString = JSON.stringify(termEmbedding);
 
   const manual = manualEntries
-    ? await getManualKbDocuments(
-        { termEmbeddingString, kbSourceType: manualEntries },
-        logger,
-      ).catch(_ => null)
+    ? await (async () => {
+        const dbInstance = await getKbDbInstance({
+          orgId: manualEntries.orgId,
+          log: logger,
+        });
+        return getManualKbDocuments(
+          { termEmbeddingString, dbInstance },
+          logger,
+        ).catch(_ => null);
+      })()
     : null;
   const documents = documentEntries
     ? await getDocumentContext(

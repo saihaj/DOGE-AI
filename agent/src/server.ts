@@ -282,13 +282,13 @@ fastify.route<{ Body: ChatStreamInput }>({
       manualKbSearch,
       webSearch,
       messages,
-      selectedKb,
+      selectedOrgId,
       selectedChatModel,
     } = request.body as {
       documentSearch: boolean;
       manualKbSearch: boolean;
       webSearch: boolean;
-      selectedKb: 'custom1' | 'custom2' | 'custom3' | 'chat' | 'agent';
+      selectedOrgId: string;
       billSearch: boolean;
       messages: CoreMessage[];
       selectedChatModel: string;
@@ -301,7 +301,7 @@ fastify.route<{ Body: ChatStreamInput }>({
 
     const userMessageText = userMessage.content.toString();
 
-    log.info({ text: userMessageText, selectedKb }, 'User message');
+    log.info({ text: userMessageText, selectedOrgId }, 'User message');
 
     // Listen for the client disconnecting (abort)
     request.raw.on('close', () => {
@@ -339,7 +339,7 @@ fastify.route<{ Body: ChatStreamInput }>({
           {
             messages: convoHistory,
             text: latestMessage.content.toString(),
-            manualEntries: manualKbSearch ? selectedKb : false,
+            manualEntries: manualKbSearch ? { orgId: selectedOrgId } : false,
             billEntries: billSearch,
             documentEntries: documentSearch,
             openaiApiKey: OPENAI_API_KEY,
@@ -498,9 +498,9 @@ fastify.route<{ Body: UserChatStreamInput }>({
     });
     // Create an AbortController for the backend
     const abortController = new AbortController();
-    let { messages, selectedChatModel, selectedKb } = request.body as {
+    let { messages, selectedChatModel, selectedOrgId } = request.body as {
       messages: CoreMessage[];
-      selectedKb: 'custom2' | 'custom1' | 'custom3' | 'chat' | 'agent';
+      selectedOrgId: string;
       selectedChatModel: string;
     };
     const userMessage = messages[messages.length - 1];
@@ -544,7 +544,11 @@ fastify.route<{ Body: UserChatStreamInput }>({
           messages,
           // latest message
           text: messages[messages.length - 1].content.toString(),
-          manualEntries: selectedKb,
+          manualEntries: selectedOrgId
+            ? {
+                orgId: selectedOrgId,
+              }
+            : false,
           billEntries: false,
           documentEntries: false,
           openaiApiKey: OPENAI_API_KEY,

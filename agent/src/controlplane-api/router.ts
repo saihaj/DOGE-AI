@@ -3,40 +3,38 @@ import {
   CreatedDatabase,
   createClient as createTursoApiClient,
 } from '@tursodatabase/api';
+import { manualKbDb } from 'database';
 import { and, asc, desc, eq, gt, isNotNull, lt, sql } from 'drizzle-orm';
 import slugify from 'slugify';
 import { z } from 'zod';
+import { bento } from '../cache';
 import {
+  CONTROL_PLANE_KB_SOURCE,
   IS_PROD,
-  TURSO_GROUP_AUTH_TOKEN,
   TURSO_PLATFORM_API_TOKEN,
   TURSO_PLATFORM_ORG_NAME,
   VECTOR_SEARCH_MATCH_THRESHOLD,
 } from '../const';
-import { ControlPlaneDbInstance as db } from './db';
+import { protectedProcedure } from '../trpc';
 import {
-  ControlPlaneOrganization,
-  ControlPlaneOrganizationDb,
-  ControlPlanePrompt,
-  ControlPlanePromptCommit,
-} from './schema';
-import { protectedProcedure, router } from '../trpc';
+  generateEmbedding,
+  generateEmbeddings,
+  textSplitter,
+} from '../twitter/helpers';
+import { ControlPlaneDbInstance as db } from './db';
 import {
   commitPrompt,
   getPrompt,
   initPrompt,
   revertPrompt,
 } from './prompt-registry';
-import { bento } from '../cache';
-import { createClient } from '@libsql/client';
-import { manualKbDb } from 'database';
 import {
-  generateEmbedding,
-  generateEmbeddings,
-  textSplitter,
-} from '../twitter/helpers';
-import { drizzle } from 'drizzle-orm/libsql';
-import { WithLogger } from '../logger';
+  ControlPlaneOrganization,
+  ControlPlaneOrganizationDb,
+  ControlPlanePrompt,
+  ControlPlanePromptCommit,
+} from './schema';
+import { getKbDbInstance } from './utils';
 
 const tursoApiClient = createTursoApiClient({
   org: TURSO_PLATFORM_ORG_NAME,
@@ -591,77 +589,6 @@ export const revertControlPlanePromptVersion = protectedProcedure
     });
   });
 
-async function getKbDbInstance({
-  orgId,
-  log,
-}: {
-  orgId: string;
-  log: WithLogger;
-}) {
-  const org = await bento.getOrSet(
-    `getKbInstance-${orgId}`,
-    async () => {
-      const o = await db.query.ControlPlaneOrganization.findFirst({
-        where: eq(ControlPlaneOrganization.id, orgId),
-        columns: {
-          id: true,
-          slug: true,
-        },
-      });
-
-      if (!o) {
-        log.error({}, 'Organization not found');
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Organization not found',
-        });
-      }
-
-      return o;
-    },
-    { ttl: '1d' },
-  );
-
-  const dbName = `${org.slug}-kb`;
-
-  const kbDbHostname = await bento.getOrSet(
-    `kbDbHostname-${orgId}`,
-    async () => {
-      const k = await db.query.ControlPlaneOrganizationDb.findFirst({
-        where: and(eq(ControlPlaneOrganizationDb.id, dbName)),
-        columns: {
-          hostname: true,
-        },
-      });
-
-      if (!k) {
-        log.error({}, 'Knowledge base database not found for organization');
-        throw new TRPCError({
-          code: 'NOT_FOUND',
-          message: 'Knowledge base database not found for organization',
-        });
-      }
-
-      return k;
-    },
-    { ttl: '1d' },
-  );
-
-  const kbDbClient = createClient({
-    url: IS_PROD
-      ? `libsql://${kbDbHostname.hostname}`
-      : `file:./${kbDbHostname.hostname}`,
-    authToken: TURSO_GROUP_AUTH_TOKEN,
-  });
-
-  return drizzle({
-    client: kbDbClient,
-    schema: manualKbDb,
-  });
-}
-
-const source = 'manual-agent' as const;
-
 export const createControlPlaneKbEntry = protectedProcedure
   .input(
     z.object({
@@ -687,8 +614,8 @@ export const createControlPlaneKbEntry = protectedProcedure
       .values({
         id: crypto.randomUUID(),
         title,
-        url: `/${source}/${slugify(title)}`,
-        source,
+        url: `/${CONTROL_PLANE_KB_SOURCE}/${slugify(title)}`,
+        source: CONTROL_PLANE_KB_SOURCE,
         content: Buffer.from(content),
       })
       .returning({
@@ -713,7 +640,7 @@ export const createControlPlaneKbEntry = protectedProcedure
           id: crypto.randomUUID(),
           document: result.id,
           text: value,
-          source,
+          source: CONTROL_PLANE_KB_SOURCE,
           vector: embedding,
         })),
       )
@@ -755,7 +682,7 @@ export const getControlPlaneKbEntries = protectedProcedure
     if (!query) {
       const documents = await kbDbInstance.query.ManualKbDocument.findMany({
         where: and(
-          eq(manualKbDb.ManualKbDocument.source, source),
+          eq(manualKbDb.ManualKbDocument.source, CONTROL_PLANE_KB_SOURCE),
           cursor
             ? gt(manualKbDb.ManualKbDocument.createdAt, cursor)
             : undefined,
@@ -804,7 +731,7 @@ export const getControlPlaneKbEntries = protectedProcedure
         and(
           sql`vector_distance_cos(${manualKbDb.ManualKbDocumentVector.vector}, vector32(${termEmbeddingString})) < ${VECTOR_SEARCH_MATCH_THRESHOLD}`,
           isNotNull(manualKbDb.ManualKbDocumentVector.document),
-          eq(manualKbDb.ManualKbDocumentVector.source, source),
+          eq(manualKbDb.ManualKbDocumentVector.source, CONTROL_PLANE_KB_SOURCE),
           cursor
             ? gt(manualKbDb.ManualKbDocument.createdAt, cursor)
             : undefined,
@@ -870,7 +797,7 @@ export const editControlPlaneKbEntry = protectedProcedure
     const doc = await kbDbInstance.query.ManualKbDocument.findFirst({
       where: and(
         eq(manualKbDb.ManualKbDocument.id, id),
-        eq(manualKbDb.ManualKbDocument.source, source),
+        eq(manualKbDb.ManualKbDocument.source, CONTROL_PLANE_KB_SOURCE),
       ),
       columns: {
         id: true,
@@ -920,7 +847,7 @@ export const editControlPlaneKbEntry = protectedProcedure
           id: crypto.randomUUID(),
           document: doc.id,
           text: value,
-          source,
+          source: CONTROL_PLANE_KB_SOURCE,
           vector: embedding,
         })),
       )
@@ -963,7 +890,7 @@ export const deleteControlPlaneKbEntry = protectedProcedure
       .where(
         and(
           eq(manualKbDb.ManualKbDocument.id, id),
-          eq(manualKbDb.ManualKbDocument.source, source),
+          eq(manualKbDb.ManualKbDocument.source, CONTROL_PLANE_KB_SOURCE),
         ),
       )
       .execute();
