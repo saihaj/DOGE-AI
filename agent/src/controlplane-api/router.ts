@@ -62,7 +62,7 @@ async function createTursoDbInstance({
         },
       })
     : await Promise.resolve<CreatedDatabase>({
-        hostname: 'localhost',
+        hostname: `file:./local-${type}.db`,
         name: instanceName,
         id: 'local-dev-id',
       });
@@ -640,7 +640,9 @@ async function getKbDbInstance({
   });
 }
 
-export const createKbEntry = protectedProcedure
+const source = 'manual' as const;
+
+export const createControlPlaneKbEntry = protectedProcedure
   .input(
     z.object({
       title: z.string(),
@@ -660,7 +662,6 @@ export const createKbEntry = protectedProcedure
       log,
     });
 
-    const source = 'manual' as const;
     const documentDbEntry = await kbDbInstance
       .insert(manualKbDb.ManualKbDocument)
       .values({
@@ -708,7 +709,7 @@ export const createKbEntry = protectedProcedure
     };
   });
 
-export const getKbEntries = protectedProcedure
+export const getControlPlaneKbEntries = protectedProcedure
   .input(
     z.object({
       cursor: z.string().optional(),
@@ -730,7 +731,6 @@ export const getKbEntries = protectedProcedure
       orgId,
       log,
     });
-    const source = 'manual' as const;
 
     if (!query) {
       const documents = await kbDbInstance.query.ManualKbDocument.findMany({
@@ -820,5 +820,140 @@ export const getKbEntries = protectedProcedure
       })),
       nextCursor: hasNext ? nextCursor : null,
       query,
+    };
+  });
+
+export const editControlPlaneKbEntry = protectedProcedure
+  .input(
+    z.object({
+      id: z.string().uuid(),
+      title: z.string(),
+      content: z.string(),
+      orgId: z.string(),
+    }),
+  )
+  .mutation(async opts => {
+    const { id, title, content, orgId } = opts.input;
+
+    const log = opts.ctx.logger.child({
+      function: 'editKbEntry',
+      organizationId: orgId,
+      document: id,
+    });
+
+    const kbDbInstance = await getKbDbInstance({
+      orgId,
+      log,
+    });
+
+    // search for the document
+    const doc = await kbDbInstance.query.ManualKbDocument.findFirst({
+      where: and(
+        eq(manualKbDb.ManualKbDocument.id, id),
+        eq(manualKbDb.ManualKbDocument.source, source),
+      ),
+      columns: {
+        id: true,
+      },
+    });
+
+    if (!doc) {
+      log.error({}, 'document not found');
+      throw new Error('Document not found');
+    }
+
+    // remove old embeddings
+    log.info({}, 'removing old vector embeddings');
+    const removeOldEmbeddings = await kbDbInstance
+      .delete(manualKbDb.ManualKbDocumentVector)
+      .where(eq(manualKbDb.ManualKbDocumentVector.document, doc.id))
+      .execute();
+    log.info(
+      { count: removeOldEmbeddings.rowsAffected },
+      'removed old vector embeddings',
+    );
+
+    // update existing document
+    log.info({}, 'updating document');
+    const doucumentUpdate = await kbDbInstance
+      .update(manualKbDb.ManualKbDocument)
+      .set({
+        title,
+        content: Buffer.from(content),
+      })
+      .where(eq(manualKbDb.ManualKbDocument.id, doc.id))
+      .execute();
+    log.info({ count: doucumentUpdate.rowsAffected }, 'updated document');
+
+    const chunks = await textSplitter.splitText(`${title}: ${content}`);
+    const embeddings = await generateEmbeddings(chunks);
+
+    const data = chunks.map((value, index) => ({
+      value,
+      embedding: embeddings[index],
+    }));
+
+    const insertEmbeddings = await kbDbInstance
+      .insert(manualKbDb.ManualKbDocumentVector)
+      .values(
+        data.map(({ value, embedding }) => ({
+          id: crypto.randomUUID(),
+          document: doc.id,
+          text: value,
+          source,
+          vector: embedding,
+        })),
+      )
+      .execute();
+
+    log.info(
+      { count: insertEmbeddings.rowsAffected },
+      'inserted embeddings for manual kb document',
+    );
+
+    return {
+      id,
+    };
+  });
+
+export const deleteControlPlaneKbEntry = protectedProcedure
+  .input(
+    z.object({
+      id: z.string().uuid(),
+      orgId: z.string(),
+    }),
+  )
+  .mutation(async opts => {
+    const { id, orgId } = opts.input;
+
+    const log = opts.ctx.logger.child({
+      function: 'deleteKbEntry',
+      organizationId: orgId,
+      document: id,
+    });
+
+    const kbDbInstance = await getKbDbInstance({
+      orgId,
+      log,
+    });
+
+    log.info({}, 'deleting manual kb document');
+    const documents = await kbDbInstance
+      .delete(manualKbDb.ManualKbDocument)
+      .where(
+        and(
+          eq(manualKbDb.ManualKbDocument.id, id),
+          eq(manualKbDb.ManualKbDocument.source, source),
+        ),
+      )
+      .execute();
+
+    log.info(
+      { documents: documents.rowsAffected },
+      'deleted manual kb document',
+    );
+
+    return {
+      rowsAffected: documents.rowsAffected,
     };
   });

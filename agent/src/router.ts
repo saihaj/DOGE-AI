@@ -5,7 +5,11 @@ import {
   getKbEntries,
 } from './api/manual-kb';
 import {
+  createControlPlaneKbEntry,
   createOrganization,
+  deleteControlPlaneKbEntry,
+  editControlPlaneKbEntry,
+  getControlPlaneKbEntries,
   getControlPlanePromptByKey,
   getControlPlanePromptKeys,
   getControlPlanePromptVersions,
@@ -29,6 +33,10 @@ export const appRouter = router({
   updateControlPlanePromptByKey,
   getControlPlanePromptVersions,
   revertControlPlanePromptVersion,
+  getControlPlaneKbEntries,
+  createControlPlaneKbEntry,
+  editControlPlaneKbEntry,
+  deleteControlPlaneKbEntry,
 });
 
 export type AppRouter = typeof appRouter;
