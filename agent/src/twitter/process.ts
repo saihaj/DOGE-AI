@@ -8,13 +8,13 @@ import {
   TEMPERATURE,
   TWITTER_USERNAME,
 } from '../const';
+import { getPromptContent } from '../controlplane-api/prompt-registry.ts';
 import { rejectedTweet, reportFailureToDiscord } from '../discord/action.ts';
 import { inngest } from '../inngest';
 import { logger } from '../logger.ts';
 import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
 import { getTweetContext } from './execute.ts';
 import { getTweet, getTweetContentAsText } from './helpers.ts';
-import { PROMPTS } from './prompts.ts';
 
 const DO_NOT_ENGAGE_USERNAMES = [
   // Do not engage with any of my tweets
@@ -103,7 +103,10 @@ export const processTweets = inngest.createFunction(
       }
     }
 
-    const engagementSysPrompt = await PROMPTS.ENGAGEMENT_DECISION_PROMPT();
+    const engagementSysPrompt = await getPromptContent({
+      key: 'ENGAGEMENT_DECISION_PROMPT',
+      orgId: '43e671ed-a66c-4c40-b461-6d5c18f0effb',
+    });
 
     /**
      * grab any tags to the bot

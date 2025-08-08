@@ -1,3 +1,15 @@
+import { openai } from '@ai-sdk/openai';
+import { perplexity } from '@ai-sdk/perplexity';
+import { CoreMessage, generateText } from 'ai';
+import {
+  chat as chatDbSchema,
+  db,
+  eq,
+  message as messageDbSchema,
+} from 'database';
+import Handlebars from 'handlebars';
+import { NonRetriableError } from 'inngest';
+import * as crypto from 'node:crypto';
 import {
   DISCORD_APPROVED_CHANNEL_ID,
   DISCORD_REJECTED_CHANNEL_ID,
@@ -6,8 +18,22 @@ import {
   REJECTION_REASON,
   TEMPERATURE,
 } from '../const';
+import { getPromptContent } from '../controlplane-api/prompt-registry.ts';
+import {
+  approvedTweetEngagement,
+  rejectedTweet,
+  reportFailureToDiscord,
+  sendDevTweet,
+} from '../discord/action.ts';
 import { inngest } from '../inngest';
-import { NonRetriableError } from 'inngest';
+import { logger, WithLogger } from '../logger.ts';
+import {
+  tweetProcessingTime,
+  tweetPublishFailed,
+  tweetsProcessingRejected,
+  tweetsPublished,
+} from '../prom.ts';
+import { twitterClient } from './client.ts';
 import {
   getTimeInSecondsElapsedSinceTweetCreated,
   getTweet,
@@ -19,32 +45,7 @@ import {
   upsertChat,
   upsertUser,
 } from './helpers.ts';
-import { CoreMessage, generateText } from 'ai';
-import * as crypto from 'node:crypto';
-import { openai } from '@ai-sdk/openai';
-import { PROMPTS } from './prompts';
-import {
-  db,
-  eq,
-  message as messageDbSchema,
-  chat as chatDbSchema,
-} from 'database';
-import {
-  approvedTweetEngagement,
-  rejectedTweet,
-  reportFailureToDiscord,
-  sendDevTweet,
-} from '../discord/action.ts';
-import { twitterClient } from './client.ts';
-import { logger, WithLogger } from '../logger.ts';
-import { perplexity } from '@ai-sdk/perplexity';
 import { getKbContext } from './knowledge-base.ts';
-import {
-  tweetProcessingTime,
-  tweetPublishFailed,
-  tweetsProcessingRejected,
-  tweetsPublished,
-} from '../prom.ts';
 
 export async function generateReply(
   {
@@ -58,7 +59,10 @@ export async function generateReply(
 ) {
   const mergedMessages = mergeConsecutiveSameRole(messages);
   if (!systemPrompt) {
-    systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE();
+    systemPrompt = await getPromptContent({
+      key: 'REPLY_TEMPLATE',
+      orgId: '43e671ed-a66c-4c40-b461-6d5c18f0effb',
+    });
   }
   const { text: _text, sources } = await generateText({
     temperature: TEMPERATURE,
@@ -130,6 +134,23 @@ export async function getTweetContext(
   } while (searchId);
 
   return tweets.reverse();
+}
+
+export async function getReplyTweetQuestionPrompt({
+  question,
+  lastDogeReply,
+  fullContext,
+}: {
+  question: string;
+  lastDogeReply: string;
+  fullContext: string;
+}) {
+  const prompt = await getPromptContent({
+    key: 'REPLY_TWEET_QUESTION_PROMPT',
+    orgId: '43e671ed-a66c-4c40-b461-6d5c18f0effb',
+  });
+  const templatedPrompt = Handlebars.compile(prompt);
+  return templatedPrompt({ question, lastDogeReply, fullContext });
 }
 
 /**
@@ -302,7 +323,7 @@ export const executeTweets = inngest.createFunction(
               .join('\n\n');
             const previousTweet =
               tweetThread?.[tweetThread.length - 1]?.content.toString() || '';
-            const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
+            const content = await getReplyTweetQuestionPrompt({
               question,
               lastDogeReply: previousTweet,
               fullContext,
@@ -342,7 +363,10 @@ export const executeTweets = inngest.createFunction(
         case 'tag-summon':
         case 'tag': {
           const reply = await step.run('generate-reply', async () => {
-            const PROMPT = await PROMPTS.TWITTER_REPLY_TEMPLATE();
+            const PROMPT = await getPromptContent({
+              key: 'REPLY_TEMPLATE',
+              orgId: '43e671ed-a66c-4c40-b461-6d5c18f0effb',
+            });
             const messages: Array<CoreMessage> = [
               {
                 role: 'system',
@@ -409,11 +433,12 @@ export const executeTweets = inngest.createFunction(
               .join('\n\n');
             const previousTweet =
               tweetThread?.[tweetThread.length - 1]?.content.toString() || '';
-            const input = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
+            const input = await getReplyTweetQuestionPrompt({
               question: tweetText,
               lastDogeReply: previousTweet,
               fullContext,
             });
+
             messages.push({
               role: 'user',
               content: input,

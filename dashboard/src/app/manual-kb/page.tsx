@@ -30,22 +30,17 @@ import {
 import { useDebounce } from '@uidotdev/usehooks';
 import { useState } from 'react';
 import { useTRPC } from '@/lib/trpc';
-import { TypeSelector } from './type-selector';
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
+import { useSelectedOrg } from '@/components/org-selector';
 
 const formSchema = z.object({
   title: z.string().min(3),
   content: z.string().min(10),
 });
 
-function EntryUi({
-  mutate,
-  kbType,
-}: {
-  mutate: () => void;
-  kbType: 'agent' | 'chat' | 'custom1' | 'custom2' | 'custom3';
-}) {
+function EntryUi({ mutate }: { mutate: () => void }) {
   const { open, setOpen, state, type, openDrawer } = useDrawerStore();
+  const { selectedOrg } = useSelectedOrg();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,13 +59,18 @@ function EntryUi({
   const { closeDrawer, clearState } = useDrawerStore();
   const trpc = useTRPC();
   const { mutateAsync: apiCreateEntry } = useMutation(
-    trpc.createKbEntry.mutationOptions(),
+    trpc.createControlPlaneKbEntry.mutationOptions(),
   );
   const { mutateAsync: apiEditEntry } = useMutation(
-    trpc.editKbEntry.mutationOptions(),
+    trpc.editControlPlaneKbEntry.mutationOptions(),
   );
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
+    if (!selectedOrg) {
+      toast.error('Please select an organization');
+      return;
+    }
+
     switch (type) {
       case 'create': {
         closeDrawer();
@@ -79,7 +79,7 @@ function EntryUi({
           apiCreateEntry({
             title: values.title,
             content: values.content,
-            type: kbType,
+            orgId: selectedOrg.id,
           }),
           {
             loading: 'Creating entry...',
@@ -108,7 +108,7 @@ function EntryUi({
             id: state.id,
             title: values.title,
             content: values.content,
-            type: kbType,
+            orgId: selectedOrg.id,
           }),
           {
             loading: 'Updating entry...',
@@ -142,10 +142,10 @@ function EntryUi({
       <SheetContent className="rounded-2xl !max-w-4xl !w-1/42">
         <SheetHeader>
           <SheetTitle className="font-bold text-lg mb-2 text-primary">
-            Create new {kbType} entry
+            Create new {selectedOrg?.slug || 'KB'} entry
           </SheetTitle>
           <SheetDescription className="text-primary mb-2 overflow-y-scroll">
-            Add new entry to the {kbType} knowledge base.
+            Add new entry to the {selectedOrg?.slug || 'KB'} knowledge base.
           </SheetDescription>
         </SheetHeader>
         <Form {...form}>
@@ -206,24 +206,23 @@ const FETCH_SIZE = 20;
 
 export default function ManualKB() {
   const trpc = useTRPC();
+  const { selectedOrg } = useSelectedOrg();
   const { mutateAsync: deleteKbEntry } = useMutation(
-    trpc.deleteKbEntry.mutationOptions(),
+    trpc.deleteControlPlaneKbEntry.mutationOptions(),
   );
   const [searchQuery, setSearchQuery] = useState('');
   const debouncedSearch = useDebounce(searchQuery.trim(), 300);
-  const [type, setType] = useState<
-    'agent' | 'chat' | 'custom1' | 'custom2' | 'custom3'
-  >('agent');
 
   const { data, error, isLoading, refetch, fetchNextPage, hasNextPage } =
     useInfiniteQuery(
-      trpc.getKbEntries.infiniteQueryOptions(
+      trpc.getControlPlaneKbEntries.infiniteQueryOptions(
         {
           limit: FETCH_SIZE,
           query: debouncedSearch,
-          type,
+          orgId: selectedOrg?.id || '',
         },
         {
+          enabled: !!selectedOrg,
           select(data) {
             return {
               pages: data.pages.flatMap(page => page.items),
@@ -242,10 +241,15 @@ export default function ManualKB() {
     );
 
   function deleteEntry(id: string) {
+    if (!selectedOrg) {
+      toast.error('Please select an organization');
+      return;
+    }
+
     toast.promise(
       deleteKbEntry({
         id,
-        type,
+        orgId: selectedOrg?.id || '',
       }),
       {
         loading: 'Deleting entry...',
@@ -266,8 +270,7 @@ export default function ManualKB() {
       <Header
         right={
           <div className="flex flex-row justify-center gap-2">
-            <TypeSelector value={type} setValue={setType} />
-            <EntryUi mutate={refetch} kbType={type} />
+            <EntryUi mutate={refetch} />
           </div>
         }
       />

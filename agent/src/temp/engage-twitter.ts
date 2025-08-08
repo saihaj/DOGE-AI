@@ -46,7 +46,9 @@ async function main() {
         text: content,
         billEntries: true,
         documentEntries: true,
-        manualEntries: 'agent',
+        manualEntries: {
+          orgId: '43e671ed-a66c-4c40-b461-6d5c18f0effb',
+        },
         openaiApiKey: OPENAI_API_KEY,
       },
       log,

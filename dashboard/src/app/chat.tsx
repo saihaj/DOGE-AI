@@ -43,6 +43,7 @@ import { useCookie } from '@/hooks/use-cookie';
 import { TypeSelector } from './manual-kb/type-selector';
 import { createAvatar } from '@dicebear/core';
 import { glass } from '@dicebear/collection';
+import { useSelectedOrg } from '@/components/org-selector';
 
 const PLACEHOLDER_PROMPT = 'You are a helpful AI assistant.';
 
@@ -270,6 +271,8 @@ export function Chat() {
     return messages;
   }, [systemPrompt, userPrompt]);
 
+  const { selectedOrg } = useSelectedOrg();
+
   const {
     messages,
     input,
@@ -288,7 +291,7 @@ export function Chat() {
       documentSearch,
       manualKbSearch,
       webSearch,
-      selectedKb: kb,
+      selectedOrgId: selectedOrg?.id,
     },
     headers: { [CF_BACKEND_HEADER_NAME]: cfAuthorizationCookie },
     onError: error => {
@@ -412,10 +415,8 @@ export function Chat() {
 
   const avatarSvg = (() =>
     createAvatar(glass, {
-      seed: kb,
+      seed: selectedOrg?.id,
     }).toString())();
-
-  const isDogeAiKb = kb === 'agent' || kb === 'chat';
 
   return (
     <div className="flex-1 flex flex-col">
@@ -494,16 +495,12 @@ export function Chat() {
                       <div className="flex gap-2">
                         {message.role === 'assistant' && (
                           <span>
-                            {isDogeAiKb ? (
-                              <Logo className="h-[30px] w-[30px] rounded-full overflow-hidden" />
-                            ) : (
-                              <div
-                                className="h-[30px] w-[30px] rounded-full overflow-hidden"
-                                dangerouslySetInnerHTML={{
-                                  __html: avatarSvg,
-                                }}
-                              />
-                            )}
+                            <div
+                              className="h-[30px] w-[30px] rounded-full overflow-hidden"
+                              dangerouslySetInnerHTML={{
+                                __html: avatarSvg,
+                              }}
+                            />
                           </span>
                         )}
                         <div
@@ -626,16 +623,12 @@ export function Chat() {
               )}
             >
               <span>
-                {isDogeAiKb ? (
-                  <Logo className="h-[30px] w-[30px] rounded-full overflow-hidden" />
-                ) : (
-                  <div
-                    className="h-[30px] w-[30px] rounded-full overflow-hidden"
-                    dangerouslySetInnerHTML={{
-                      __html: avatarSvg,
-                    }}
-                  />
-                )}
+                <div
+                  className="h-[30px] w-[30px] rounded-full overflow-hidden"
+                  dangerouslySetInnerHTML={{
+                    __html: avatarSvg,
+                  }}
+                />
               </span>
               <Loader2 className="animate-spin" size={20} />
             </div>

@@ -20,7 +20,7 @@ export const ChatStreamInput = Type.Object({
   documentSearch: Type.Boolean(),
   manualKbSearch: Type.Boolean(),
   webSearch: Type.Boolean(),
-  selectedKb: Type.String(),
+  selectedOrgId: Type.String(),
 });
 export type ChatStreamInput = Static<typeof ChatStreamInput>;
 

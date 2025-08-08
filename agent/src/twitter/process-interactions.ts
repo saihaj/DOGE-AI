@@ -8,6 +8,7 @@ import {
   TEMPERATURE,
   TWITTER_USERNAME,
 } from '../const.ts';
+import { getPromptContent } from '../controlplane-api/prompt-registry.ts';
 import {
   rejectedInteractionTweet,
   reportFailureToDiscord,
@@ -15,7 +16,6 @@ import {
 import { inngest } from '../inngest.ts';
 import { logger } from '../logger.ts';
 import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
-import { PROMPTS } from './prompts.ts';
 
 const openai = createOpenAI({
   apiKey: OPENAI_API_KEY,
@@ -96,8 +96,10 @@ export const processInteractionTweets = inngest.createFunction(
     }
 
     const shouldEngage = await step.run('should-engage', async () => {
-      const systemPrompt =
-        await PROMPTS.INTERACTION_ENGAGEMENT_DECISION_PROMPT();
+      const systemPrompt = await getPromptContent({
+        key: 'INTERACTION_ENGAGEMENT_DECISION_PROMPT',
+        orgId: '43e671ed-a66c-4c40-b461-6d5c18f0effb',
+      });
       const result = await generateText({
         model: openai('gpt-4.1-mini'),
         temperature: TEMPERATURE,

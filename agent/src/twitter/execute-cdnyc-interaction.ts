@@ -38,7 +38,7 @@ import {
   getTweetContentAsText,
 } from './helpers.ts';
 import { getKbContext } from './knowledge-base.ts';
-import { PROMPTS } from './prompts';
+import { getPromptContent } from '../controlplane-api/prompt-registry.ts';
 
 const dbClient = createClient({
   url: CDNYC_TURSO_DATABASE_URL,
@@ -221,7 +221,9 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
               text,
               billEntries: true,
               documentEntries: true,
-              manualEntries: 'custom2',
+              manualEntries: {
+                orgId: '94e4cbb7-0265-4f84-8c55-251ba424c09f',
+              },
               openaiApiKey: OPENAI_API_KEY,
             },
             log,
@@ -255,8 +257,14 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
 
           try {
             const [system, prefix] = await Promise.all([
-              PROMPTS.CDNYC_TWITTER_REPLY_TEMPLATE_KB(),
-              PROMPTS.REPLY_AS_CDNYC(),
+              getPromptContent({
+                key: 'TWITTER_REPLY_USING_KB',
+                orgId: '94e4cbb7-0265-4f84-8c55-251ba424c09f',
+              }),
+              getPromptContent({
+                key: 'REPLY_AS',
+                orgId: '94e4cbb7-0265-4f84-8c55-251ba424c09f',
+              }),
             ]);
             const { raw, metadata, formatted } = await getLongResponse(
               {

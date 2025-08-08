@@ -29,6 +29,7 @@ import { checkVariablesParser } from './validator';
 import { toast } from 'sonner';
 import { useTRPC } from '@/lib/trpc';
 import { useInfiniteQuery, useMutation, useQuery } from '@tanstack/react-query';
+import { useSelectedOrg } from '@/components/org-selector';
 
 const EDITOR_MESSAGES = {
   LOADING: 'Loading...',
@@ -47,18 +48,21 @@ function AvailableVersion({
   setValue: ({ content, id }: { content: string; id: string }) => void;
 }) {
   const trpc = useTRPC();
+  const { selectedOrg } = useSelectedOrg();
   const {
     data: availableVersions,
     hasNextPage,
     isLoading,
     fetchNextPage,
   } = useInfiniteQuery(
-    trpc.getPromptVersions.infiniteQueryOptions(
+    trpc.getControlPlanePromptVersions.infiniteQueryOptions(
       {
         key: promptId,
+        orgId: selectedOrg?.id || '',
         limit: 5,
       },
       {
+        enabled: Boolean(selectedOrg?.id),
         staleTime: 0,
         select(data) {
           return {
@@ -166,8 +170,18 @@ function AvailablePrompts({
   setValue: (value: string | null) => void;
 }) {
   const trpc = useTRPC();
+  const { selectedOrg } = useSelectedOrg();
+
   const { data: availablePrompts, isLoading } = useQuery(
-    trpc.getPromptKeys.queryOptions(),
+    trpc.getControlPlanePromptKeys.queryOptions(
+      {
+        orgId: selectedOrg?.id || '',
+      },
+      {
+        staleTime: 60 * 1000,
+        enabled: !!selectedOrg?.id,
+      },
+    ),
   );
 
   const [open, setOpen] = useState(false);
@@ -179,7 +193,7 @@ function AvailablePrompts({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[400px] justify-between"
+          className="w-[300px] justify-between"
         >
           {value
             ? availablePrompts?.find(k => k === value)
@@ -187,9 +201,9 @@ function AvailablePrompts({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[400px] p-0">
+      <PopoverContent className="w-[300px] p-0">
         <Command>
-          <CommandInput placeholder="Search Model..." />
+          <CommandInput placeholder="Search Key..." />
           <CommandList>
             <CommandEmpty>No Prompts Found.</CommandEmpty>
             {!isLoading && availablePrompts && availablePrompts.length > 0 && (
@@ -238,25 +252,27 @@ export default function Prompts() {
   const editor = useRef<Parameters<OnMount>['0']>(null);
   const monaco = useMonaco();
   const trpc = useTRPC();
+  const { selectedOrg } = useSelectedOrg();
   const [selectedPromptVersion, setSelectedPromptVersion] = useState<
     string | null
   >(null);
 
   const { mutateAsync: apiUpdatePrompt } = useMutation(
-    trpc.updatePromptByKey.mutationOptions(),
+    trpc.updateControlPlanePromptByKey.mutationOptions(),
   );
 
   const { mutateAsync: apiRevertPrompt } = useMutation(
-    trpc.revertPromptVersion.mutationOptions(),
+    trpc.revertControlPlanePromptVersion.mutationOptions(),
   );
   const { data, isLoading, isError } = useQuery(
-    trpc.getPromptByKey.queryOptions(
+    trpc.getControlPlanePromptByKey.queryOptions(
       {
         key: selectedPromptKey || '',
+        orgId: selectedOrg?.id || '',
       },
       {
         staleTime: 0,
-        enabled: !!selectedPromptKey,
+        enabled: Boolean(selectedPromptKey) && Boolean(selectedOrg?.id),
         retry: false,
       },
     ),
@@ -448,6 +464,11 @@ export default function Prompts() {
                   return;
                 }
 
+                if (!selectedOrg?.id) {
+                  toast.error('No organization selected');
+                  return;
+                }
+
                 if (!selectedPromptKey) {
                   toast.error('No prompt selected');
                   return;
@@ -463,6 +484,7 @@ export default function Prompts() {
                     apiRevertPrompt({
                       key: selectedPromptKey,
                       commitId: selectedPromptVersion,
+                      orgId: selectedOrg.id,
                     }),
                     {
                       loading: 'Reverting prompt...',
@@ -484,6 +506,7 @@ export default function Prompts() {
                   apiUpdatePrompt({
                     key: selectedPromptKey,
                     value: edited,
+                    orgId: selectedOrg.id,
                   }),
                   {
                     loading: 'Updating prompt...',

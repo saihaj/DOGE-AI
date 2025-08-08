@@ -1,3 +1,4 @@
+import { createOpenAI } from '@ai-sdk/openai';
 import cors from '@fastify/cors';
 import { Static, Type } from '@sinclair/typebox';
 import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
@@ -14,6 +15,7 @@ import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { Redis } from 'ioredis';
 import * as crypto from 'node:crypto';
 import { RateLimiterRedis, RateLimiterRes } from 'rate-limiter-flexible';
+import { myProvider } from './api/chat';
 import {
   contextUser,
   DAILY_MESSAGE_LIMIT_DEFUALT,
@@ -38,6 +40,7 @@ import {
   SEED,
   TEMPERATURE,
 } from './const';
+import { getPromptContent } from './controlplane-api/prompt-registry';
 import { reportFailureToDiscord } from './discord/action';
 import { chatLogger } from './logger';
 import {
@@ -46,6 +49,7 @@ import {
   userMessageRateLimitHits,
   userMessageUsage,
 } from './prom';
+import { mergeConsecutiveSameRole } from './twitter/helpers';
 import { getKbContext } from './twitter/knowledge-base';
 import { PROMPTS } from './twitter/prompts';
 import {
@@ -58,10 +62,6 @@ import {
   setStreamHeaders,
 } from './utils/stream';
 import { getChatTools } from './utils/tools';
-import { createOpenAI } from '@ai-sdk/openai';
-import { getSearchResult } from './twitter/web';
-import { mergeConsecutiveSameRole } from './twitter/helpers';
-import { myProvider } from './api/chat';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -438,7 +438,9 @@ fastify.route<{ Body: UserChatStreamInput }>({
           messages: [...messages.filter(m => m.role !== 'system')],
           // latest message
           text: messages[messages.length - 1].content.toString(),
-          manualEntries: 'chat',
+          manualEntries: {
+            orgId: '2f18a8c5-331f-41da-8fcb-2b82eefebcb0',
+          },
           billEntries: false,
           documentEntries: false,
         },
@@ -460,7 +462,10 @@ fastify.route<{ Body: UserChatStreamInput }>({
       const systemPrompt = messages.find(message => message.role === 'system');
 
       if (!systemPrompt) {
-        const prompt = await PROMPTS.CHAT_INTERFACE_SYSTEM_PROMPT();
+        const prompt = await getPromptContent({
+          key: 'CHAT_INTERFACE_SYSTEM_PROMPT',
+          orgId: '2f18a8c5-331f-41da-8fcb-2b82eefebcb0',
+        });
         messages.unshift({
           role: 'system',
           content: `${prompt}.\nCurrent date: ${new Date().toUTCString()}`,
@@ -704,7 +709,8 @@ fastify.route<{ Body: ChatDemoStreamInput }>({
         {
           messages: convoHistory,
           text: latestMessage.content.toString(),
-          manualEntries: selectedKb,
+          // TODO: Make this dynamic
+          manualEntries: false,
           billEntries: false,
           documentEntries: false,
           openaiApiKey: OPENAI_API_KEY,

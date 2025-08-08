@@ -189,3 +189,7 @@ export const X_CONSUMER_TOKEN = (() => {
 export const X_CONSUMER_SECRET = (() => {
   return getEnvKey('X_CONSUMER_SECRET');
 })();
+export const TURSO_GROUP_AUTH_TOKEN = (() => {
+  return getEnvKey('TURSO_GROUP_AUTH_TOKEN');
+})();
+export const CONTROL_PLANE_KB_SOURCE = 'manual-agent' as const;

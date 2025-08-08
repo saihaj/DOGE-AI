@@ -1,11 +1,11 @@
 import * as readline from 'node:readline/promises';
 import { CoreMessage, generateText } from 'ai';
-import { PROMPTS } from '../twitter/prompts';
 import { logger } from '../logger';
 import { mergeConsecutiveSameRole } from '../twitter/helpers';
 import { OPENAI_API_KEY, TEMPERATURE } from '../const';
 import { openai } from '@ai-sdk/openai';
 import { getKbContext } from '../twitter/knowledge-base';
+import { getReplyTweetQuestionPrompt } from '../twitter/execute';
 
 const log = logger.child({ module: 'cli-tag-twitter' });
 
@@ -56,7 +56,7 @@ async function main() {
       });
     }
 
-    const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
+    const content = await getReplyTweetQuestionPrompt({
       question,
       lastDogeReply: '',
       fullContext: '',
