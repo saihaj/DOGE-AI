@@ -1,10 +1,4 @@
 import {
-  createKbEntry,
-  deleteKbEntry,
-  editKbEntry,
-  getKbEntries,
-} from './api/manual-kb';
-import {
   createControlPlaneKbEntry,
   createOrganization,
   deleteControlPlaneKbEntry,
@@ -21,10 +15,6 @@ import {
 import { router } from './trpc';
 
 export const appRouter = router({
-  createKbEntry,
-  editKbEntry,
-  deleteKbEntry,
-  getKbEntries,
   createOrganization,
   getOrganization,
   getControlPlanePromptKeys,

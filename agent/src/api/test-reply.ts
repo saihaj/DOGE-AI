@@ -1,13 +1,17 @@
-import { CoreMessage } from 'ai';
-import { generateReply, getTweetContext } from '../twitter/execute';
-import { getShortResponse } from '../twitter/execute-interaction';
 import { Static, Type } from '@sinclair/typebox';
-import { PROMPTS } from '../twitter/prompts';
+import { CoreMessage } from 'ai';
 import Handlebars from 'handlebars';
 import { OPENAI_API_KEY, REJECTION_REASON } from '../const';
+import { getPromptContent } from '../controlplane-api/prompt-registry';
 import { logger } from '../logger';
-import { getKbContext } from '../twitter/knowledge-base';
+import {
+  generateReply,
+  getReplyTweetQuestionPrompt,
+  getTweetContext,
+} from '../twitter/execute';
+import { getShortResponse } from '../twitter/execute-interaction';
 import { questionExtractor } from '../twitter/helpers';
+import { getKbContext } from '../twitter/knowledge-base';
 
 export const ProcessTestReplyRequestInput = Type.Object({
   tweetId: Type.String(),
@@ -89,7 +93,7 @@ export async function processTestReplyRequest({
   const fullContext = tweetThread.map(({ content }) => content).join('\n\n');
   const previousTweet =
     tweetThread?.[tweetThread.length - 1]?.content.toString() || '';
-  const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
+  const content = await getReplyTweetQuestionPrompt({
     question: extractedQuestion,
     lastDogeReply: previousTweet,
     fullContext,
@@ -108,7 +112,10 @@ export async function processTestReplyRequest({
 
   const systemPrompt = mainPrompt
     ? mainPrompt
-    : await PROMPTS.TWITTER_REPLY_TEMPLATE();
+    : await getPromptContent({
+        key: 'REPLY_TEMPLATE',
+        orgId: '43e671ed-a66c-4c40-b461-6d5c18f0effb',
+      });
 
   const {
     text: responseLong,

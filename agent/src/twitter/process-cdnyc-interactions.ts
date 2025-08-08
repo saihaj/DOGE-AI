@@ -14,7 +14,6 @@ import {
 import { inngest } from '../inngest.ts';
 import { logger } from '../logger.ts';
 import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
-import { PROMPTS } from './prompts.ts';
 import { getPromptContent } from '../controlplane-api/prompt-registry.ts';
 
 const openai = createOpenAI({

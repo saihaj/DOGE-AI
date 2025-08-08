@@ -1,8 +1,20 @@
+import cors from '@fastify/cors';
+import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
+import { CoreMessage, smoothStream, StreamData, streamText } from 'ai';
 import Fastify, { FastifyReply, FastifyRequest } from 'fastify';
 import { serve } from 'inngest/fastify';
-import { CoreMessage, smoothStream, StreamData, streamText, tool } from 'ai';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import * as crypto from 'node:crypto';
-import cors from '@fastify/cors';
+import { ChatStreamInput, myProvider } from './api/chat';
+import {
+  processTestEngageRequest,
+  ProcessTestEngageRequestInput,
+} from './api/test-engage';
+import {
+  processTestReplyRequest,
+  ProcessTestReplyRequestInput,
+} from './api/test-reply';
+import { UserChatStreamInput } from './api/user-chat';
 import {
   CF_TEAM_DOMAIN,
   DISCORD_TOKEN,
@@ -13,41 +25,29 @@ import {
   SEED,
   TEMPERATURE,
 } from './const';
+import { getPromptContent } from './controlplane-api/prompt-registry';
+import { reportFailureToDiscord } from './discord/action';
+import { discordClient } from './discord/client';
+import { inngest } from './inngest';
+import { logger } from './logger';
+import { apiRequest, promClient, readiness } from './prom';
+import { appRouter } from './router';
+import { createContext } from './trpc';
+import { executeTweets } from './twitter/execute';
+import { executeCdnycInteractionTweets } from './twitter/execute-cdnyc-interaction';
+import { executeInteractionTweets } from './twitter/execute-interaction';
+import { mergeConsecutiveSameRole } from './twitter/helpers';
+import { ingestTweets } from './twitter/ingest';
+import { ingestCdnycInteractionTweets } from './twitter/ingest-cdnyc-interaction';
+import { ingestInteractionTweets } from './twitter/ingest-interaction';
+import { getKbContext } from './twitter/knowledge-base';
+import { processTweets } from './twitter/process';
+import { processCdnycInteractionTweets } from './twitter/process-cdnyc-interactions';
+import { processInteractionTweets } from './twitter/process-interactions';
+import { getSearchResult } from './twitter/web';
+import { extractAndProcessTweet } from './utils/message-processing';
 import { setStreamHeaders } from './utils/stream';
 import { getChatTools } from './utils/tools';
-import { extractAndProcessTweet } from './utils/message-processing';
-import { discordClient } from './discord/client';
-import { reportFailureToDiscord } from './discord/action';
-import {
-  processTestEngageRequest,
-  ProcessTestEngageRequestInput,
-} from './api/test-engage';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
-import {
-  processTestReplyRequest,
-  ProcessTestReplyRequestInput,
-} from './api/test-reply';
-import { ChatStreamInput, myProvider } from './api/chat';
-import { logger } from './logger';
-import { getKbContext } from './twitter/knowledge-base';
-import { mergeConsecutiveSameRole } from './twitter/helpers';
-import { apiRequest, promClient, readiness } from './prom';
-import { fastifyTRPCPlugin } from '@trpc/server/adapters/fastify';
-import { inngest } from './inngest';
-import { ingestTweets } from './twitter/ingest';
-import { processTweets } from './twitter/process';
-import { executeTweets } from './twitter/execute';
-import { ingestInteractionTweets } from './twitter/ingest-interaction';
-import { processInteractionTweets } from './twitter/process-interactions';
-import { executeInteractionTweets } from './twitter/execute-interaction';
-import { createContext } from './trpc';
-import { appRouter } from './router';
-import { getSearchResult } from './twitter/web';
-import { UserChatStreamInput } from './api/user-chat';
-import { PROMPTS } from './twitter/prompts';
-import { ingestCdnycInteractionTweets } from './twitter/ingest-cdnyc-interaction';
-import { processCdnycInteractionTweets } from './twitter/process-cdnyc-interactions';
-import { executeCdnycInteractionTweets } from './twitter/execute-cdnyc-interaction';
 
 const fastify = Fastify({ maxParamLength: 5000 });
 
@@ -573,7 +573,10 @@ fastify.route<{ Body: UserChatStreamInput }>({
       const systemPrompt = messages.find(message => message.role === 'system');
 
       if (!systemPrompt) {
-        const prompt = await PROMPTS.CHAT_INTERFACE_SYSTEM_PROMPT();
+        const prompt = await getPromptContent({
+          key: 'CHAT_INTERFACE_SYSTEM_PROMPT',
+          orgId: '2f18a8c5-331f-41da-8fcb-2b82eefebcb0',
+        });
         messages.unshift({
           role: 'system',
           content: `${prompt}.\nCurrent date: ${new Date().toUTCString()}`,

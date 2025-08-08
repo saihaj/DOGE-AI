@@ -1,4 +1,6 @@
 import { anthropic } from '@ai-sdk/anthropic';
+import { createDeepInfra } from '@ai-sdk/deepinfra';
+import { createOpenAI } from '@ai-sdk/openai';
 import {
   CoreMessage,
   extractReasoningMiddleware,
@@ -11,18 +13,20 @@ import {
   eq,
   message as messageDbSchema,
 } from 'database';
+import Handlebars from 'handlebars';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
-  OPENAI_API_KEY,
   DEEPINFRA_API_KEY,
+  DISCORD_APPROVED_CHANNEL_ID,
+  DISCORD_REJECTED_CHANNEL_ID,
   IS_PROD,
+  OPENAI_API_KEY,
   REJECTION_REASON,
   SEED,
   TEMPERATURE,
-  DISCORD_APPROVED_CHANNEL_ID,
-  DISCORD_REJECTED_CHANNEL_ID,
 } from '../const';
+import { getPromptContent } from '../controlplane-api/prompt-registry.ts';
 import {
   approvedTweetEngagement,
   rejectedTweet,
@@ -48,10 +52,7 @@ import {
   upsertUser,
 } from './helpers.ts';
 import { getKbContext } from './knowledge-base.ts';
-import { PROMPTS } from './prompts';
 import { getSearchResult } from './web.ts';
-import { createDeepInfra } from '@ai-sdk/deepinfra';
-import { createOpenAI } from '@ai-sdk/openai';
 
 const deepinfra = createDeepInfra({
   apiKey: DEEPINFRA_API_KEY,
@@ -80,11 +81,17 @@ export async function getLongResponse(
   { method, log, action }: { log: WithLogger; method: string; action: string },
 ) {
   if (!systemPrompt) {
-    systemPrompt = await PROMPTS.TWITTER_REPLY_TEMPLATE_KB();
+    systemPrompt = await getPromptContent({
+      key: 'TWITTER_REPLY_USING_KB',
+      orgId: '43e671ed-a66c-4c40-b461-6d5c18f0effb',
+    });
   }
 
   if (!prefixPrompt) {
-    prefixPrompt = await PROMPTS.REPLY_AS_DOGE();
+    prefixPrompt = await getPromptContent({
+      key: 'REPLY_AS',
+      orgId: '43e671ed-a66c-4c40-b461-6d5c18f0effb',
+    });
   }
 
   const webSearchResults = await getSearchResult(
@@ -167,6 +174,21 @@ export async function getLongResponse(
   };
 }
 
+async function engageShareChatPrompt({
+  share,
+  message,
+}: {
+  share: string;
+  message: string;
+}) {
+  const prompt = await getPromptContent({
+    key: 'ENGAGE_SHARE_CHAT',
+    orgId: '43e671ed-a66c-4c40-b461-6d5c18f0effb',
+  });
+  const templatedPrompt = Handlebars.compile(prompt);
+  return templatedPrompt({ share, message });
+}
+
 /**
  * Using `getLongResponse` output generate a refined short response for more engaging output
  */
@@ -178,7 +200,10 @@ export async function getShortResponse({
   refinePrompt?: string;
 }) {
   if (!refinePrompt) {
-    refinePrompt = await PROMPTS.REPLY_SHORTENER_PROMPT();
+    refinePrompt = await getPromptContent({
+      key: 'REPLY_SHORTENER_PROMPT',
+      orgId: '43e671ed-a66c-4c40-b461-6d5c18f0effb',
+    });
   }
 
   const { text: _finalAnswer } = await generateText({
@@ -380,11 +405,10 @@ export const executeInteractionTweets = inngest.createFunction(
                     const shareUrl = `https//dogeai.chat/t/${tweetToActionOn.id}?utm_source=twitter&utm_medium=dogeai_gov&utm_campaign=${event.data.action}`;
                     log.info({ url: shareUrl }, 'generating share message');
 
-                    const formatSharePrompt =
-                      await PROMPTS.TWITTER_ENGAGE_SHARE_CHAT({
-                        message: formatted,
-                        share: shareUrl,
-                      });
+                    const formatSharePrompt = await engageShareChatPrompt({
+                      message: formatted,
+                      share: shareUrl,
+                    });
 
                     const { text: shareUrlMessage } = await generateText({
                       model: openai('gpt-4.1'),

@@ -25,7 +25,6 @@ import {
   QUESTION_EXTRACTOR_SYSTEM_PROMPT,
 } from './prompts';
 import { WithLogger } from '../logger';
-import { anthropic } from '@ai-sdk/anthropic';
 import { getUnixTime, toDate } from 'date-fns';
 
 // Ada V2 31.4% vs 54.9% large
@@ -288,20 +287,6 @@ export async function longResponseFormatter(text: string) {
   const responseLong = sanitizeLlmOutput(_responseLong);
 
   return responseLong;
-}
-
-export async function engagementHumanizer(text: string) {
-  const prompt = await PROMPTS.ENGAGEMENT_HUMANIZER({ text });
-
-  const { text: _result } = await generateText({
-    model: anthropic('claude-3-5-sonnet-latest'),
-    temperature: TEMPERATURE,
-    messages: [{ role: 'user', content: prompt }],
-  });
-
-  const result = sanitizeLlmOutput(_result);
-
-  return result;
 }
 
 export async function questionExtractor(message: CoreMessage) {

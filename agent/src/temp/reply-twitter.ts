@@ -1,8 +1,11 @@
 import * as readline from 'node:readline/promises';
 import { CoreMessage } from 'ai';
 import { OPENAI_API_KEY, REJECTION_REASON } from '../const';
-import { PROMPTS } from '../twitter/prompts';
-import { generateReply, getTweetContext } from '../twitter/execute';
+import {
+  generateReply,
+  getReplyTweetQuestionPrompt,
+  getTweetContext,
+} from '../twitter/execute';
 import { logger } from '../logger';
 import { getKbContext } from '../twitter/knowledge-base';
 import { questionExtractor } from '../twitter/helpers';
@@ -79,7 +82,7 @@ async function main() {
     const fullContext = tweetThread.map(({ content }) => content).join('\n\n');
     const previousTweet =
       tweetThread?.[tweetThread.length - 1]?.content.toString() || '';
-    const content = await PROMPTS.REPLY_TWEET_QUESTION_PROMPT({
+    const content = await getReplyTweetQuestionPrompt({
       question: extractedQuestion,
       lastDogeReply: previousTweet,
       fullContext,

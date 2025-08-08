@@ -138,58 +138,8 @@ export const DOCUMENT_RELATED_TO_TWEET_PROMPT = `You are an AI assistant special
 export const ANALYZE_TEXT_FROM_IMAGE = `Analyze the provided image and extract all visible text exactly as it appears. Do not add any commentary or descriptions. If no text is found, return only 'NO_TEXT_FOUND'.`;
 
 export const PROMPTS = {
-  TWITTER_REPLY_TEMPLATE: async () => {
-    return getPromptContent('TWITTER_REPLY_TEMPLATE');
-  },
-  REPLY_SHORTENER_PROMPT: async () => {
-    return getPromptContent('REPLY_SHORTENER_PROMPT');
-  },
-  ENGAGEMENT_HUMANIZER: async ({ text }: { text: string }) => {
-    const prompt = await getPromptContent('ENGAGEMENT_HUMANIZER');
-    const templatePrompt = Handlebars.compile(prompt);
-    return templatePrompt({ text });
-  },
-  REPLY_TWEET_QUESTION_PROMPT: async ({
-    question,
-    lastDogeReply,
-    fullContext,
-  }: {
-    question: string;
-    lastDogeReply: string;
-    fullContext: string;
-  }) => {
-    const prompt = await getPromptContent('REPLY_TWEET_QUESTION_PROMPT');
-    const templatedPrompt = Handlebars.compile(prompt);
-    return templatedPrompt({ question, lastDogeReply, fullContext });
-  },
-  INTERACTION_ENGAGEMENT_DECISION_PROMPT: async () => {
-    return getPromptContent('INTERACTION_ENGAGEMENT_DECISION_PROMPT');
-  },
-  ENGAGEMENT_DECISION_PROMPT: async () => {
-    return getPromptContent('ENGAGEMENT_DECISION_PROMPT');
-  },
   LONG_RESPONSE_FORMATTER_PROMPT: async () => {
     return getPromptContent('LONG_RESPONSE_FORMATTER_PROMPT');
-  },
-  REPLY_AS_DOGE: async () => {
-    return getPromptContent('REPLY_AS_DOGE');
-  },
-  TWITTER_REPLY_TEMPLATE_KB: async () => {
-    return getPromptContent('TWITTER_REPLY_TEMPLATE_KB');
-  },
-  CHAT_INTERFACE_SYSTEM_PROMPT: async () => {
-    return getPromptContent('CHAT_INTERFACE_SYSTEM_PROMPT');
-  },
-  TWITTER_ENGAGE_SHARE_CHAT: async ({
-    share,
-    message,
-  }: {
-    share: string;
-    message: string;
-  }) => {
-    const prompt = await getPromptContent('TWITTER_ENGAGE_SHARE_CHAT');
-    const templatedPrompt = Handlebars.compile(prompt);
-    return templatedPrompt({ share, message });
   },
   DEMO_CHAT_CUSTOM_1: async () => {
     return getPromptContent('DEMO_CHAT_CUSTOM_1');
