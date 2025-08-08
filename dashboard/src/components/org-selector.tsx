@@ -91,6 +91,8 @@ export function AvailableOrgs() {
                         onSelect={() => {
                           setSelectedOrg(key);
                           setOpen(false);
+                          // TODO: can improve this to not reload the page and instead use react-query to refetch
+                          globalThis.window.location.reload();
                         }}
                       >
                         <Check
