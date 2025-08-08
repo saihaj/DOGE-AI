@@ -63,7 +63,7 @@ async function createTursoDbInstance({
         },
       })
     : await Promise.resolve<CreatedDatabase>({
-        hostname: `file:./local-${type}.db`,
+        hostname: `local-${type}.db`,
         name: instanceName,
         id: 'local-dev-id',
       });
@@ -648,7 +648,9 @@ async function getKbDbInstance({
   );
 
   const kbDbClient = createClient({
-    url: kbDbHostname.hostname,
+    url: IS_PROD
+      ? `libsql://${kbDbHostname.hostname}`
+      : `file:./${kbDbHostname.hostname}`,
     authToken: TURSO_GROUP_AUTH_TOKEN,
   });
 
