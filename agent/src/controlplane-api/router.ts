@@ -8,6 +8,7 @@ import slugify from 'slugify';
 import { z } from 'zod';
 import {
   IS_PROD,
+  TURSO_GROUP_AUTH_TOKEN,
   TURSO_PLATFORM_API_TOKEN,
   TURSO_PLATFORM_ORG_NAME,
   VECTOR_SEARCH_MATCH_THRESHOLD,
@@ -597,41 +598,58 @@ async function getKbDbInstance({
   orgId: string;
   log: WithLogger;
 }) {
-  const org = await db.query.ControlPlaneOrganization.findFirst({
-    where: eq(ControlPlaneOrganization.id, orgId),
-    columns: {
-      id: true,
-      slug: true,
-    },
-  });
+  const org = await bento.getOrSet(
+    `getKbInstance-${orgId}`,
+    async () => {
+      const o = await db.query.ControlPlaneOrganization.findFirst({
+        where: eq(ControlPlaneOrganization.id, orgId),
+        columns: {
+          id: true,
+          slug: true,
+        },
+      });
 
-  if (!org) {
-    log.error({}, 'Organization not found');
-    throw new TRPCError({
-      code: 'NOT_FOUND',
-      message: 'Organization not found',
-    });
-  }
+      if (!o) {
+        log.error({}, 'Organization not found');
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Organization not found',
+        });
+      }
+
+      return o;
+    },
+    { ttl: '1d' },
+  );
 
   const dbName = `${org.slug}-kb`;
-  const kbDbHostname = await db.query.ControlPlaneOrganizationDb.findFirst({
-    where: and(eq(ControlPlaneOrganizationDb.id, dbName)),
-    columns: {
-      hostname: true,
-    },
-  });
 
-  if (!kbDbHostname) {
-    log.error({}, 'Knowledge base database not found for organization');
-    throw new TRPCError({
-      code: 'NOT_FOUND',
-      message: 'Knowledge base database not found for organization',
-    });
-  }
+  const kbDbHostname = await bento.getOrSet(
+    `kbDbHostname-${orgId}`,
+    async () => {
+      const k = await db.query.ControlPlaneOrganizationDb.findFirst({
+        where: and(eq(ControlPlaneOrganizationDb.id, dbName)),
+        columns: {
+          hostname: true,
+        },
+      });
+
+      if (!k) {
+        log.error({}, 'Knowledge base database not found for organization');
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Knowledge base database not found for organization',
+        });
+      }
+
+      return k;
+    },
+    { ttl: '1d' },
+  );
 
   const kbDbClient = createClient({
     url: kbDbHostname.hostname,
-    authToken: '',
+    authToken: TURSO_GROUP_AUTH_TOKEN,
   });
 
   return drizzle({
