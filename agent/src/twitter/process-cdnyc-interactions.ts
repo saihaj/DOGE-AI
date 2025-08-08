@@ -15,6 +15,7 @@ import { inngest } from '../inngest.ts';
 import { logger } from '../logger.ts';
 import { tweetsProcessed, tweetsProcessingRejected } from '../prom.ts';
 import { PROMPTS } from './prompts.ts';
+import { getPromptContent } from '../controlplane-api/prompt-registry.ts';
 
 const openai = createOpenAI({
   apiKey: OPENAI_API_KEY,
@@ -89,7 +90,10 @@ export const processCdnycInteractionTweets = inngest.createFunction(
     const tweetText = event.data.text;
 
     const shouldEngage = await step.run('should-engage', async () => {
-      const systemPrompt = await PROMPTS.CDNYC_INT_ENGAGE_DECISION_PROMPT();
+      const systemPrompt = await getPromptContent({
+        key: 'ENGAGEMENT_DECISION_PROMPT',
+        orgId: '94e4cbb7-0265-4f84-8c55-251ba424c09f',
+      });
       const result = await generateText({
         model: openai('gpt-4.1-mini'),
         temperature: TEMPERATURE,
