@@ -75,7 +75,7 @@ export async function getKbDbInstance({
   );
 
   const kbDbClient = createClient({
-    url: !IS_PROD
+    url: IS_PROD
       ? `libsql://${kbDbHostname.hostname}`
       : `file:./${kbDbHostname.hostname}`,
     authToken: TURSO_GROUP_AUTH_TOKEN,
