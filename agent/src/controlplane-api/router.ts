@@ -253,7 +253,7 @@ export const createOrganization = protectedProcedure
     });
     await initPrompt({
       orgId: org.id,
-      key: 'ENGAGE_DECISION_PROMPT',
+      key: 'ENGAGEMENT_DECISION_PROMPT',
       value: '',
     });
     log.info({}, 'agent prompts setup complete');
@@ -660,7 +660,7 @@ async function getKbDbInstance({
   });
 }
 
-const source = 'manual' as const;
+const source = 'manual-agent' as const;
 
 export const createControlPlaneKbEntry = protectedProcedure
   .input(
