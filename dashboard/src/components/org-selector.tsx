@@ -68,7 +68,7 @@ export function AvailableOrgs() {
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="justify-between w-full"
+          className="justify-between w-48"
         >
           {displayValue}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />

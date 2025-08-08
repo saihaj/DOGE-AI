@@ -19,7 +19,6 @@ import {
   ReplyAll,
 } from 'lucide-react';
 import Link from 'next/link';
-import { AvailableOrgs } from './org-selector';
 import { Settings } from './settings';
 
 const items = [
@@ -83,7 +82,6 @@ export function AppSidebar() {
             <SidebarMenuButton asChild>
               <Settings />
             </SidebarMenuButton>
-            <AvailableOrgs />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

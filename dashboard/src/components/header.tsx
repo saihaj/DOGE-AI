@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { SidebarTrigger } from './ui/sidebar';
+import { AvailableOrgs } from './org-selector';
 
 export function Header({
   right,
@@ -15,8 +16,9 @@ export function Header({
         className,
       )}
     >
-      <div className="flex-1 flex justify-start">
+      <div className="flex-1 flex justify-start gap-2 items-center">
         <SidebarTrigger />
+        <AvailableOrgs />
       </div>
       <h1 className="text-xl font-semibold">DOGEai</h1>
       <div className="flex-1 flex justify-end">{right}</div>
