@@ -200,9 +200,6 @@ export function UserChat() {
     'userChatSelectedChatModel',
     'gpt-4.1-nano',
   );
-  const [kb, setKbType] = useLocalStorage<
-    'agent' | 'chat' | 'custom1' | 'custom2' | 'custom3'
-  >('userChatSelectedKb', 'chat');
   const { selectedOrg } = useSelectedOrg();
 
   const [systemPrompt, setSystemPrompt] = useLocalStorage(

@@ -22,7 +22,6 @@ import {
   Trash2Icon,
 } from 'lucide-react';
 import { ModelSelector, ModelValues } from '@/components/model-selector';
-import { Logo } from '@/components/logo';
 import { CopyButton } from '@/components/copy-button';
 import { Markdown } from '@/components/markdown';
 import { useLocalStorage } from '@uidotdev/usehooks';
