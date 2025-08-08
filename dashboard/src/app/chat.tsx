@@ -39,7 +39,6 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useCookie } from '@/hooks/use-cookie';
-import { TypeSelector } from './manual-kb/type-selector';
 import { createAvatar } from '@dicebear/core';
 import { glass } from '@dicebear/collection';
 import { useSelectedOrg } from '@/components/org-selector';
@@ -246,9 +245,6 @@ export function Chat() {
     '',
   );
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [kb, setKbType] = useLocalStorage<
-    'agent' | 'chat' | 'custom1' | 'custom2' | 'custom3'
-  >('playgroundChatSelectedKb', 'chat');
 
   const initialMessages = useMemo(() => {
     const messages = [
@@ -422,7 +418,6 @@ export function Chat() {
       <Header
         right={
           <div className="flex gap-2">
-            <TypeSelector value={kb} setValue={setKbType} />
             <ModelSelector value={model} setValue={setModel} />
             <Button
               variant="outline"
