@@ -128,15 +128,20 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
         'Failed to execute interaction tweets',
       );
 
-      if (
+      const nonFatalError =
         errorMessage
           .toLowerCase()
-          .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase())
-      ) {
+          .startsWith(REJECTION_REASON.CONTAINS_REASONING.toLowerCase()) ||
+        errorMessage
+          .toLowerCase()
+          .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase());
+
+      if (nonFatalError) {
         tweetsProcessingRejected.inc({
           method: ID,
-          reason: REJECTION_REASON.NO_QUESTION_DETECTED,
+          reason: errorMessage,
         });
+
         await rejectedTweet({
           tweetId: id,
           tweetUrl: url,

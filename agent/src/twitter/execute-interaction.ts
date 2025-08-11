@@ -47,6 +47,7 @@ import {
   getTweet,
   getTweetContentAsText,
   longResponseFormatter,
+  rejectReasoning,
   sanitizeLlmOutput,
   upsertChat,
   upsertUser,
@@ -165,6 +166,16 @@ export async function getLongResponse(
   log.info({ response: _responseLong }, 'raw long response');
 
   const responseLong = sanitizeLlmOutput(_responseLong);
+  const hasReasoning = rejectReasoning(responseLong);
+
+  if (hasReasoning) {
+    log.error(
+      { response: responseLong, reasoning },
+      'response contains reasoning, rejecting',
+    );
+    throw new NonRetriableError(REJECTION_REASON.CONTAINS_REASONING);
+  }
+
   const formatted = await longResponseFormatter(responseLong);
   log.info({ response: formatted }, 'formatted long response');
   return {
@@ -244,14 +255,18 @@ export const executeInteractionTweets = inngest.createFunction(
         'Failed to execute interaction tweets',
       );
 
-      if (
+      const nonFatalError =
         errorMessage
           .toLowerCase()
-          .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase())
-      ) {
+          .startsWith(REJECTION_REASON.CONTAINS_REASONING.toLowerCase()) ||
+        errorMessage
+          .toLowerCase()
+          .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase());
+
+      if (nonFatalError) {
         tweetsProcessingRejected.inc({
           method: 'execute-interaction-tweets',
-          reason: REJECTION_REASON.NO_QUESTION_DETECTED,
+          reason: errorMessage,
         });
         await rejectedTweet({
           tweetId: id,
