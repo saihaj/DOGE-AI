@@ -57,12 +57,16 @@ const models = [
     label: 'GPT 4.1 Nano',
   },
   {
-    value: 'llama-4-maverick',
-    label: 'Llama 4 Maverick',
+    value: 'gpt-5',
+    label: 'GPT 5',
   },
   {
-    value: 'llama-4-scout',
-    label: 'Llama 4 Scout',
+    value: 'gpt-5-mini',
+    label: 'GPT 5 Mini',
+  },
+  {
+    value: 'gpt-5-nano',
+    label: 'GPT 5 Nano',
   },
   {
     value: 'gpt-oss-120b',
