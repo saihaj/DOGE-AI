@@ -41,6 +41,7 @@ import {
   longResponseFormatter,
   mergeConsecutiveSameRole,
   questionExtractor,
+  rejectReasoning,
   sanitizeLlmOutput,
   upsertChat,
   upsertUser,
@@ -80,6 +81,13 @@ export async function generateReply(
   const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
 
   const text = sanitizeLlmOutput(_text);
+
+  const hasReasoning = rejectReasoning(text);
+  if (hasReasoning) {
+    log.error({ response: text }, 'response contains reasoning, rejecting');
+    throw new NonRetriableError(REJECTION_REASON.CONTAINS_REASONING);
+  }
+
   const formatted = await longResponseFormatter(text);
 
   return {
@@ -177,7 +185,12 @@ export const executeTweets = inngest.createFunction(
           .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase()) ||
         errorMessage
           .toLowerCase()
-          .startsWith(REJECTION_REASON.MAX_THREAD_DEPTH_REACHED.toLowerCase());
+          .startsWith(
+            REJECTION_REASON.MAX_THREAD_DEPTH_REACHED.toLowerCase(),
+          ) ||
+        errorMessage
+          .toLowerCase()
+          .startsWith(REJECTION_REASON.CONTAINS_REASONING.toLowerCase());
 
       if (nonFatalError) {
         tweetsProcessingRejected.inc({

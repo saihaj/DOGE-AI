@@ -325,6 +325,11 @@ export function sanitizeLlmOutput(text: string) {
     .trim();
 }
 
+export function rejectReasoning(text: string): boolean {
+  // Returns true if the text contains "let's break this down" (case-insensitive), indicating rejection
+  return /let's break this down/gi.test(text);
+}
+
 /**
  * Given a tweet id, it will return the time since the tweet was created
  */
