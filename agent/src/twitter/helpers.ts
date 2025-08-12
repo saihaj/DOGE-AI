@@ -326,8 +326,8 @@ export function sanitizeLlmOutput(text: string) {
 }
 
 export function rejectReasoning(text: string): boolean {
-  // Returns true if the text contains "let's break this down" (case-insensitive), indicating rejection
-  return /let's break this down/gi.test(text);
+  // Returns true if the text contains "let's break this down" or "tackle this query" (case-insensitive), indicating rejection
+  return /let's break this down|tackle this query/gi.test(text);
 }
 
 /**
