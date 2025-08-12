@@ -74,6 +74,7 @@ export const myProvider = customProvider({
     }),
     'grok-3-mini': xai('grok-3-mini'),
     'grok-3': xai('grok-3'),
+    'grok-4': xai('grok-4'),
     'gemini-1.5-flash': google('gemini-1.5-flash'),
     'gemini-1.5-pro': google('gemini-1.5-pro'),
     'gemini-2.0-flash-exp': google('gemini-2.0-flash-exp'),

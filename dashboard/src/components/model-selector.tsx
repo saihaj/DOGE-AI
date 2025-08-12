@@ -101,6 +101,10 @@ const models = [
     label: 'Grok 3 Mini',
   },
   {
+    value: 'grok-4',
+    label: 'Grok 4',
+  },
+  {
     value: 'claude-3-5-sonnet-latest',
     label: 'Sonnet 3.5',
   },
