@@ -41,6 +41,7 @@ export const myProvider = customProvider({
     'gpt-5-mini': openai('gpt-5-mini'),
     'gpt-5-nano': openai('gpt-5-nano'),
     'gpt-5-chat-latest': openai('gpt-5-chat-latest'),
+    'chatgpt-4o-latest': openai('chatgpt-4o-latest'),
     'o3-mini': openai('o3-mini'),
     'gpt-oss-120b': openrouter.chat('openai/gpt-oss-120b'),
     'gpt-oss-20b': openrouter.chat('openai/gpt-oss-20b'),

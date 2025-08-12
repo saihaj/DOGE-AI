@@ -69,6 +69,14 @@ const models = [
     label: 'GPT 5 Nano',
   },
   {
+    value: 'gpt-5-chat-latest',
+    label: 'GPT 5 Chat',
+  },
+  {
+    value: 'chatgpt-4o-latest',
+    label: '4o Chat',
+  },
+  {
     value: 'gpt-oss-120b',
     label: 'GPT OSS (120B)',
   },
