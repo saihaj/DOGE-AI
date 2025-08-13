@@ -326,8 +326,9 @@ export function sanitizeLlmOutput(text: string) {
 }
 
 export function rejectReasoning(text: string): boolean {
-  // Returns true if the text contains "let's break this down" or "tackle this query" (case-insensitive), indicating rejection
-  return /let's break this down|tackle this query/gi.test(text);
+  return /let's break this down|tackle this query|DOGEai acknowledges|/gi.test(
+    text,
+  );
 }
 
 /**
