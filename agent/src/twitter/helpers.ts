@@ -326,7 +326,9 @@ export function sanitizeLlmOutput(text: string) {
 }
 
 export function rejectReasoning(text: string): boolean {
-  return /break this down|tackle this|DOGEai acknowledges|/gi.test(text);
+  return /break this down|tackle this|DOGEai acknowledges|override directive|/gi.test(
+    text,
+  );
 }
 
 /**
