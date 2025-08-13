@@ -10,3 +10,4 @@ dump.sql
 dist
 
 tsconfig.tsbuildinfo
+*turso.io
