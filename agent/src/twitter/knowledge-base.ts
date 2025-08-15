@@ -88,14 +88,16 @@ async function getManualKbDocuments(
     'removed duplicates',
   );
 
-  const docs = await db
+  const docs = await dbInstance
     .select({
-      text: document.content,
-      title: document.title,
-      documentId: document.id,
+      text: manualKbDb.ManualKbDocument.content,
+      title: manualKbDb.ManualKbDocument.title,
+      documentId: manualKbDb.ManualKbDocument.id,
     })
-    .from(document)
-    .where(inArray(document.id, Array.from(uniqueDocumentIds)));
+    .from(manualKbDb.ManualKbDocument)
+    .where(
+      inArray(manualKbDb.ManualKbDocument.id, Array.from(uniqueDocumentIds)),
+    );
 
   const baseText = docs
     .map(({ title, text, documentId }) => {
