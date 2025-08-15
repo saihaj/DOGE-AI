@@ -739,7 +739,7 @@ export const getControlPlaneKbEntries = protectedProcedure
       )
       .orderBy(
         sql`vector_distance_cos(${manualKbDb.ManualKbDocumentVector.vector}, vector32(${termEmbeddingString})) ASC`,
-        asc(manualKbDb.ManualKbDocument.createdAt),
+        asc(manualKbDb.ManualKbDocumentVector.createdAt),
       )
       .groupBy(manualKbDb.ManualKbDocumentVector.document)
       .leftJoin(
