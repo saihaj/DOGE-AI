@@ -2,6 +2,7 @@ import { anthropic } from '@ai-sdk/anthropic';
 import { createDeepInfra } from '@ai-sdk/deepinfra';
 import { createOpenAI } from '@ai-sdk/openai';
 import {
+  APICallError,
   CoreMessage,
   extractReasoningMiddleware,
   generateText,
@@ -158,6 +159,14 @@ export async function getLongResponse(
     messages: messages,
     experimental_generateMessageId: crypto.randomUUID,
     maxRetries: 0,
+  }).catch(e => {
+    if (APICallError.isInstance(e)) {
+      if (e.message.includes('exceeds maximum input length')) {
+        log.error({ error: e.message }, 'input too large for model');
+        throw new NonRetriableError(REJECTION_REASON.INPUT_TOO_LARGE_FOR_MODEL);
+      }
+    }
+    throw e;
   });
 
   const metadata = sources.length > 0 ? JSON.stringify(sources) : null;
@@ -255,13 +264,13 @@ export const executeInteractionTweets = inngest.createFunction(
         'Failed to execute interaction tweets',
       );
 
-      const nonFatalError =
-        errorMessage
-          .toLowerCase()
-          .startsWith(REJECTION_REASON.CONTAINS_REASONING.toLowerCase()) ||
-        errorMessage
-          .toLowerCase()
-          .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase());
+      const nonFatalError = [
+        REJECTION_REASON.CONTAINS_REASONING,
+        REJECTION_REASON.INPUT_TOO_LARGE_FOR_MODEL,
+        REJECTION_REASON.NO_QUESTION_DETECTED,
+      ].some(reason =>
+        errorMessage.toLowerCase().startsWith(reason.toLowerCase()),
+      );
 
       if (nonFatalError) {
         tweetsProcessingRejected.inc({

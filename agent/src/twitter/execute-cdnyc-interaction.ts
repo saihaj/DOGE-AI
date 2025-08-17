@@ -128,13 +128,13 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
         'Failed to execute interaction tweets',
       );
 
-      const nonFatalError =
-        errorMessage
-          .toLowerCase()
-          .startsWith(REJECTION_REASON.CONTAINS_REASONING.toLowerCase()) ||
-        errorMessage
-          .toLowerCase()
-          .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase());
+      const nonFatalError = [
+        REJECTION_REASON.CONTAINS_REASONING,
+        REJECTION_REASON.INPUT_TOO_LARGE_FOR_MODEL,
+        REJECTION_REASON.NO_QUESTION_DETECTED,
+      ].some(reason =>
+        errorMessage.toLowerCase().startsWith(reason.toLowerCase()),
+      );
 
       if (nonFatalError) {
         tweetsProcessingRejected.inc({

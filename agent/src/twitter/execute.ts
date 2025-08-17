@@ -179,18 +179,14 @@ export const executeTweets = inngest.createFunction(
 
       log.error({ error: errorMessage }, 'Failed to execute tweets');
 
-      const nonFatalError =
-        errorMessage
-          .toLowerCase()
-          .startsWith(REJECTION_REASON.NO_QUESTION_DETECTED.toLowerCase()) ||
-        errorMessage
-          .toLowerCase()
-          .startsWith(
-            REJECTION_REASON.MAX_THREAD_DEPTH_REACHED.toLowerCase(),
-          ) ||
-        errorMessage
-          .toLowerCase()
-          .startsWith(REJECTION_REASON.CONTAINS_REASONING.toLowerCase());
+      const nonFatalError = [
+        REJECTION_REASON.CONTAINS_REASONING,
+        REJECTION_REASON.INPUT_TOO_LARGE_FOR_MODEL,
+        REJECTION_REASON.MAX_THREAD_DEPTH_REACHED,
+        REJECTION_REASON.NO_QUESTION_DETECTED,
+      ].some(reason =>
+        errorMessage.toLowerCase().startsWith(reason.toLowerCase()),
+      );
 
       if (nonFatalError) {
         tweetsProcessingRejected.inc({
