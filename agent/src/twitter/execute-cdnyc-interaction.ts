@@ -224,8 +224,8 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
                 },
               ],
               text,
-              billEntries: true,
-              documentEntries: true,
+              billEntries: false,
+              documentEntries: false,
               manualEntries: {
                 orgId: '94e4cbb7-0265-4f84-8c55-251ba424c09f',
               },
