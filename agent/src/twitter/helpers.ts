@@ -26,6 +26,7 @@ import {
 } from './prompts';
 import { WithLogger } from '../logger';
 import { getUnixTime, toDate } from 'date-fns';
+import { error } from 'node:console';
 
 // Ada V2 31.4% vs 54.9% large
 const embeddingModel = openai.textEmbeddingModel('text-embedding-3-small');
@@ -35,20 +36,43 @@ const GetTweetResponse = z.object({
 });
 
 const API = new URL(TWITTER_API_BASE_URL);
-export async function getTweet({ id }: { id: string }) {
+
+export async function getTweet({
+  id,
+  logger,
+}: {
+  id: string;
+  logger: WithLogger;
+}) {
+  const controller = new AbortController();
+  const timeout = 30_000; // 30 seconds (in milliseconds)
+
+  const log = logger.child({
+    tweetId: id,
+  });
+
   API.pathname = '/twitter/tweets';
   return bento.getOrSet(`/tweet/${id}`, async () => {
     API.searchParams.set('tweet_ids', id);
+
+    // Set up the timeout
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     const data = await fetch(`${API.toString()}`, {
       headers: {
         'X-API-Key': TWITTER_API_KEY,
       },
+      signal: controller.signal, // Attach the AbortController signal
     });
+
+    const traceId = data.headers.get('X-Trace-Id');
+
+    clearTimeout(timeoutId); // Clear timeout if request succeeds
 
     const json = await data.json();
     const tweet = await GetTweetResponse.safeParseAsync(json);
     if (tweet.error) {
+      log.error({ error: tweet.error, traceId }, 'tweet parsing error');
       throw new Error(REJECTION_REASON.FAILED_TO_PARSE_RESPONSE, {
         cause: tweet.error.message,
       });
@@ -56,6 +80,7 @@ export async function getTweet({ id }: { id: string }) {
 
     // Likely can happen if the tweet was deleted
     if (tweet.data.tweets.length === 0) {
+      log.error({ data: json, traceId }, 'no tweets returned');
       throw new Error(REJECTION_REASON.NO_TWEET_RETRIEVED);
     }
 
@@ -87,7 +112,7 @@ export async function getTweetContentAsText(
 
   if (cache) return cache;
 
-  const tweet = await getTweet({ id });
+  const tweet = await getTweet({ id, logger: log });
   const result: string[] = [];
 
   if (tweet.quoted_tweet) {

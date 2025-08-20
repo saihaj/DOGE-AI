@@ -199,6 +199,7 @@ export const executeCdnycInteractionTweets = inngest.createFunction(
 
         const tweetToActionOn = await getTweet({
           id: event.data.tweetId,
+          logger: log,
         }).catch(e => {
           log.error({ error: e }, 'Unable to get tweet');
           throw new NonRetriableError(e);

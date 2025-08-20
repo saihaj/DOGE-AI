@@ -157,11 +157,12 @@ export const processTweets = inngest.createFunction(
 
     // focus on replies bot gets anywhere to his tweet
     if (event.data?.inReplyToUsername === TWITTER_USERNAME) {
-      const mainTweet = await getTweet({ id: event.data.inReplyToId! }).catch(
-        e => {
-          throw new NonRetriableError(e.message);
-        },
-      );
+      const mainTweet = await getTweet({
+        id: event.data.inReplyToId!,
+        logger: log,
+      }).catch(e => {
+        throw new NonRetriableError(e.message);
+      });
 
       // deter scammers
       const shouldEngage = await step.run('should-engage', async () => {

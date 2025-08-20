@@ -113,7 +113,7 @@ export async function getTweetContext(
 
   let searchId: null | string = id;
   do {
-    const tweet = await getTweet({ id: searchId });
+    const tweet = await getTweet({ id: searchId, logger });
 
     if (tweet.inReplyToId) {
       searchId = tweet.inReplyToId;
@@ -245,6 +245,7 @@ export const executeTweets = inngest.createFunction(
     // in case we just reject it
     const tweetToActionOn = await getTweet({
       id: event.data.tweetId,
+      logger: log,
     }).catch(e => {
       log.error({ error: e }, 'Unable to get tweet to action on');
       throw new NonRetriableError(e);
