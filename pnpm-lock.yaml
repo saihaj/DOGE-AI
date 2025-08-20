@@ -470,8 +470,8 @@ importers:
         specifier: ^2.4.1
         version: 2.4.1(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       ahooks:
-        specifier: ^3.9.2
-        version: 3.9.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
+        specifier: ^3.9.3
+        version: 3.9.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1)
       ai:
         specifier: ^4.3.19
         version: 4.3.19(react@19.1.1)(zod@3.24.4)
@@ -5572,8 +5572,8 @@ packages:
     resolution: {integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==}
     engines: {node: '>=8'}
 
-  ahooks@3.9.2:
-    resolution: {integrity: sha512-Kxo1fsX9BHNYq59qdCgMnB58Vd6SYaVBv8MrNmlzo1kLMscxfzlkoticH8b9azZ/x49cR4LZrrtqDEjeqN2sMw==}
+  ahooks@3.9.3:
+    resolution: {integrity: sha512-pw4oNW9at8c/EDpZEQY/2rcU1NQw1GOzw6CUlDPMKUp1hh79NZVfPxgUUhUVKs8Dr48GWYC5ILovuQSO5CeH0A==}
     engines: {node: '>=18'}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
@@ -17576,7 +17576,7 @@ snapshots:
       indent-string: 4.0.0
     optional: true
 
-  ahooks@3.9.2(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
+  ahooks@3.9.3(react-dom@19.1.1(react@19.1.1))(react@19.1.1):
     dependencies:
       '@babel/runtime': 7.27.1
       dayjs: 1.11.13
@@ -19746,7 +19746,7 @@ snapshots:
       isstream: 0.1.2
       jsonwebtoken: 9.0.2
       mime-types: 2.1.35
-      retry-axios: 2.6.0(axios@1.7.9(debug@4.4.1))
+      retry-axios: 2.6.0(axios@1.7.9)
       tough-cookie: 4.1.4
     transitivePeerDependencies:
       - supports-color
@@ -22062,7 +22062,7 @@ snapshots:
 
   ret@0.5.0: {}
 
-  retry-axios@2.6.0(axios@1.7.9(debug@4.4.1)):
+  retry-axios@2.6.0(axios@1.7.9):
     dependencies:
       axios: 1.7.9(debug@4.4.1)
 
