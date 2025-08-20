@@ -65,14 +65,14 @@ export async function getTweet({
       signal: controller.signal, // Attach the AbortController signal
     });
 
-    const traceId = data.headers.get('X-Trace-Id');
+    const apiTraceId = data.headers.get('X-Trace-Id');
 
     clearTimeout(timeoutId); // Clear timeout if request succeeds
 
     const json = await data.json();
     const tweet = await GetTweetResponse.safeParseAsync(json);
     if (tweet.error) {
-      log.error({ error: tweet.error, traceId }, 'tweet parsing error');
+      log.error({ error: tweet.error, apiTraceId }, 'tweet parsing error');
       throw new Error(REJECTION_REASON.FAILED_TO_PARSE_RESPONSE, {
         cause: tweet.error.message,
       });
@@ -80,7 +80,7 @@ export async function getTweet({
 
     // Likely can happen if the tweet was deleted
     if (tweet.data.tweets.length === 0) {
-      log.error({ data: json, traceId }, 'no tweets returned');
+      log.error({ data: json, apiTraceId }, 'no tweets returned');
       throw new Error(REJECTION_REASON.NO_TWEET_RETRIEVED);
     }
 
