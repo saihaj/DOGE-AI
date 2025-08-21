@@ -45,7 +45,7 @@ export async function getTweet({
   logger: WithLogger;
 }) {
   const controller = new AbortController();
-  const timeout = 30_000; // 30 seconds (in milliseconds)
+  const timeout = 60_000; // 60 seconds (in milliseconds)
 
   const log = logger.child({
     tweetId: id,
