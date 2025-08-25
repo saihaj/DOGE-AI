@@ -134,8 +134,8 @@ importers:
         specifier: ^4.20.5
         version: 4.20.5
       twitter-api-v2:
-        specifier: ^1.19.0
-        version: 1.19.0(patch_hash=qtm7kmv32i2ogwqkvthtr6ar7u)
+        specifier: ^1.25.0
+        version: 1.25.0(patch_hash=qtm7kmv32i2ogwqkvthtr6ar7u)
       typescript:
         specifier: ^5.8.3
         version: 5.8.3
@@ -4432,6 +4432,7 @@ packages:
 
   '@simplewebauthn/types@9.0.1':
     resolution: {integrity: sha512-tGSRP1QvsAvsJmnOlRQyw/mvK9gnPtjEc5fg2+m8n+QUa+D7rvrKkOYyfpy42GTs90X3RDOnqJgfHt+qO67/+w==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   '@sinclair/typebox@0.25.24':
     resolution: {integrity: sha512-XJfwUVUKDHF5ugKwIcxEgc9k8b7HbznCp6eUfWgu710hMPNIO4aw4/zB5RogDQz8nd6gyCDpU9O/m6qYEWY6yQ==}
@@ -10133,8 +10134,8 @@ packages:
   tweetnacl@1.0.3:
     resolution: {integrity: sha512-6rt+RN7aOi1nGMyC4Xa5DdYiukl2UWCbcJft7YhxReBGQD7OAM8Pbxw6YMo4r2diNEA8FEmu32YOn9rhaiE5yw==}
 
-  twitter-api-v2@1.19.0:
-    resolution: {integrity: sha512-jfG4aapNPM9+4VxNxn0TXvD8Qj8NmVx6cY0hp5K626uZ41qXPaJz33Djd3y6gfHF/+W29+iZz0Y5qB869d/akA==}
+  twitter-api-v2@1.25.0:
+    resolution: {integrity: sha512-g3JDd5jwJD+gkEe2Qn3GI5GpasYJjFEauTw70kqiBGu+ectWUgtEKtIaZUGKB50+ApyNhl6v871YCS6un6YEJw==}
 
   type-check@0.4.0:
     resolution: {integrity: sha512-XleUoc9uwGXqjWwXaUTZAmzMcFZ5858QA2vvx1Ur5xIcixXIP+8LnFDgRplU30us6teqdlskFfu+ae4K79Ooew==}
@@ -22888,7 +22889,7 @@ snapshots:
 
   tweetnacl@1.0.3: {}
 
-  twitter-api-v2@1.19.0(patch_hash=qtm7kmv32i2ogwqkvthtr6ar7u): {}
+  twitter-api-v2@1.25.0(patch_hash=qtm7kmv32i2ogwqkvthtr6ar7u): {}
 
   type-check@0.4.0:
     dependencies:
