@@ -15,7 +15,7 @@
   "devDependencies": {
     "@types/node": "^22.15.19",
     "drizzle-kit": "^0.31.4",
-    "tsx": "^4.20.4"
+    "tsx": "^4.20.5"
   },
   "dependencies": {
     "@libsql/client": "^0.14.0",
