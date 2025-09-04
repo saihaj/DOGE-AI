@@ -1,6 +1,6 @@
 import { anthropic } from '@ai-sdk/anthropic';
-import { createDeepInfra } from '@ai-sdk/deepinfra';
 import { createOpenAI } from '@ai-sdk/openai';
+import { createOpenRouter } from '@openrouter/ai-sdk-provider';
 import {
   APICallError,
   CoreMessage,
@@ -18,10 +18,10 @@ import Handlebars from 'handlebars';
 import { NonRetriableError } from 'inngest';
 import * as crypto from 'node:crypto';
 import {
-  DEEPINFRA_API_KEY,
   DISCORD_APPROVED_CHANNEL_ID,
   DISCORD_REJECTED_CHANNEL_ID,
   IS_PROD,
+  OPEN_ROUTER_API_KEY,
   OPENAI_API_KEY,
   REJECTION_REASON,
   SEED,
@@ -56,8 +56,8 @@ import {
 import { getKbContext } from './knowledge-base.ts';
 import { getSearchResult } from './web.ts';
 
-const deepinfra = createDeepInfra({
-  apiKey: DEEPINFRA_API_KEY,
+const openrouter = createOpenRouter({
+  apiKey: OPEN_ROUTER_API_KEY,
 });
 
 const openai = createOpenAI({
@@ -149,7 +149,11 @@ export async function getLongResponse(
     temperature: TEMPERATURE,
     seed: SEED,
     model: wrapLanguageModel({
-      model: deepinfra('deepseek-ai/DeepSeek-R1'),
+      model: openrouter.chat('deepseek/deepseek-r1', {
+        reasoning: {
+          effort: 'high',
+        },
+      }),
       middleware: [
         extractReasoningMiddleware({
           tagName: 'think',
