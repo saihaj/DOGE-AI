@@ -593,12 +593,25 @@ fastify.route<{ Body: UserChatStreamInput }>({
         // @ts-expect-error - TODO: fix typings
         tools: getChatTools(messages, log, stream),
         maxSteps: 5,
+        maxRetries: 0,
+        experimental_providerMetadata: {
+          openai: {
+            previousResponseId:
+              'resp_680be1f1906c8192a31f34bdaddd5673065d082b4685d13f',
+          },
+        },
         experimental_generateMessageId: crypto.randomUUID,
         experimental_telemetry: { isEnabled: true, functionId: 'stream-text' },
         onError(error) {
           log.error({ error }, 'Error in chat stream');
         },
         async onFinish(event) {
+          if (event?.providerMetadata?.openai?.responseId) {
+            stream.appendMessageAnnotation({
+              responseId: event.providerMetadata.openai.responseId,
+            });
+          }
+
           if (event.sources.length === 0) {
             await stream.close();
             log.info({}, 'stream closed');
