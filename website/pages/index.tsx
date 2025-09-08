@@ -331,10 +331,10 @@ export default function Home() {
             borderRadius: '210px',
             border: '1px solid #232A43',
           }}
-          dateTime="2025-08-26"
+          dateTime="2025-09-08"
         >
           <span className="text-secondary">Bill Cutoff Date: </span>
-          <span className="font-semibold">August 26, 2025</span>
+          <span className="font-semibold">September 08, 2025</span>
         </time>
 
         <div className="grid md:grid-cols-2 gap-4 w-full mb-10 px-2 md:px-4">
@@ -344,7 +344,7 @@ export default function Home() {
             senate={5445}
             house={10301}
           />
-          <CongressCard number={119} total={7653} senate={2664} house={4989} />
+          <CongressCard number={119} total={7756} senate={2681} house={5075} />
         </div>
       </section>
 
