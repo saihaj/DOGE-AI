@@ -172,7 +172,7 @@ importers:
         version: 1.2.12(react@19.1.1)(zod@3.24.4)
       '@opennextjs/cloudflare':
         specifier: ^1.8.0
-        version: 1.8.0(encoding@0.1.13)(wrangler@4.36.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
+        version: 1.8.0(encoding@0.1.13)(wrangler@4.37.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))
       '@privy-io/react-auth':
         specifier: ^2.21.4
         version: 2.21.4(@solana/spl-token@0.4.14(@solana/web3.js@1.98.4(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))(bufferutil@4.0.9)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.8.3)(utf-8-validate@5.0.10))(@solana/web3.js@1.98.4(bufferutil@4.0.9)(encoding@0.1.13)(typescript@5.8.3)(utf-8-validate@5.0.10))(@types/react@19.1.13)(aws4fetch@1.0.20)(bs58@6.0.0)(bufferutil@4.0.9)(ioredis@5.6.1)(react-dom@19.1.1(react@19.1.1))(react@19.1.1)(typescript@5.8.3)(use-sync-external-store@1.5.0(react@19.1.1))(utf-8-validate@5.0.10)(zod@3.24.4)
@@ -328,8 +328,8 @@ importers:
         specifier: ^41.7.8
         version: 41.7.8(encoding@0.1.13)
       wrangler:
-        specifier: ^4.36.0
-        version: 4.36.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+        specifier: ^4.37.0
+        version: 4.37.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
 
   crawler:
     dependencies:
@@ -8380,8 +8380,8 @@ packages:
     resolution: {integrity: sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==}
     engines: {node: '>=10'}
 
-  miniflare@4.20250906.1:
-    resolution: {integrity: sha512-yuPHog7j+GKHtRaKKF3Mpwvb5SVtvmkQpY/f9Ue0xhG/fYQcaxTKVO6RAB1pUN1jSyvmDOxVEAFFVoni8GYl3g==}
+  miniflare@4.20250906.2:
+    resolution: {integrity: sha512-SXGv8Rdd91b6UXZ5eW3rde/gSJM6WVLItMNFV7u9axUVhACvpT4CB5p80OBfi2OOsGfOuFQ6M6s8tMxJbzioVw==}
     engines: {node: '>=18.0.0'}
     hasBin: true
 
@@ -10532,8 +10532,8 @@ packages:
     engines: {node: '>=16'}
     hasBin: true
 
-  wrangler@4.36.0:
-    resolution: {integrity: sha512-J1sZh7ePy7BtzvIyt9ufiL6aQOW6OE0VEi9YJiyXOuaXDKrR7V5HJBTsraNdFDqXgi30mYGGBVs0mgZHGRhTBA==}
+  wrangler@4.37.0:
+    resolution: {integrity: sha512-W8IbQohQbUHFn4Hz2kh8gi0SdyFV/jyi9Uus+WrTz0F0Dc9W5qKPCjLbxibeE53+YPHyoI25l65O7nSlwX+Z6Q==}
     engines: {node: '>=18.0.0'}
     hasBin: true
     peerDependencies:
@@ -13491,7 +13491,7 @@ snapshots:
       - aws-crt
       - supports-color
 
-  '@opennextjs/cloudflare@1.8.0(encoding@0.1.13)(wrangler@4.36.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
+  '@opennextjs/cloudflare@1.8.0(encoding@0.1.13)(wrangler@4.37.0(bufferutil@4.0.9)(utf-8-validate@5.0.10))':
     dependencies:
       '@dotenvx/dotenvx': 1.31.0
       '@opennextjs/aws': 3.7.6
@@ -13499,7 +13499,7 @@ snapshots:
       enquirer: 2.4.1
       glob: 11.0.2
       ts-tqdm: 0.8.6
-      wrangler: 4.36.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      wrangler: 4.37.0(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       yargs: 18.0.0
     transitivePeerDependencies:
       - aws-crt
@@ -20878,7 +20878,7 @@ snapshots:
 
   mimic-response@3.1.0: {}
 
-  miniflare@4.20250906.1(bufferutil@4.0.9)(utf-8-validate@5.0.10):
+  miniflare@4.20250906.2(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       acorn: 8.14.0
@@ -23388,13 +23388,13 @@ snapshots:
       '@cloudflare/workerd-linux-arm64': 1.20250906.0
       '@cloudflare/workerd-windows-64': 1.20250906.0
 
-  wrangler@4.36.0(bufferutil@4.0.9)(utf-8-validate@5.0.10):
+  wrangler@4.37.0(bufferutil@4.0.9)(utf-8-validate@5.0.10):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.0
       '@cloudflare/unenv-preset': 2.7.3(unenv@2.0.0-rc.21)(workerd@1.20250906.0)
       blake3-wasm: 2.1.5
       esbuild: 0.25.4
-      miniflare: 4.20250906.1(bufferutil@4.0.9)(utf-8-validate@5.0.10)
+      miniflare: 4.20250906.2(bufferutil@4.0.9)(utf-8-validate@5.0.10)
       path-to-regexp: 6.3.0
       unenv: 2.0.0-rc.21
       workerd: 1.20250906.0
