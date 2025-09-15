@@ -202,7 +202,7 @@ function EntryUi({ mutate }: { mutate: () => void }) {
   );
 }
 
-const FETCH_SIZE = 20;
+const FETCH_SIZE = 100;
 
 export default function ManualKB() {
   const trpc = useTRPC();
