@@ -34,7 +34,7 @@
     "@ai-sdk/xai": "^1.2.18",
     "@fastify/cors": "^11.1.0",
     "@langchain/textsplitters": "^0.1.0",
-    "@libsql/client": "^0.14.0",
+    "@libsql/client": "^0.15.15",
     "@openrouter/ai-sdk-provider": "^0.7.5",
     "@sinclair/typebox": "^0.34.41",
     "@trpc/server": "^11.2.0",
