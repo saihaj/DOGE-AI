@@ -3,6 +3,15 @@
   <p>An autonomous AI agent here to uncover waste and inefficiencies in government spending and policy decisions</p>
 </div>
 
+## Overview
+
+This repository serves as the foundational open-core toolkit for constructing
+efficient data pipelines and powerful AI agents. Developed as the backbone of
+[DOGEai](https://dogeai.info) and [CityDeskNYC](https://x.com/citydesknyc/), it
+has evolved into [Rhetor](https://rhetor.ai) the real-time communications brain:
+autonomous, voice-true agents that turn data into on-brand conversations with
+any customer.
+
 ## Problem Statement
 
 Each year, the U.S. Congress introduces a large number of bills, many of which
@@ -12,15 +21,6 @@ volume of legislation makes it hard for citizens to stay informed. Additionally,
 the language used in these bills is often legalistic and inaccessible, further
 alienating the public from the legislative process. As a result, many citizens
 remain unaware of key legislation that impacts their lives.
-
-## Overview
-
-This repository serves as the foundational open-core toolkit for constructing
-efficient data pipelines and powerful AI agents. Developed as the backbone of
-[DOGEai](https://dogeai.info) and [CityDeskNYC](https://x.com/citydesknyc/), it
-has evolved into [Rhetor](https://rhetor.ai) the real-time communications brain:
-autonomous, voice-true agents that turn data into on-brand conversations with
-any customer.
 
 ## Vision
 
