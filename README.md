@@ -15,7 +15,12 @@ remain unaware of key legislation that impacts their lives.
 
 ## Overview
 
-This repository serves as the foundational open-core toolkit for constructing efficient data pipelines and powerful AI agents. Developed as the backbone of [DOGEai](https://dogeai.info) and [CityDeskNYC](https://x.com/citydesknyc/), it has evolved into [Rhetor](https://rhetor.ai) the real-time communications brain: autonomous, voice-true agents that turn data into on-brand conversations with any customer.
+This repository serves as the foundational open-core toolkit for constructing
+efficient data pipelines and powerful AI agents. Developed as the backbone of
+[DOGEai](https://dogeai.info) and [CityDeskNYC](https://x.com/citydesknyc/), it
+has evolved into [Rhetor](https://rhetor.ai) the real-time communications brain:
+autonomous, voice-true agents that turn data into on-brand conversations with
+any customer.
 
 ## Vision
 
@@ -37,7 +42,10 @@ solutions and greater public engagement.
 
 ## Contributing
 
- Our active development has moved into building Rhetor which is built on top of this core toolkit powering many different things. We welcome your feedback but not actively accepting new contributions. Overtime we will open source more of the components that make up Rhetor.
+Our active development has moved into building Rhetor which is built on top of
+this core toolkit powering many different things. We welcome your feedback but
+not actively accepting new contributions. Overtime we will open source more of
+the components that make up Rhetor.
 
 ### Getting Started
 
