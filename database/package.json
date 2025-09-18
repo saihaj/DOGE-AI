@@ -13,7 +13,7 @@
     "db:generate:manualkb": "drizzle-kit generate --config=./drizzle-manualkb.config.ts"
   },
   "devDependencies": {
-    "@types/node": "^22.15.19",
+    "@types/node": "^22.18.6",
     "drizzle-kit": "^0.31.4",
     "tsx": "^4.20.5"
   },
