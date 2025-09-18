@@ -13,6 +13,10 @@ the language used in these bills is often legalistic and inaccessible, further
 alienating the public from the legislative process. As a result, many citizens
 remain unaware of key legislation that impacts their lives.
 
+## Overview
+
+This repository serves as the foundational open-core toolkit for constructing efficient data pipelines and powerful AI agents. Developed as the backbone of [DOGEai](https://dogeai.info) and [CityDeskNYC](https://x.com/citydesknyc/), it has evolved into [Rhetor](https://rhetor.ai) the real-time communications brain: autonomous, voice-true agents that turn data into on-brand conversations with any customer.
+
 ## Vision
 
 While the immediate focus is on making it easier for the public to understand
@@ -33,8 +37,7 @@ solutions and greater public engagement.
 
 ## Contributing
 
-We welcome contributions from the community! If you're interested in helping us
-build DOGEai.
+ Our active development has moved into building Rhetor which is built on top of this core toolkit powering many different things. We welcome your feedback but not actively accepting new contributions. Overtime we will open source more of the components that make up Rhetor.
 
 ### Getting Started
 
