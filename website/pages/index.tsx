@@ -356,7 +356,7 @@ export default function Home() {
         ></iframe>
       </section>
 
-      <section className="bg-white px-2 py-24 md:px-4">
+      {/*<section className="bg-white px-2 py-24 md:px-4">
         <div className="mx-auto flex flex-col items-center">
           <SectionHeading>
             Support the{' '}
@@ -435,7 +435,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section>*/}
     </main>
   );
 }
