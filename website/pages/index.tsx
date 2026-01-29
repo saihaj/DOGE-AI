@@ -3,9 +3,8 @@ import { Seo } from '@/components/seo';
 import { SectionHeading } from '@/components/shared/SectionHeading';
 import { SectionSubheading } from '@/components/shared/SectionSubheading';
 import { CardType, StickyCards } from '@/components/sticky-cards';
-import { Button, buttonVariants } from '@/components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { sendGAEvent } from '@next/third-parties/google';
-import { useCopyToClipboard } from '@uidotdev/usehooks';
 import { motion } from 'motion/react';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
@@ -132,14 +131,13 @@ const CARDS: CardType[] = [
   },
 ];
 
-// const TOKEN = '9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump';
-const TOKEN = '3uxMtF7dT2VSvRFkrLf9Gqm4nDDy2J5RBEXCQpjubonk';
-const truncateToken = (token: string) => {
-  return `${token.slice(0, 8)}...${token.slice(-8)}`;
-};
+// // const TOKEN = '9UYAYvVS2cZ3BndbsoG1ScJbjfwyEPGxjE79hh5ipump';
+// const TOKEN = '3uxMtF7dT2VSvRFkrLf9Gqm4nDDy2J5RBEXCQpjubonk';
+// const truncateToken = (token: string) => {
+//   return `${token.slice(0, 8)}...${token.slice(-8)}`;
+// };
 
 export default function Home() {
-  const [, copyToClipboard] = useCopyToClipboard();
   const [hasCopied, setHasCopied] = useState(false);
 
   useEffect(() => {
