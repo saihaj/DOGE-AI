@@ -4,35 +4,35 @@ import { Message, MessageContent } from '@/components/ui/message';
 import { cn } from '@/lib/utils';
 import { UseChatHelpers } from '@ai-sdk/react';
 import { Loader2 } from 'lucide-react';
-// import { Tweet } from 'react-tweet';
-// import { Suspense } from 'react';
-// import { unstable_cache } from 'next/cache';
-// import { TweetSkeleton, EmbeddedTweet, TweetNotFound } from 'react-tweet';
-// import { getTweet as _getTweet } from 'react-tweet/api';
+import { Tweet } from 'react-tweet';
+import { Suspense } from 'react';
+import { unstable_cache } from 'next/cache';
+import { TweetSkeleton, EmbeddedTweet, TweetNotFound } from 'react-tweet';
+import { getTweet as _getTweet } from 'react-tweet/api';
 
-// const getTweet = unstable_cache(
-//   async (id: string) =>
-//     fetch(`https://react-tweet.vercel.app/api/tweet/${id}`, {
-//       headers: {
-//         'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
-//         'X-Client-Name': 'dogeai-chat',
-//       },
-//     })
-//       .then(a => a.json())
-//       .then(a => a?.data || a),
-//   ['tweet'],
-//   { revalidate: 3600 * 24 },
-// );
+const getTweet = unstable_cache(
+  async (id: string) =>
+    fetch(`https://react-tweet.vercel.app/api/tweet/${id}`, {
+      headers: {
+        'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
+        'X-Client-Name': 'dogeai-chat',
+      },
+    })
+      .then(a => a.json())
+      .then(a => a?.data || a),
+  ['tweet'],
+  { revalidate: 3600 * 24 },
+);
 
-// const TweetPage = async ({ id }: { id: string }) => {
-//   try {
-//     const tweet = await getTweet(id);
-//     return tweet ? <EmbeddedTweet tweet={tweet} /> : <TweetNotFound />;
-//   } catch (error) {
-//     console.error(error);
-//     return <TweetNotFound error={error} />;
-//   }
-// };
+const TweetPage = async ({ id }: { id: string }) => {
+  try {
+    const tweet = await getTweet(id);
+    return tweet ? <EmbeddedTweet tweet={tweet} /> : <TweetNotFound />;
+  } catch (error) {
+    console.error(error);
+    return <TweetNotFound error={error} />;
+  }
+};
 
 function renderMessageParts(message: UseChatHelpers['messages'][0]) {
   if (!message.parts || message.parts.length === 0) {
@@ -103,20 +103,20 @@ function renderUserMessage(message: UseChatHelpers['messages'][0]) {
     message.content ||
     '';
 
-  // const hasTweet = IS_TWITTER_URL.test(text);
-  // const tweetId = hasTweet ? text.match(EXTRACT_TWEET_ID)?.[1] : null;
+  const hasTweet = IS_TWITTER_URL.test(text);
+  const tweetId = hasTweet ? text.match(EXTRACT_TWEET_ID)?.[1] : null;
 
   return (
     // @ts-ignore
     <MessageContent className="bg-primary px-4 py-2 w-full text-primary-foreground whitespace-normal">
       <>
-        {/* {tweetId && (
+        {tweetId && (
           <div className="-mb-4 -mt-4 [zoom:0.8]">
             <Suspense fallback={<TweetSkeleton />}>
               <TweetPage id={tweetId} />
             </Suspense>
           </div>
-        )} */}
+        )}
         {text}
       </>
     </MessageContent>
